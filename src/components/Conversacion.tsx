@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { signOut } from "next-auth/react";
 import { AvatarAllison } from "@/components/AvatarAllison";
 import { BotonGrabar } from "@/components/BotonGrabar";
 import { Transcripcion } from "@/components/Transcripcion";
 import type { EstadoConversacion, Mensaje, Nivel } from "@/lib/tipos";
 
 interface Props {
+  nombre: string;
   nivel: Nivel;
   mensajesIniciales: number;
 }
 
-export function Conversacion({ nivel, mensajesIniciales }: Props) {
+export function Conversacion({ nombre, nivel, mensajesIniciales }: Props) {
   const [estado, setEstado] = useState<EstadoConversacion>("inactivo");
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [verTranscripcion, setVerTranscripcion] = useState(false);
@@ -86,9 +88,12 @@ export function Conversacion({ nivel, mensajesIniciales }: Props) {
   return (
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 pb-6">
       <header className="flex items-center justify-between py-4">
-        <span className="rounded-full bg-primario-suave px-2.5 py-1 text-xs font-semibold text-primario">
-          Nivel {nivel}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-primario-suave px-2.5 py-1 text-xs font-semibold text-primario">
+            Nivel {nivel}
+          </span>
+          <span className="hidden text-sm text-texto-suave sm:inline">{nombre}</span>
+        </div>
 
         <div className="flex items-center gap-3">
           <span
@@ -105,6 +110,17 @@ export function Conversacion({ nivel, mensajesIniciales }: Props) {
             className="rounded-full border border-borde px-3 py-1.5 text-xs font-medium text-texto-suave transition-colors hover:bg-superficie-2"
           >
             {verTranscripcion ? "Ocultar texto" : "Ver texto"}
+          </button>
+          <button
+            type="button"
+            onClick={() => signOut({ callbackUrl: "/" })}
+            title="Cerrar sesión"
+            aria-label="Cerrar sesión"
+            className="rounded-full border border-borde p-1.5 text-texto-suave transition-colors hover:bg-superficie-2"
+          >
+            <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+            </svg>
           </button>
         </div>
       </header>

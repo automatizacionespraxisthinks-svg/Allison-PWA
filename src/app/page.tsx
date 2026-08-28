@@ -27,13 +27,17 @@ export default function PaginaInicio() {
 
       <div className="flex flex-col items-center gap-3">
         <Link
-          href="/practicar"
+          href="/registro"
           className="rounded-xl bg-primario px-8 py-3.5 text-base font-semibold text-white shadow-md transition hover:brightness-110 active:scale-95"
         >
           Empezar a hablar
         </Link>
+        <p className="text-sm text-texto-suave">20 mensajes gratis, sin tarjeta</p>
         <p className="text-sm text-texto-suave">
-          20 mensajes gratis, sin tarjeta
+          ¿Ya tienes cuenta?{" "}
+          <Link href="/entrar" className="font-medium text-primario underline">
+            Entrar
+          </Link>
         </p>
       </div>
     </main>
