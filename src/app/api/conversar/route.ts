@@ -83,7 +83,7 @@ export async function POST(peticion: Request) {
          tokens_entrada, tokens_salida)
       values
         (${conversacionId}, ${alumno.id}, 'alumno', ${resultado.transcripcion},
-         ${duracionSeg}, ${JSON.stringify(resultado.correcciones)},
+         ${duracionSeg}, ${sql.json(resultado.correcciones)},
          ${resultado.tokensEntrada}, ${resultado.tokensSalida})
       returning id, creado_en
     `;
@@ -110,7 +110,7 @@ export async function POST(peticion: Request) {
 
     for (const c of resultado.correcciones) {
       await sql`
-        select registrar_error(${alumno.id}, ${c.tipo}, ${c.original}, ${c.correccion})
+        select registrar_error(${alumno.id}, ${c.tipo}, ${c.original}, ${c.correccion}, ${c.tema ?? "naturalidad"})
       `;
     }
 

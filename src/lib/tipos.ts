@@ -32,6 +32,8 @@ export interface Correccion {
   correccion: string;
   explicacion: string;
   prioridad: "alta" | "media" | "baja";
+  /** Tema pedagógico con el que se agrupan los errores repetidos. */
+  tema: string;
 }
 
 export interface Mensaje {

@@ -1,4 +1,5 @@
 import { sql } from "./db";
+import { tema as buscarTema, type ClaveTema } from "./temas";
 
 export interface DiaPracticado {
   fecha: string;
@@ -6,11 +7,13 @@ export interface DiaPracticado {
   segundos: number;
 }
 
-export interface ErrorFrecuente {
-  tipo: string;
-  textoError: string;
-  correccion: string;
+export interface TemaFallado {
+  clave: ClaveTema;
+  titulo: string;
+  pista: string;
+  ejemplo: string;
   veces: number;
+  ejemplos: { error: string; correccion: string }[];
 }
 
 export interface Progreso {
@@ -20,8 +23,11 @@ export interface Progreso {
   totalSegundos: number;
   erroresCorregidos: number;
   diasPracticados: number;
-  ultimos30: DiaPracticado[];
-  erroresFrecuentes: ErrorFrecuente[];
+  mensajesHoy: number;
+  semana: DiaPracticado[];
+  temas: TemaFallado[];
+  /** Aciertos: turnos sin ninguna corrección. */
+  turnosLimpios: number;
 }
 
 export async function progresoDe(userId: string): Promise<Progreso> {
@@ -38,20 +44,41 @@ export async function progresoDe(userId: string): Promise<Progreso> {
       from progreso_diario where user_id = ${userId}
   `;
 
+  const [hoy] = await sql`
+    select coalesce(mensajes, 0)::int as mensajes
+      from progreso_diario
+     where user_id = ${userId} and fecha = current_date
+  `;
+
   const dias = await sql`
     select fecha::text, mensajes, segundos_hablados as segundos
       from progreso_diario
-     where user_id = ${userId} and fecha > current_date - 30
-     order by fecha asc
+     where user_id = ${userId} and fecha > current_date - 7
   `;
 
-  // Los que más se repiten primero: son los que hay que atacar
-  const errores = await sql`
-    select tipo, texto_error, correccion, veces
+  // Agrupado por tema: es lo que el alumno puede accionar.
+  const porTema = await sql`
+    select tema, sum(veces)::int as veces
       from errores_frecuentes
-     where user_id = ${userId}
+     where user_id = ${userId} and tema is not null
+     group by tema
+     order by veces desc
+     limit 5
+  `;
+
+  const ejemplos = await sql`
+    select tema, texto_error, correccion, veces
+      from errores_frecuentes
+     where user_id = ${userId} and tema is not null
      order by veces desc, ultima_vez_en desc
-     limit 8
+  `;
+
+  const [limpios] = await sql`
+    select count(*)::int as n
+      from mensajes
+     where user_id = ${userId} and rol = 'alumno'
+       and jsonb_typeof(correcciones) = 'array'
+       and jsonb_array_length(correcciones) = 0
   `;
 
   return {
@@ -61,16 +88,26 @@ export async function progresoDe(userId: string): Promise<Progreso> {
     totalSegundos: totales.segundos,
     erroresCorregidos: totales.errores,
     diasPracticados: totales.dias,
-    ultimos30: dias.map((d) => ({
+    mensajesHoy: hoy?.mensajes ?? 0,
+    turnosLimpios: limpios?.n ?? 0,
+    semana: dias.map((d) => ({
       fecha: d.fecha,
       mensajes: d.mensajes,
       segundos: d.segundos,
     })),
-    erroresFrecuentes: errores.map((e) => ({
-      tipo: e.tipo,
-      textoError: e.texto_error,
-      correccion: e.correccion,
-      veces: e.veces,
-    })),
+    temas: porTema.map((t) => {
+      const info = buscarTema(t.tema);
+      return {
+        clave: t.tema as ClaveTema,
+        titulo: info.titulo,
+        pista: info.pista,
+        ejemplo: info.ejemplo,
+        veces: t.veces,
+        ejemplos: ejemplos
+          .filter((e) => e.tema === t.tema)
+          .slice(0, 2)
+          .map((e) => ({ error: e.texto_error, correccion: e.correccion })),
+      };
+    }),
   };
 }

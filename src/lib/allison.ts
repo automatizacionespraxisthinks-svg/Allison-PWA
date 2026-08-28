@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { Correccion, Mensaje, Nivel } from "./tipos";
+import { CLAVES_TEMA } from "./temas";
 
 /**
  * El cerebro de Allison.
@@ -140,8 +141,14 @@ const ESQUEMA_RESPUESTA = {
             description: "One short line. Spanish for A1-A2, English from B1 up",
           },
           prioridad: { type: Type.STRING, enum: ["alta", "media", "baja"] },
+          tema: {
+            type: Type.STRING,
+            enum: [...CLAVES_TEMA],
+            description:
+              "Which recurring topic this mistake belongs to. Pick the closest one from the list; never invent a new label.",
+          },
         },
-        required: ["tipo", "original", "correccion", "explicacion", "prioridad"],
+        required: ["tipo", "original", "correccion", "explicacion", "prioridad", "tema"],
       },
     },
   },
