@@ -73,7 +73,18 @@ WHAT YOU RETURN
   errors included. Never fix it here. If the audio is unintelligible,
   return an empty string.
 - "respuesta": what you say back, in English (see length rules above).
-- "correcciones": the mistakes you heard. Empty array if there were none.`;
+- "correcciones": the mistakes you heard. Empty array if there were none.
+
+LANGUAGE OF THE EXPLANATIONS — this is a hard rule, not a preference.
+${
+  nivel === "A1" || nivel === "A2"
+    ? `This student is ${nivel}. Every "explicacion" MUST be written in
+SPANISH. A beginner who cannot follow English cannot follow an
+explanation in English either — the correction would be wasted.
+Example: "Para la edad se usa 'to be', no 'to have'."`
+    : `This student is ${nivel}. Every "explicacion" MUST be written in
+ENGLISH, short and plain.`
+}`;
 }
 
 const ESQUEMA_RESPUESTA = {
