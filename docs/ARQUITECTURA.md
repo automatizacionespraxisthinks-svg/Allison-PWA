@@ -204,3 +204,20 @@ datos con control de duplicados. n8n se entera después, solo para notificar.
 - Currículo: ¿material propio o se redacta desde cero?
 - Dominio, plazo objetivo, presupuesto mensual de operación
 - Términos y condiciones · política de tratamiento de datos · política de reembolso
+
+## 8. Modelo de Gemini
+
+| Entorno | Modelo | Costo por mensaje | Por qué |
+|---|---|---|---|
+| **Desarrollo / pruebas** | `gemini-2.5-flash-lite` | ~2 COP | Un tercio del costo; suficiente para validar el flujo |
+| **Producción (a evaluar)** | `gemini-2.5-flash` | ~6 COP | Mejor calidad pedagógica; soporte de audio confirmado |
+
+Se cambia con la variable `GEMINI_MODEL` en el `.env`. **No requiere tocar código.**
+
+Los Flash de generación 3.x (`gemini-3.5-flash`, `gemini-3.7-flash`) quedan descartados por
+ahora: cuestan de 3 a 5 veces más y la documentación de Google no confirma que acepten audio de
+entrada — sin eso, la corrección de pronunciación no funciona.
+
+**Pendiente de verificar con la clave de API:** consultar el endpoint de listado de modelos para
+confirmar cuáles aceptan audio de verdad. Las dos páginas de documentación consultadas no
+coinciden entre sí.
