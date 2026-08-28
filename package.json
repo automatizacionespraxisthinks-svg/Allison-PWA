@@ -10,7 +10,6 @@
     "migrar": "node --env-file=.env scripts/migrar.mjs",
     "probar:creditos": "node --env-file=.env scripts/probar-creditos.mjs",
     "limpiar:pruebas": "node --env-file=.env scripts/limpiar-pruebas.mjs",
-    "sembrar": "node --env-file=.env scripts/sembrar-demo.mjs",
     "probar:gemini": "node --env-file=.env scripts/probar-gemini.mjs",
     "evaluar": "node --env-file=.env scripts/evaluar-correcciones.mjs",
     "sembrar:colegio": "node --env-file=.env scripts/sembrar-colegio.mjs"
