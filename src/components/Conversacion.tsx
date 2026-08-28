@@ -5,6 +5,7 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { AvatarAllison } from "@/components/AvatarAllison";
 import { BotonGrabar } from "@/components/BotonGrabar";
+import { FinDePrueba, type LogroPrueba } from "@/components/FinDePrueba";
 import { Transcripcion } from "@/components/Transcripcion";
 import type { EstadoConversacion, Mensaje, Nivel } from "@/lib/tipos";
 
@@ -12,9 +13,17 @@ interface Props {
   nombre: string;
   nivel: Nivel;
   mensajesIniciales: number;
+  enPrueba: boolean;
+  logro?: LogroPrueba;
 }
 
-export function Conversacion({ nombre, nivel, mensajesIniciales }: Props) {
+export function Conversacion({
+  nombre,
+  nivel,
+  mensajesIniciales,
+  enPrueba,
+  logro,
+}: Props) {
   const [estado, setEstado] = useState<EstadoConversacion>("inactivo");
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [verTranscripcion, setVerTranscripcion] = useState(false);
@@ -102,7 +111,7 @@ export function Conversacion({ nombre, nivel, mensajesIniciales }: Props) {
               mensajesRestantes <= 10 ? "text-acento" : "text-texto-suave"
             }`}
           >
-            {mensajesRestantes} mensajes
+            {mensajesRestantes} {enPrueba ? "de prueba" : "mensajes"}
           </span>
           <Link
             href="/recargar"
@@ -178,19 +187,34 @@ export function Conversacion({ nombre, nivel, mensajesIniciales }: Props) {
         </p>
       )}
 
-      {sinMensajes && (
-        <div className="mb-4 rounded-xl border border-acento/30 bg-acento/10 p-4 text-center">
-          <p className="text-sm font-medium">Se te acabaron los mensajes.</p>
-          <p className="mt-1 text-sm text-texto-suave">
-            Recarga desde $4.000 y sigue practicando.
-          </p>
-          <Link
-            href="/recargar"
-            className="mt-3 inline-block rounded-lg bg-acento px-4 py-2 text-sm font-semibold text-white"
-          >
-            Recargar
+      {sinMensajes &&
+        (enPrueba && logro ? (
+          <div className="mb-4">
+            <FinDePrueba logro={logro} />
+          </div>
+        ) : (
+          <div className="mb-4 rounded-xl border border-acento/30 bg-acento/10 p-4 text-center">
+            <p className="text-sm font-medium">Se te acabaron los mensajes.</p>
+            <p className="mt-1 text-sm text-texto-suave">
+              Recarga desde $4.000 y sigue practicando.
+            </p>
+            <Link
+              href="/recargar"
+              className="mt-3 inline-block rounded-lg bg-acento px-4 py-2 text-sm font-semibold text-white"
+            >
+              Recargar
+            </Link>
+          </div>
+        ))}
+
+      {/* Aviso antes de que se acabe, no cuando ya no puede hacer nada */}
+      {enPrueba && mensajesRestantes > 0 && mensajesRestantes <= 5 && (
+        <p className="mb-3 rounded-xl bg-acento/10 p-3 text-center text-sm text-acento">
+          Te quedan {mensajesRestantes} de prueba.{" "}
+          <Link href="/recargar" className="font-semibold underline">
+            Recarga desde $4.000
           </Link>
-        </div>
+        </p>
       )}
 
       <div className="sticky bottom-0 flex justify-center bg-fondo pb-2 pt-4">

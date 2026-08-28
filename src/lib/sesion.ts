@@ -10,6 +10,8 @@ export interface Alumno {
   institucionId: string | null;
   mensajesPlan: number;
   mensajesRecarga: number;
+  /** Nunca ha pagado: sigue con los mensajes de regalo. */
+  enPrueba: boolean;
 }
 
 /**
@@ -25,7 +27,11 @@ export async function alumnoActual(): Promise<Alumno | null> {
   const [fila] = await sql`
     select u.id, u.nombre, u.nivel, u.rol, u.institucion_id,
            coalesce(s.mensajes_plan, 0)    as mensajes_plan,
-           coalesce(s.mensajes_recarga, 0) as mensajes_recarga
+           coalesce(s.mensajes_recarga, 0) as mensajes_recarga,
+           not exists (
+             select 1 from transacciones t
+              where t.user_id = u.id and t.estado = 'aprobada'
+           ) as en_prueba
       from users u
       left join saldos s on s.user_id = u.id
      where u.id = ${sesion.user.id} and u.activo
@@ -42,5 +48,6 @@ export async function alumnoActual(): Promise<Alumno | null> {
     institucionId: fila.institucion_id,
     mensajesPlan: fila.mensajes_plan,
     mensajesRecarga: fila.mensajes_recarga,
+    enPrueba: fila.en_prueba,
   };
 }
