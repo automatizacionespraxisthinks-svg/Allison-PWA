@@ -98,9 +98,21 @@ export async function POST(peticion: Request) {
       update conversaciones set ultima_actividad_en = now()
        where id = ${conversacionId}
     `;
+
+    // Racha, resumen del día y errores frecuentes
     await sql`
-      update users set ultima_practica_en = now() where id = ${alumno.id}
+      select registrar_practica(
+        ${alumno.id},
+        ${Math.round(duracionSeg)},
+        ${resultado.correcciones.length}
+      )
     `;
+
+    for (const c of resultado.correcciones) {
+      await sql`
+        select registrar_error(${alumno.id}, ${c.tipo}, ${c.original}, ${c.correccion})
+      `;
+    }
 
     const [saldo] = await sql`
       select mensajes_plan, mensajes_recarga from saldos where user_id = ${alumno.id}
