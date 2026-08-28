@@ -136,13 +136,14 @@ debe ser cuestión de minutos, sin tocar código.
 email. Exigirlo cierra la puerta al mercado principal, y los correos inventados producen cuentas
 irrecuperables.
 
-Por la misma razón, el usuario general puede registrarse con **correo, celular o un usuario
-inventado** — un solo campo que el sistema interpreta solo. El celular se normaliza a 10 dígitos
-(acepta +57, espacios y guiones) y debe empezar por 3.
+El usuario general **siempre da su correo** — es el único canal para devolverle el acceso si
+olvida la contraseña — y además puede registrar un **celular o un usuario** para entrar más
+cómodo. Al iniciar sesión, un solo campo acepta cualquiera de los tres y el sistema deduce cuál
+es. El celular se normaliza a 10 dígitos (acepta +57, espacios y guiones) y debe empezar por 3,
+para que el mismo número escrito distinto no cree cuentas duplicadas.
 
-> **Riesgo abierto:** quien se registre solo con usuario o celular **no tiene cómo recuperar la
-> contraseña**, porque no hay canal. Para celular la salida natural es un código por WhatsApp
-> desde n8n; para usuario suelto, no hay ninguna. Falta decidirlo antes de salir a producción.
+Restricción en base de datos: `publico_requiere_correo`. Los alumnos de colegio están exentos —
+no tienen correo, y su acceso lo restablece el coordinador.
 
 ### Rol coordinador
 

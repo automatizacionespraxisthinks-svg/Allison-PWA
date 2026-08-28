@@ -10,7 +10,8 @@ import { NIVELES, type Nivel } from "@/lib/tipos";
 export default function PaginaRegistro() {
   const router = useRouter();
   const [nombre, setNombre] = useState("");
-  const [identificador, setIdentificador] = useState("");
+  const [email, setEmail] = useState("");
+  const [acceso, setAcceso] = useState("");
   const [password, setPassword] = useState("");
   const [nivel, setNivel] = useState<Nivel>("A1");
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +25,7 @@ export default function PaginaRegistro() {
     const respuesta = await fetch("/api/registro", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nombre, identificador, password, nivel }),
+      body: JSON.stringify({ nombre, email, acceso, password, nivel }),
     });
     const datos = await respuesta.json();
 
@@ -36,7 +37,11 @@ export default function PaginaRegistro() {
 
     // Entrar directo: pedirle que inicie sesión después de registrarse
     // es un paso extra donde se pierde gente sin ninguna razón.
-    const entrada = await signIn("acceso", { identificador, password, redirect: false });
+    const entrada = await signIn("acceso", {
+      identificador: acceso || email,
+      password,
+      redirect: false,
+    });
     if (entrada?.error) {
       router.push("/entrar");
       return;
@@ -90,17 +95,35 @@ export default function PaginaRegistro() {
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Correo, celular o usuario</span>
+          <span className="text-sm font-medium">Correo</span>
           <input
-            value={identificador}
-            onChange={(e) => setIdentificador(e.target.value)}
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
-            autoComplete="username"
-            placeholder="tucorreo@ejemplo.com  ·  3001234567  ·  tu.usuario"
-            className="rounded-xl border border-borde bg-superficie px-4 py-3 outline-none placeholder:text-xs focus:border-primario"
+            autoComplete="email"
+            placeholder="tucorreo@ejemplo.com"
+            className="rounded-xl border border-borde bg-superficie px-4 py-3 outline-none focus:border-primario"
           />
           <span className="text-xs text-texto-suave">
-            Con esto entras después. Usa lo que se te haga más fácil de recordar.
+            Lo pedimos para devolverte el acceso si olvidas la contraseña.
+          </span>
+        </label>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="text-sm font-medium">
+            Celular o usuario{" "}
+            <span className="font-normal text-texto-suave">(opcional)</span>
+          </span>
+          <input
+            value={acceso}
+            onChange={(e) => setAcceso(e.target.value)}
+            autoComplete="off"
+            placeholder="3001234567  ·  tu.usuario"
+            className="rounded-xl border border-borde bg-superficie px-4 py-3 outline-none focus:border-primario"
+          />
+          <span className="text-xs text-texto-suave">
+            Para entrar sin escribir el correo cada vez.
           </span>
         </label>
 
