@@ -14,7 +14,7 @@ export default function PaginaEntrar() {
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
-  const [email, setEmail] = useState("");
+  const [identificador, setIdentificador] = useState("");
   const [password, setPassword] = useState("");
   const [codigo, setCodigo] = useState("");
   const [username, setUsername] = useState("");
@@ -27,13 +27,13 @@ export default function PaginaEntrar() {
 
     const resultado =
       modo === "correo"
-        ? await signIn("correo", { email, password, redirect: false })
+        ? await signIn("acceso", { identificador, password, redirect: false })
         : await signIn("colegio", { codigo, username, pin, redirect: false });
 
     if (resultado?.error) {
       setError(
         modo === "correo"
-          ? "Correo o contraseña incorrectos."
+          ? "Los datos no coinciden. Revisa e intenta de nuevo."
           : "Revisa el código del colegio, tu usuario y tu PIN."
       );
       setEnviando(false);
@@ -71,7 +71,7 @@ export default function PaginaEntrar() {
               modo === m ? "bg-superficie shadow-sm" : "text-texto-suave"
             }`}
           >
-            {m === "correo" ? "Con mi correo" : "Con código de colegio"}
+            {m === "correo" ? "Mi cuenta" : "Con código de colegio"}
           </button>
         ))}
       </div>
@@ -96,9 +96,11 @@ export default function PaginaEntrar() {
         {modo === "correo" ? (
           <>
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">Correo</span>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                     required autoComplete="email" className={campo} />
+              <span className="text-sm font-medium">Correo, celular o usuario</span>
+              <input value={identificador} onChange={(e) => setIdentificador(e.target.value)}
+                     required autoComplete="username"
+                     placeholder="Lo que usaste al registrarte"
+                     className={campo} />
             </label>
             <label className="flex flex-col gap-1.5">
               <span className="text-sm font-medium">Contraseña</span>

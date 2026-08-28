@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { sql } from "@/lib/db";
+import { describir, interpretar } from "@/lib/identificador";
 
 const Registro = z.object({
   nombre: z.string().trim().min(2, "Escribe tu nombre").max(80),
-  email: z.string().trim().toLowerCase().email("Ese correo no parece válido"),
+  identificador: z.string().trim().min(3, "Escribe tu correo, celular o usuario"),
   password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres").max(200),
   nivel: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
 });
@@ -21,12 +22,24 @@ export async function POST(peticion: Request) {
     );
   }
 
-  const { nombre, email, password, nivel } = datos.data;
+  const { nombre, password, nivel } = datos.data;
+  const id = interpretar(datos.data.identificador);
 
-  const [existe] = await sql`select id from users where email = ${email} limit 1`;
+  if (id.error) {
+    return NextResponse.json({ error: id.error }, { status: 400 });
+  }
+
+  const columna =
+    id.tipo === "email" ? "email" : id.tipo === "telefono" ? "telefono" : "username";
+
+  const [existe] = await sql`
+    select id from users
+     where ${sql(columna)} = ${id.valor} and institucion_id is null
+     limit 1
+  `;
   if (existe) {
     return NextResponse.json(
-      { error: "Ya hay una cuenta con ese correo. Inicia sesión." },
+      { error: `Ya hay una cuenta con ese ${describir(id.tipo)}. Inicia sesión.` },
       { status: 409 }
     );
   }
@@ -36,10 +49,15 @@ export async function POST(peticion: Request) {
 
   // Cuenta y saldo se crean juntos: un usuario sin fila de saldo no
   // podría hablar, y el error aparecería mucho después.
-  const id = await sql.begin(async (tx) => {
+  const nuevoId = await sql.begin(async (tx) => {
     const [u] = await tx`
-      insert into users (tipo_acceso, email, password_hash, nombre, nivel)
-      values ('email', ${email}, ${hash}, ${nombre}, ${nivel})
+      insert into users ${sql({
+        tipo_acceso: "email",
+        [columna]: id.valor,
+        password_hash: hash,
+        nombre,
+        nivel,
+      })}
       returning id
     `;
     await tx`
@@ -55,5 +73,8 @@ export async function POST(peticion: Request) {
     return u.id;
   });
 
-  return NextResponse.json({ ok: true, id, mensajes: gratis }, { status: 201 });
+  return NextResponse.json(
+    { ok: true, id: nuevoId, mensajes: gratis, tipo: id.tipo },
+    { status: 201 }
+  );
 }

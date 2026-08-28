@@ -128,13 +128,21 @@ debe ser cuestión de minutos, sin tocar código.
 
 | | Usuario general | Alumno de colegio |
 |---|---|---|
-| Ingresa con | Email/contraseña o Google | **Código del colegio + usuario + PIN de 4 dígitos** |
+| Ingresa con | **Correo, celular o usuario** + contraseña, o Google | **Código del colegio + usuario + PIN de 4 dígitos** |
 | Se crea | Él mismo | Por **carga masiva** de lista (CSV) que hace el colegio o nosotros |
 | Recupera acceso | Por correo | El **coordinador** restablece el PIN |
 
 **Por qué sin correo:** un estudiante de colegio público en Colombia con frecuencia no tiene
 email. Exigirlo cierra la puerta al mercado principal, y los correos inventados producen cuentas
 irrecuperables.
+
+Por la misma razón, el usuario general puede registrarse con **correo, celular o un usuario
+inventado** — un solo campo que el sistema interpreta solo. El celular se normaliza a 10 dígitos
+(acepta +57, espacios y guiones) y debe empezar por 3.
+
+> **Riesgo abierto:** quien se registre solo con usuario o celular **no tiene cómo recuperar la
+> contraseña**, porque no hay canal. Para celular la salida natural es un código por WhatsApp
+> desde n8n; para usuario suelto, no hay ninguna. Falta decidirlo antes de salir a producción.
 
 ### Rol coordinador
 

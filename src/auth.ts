@@ -3,12 +3,13 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { sql } from "@/lib/db";
+import { interpretar } from "@/lib/identificador";
 import type { Nivel } from "@/lib/tipos";
 
 /**
  * Autenticación con tres puertas de entrada:
  *
- *   1. Correo y contraseña       — público general
+ *   1. Correo, celular o usuario — público general
  *   2. Google                    — público general
  *   3. Colegio + usuario + PIN   — alumnos de institución
  *
@@ -52,18 +53,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
 
     Credentials({
-      id: "correo",
-      name: "Correo y contraseña",
-      credentials: { email: {}, password: {} },
+      id: "acceso",
+      name: "Correo, celular o usuario",
+      credentials: { identificador: {}, password: {} },
       async authorize(datos) {
-        const email = String(datos.email ?? "").trim().toLowerCase();
         const password = String(datos.password ?? "");
-        if (!email || !password) return null;
+        const id = interpretar(String(datos.identificador ?? ""));
+        if (!password || id.error || !id.valor) return null;
+
+        // Se busca por la columna que corresponda al tipo detectado.
+        const columna =
+          id.tipo === "email" ? "email" : id.tipo === "telefono" ? "telefono" : "username";
 
         const [u] = await sql`
           select id, nombre, nivel, rol, institucion_id, email, password_hash, activo
             from users
-           where email = ${email} and tipo_acceso = 'email'
+           where ${sql(columna)} = ${id.valor}
+             and tipo_acceso = 'email'
+             and institucion_id is null
            limit 1
         `;
         if (!u || !u.activo || !u.password_hash) return null;

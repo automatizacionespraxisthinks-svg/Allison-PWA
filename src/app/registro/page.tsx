@@ -10,7 +10,7 @@ import { NIVELES, type Nivel } from "@/lib/tipos";
 export default function PaginaRegistro() {
   const router = useRouter();
   const [nombre, setNombre] = useState("");
-  const [email, setEmail] = useState("");
+  const [identificador, setIdentificador] = useState("");
   const [password, setPassword] = useState("");
   const [nivel, setNivel] = useState<Nivel>("A1");
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +24,7 @@ export default function PaginaRegistro() {
     const respuesta = await fetch("/api/registro", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nombre, email, password, nivel }),
+      body: JSON.stringify({ nombre, identificador, password, nivel }),
     });
     const datos = await respuesta.json();
 
@@ -36,7 +36,7 @@ export default function PaginaRegistro() {
 
     // Entrar directo: pedirle que inicie sesión después de registrarse
     // es un paso extra donde se pierde gente sin ninguna razón.
-    const entrada = await signIn("correo", { email, password, redirect: false });
+    const entrada = await signIn("acceso", { identificador, password, redirect: false });
     if (entrada?.error) {
       router.push("/entrar");
       return;
@@ -74,7 +74,7 @@ export default function PaginaRegistro() {
       </button>
 
       <div className="flex items-center gap-3 text-sm text-texto-suave">
-        <span className="h-px flex-1 bg-borde" />o con tu correo<span className="h-px flex-1 bg-borde" />
+        <span className="h-px flex-1 bg-borde" />o crea tu cuenta<span className="h-px flex-1 bg-borde" />
       </div>
 
       <form onSubmit={crearCuenta} className="flex flex-col gap-4">
@@ -90,15 +90,18 @@ export default function PaginaRegistro() {
         </label>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Correo</span>
+          <span className="text-sm font-medium">Correo, celular o usuario</span>
           <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={identificador}
+            onChange={(e) => setIdentificador(e.target.value)}
             required
-            autoComplete="email"
-            className="rounded-xl border border-borde bg-superficie px-4 py-3 outline-none focus:border-primario"
+            autoComplete="username"
+            placeholder="tucorreo@ejemplo.com  ·  3001234567  ·  tu.usuario"
+            className="rounded-xl border border-borde bg-superficie px-4 py-3 outline-none placeholder:text-xs focus:border-primario"
           />
+          <span className="text-xs text-texto-suave">
+            Con esto entras después. Usa lo que se te haga más fácil de recordar.
+          </span>
         </label>
 
         <label className="flex flex-col gap-1.5">
