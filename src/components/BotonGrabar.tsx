@@ -16,6 +16,10 @@ interface Props {
  * Se corta solo a los 60 segundos: un mensaje es un turno, y sin tope
  * un alumno podría mandar audios de cinco minutos que cuestan lo mismo
  * que uno de diez segundos.
+ *
+ * La duración se calcula con la hora de inicio, no contando intervalos:
+ * un setInterval se desvía si el navegador se ocupa o la pestaña pasa a
+ * segundo plano, y esa duración es la que se cobra y se guarda.
  */
 export function BotonGrabar({ estado, onIniciar, onAudioListo, deshabilitado }: Props) {
   const [segundos, setSegundos] = useState(0);
@@ -24,6 +28,7 @@ export function BotonGrabar({ estado, onIniciar, onAudioListo, deshabilitado }: 
   const grabadora = useRef<MediaRecorder | null>(null);
   const trozos = useRef<Blob[]>([]);
   const intervalo = useRef<ReturnType<typeof setInterval> | null>(null);
+  const inicio = useRef<number>(0);
 
   const grabando = estado === "grabando";
 
@@ -61,35 +66,31 @@ export function BotonGrabar({ estado, onIniciar, onAudioListo, deshabilitado }: 
         if (e.data.size > 0) trozos.current.push(e.data);
       };
       mr.onstop = () => {
+        const duracion = Math.min(
+          AUDIO_MAX_SEGUNDOS,
+          Math.round((Date.now() - inicio.current) / 1000)
+        );
         const audio = new Blob(trozos.current, { type: mr.mimeType || "audio/webm" });
-        const duracion = segundosRef.current;
         limpiar();
         setSegundos(0);
         if (duracion >= 1) onAudioListo(audio, duracion);
       };
 
       grabadora.current = mr;
+      inicio.current = Date.now();
       mr.start();
       onIniciar();
 
       setSegundos(0);
       intervalo.current = setInterval(() => {
-        setSegundos((s) => {
-          const siguiente = s + 1;
-          if (siguiente >= AUDIO_MAX_SEGUNDOS) detener();
-          return siguiente;
-        });
-      }, 1000);
+        const transcurridos = Math.round((Date.now() - inicio.current) / 1000);
+        setSegundos(transcurridos);
+        if (transcurridos >= AUDIO_MAX_SEGUNDOS) detener();
+      }, 250);
     } catch {
       setError("No pudimos usar el micrófono. Revisa los permisos del navegador.");
     }
   }, [detener, limpiar, onIniciar, onAudioListo]);
-
-  // Espejo del contador para leerlo dentro de onstop sin recrear la grabadora
-  const segundosRef = useRef(0);
-  useEffect(() => {
-    segundosRef.current = segundos;
-  }, [segundos]);
 
   useEffect(() => limpiar, [limpiar]);
 

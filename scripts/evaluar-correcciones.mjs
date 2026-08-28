@@ -8,6 +8,12 @@
  * También incluye frases CORRECTAS, para detectar el problema contrario:
  * que el modelo invente errores donde no los hay.
  *
+ * Las aserciones son deliberadamente TOLERANTES en la forma y ESTRICTAS
+ * en el fondo. El modelo puede devolver "is → are" o "people is → people
+ * are": ambas son correctas, y una prueba que exija el texto literal
+ * falla al azar. Una prueba que falla al azar se termina ignorando, y
+ * ese día deja de atrapar los errores de verdad.
+ *
  *   node --env-file=.env scripts/evaluar-correcciones.mjs [modelo]
  */
 import { execFileSync } from "node:child_process";
@@ -20,15 +26,17 @@ const modelo = process.argv[2];
 if (modelo) process.env.GEMINI_MODEL = modelo;
 
 const CASOS = [
-  // frase dicha            | debe aparecer en la corrección
-  { dice: "I have 25 years old", espera: "I am 25" },
-  { dice: "Yesterday I go to the park", espera: "went" },
-  { dice: "My friend she is more tall than me", espera: "taller" },
-  { dice: "I no have money", espera: "do not have|don't have|dont have" },
-  { dice: "I am agree with you", espera: "I agree" },
-  { dice: "She have a car", espera: "She has|she has" },
-  { dice: "The people is very happy", espera: "people are" },
-  // Controles: NO debe haber correcciones
+  // `espera` se busca en el conjunto de correcciones Y en la respuesta
+  // hablada: da igual cómo las reparta el modelo mientras la forma
+  // correcta aparezca.
+  { dice: "I have 25 years old", espera: /\bam\b.*\b25\b|\b25\b.*\bam\b/i },
+  { dice: "Yesterday I go to the park", espera: /\bwent\b/i },
+  { dice: "My friend she is more tall than me", espera: /\btaller\b/i },
+  { dice: "I no have money", espera: /\bdon'?t have\b|\bdo not have\b/i },
+  { dice: "I am agree with you", espera: /\bI agree\b/i },
+  { dice: "She have a car", espera: /\bhas\b/i },
+  { dice: "The people is very happy", espera: /\bare\b/i },
+  // Controles: frases correctas. Aquí NO debe corregir nada.
   { dice: "I went to the park yesterday with my family", espera: null },
   { dice: "My sister is taller than me and she likes music", espera: null },
 ];
@@ -44,7 +52,7 @@ $s.SetOutputToNull(); $s.Dispose()`;
   execFileSync("powershell", ["-NoProfile", "-Command", ps], { stdio: "ignore" });
 }
 
-console.log(`Modelo: ${process.env.GEMINI_MODEL}\n`);
+console.log(`Modelo: ${process.env.GEMINI_MODEL}  ·  temperatura 0\n`);
 
 let fallos = 0;
 const ruta = join(tmpdir(), "allison-eval.wav");
@@ -57,27 +65,39 @@ for (const caso of CASOS) {
     audioBase64: audio.toString("base64"),
     mimeType: "audio/wav",
     nivel: "A2",
+    temperatura: 0, // reproducible
   });
 
-  const texto = r.correcciones.map((c) => c.correccion).join(" | ");
+  const correcciones = r.correcciones
+    .map((c) => `${c.original} -> ${c.correccion}`)
+    .join(" | ");
+
   let ok;
   let detalle;
 
   if (caso.espera === null) {
     ok = r.correcciones.length === 0;
-    detalle = ok ? "sin correcciones, como debe ser" : `INVENTÓ: ${texto}`;
+    detalle = ok ? "sin correcciones, como debe ser" : `INVENTÓ: ${correcciones}`;
   } else {
-    ok = new RegExp(caso.espera, "i").test(texto);
-    detalle = texto || "no corrigió nada";
+    // Vale si la forma correcta aparece en las correcciones o en lo que
+    // Allison dijo: lo que importa es que el alumno la reciba.
+    ok = caso.espera.test(`${correcciones} ${r.respuesta}`);
+    detalle = correcciones || "no corrigió nada";
   }
 
-  // Red flags que no dependen del caso
+  // Fallos que no dependen del caso
   const identicas = r.correcciones.filter(
     (c) => c.original.trim().toLowerCase() === c.correccion.trim().toLowerCase()
   );
   if (identicas.length > 0) {
     ok = false;
     detalle += `  [original = corrección: "${identicas[0].original}"]`;
+  }
+
+  const sinTema = r.correcciones.filter((c) => !c.tema);
+  if (sinTema.length > 0) {
+    ok = false;
+    detalle += "  [corrección sin tema: no agruparía en el panel]";
   }
 
   if (!ok) fallos++;

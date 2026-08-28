@@ -26,7 +26,9 @@ declare module "next-auth" {
       nivel: Nivel;
       rol: "estudiante" | "coordinador" | "admin";
       institucionId: string | null;
-      email?: string | null;
+      /** Nombre propio en vez de "email": la librería lo declara
+       *  obligatorio, y un alumno de colegio legítimamente no tiene. */
+      correo: string | null;
     };
   }
 }
@@ -162,7 +164,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.nivel = u.nivel;
           token.rol = u.rol;
           token.institucionId = u.institucion_id;
-          token.email = u.email;
+          token.correo = u.email;
         }
       }
       return token;
@@ -170,12 +172,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
     async session({ session, token }) {
       session.user = {
+        // `email` y `emailVerified` los exige el tipo del adaptador de la
+        // librería, que aquí no se usa: la sesión es JWT. La aplicación
+        // lee `correo`, que sí admite null para los alumnos de colegio.
+        email: (token.correo as string | undefined) ?? "",
+        emailVerified: null,
+
         id: token.uid as string,
         nombre: token.nombre as string,
         nivel: token.nivel as Nivel,
         rol: token.rol as "estudiante" | "coordinador" | "admin",
         institucionId: (token.institucionId as string | null) ?? null,
-        email: (token.email as string | null) ?? null,
+        // Los alumnos de colegio no tienen correo: null es un valor válido.
+        correo: (token.correo as string | undefined) ?? null,
       };
       return session;
     },

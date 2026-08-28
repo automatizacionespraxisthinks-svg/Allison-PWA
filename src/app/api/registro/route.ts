@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { sql } from "@/lib/db";
+import { limitar, origenDe } from "@/lib/limite";
 import { interpretar } from "@/lib/identificador";
 
 /** Convierte lo que llegue en texto, para dar mensajes en español y no
@@ -23,7 +24,18 @@ const Registro = z.object({
   nivel: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
 });
 
+/** Cuentas nuevas permitidas desde una misma IP en una hora. */
+const REGISTROS_POR_HORA = 5;
+
 export async function POST(peticion: Request) {
+  const limite = limitar(`registro:${origenDe(peticion)}`, REGISTROS_POR_HORA, 3600);
+  if (!limite.permitido) {
+    return NextResponse.json(
+      { error: "Demasiadas cuentas nuevas desde aquí. Intenta más tarde." },
+      { status: 429, headers: { "Retry-After": String(limite.esperaSeg) } }
+    );
+  }
+
   const cuerpo = await peticion.json().catch(() => null);
   const datos = Registro.safeParse(cuerpo);
 

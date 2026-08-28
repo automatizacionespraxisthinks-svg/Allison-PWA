@@ -16,7 +16,6 @@ const crear = () =>
   });
 
 declare global {
-  // eslint-disable-next-line no-var
   var __sql: ReturnType<typeof crear> | undefined;
 }
 

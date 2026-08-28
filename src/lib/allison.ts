@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import type { Correccion, Mensaje, Nivel } from "./tipos";
-import { CLAVES_TEMA } from "./temas";
+import type { Correccion, Mensaje, Nivel } from "./tipos.ts";
+import { CLAVES_TEMA } from "./temas.ts";
 
 /**
  * El cerebro de Allison.
@@ -169,8 +169,17 @@ export async function conversar(opciones: {
   nivel: Nivel;
   historial?: Mensaje[];
   tema?: string;
+  /** 0 para evaluaciones reproducibles; 0.8 en conversación real. */
+  temperatura?: number;
 }): Promise<RespuestaAllison> {
-  const { audioBase64, mimeType, nivel, historial = [], tema } = opciones;
+  const {
+    audioBase64,
+    mimeType,
+    nivel,
+    historial = [],
+    tema,
+    temperatura = 0.8,
+  } = opciones;
 
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -191,7 +200,7 @@ export async function conversar(opciones: {
       systemInstruction: construirInstruccion(nivel, tema),
       responseMimeType: "application/json",
       responseSchema: ESQUEMA_RESPUESTA,
-      temperature: 0.8,
+      temperature: temperatura,
     },
   });
 

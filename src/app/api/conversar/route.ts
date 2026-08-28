@@ -1,15 +1,31 @@
 import { NextResponse } from "next/server";
 import { conversar } from "@/lib/allison";
 import { sql } from "@/lib/db";
+import { limitar } from "@/lib/limite";
 import { alumnoActual } from "@/lib/sesion";
 import { AUDIO_MAX_SEGUNDOS } from "@/lib/tipos";
 
 const MAX_BYTES = 8 * 1024 * 1024; // 60 s de opus caben de sobra
 
+/**
+ * Turnos por minuto y por alumno. Una conversación real ronda uno cada
+ * 45 segundos; 20 deja margen de sobra a quien hable rápido y corta en
+ * seco a un script.
+ */
+const TURNOS_POR_MINUTO = 20;
+
 export async function POST(peticion: Request) {
   const alumno = await alumnoActual();
   if (!alumno) {
     return NextResponse.json({ error: "Sin sesión" }, { status: 401 });
+  }
+
+  const limite = limitar(`conversar:${alumno.id}`, TURNOS_POR_MINUTO, 60);
+  if (!limite.permitido) {
+    return NextResponse.json(
+      { error: "muy_rapido", mensaje: "Vas muy rápido. Espera un momento." },
+      { status: 429, headers: { "Retry-After": String(limite.esperaSeg) } }
+    );
   }
 
   const formulario = await peticion.formData();
@@ -83,7 +99,7 @@ export async function POST(peticion: Request) {
          tokens_entrada, tokens_salida)
       values
         (${conversacionId}, ${alumno.id}, 'alumno', ${resultado.transcripcion},
-         ${duracionSeg}, ${sql.json(resultado.correcciones)},
+         ${duracionSeg}, ${sql.json(resultado.correcciones as unknown as never)},
          ${resultado.tokensEntrada}, ${resultado.tokensSalida})
       returning id, creado_en
     `;
