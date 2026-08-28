@@ -1,5 +1,5 @@
 import { sql } from "./db";
-import { tema as buscarTema, type ClaveTema } from "./temas";
+import { CLAVES_TEMA, TEMAS, type ClaveTema } from "./temas";
 
 export interface DiaPracticado {
   fecha: string;
@@ -7,28 +7,46 @@ export interface DiaPracticado {
   segundos: number;
 }
 
-export interface TemaFallado {
+/**
+ * El estado de un tema para este alumno.
+ *
+ * La clave del modelo: un error no se queda marcado para siempre. Si el
+ * alumno lleva varios turnos sin repetirlo, el tema sube de estado. Así
+ * la pantalla puede decir "ya lo superaste", que es lo único que
+ * convence a alguien de seguir practicando.
+ */
+export type EstadoTema = "dominado" | "mejorando" | "atraviesa" | "sin_datos";
+
+export interface TemaAlumno {
   clave: ClaveTema;
   titulo: string;
   pista: string;
   ejemplo: string;
+  estado: EstadoTema;
   veces: number;
-  ejemplos: { error: string; correccion: string }[];
+  /** Turnos hablados desde la última vez que cometió este error. */
+  turnosLimpios: number;
+  ultimoEjemplo?: { error: string; correccion: string };
 }
 
 export interface Progreso {
   rachaDias: number;
   practicoHoy: boolean;
+  mensajesHoy: number;
   totalMensajes: number;
   totalSegundos: number;
-  erroresCorregidos: number;
   diasPracticados: number;
-  mensajesHoy: number;
   semana: DiaPracticado[];
-  temas: TemaFallado[];
-  /** Aciertos: turnos sin ninguna corrección. */
-  turnosLimpios: number;
+  temas: TemaAlumno[];
+  dominados: number;
+  enJuego: number;
+  /** El tema a trabajar hoy: el que más falla, o el más cerca de dominar. */
+  mision?: TemaAlumno;
 }
+
+/** Turnos sin repetir el error que hacen falta para considerarlo superado. */
+const TURNOS_PARA_DOMINAR = 10;
+const TURNOS_PARA_MEJORANDO = 4;
 
 export async function progresoDe(userId: string): Promise<Progreso> {
   const [usuario] = await sql`
@@ -37,10 +55,9 @@ export async function progresoDe(userId: string): Promise<Progreso> {
   `;
 
   const [totales] = await sql`
-    select coalesce(sum(mensajes), 0)::int           as mensajes,
-           coalesce(sum(segundos_hablados), 0)::int  as segundos,
-           coalesce(sum(errores_corregidos), 0)::int as errores,
-           count(*)::int                             as dias
+    select coalesce(sum(mensajes), 0)::int          as mensajes,
+           coalesce(sum(segundos_hablados), 0)::int as segundos,
+           count(*)::int                            as dias
       from progreso_diario where user_id = ${userId}
   `;
 
@@ -56,58 +73,94 @@ export async function progresoDe(userId: string): Promise<Progreso> {
      where user_id = ${userId} and fecha > current_date - 7
   `;
 
-  // Agrupado por tema: es lo que el alumno puede accionar.
-  const porTema = await sql`
-    select tema, sum(veces)::int as veces
-      from errores_frecuentes
-     where user_id = ${userId} and tema is not null
-     group by tema
-     order by veces desc
-     limit 5
+  // Por cada tema: cuántas veces falló y cuántos turnos lleva sin repetirlo.
+  const filas = await sql`
+    with agrupado as (
+      select tema,
+             sum(veces)::int    as veces,
+             max(ultima_vez_en) as ultima
+        from errores_frecuentes
+       where user_id = ${userId} and tema is not null
+       group by tema
+    )
+    select a.tema, a.veces,
+           (select count(*)
+              from mensajes m
+             where m.user_id = ${userId}
+               and m.rol = 'alumno'
+               and m.creado_en > a.ultima)::int as turnos_limpios,
+           (select e.texto_error || ' ||| ' || e.correccion
+              from errores_frecuentes e
+             where e.user_id = ${userId} and e.tema = a.tema
+             order by e.ultima_vez_en desc limit 1) as ejemplo
+      from agrupado a
   `;
 
-  const ejemplos = await sql`
-    select tema, texto_error, correccion, veces
-      from errores_frecuentes
-     where user_id = ${userId} and tema is not null
-     order by veces desc, ultima_vez_en desc
-  `;
+  const porClave = new Map(filas.map((f) => [f.tema as string, f]));
 
-  const [limpios] = await sql`
-    select count(*)::int as n
-      from mensajes
-     where user_id = ${userId} and rol = 'alumno'
-       and jsonb_typeof(correcciones) = 'array'
-       and jsonb_array_length(correcciones) = 0
-  `;
+  const temas: TemaAlumno[] = CLAVES_TEMA.map((clave) => {
+    const info = TEMAS[clave];
+    const f = porClave.get(clave);
+
+    if (!f) {
+      return {
+        clave,
+        titulo: info.titulo,
+        pista: info.pista,
+        ejemplo: info.ejemplo,
+        estado: "sin_datos",
+        veces: 0,
+        turnosLimpios: 0,
+      };
+    }
+
+    const limpios = f.turnos_limpios as number;
+    const estado: EstadoTema =
+      limpios >= TURNOS_PARA_DOMINAR
+        ? "dominado"
+        : limpios >= TURNOS_PARA_MEJORANDO
+          ? "mejorando"
+          : "atraviesa";
+
+    const [error, correccion] = String(f.ejemplo ?? "").split(" ||| ");
+
+    return {
+      clave,
+      titulo: info.titulo,
+      pista: info.pista,
+      ejemplo: info.ejemplo,
+      estado,
+      veces: f.veces as number,
+      turnosLimpios: limpios,
+      ultimoEjemplo: error ? { error, correccion: correccion ?? "" } : undefined,
+    };
+  });
+
+  const atraviesan = temas.filter((t) => t.estado === "atraviesa");
+  const mejorando = temas.filter((t) => t.estado === "mejorando");
+
+  // Si nada está fallando, la misión pasa a ser rematar el tema que más
+  // le costó. Una pantalla sin siguiente paso deja al alumno sin nada
+  // que hacer justo cuando va bien.
+  const mision =
+    [...atraviesan].sort((a, b) => b.veces - a.veces)[0] ??
+    [...mejorando].sort((a, b) => b.turnosLimpios - a.turnosLimpios)[0];
 
   return {
     rachaDias: usuario?.racha_dias ?? 0,
     practicoHoy: usuario?.practico_hoy ?? false,
+    mensajesHoy: hoy?.mensajes ?? 0,
     totalMensajes: totales.mensajes,
     totalSegundos: totales.segundos,
-    erroresCorregidos: totales.errores,
     diasPracticados: totales.dias,
-    mensajesHoy: hoy?.mensajes ?? 0,
-    turnosLimpios: limpios?.n ?? 0,
     semana: dias.map((d) => ({
       fecha: d.fecha,
       mensajes: d.mensajes,
       segundos: d.segundos,
     })),
-    temas: porTema.map((t) => {
-      const info = buscarTema(t.tema);
-      return {
-        clave: t.tema as ClaveTema,
-        titulo: info.titulo,
-        pista: info.pista,
-        ejemplo: info.ejemplo,
-        veces: t.veces,
-        ejemplos: ejemplos
-          .filter((e) => e.tema === t.tema)
-          .slice(0, 2)
-          .map((e) => ({ error: e.texto_error, correccion: e.correccion })),
-      };
-    }),
+    temas,
+    dominados: temas.filter((t) => t.estado === "dominado").length,
+    enJuego: temas.filter((t) => t.estado !== "sin_datos").length,
+    mision,
   };
 }
