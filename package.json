@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrar": "node --env-file=.env scripts/migrar.mjs",
+    "probar:creditos": "node --env-file=.env scripts/probar-creditos.mjs",
+    "limpiar:pruebas": "node --env-file=.env scripts/limpiar-pruebas.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",
