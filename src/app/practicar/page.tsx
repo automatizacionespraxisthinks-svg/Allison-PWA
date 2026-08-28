@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Conversacion } from "@/components/Conversacion";
 import { progresoDe } from "@/lib/progreso";
 import { alumnoActual } from "@/lib/sesion";
+import { PRUEBA_AL_VERIFICAR } from "@/lib/verificacion";
 
 export default async function PaginaPracticar() {
   const alumno = await alumnoActual();
@@ -17,6 +18,8 @@ export default async function PaginaPracticar() {
       nivel={alumno.nivel}
       mensajesIniciales={alumno.mensajesPlan + alumno.mensajesRecarga}
       enPrueba={alumno.enPrueba}
+      faltaVerificar={alumno.faltaVerificar}
+      mensajesPorVerificar={PRUEBA_AL_VERIFICAR}
       logro={
         p
           ? {

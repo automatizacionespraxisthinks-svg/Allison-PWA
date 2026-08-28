@@ -5,6 +5,7 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { AvatarAllison } from "@/components/AvatarAllison";
 import { BotonGrabar } from "@/components/BotonGrabar";
+import { AvisoVerificar } from "@/components/AvisoVerificar";
 import { FinDePrueba, type LogroPrueba } from "@/components/FinDePrueba";
 import { Transcripcion } from "@/components/Transcripcion";
 import type { EstadoConversacion, Mensaje, Nivel } from "@/lib/tipos";
@@ -14,6 +15,10 @@ interface Props {
   nivel: Nivel;
   mensajesIniciales: number;
   enPrueba: boolean;
+  faltaVerificar: boolean;
+  /** Viene del servidor: las variables sin NEXT_PUBLIC_ no existen aquí,
+   *  y un número escrito a mano quedaría mintiendo si cambia el .env. */
+  mensajesPorVerificar: number;
   logro?: LogroPrueba;
 }
 
@@ -22,6 +27,8 @@ export function Conversacion({
   nivel,
   mensajesIniciales,
   enPrueba,
+  faltaVerificar,
+  mensajesPorVerificar,
   logro,
 }: Props) {
   const [estado, setEstado] = useState<EstadoConversacion>("inactivo");
@@ -206,6 +213,8 @@ export function Conversacion({
             </Link>
           </div>
         ))}
+
+      {faltaVerificar && <AvisoVerificar mensajes={mensajesPorVerificar} />}
 
       {/* Aviso antes de que se acabe, no cuando ya no puede hacer nada */}
       {enPrueba && mensajesRestantes > 0 && mensajesRestantes <= 5 && (

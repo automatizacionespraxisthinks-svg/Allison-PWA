@@ -4,6 +4,7 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { sql } from "@/lib/db";
 import { interpretar } from "@/lib/identificador";
+import { PRUEBA_TOTAL } from "@/lib/verificacion";
 import type { Nivel } from "@/lib/tipos";
 
 /**
@@ -139,10 +140,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                   ${profile.name ?? "Estudiante"}, 'A1', now())
           returning id
         `;
+        // Google ya verificó el correo: no hay nada que confirmar, así
+        // que la prueba se entrega completa de una vez.
         await sql`
           insert into saldos (user_id, mensajes_recarga)
-          values (${nuevo.id}, ${Number(process.env.MENSAJES_PRUEBA_GRATIS ?? 20)})
+          values (${nuevo.id}, ${PRUEBA_TOTAL})
           on conflict (user_id) do nothing
+        `;
+        await sql`
+          insert into movimientos_credito
+            (user_id, tipo, bolsa, cantidad, saldo_plan_despues,
+             saldo_recarga_despues, nota)
+          values
+            (${nuevo.id}, 'bono', 'recarga', ${PRUEBA_TOTAL}, 0, ${PRUEBA_TOTAL},
+             'Prueba completa: Google ya verificó el correo')
         `;
       }
       return true;

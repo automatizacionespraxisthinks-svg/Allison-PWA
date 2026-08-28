@@ -4,6 +4,7 @@ import { z } from "zod";
 import { sql } from "@/lib/db";
 import { limitar, origenDe } from "@/lib/limite";
 import { interpretar } from "@/lib/identificador";
+import { enviarVerificacion, PRUEBA_INICIAL } from "@/lib/verificacion";
 
 /** Convierte lo que llegue en texto, para dar mensajes en español y no
  *  el error técnico de la librería cuando falta un campo. */
@@ -82,7 +83,8 @@ export async function POST(peticion: Request) {
   }
 
   const hash = await bcrypt.hash(password, 12);
-  const gratis = Number(process.env.MENSAJES_PRUEBA_GRATIS ?? 20);
+  // Solo la primera parte de la prueba. El resto llega al confirmar.
+  const gratis = PRUEBA_INICIAL;
 
   // Cuenta y saldo se crean juntos: un usuario sin fila de saldo no
   // podría hablar, y el error aparecería mucho después.
@@ -110,5 +112,17 @@ export async function POST(peticion: Request) {
     return u.id;
   });
 
-  return NextResponse.json({ ok: true, id: nuevoId, mensajes: gratis }, { status: 201 });
+  // El correo se manda después de crear la cuenta: si el proveedor
+  // falla, el alumno ya tiene cuenta y puede pedirlo de nuevo.
+  const { enviado } = await enviarVerificacion({
+    userId: nuevoId,
+    nombre,
+    email,
+    origen: new URL(peticion.url).origin,
+  });
+
+  return NextResponse.json(
+    { ok: true, id: nuevoId, mensajes: gratis, correoEnviado: enviado },
+    { status: 201 }
+  );
 }
