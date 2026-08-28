@@ -1,14 +1,19 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function PaginaInicio() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col items-center justify-center gap-8 px-6 text-center">
-      <div
-        role="img"
-        aria-label="Allison"
-        className="size-32 rounded-full border-4 border-borde bg-primario-suave bg-cover bg-center"
-        style={{ backgroundImage: "url('/allison.jpg')" }}
-      />
+      <div className="relative size-32 overflow-hidden rounded-full border-4 border-borde bg-primario-suave">
+        <Image
+          src="/allison.png"
+          alt="Allison"
+          fill
+          sizes="128px"
+          className="object-cover"
+          priority
+        />
+      </div>
 
       <div>
         <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">

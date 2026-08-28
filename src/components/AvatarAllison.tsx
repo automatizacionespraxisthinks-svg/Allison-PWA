@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { EstadoConversacion } from "@/lib/tipos";
 
 /**
@@ -29,19 +30,20 @@ export function AvatarAllison({ estado }: { estado: EstadoConversacion }) {
         />
       )}
 
-      {/*
-        Usamos imagen de fondo y no <Image>: si el archivo todavía no está,
-        se ve un degradado limpio en vez de un ícono roto. Cuando llegue la
-        foto definitiva basta con dejarla en public/allison.jpg.
-      */}
       <div
-        role="img"
-        aria-label="Allison, tu profesora de inglés"
-        className={`relative size-40 rounded-full border-4 bg-primario-suave bg-cover bg-center transition-colors duration-300 sm:size-52 ${
+        className={`relative size-40 overflow-hidden rounded-full border-4 bg-primario-suave transition-colors duration-300 sm:size-52 ${
           hablando ? "border-primario" : "border-borde"
         }`}
-        style={{ backgroundImage: "url('/allison.jpg')" }}
-      />
+      >
+        <Image
+          src="/allison.png"
+          alt="Allison, tu profesora de inglés"
+          fill
+          sizes="(max-width: 640px) 160px, 208px"
+          className="object-cover"
+          priority
+        />
+      </div>
 
       {/* Tres puntos mientras piensa */}
       {procesando && (
