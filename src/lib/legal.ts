@@ -17,7 +17,7 @@
  */
 export const EMPRESA = {
   razonSocial: "PRAXIS - THINKS S.A.S.",
-  nit: "90533185",
+  nit: "901533185-1",
   domicilio: "Duitama, Boyacá, Colombia",
   correo: "praxisthinks@gmail.com",
   telefono: "311 731 8700",
