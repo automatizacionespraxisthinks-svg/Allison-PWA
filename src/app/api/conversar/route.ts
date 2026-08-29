@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { conversar } from "@/lib/allison";
 import { sql } from "@/lib/db";
 import { limitar } from "@/lib/limite";
+import { conversacionActiva } from "@/lib/conversaciones";
+import { progresoDe } from "@/lib/progreso";
 import { alumnoActual } from "@/lib/sesion";
 import { AUDIO_MAX_SEGUNDOS } from "@/lib/tipos";
 
@@ -68,28 +70,35 @@ export async function POST(peticion: Request) {
     // 2. Historial de la conversación, para que Allison recuerde el hilo
     let historial: { rol: "alumno" | "allison"; texto: string }[] = [];
 
-    if (conversacionId) {
-      const filas = await sql`
-        select rol, texto from mensajes
-         where conversacion_id = ${conversacionId}
-         order by creado_en asc limit 24
-      `;
-      historial = filas.map((f) => ({ rol: f.rol, texto: f.texto }));
-    } else {
-      const [nueva] = await sql`
-        insert into conversaciones (user_id, modo, nivel_al_iniciar)
-        values (${alumno.id}, 'libre', ${alumno.nivel})
-        returning id
-      `;
-      conversacionId = nueva.id;
-    }
+    conversacionId =
+      conversacionId ?? (await conversacionActiva(alumno.id, alumno.nivel));
 
-    // 3. Allison escucha el audio y responde
+    const filas = await sql`
+      select rol, texto from mensajes
+       where conversacion_id = ${conversacionId}
+       order by creado_en desc limit 24
+    `;
+    historial = filas.reverse().map((f) => ({ rol: f.rol, texto: f.texto }));
+
+    // 3. Allison escucha el audio y responde, sabiendo con quién habla
+    //    y qué temas trae abiertos
+    const progreso = await progresoDe(alumno.id);
     const buffer = Buffer.from(await audio.arrayBuffer());
     const resultado = await conversar({
       audioBase64: buffer.toString("base64"),
       mimeType: audio.type || "audio/webm",
-      nivel: alumno.nivel,
+      alumno: {
+        nombre: alumno.nombre,
+        nivel: alumno.nivel,
+        temasAbiertos: progreso.temas
+          .filter((t) => t.estado === "atraviesa" || t.estado === "mejorando")
+          .slice(0, 4)
+          .map((t) => t.titulo),
+        temasDominados: progreso.temas
+          .filter((t) => t.estado === "dominado")
+          .slice(0, 4)
+          .map((t) => t.titulo),
+      },
       historial: historial.map((h, i) => ({
         id: String(i),
         rol: h.rol,

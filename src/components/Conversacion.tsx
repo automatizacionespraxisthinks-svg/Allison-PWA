@@ -5,7 +5,10 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { AvatarAllison } from "@/components/AvatarAllison";
 import { BotonGrabar } from "@/components/BotonGrabar";
+import { AyudaTurno } from "@/components/AyudaTurno";
+import { Bienvenida } from "@/components/Bienvenida";
 import { AvisoVerificar } from "@/components/AvisoVerificar";
+import { SelectorNivel } from "@/components/SelectorNivel";
 import { FinDePrueba, type LogroPrueba } from "@/components/FinDePrueba";
 import { Transcripcion } from "@/components/Transcripcion";
 import type { EstadoConversacion, Mensaje, Nivel } from "@/lib/tipos";
@@ -14,6 +17,10 @@ interface Props {
   nombre: string;
   nivel: Nivel;
   mensajesIniciales: number;
+  /** El hilo que ya existía: el alumno vuelve a su conversación, no a
+   *  una pantalla en blanco. */
+  conversacionId: string;
+  historial: Mensaje[];
   enPrueba: boolean;
   faltaVerificar: boolean;
   /** Viene del servidor: las variables sin NEXT_PUBLIC_ no existen aquí,
@@ -28,6 +35,8 @@ export function Conversacion({
   nombre,
   nivel,
   mensajesIniciales,
+  conversacionId: idInicial,
+  historial,
   enPrueba,
   faltaVerificar,
   mensajesPorVerificar,
@@ -36,12 +45,13 @@ export function Conversacion({
   logro,
 }: Props) {
   const [estado, setEstado] = useState<EstadoConversacion>("inactivo");
-  const [mensajes, setMensajes] = useState<Mensaje[]>([]);
+  const [mensajes, setMensajes] = useState<Mensaje[]>(historial);
   const [verTranscripcion, setVerTranscripcion] = useState(false);
   const [mensajesRestantes, setMensajesRestantes] = useState(mensajesIniciales);
   const [error, setError] = useState<string | null>(null);
 
-  const conversacionId = useRef<string | null>(null);
+  const conversacionId = useRef<string | null>(idInicial);
+  const ultimoAudio = useRef<SpeechSynthesisUtterance | null>(null);
   const finRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -64,6 +74,7 @@ export function Conversacion({
       voz.rate = nivel === "A1" ? 0.8 : nivel === "A2" ? 0.9 : 1;
       voz.onend = () => resolver();
       voz.onerror = () => resolver();
+      ultimoAudio.current = voz;
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(voz);
     });
@@ -104,15 +115,27 @@ export function Conversacion({
     }
   }
 
+  /** Vuelve a decir lo último, sin gastar un mensaje. */
+  function repetir() {
+    const ultimo = mensajes[mensajes.length - 1];
+    if (!ultimo || ultimo.rol !== "allison") return;
+    setEstado("hablando");
+    void hablar(ultimo.texto).then(() => setEstado("inactivo"));
+  }
+
   const sinMensajes = mensajesRestantes === 0;
+  const ultimoDeAllison =
+    mensajes.length > 0 && mensajes[mensajes.length - 1].rol === "allison"
+      ? mensajes[mensajes.length - 1]
+      : null;
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 pb-6">
+      <Bienvenida nombre={nombre} />
+
       <header className="flex items-center justify-between py-4">
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-primario-suave px-2.5 py-1 text-xs font-semibold text-primario">
-            Nivel {nivel}
-          </span>
+          <SelectorNivel nivel={nivel} />
           <span className="hidden text-sm text-texto-suave sm:inline">{nombre}</span>
         </div>
 
@@ -223,6 +246,15 @@ export function Conversacion({
 
         {verTranscripcion && mensajes.length > 0 && (
           <Transcripcion mensajes={mensajes} />
+        )}
+
+        {ultimoDeAllison && estado !== "grabando" && (
+          <AyudaTurno
+            texto={ultimoDeAllison.texto}
+            nivel={nivel}
+            onRepetir={repetir}
+            puedeRepetir={estado === "inactivo"}
+          />
         )}
         <div ref={finRef} />
       </div>

@@ -129,3 +129,55 @@ export async function borrarTodas(userId: string): Promise<number> {
   `;
   return filas.length;
 }
+
+/**
+ * La conversación en curso del alumno.
+ *
+ * No se abre una nueva en cada visita: el alumno tiene UN hilo que dura
+ * lo que dura su historial (20 días). Así Allison recuerda de qué
+ * hablaron ayer, y el alumno vuelve a una charla que ya existía en vez
+ * de a una pantalla en blanco.
+ *
+ * Solo se abre una nueva cuando el borrado se llevó la anterior.
+ */
+export async function conversacionActiva(
+  userId: string,
+  nivel: string
+): Promise<string> {
+  const [existente] = await sql`
+    select id from conversaciones
+     where user_id = ${userId}
+     order by ultima_actividad_en desc
+     limit 1
+  `;
+  if (existente) return existente.id;
+
+  const [nueva] = await sql`
+    insert into conversaciones (user_id, modo, nivel_al_iniciar)
+    values (${userId}, 'libre', ${nivel})
+    returning id
+  `;
+  return nueva.id;
+}
+
+/** Los últimos mensajes, para pintar el hilo al abrir la pantalla. */
+export async function ultimosMensajes(
+  conversacionId: string,
+  cuantos = 30
+): Promise<MensajeConversacion[]> {
+  const filas = await sql`
+    select id, rol, texto, correcciones, creado_en
+      from mensajes
+     where conversacion_id = ${conversacionId}
+     order by creado_en desc
+     limit ${cuantos}
+  `;
+
+  return filas.reverse().map((f) => ({
+    id: f.id,
+    rol: f.rol,
+    texto: f.texto ?? "",
+    correcciones: Array.isArray(f.correcciones) ? f.correcciones : [],
+    creadoEn: (f.creado_en as Date).toISOString(),
+  }));
+}

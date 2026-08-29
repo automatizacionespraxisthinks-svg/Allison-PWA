@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { Conversacion } from "@/components/Conversacion";
+import { conversacionActiva, ultimosMensajes } from "@/lib/conversaciones";
 import { progresoDe } from "@/lib/progreso";
 import { alumnoActual } from "@/lib/sesion";
 import { PRUEBA_AL_VERIFICAR } from "@/lib/verificacion";
@@ -12,11 +13,17 @@ export default async function PaginaPracticar() {
   // lo que le demuestra al alumno que el producto le sirvió.
   const p = alumno.enPrueba ? await progresoDe(alumno.id) : null;
 
+  // El alumno vuelve a SU conversación, no a una pantalla en blanco
+  const conversacionId = await conversacionActiva(alumno.id, alumno.nivel);
+  const historial = await ultimosMensajes(conversacionId, 20);
+
   return (
     <Conversacion
       nombre={alumno.nombre}
       nivel={alumno.nivel}
       mensajesIniciales={alumno.mensajesPlan + alumno.mensajesRecarga}
+      conversacionId={conversacionId}
+      historial={historial.map((m) => ({ ...m, correcciones: m.correcciones }))}
       enPrueba={alumno.enPrueba}
       faltaVerificar={alumno.faltaVerificar}
       mensajesPorVerificar={PRUEBA_AL_VERIFICAR}

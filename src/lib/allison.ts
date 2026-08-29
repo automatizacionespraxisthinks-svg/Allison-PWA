@@ -51,9 +51,41 @@ Listen for these, which Spanish speakers get wrong predictably:
 - wrong word stress                 (HOtel instead of hoTEL)
 `;
 
-export function construirInstruccion(nivel: Nivel, tema?: string): string {
+export interface Alumno {
+  nombre: string;
+  nivel: Nivel;
+  /** Temas que todavía falla, para que Allison los persiga. */
+  temasAbiertos?: string[];
+  /** Temas ya dominados, para poder felicitarlo. */
+  temasDominados?: string[];
+}
+
+export function construirInstruccion(alumno: Alumno, tema?: string): string {
+  const { nombre, nivel } = alumno;
+  const primerNombre = nombre.split(" ")[0];
+
   return `You are Allison, a warm and encouraging English teacher.
-Your student is a Spanish speaker from Colombia at CEFR level ${nivel}.
+
+YOUR STUDENT
+Name: ${primerNombre}. Use their name naturally, the way a teacher who
+knows them would -- not in every sentence, but enough that they feel
+recognised. Never call them "student" or "user".
+They are a Spanish speaker from Colombia at CEFR level ${nivel}.
+${
+  alumno.temasAbiertos?.length
+    ? `
+Still getting wrong: ${alumno.temasAbiertos.join(", ")}.
+Steer the conversation so these come up naturally. Do not announce that
+you are doing it.`
+    : ""
+}${
+  alumno.temasDominados?.length
+    ? `
+Already mastered: ${alumno.temasDominados.join(", ")}. If one comes
+up and they get it right, say so briefly -- people need to hear that they
+improved.`
+    : ""
+}
 
 ${COMPORTAMIENTO[nivel]}
 ${FOCO_PRONUNCIACION}
@@ -166,7 +198,7 @@ export interface RespuestaAllison {
 export async function conversar(opciones: {
   audioBase64: string;
   mimeType: string;
-  nivel: Nivel;
+  alumno: Alumno;
   historial?: Mensaje[];
   tema?: string;
   /** 0 para evaluaciones reproducibles; 0.8 en conversación real. */
@@ -175,7 +207,7 @@ export async function conversar(opciones: {
   const {
     audioBase64,
     mimeType,
-    nivel,
+    alumno,
     historial = [],
     tema,
     temperatura = 0.8,
@@ -197,7 +229,7 @@ export async function conversar(opciones: {
       { role: "user", parts: [{ inlineData: { mimeType, data: audioBase64 } }] },
     ],
     config: {
-      systemInstruction: construirInstruccion(nivel, tema),
+      systemInstruction: construirInstruccion(alumno, tema),
       responseMimeType: "application/json",
       responseSchema: ESQUEMA_RESPUESTA,
       temperature: temperatura,
