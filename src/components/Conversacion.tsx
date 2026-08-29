@@ -212,7 +212,7 @@ export function Conversacion({
             href="/recargar"
             title="Recargar mensajes"
             aria-label="Recargar mensajes"
-            className="rounded-full border border-borde p-1.5 text-texto-suave transition-colors hover:bg-superficie-2"
+            className="rounded-full border border-borde bg-superficie p-2 text-texto-suave transition-colors hover:bg-superficie-2 hover:text-texto"
           >
             <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 5v14M5 12h14" />
@@ -231,7 +231,7 @@ export function Conversacion({
               href="/admin"
               title="Panel de administración"
               aria-label="Panel de administración"
-              className="rounded-full border border-borde p-1.5 text-texto-suave transition-colors hover:bg-superficie-2"
+              className="rounded-full border border-borde bg-superficie p-2 text-texto-suave transition-colors hover:bg-superficie-2 hover:text-texto"
             >
               <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
@@ -244,7 +244,7 @@ export function Conversacion({
               href="/colegio"
               title="Panel del colegio"
               aria-label="Panel del colegio"
-              className="rounded-full border border-borde p-1.5 text-texto-suave transition-colors hover:bg-superficie-2"
+              className="rounded-full border border-borde bg-superficie p-2 text-texto-suave transition-colors hover:bg-superficie-2 hover:text-texto"
             >
               <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" />
@@ -255,7 +255,7 @@ export function Conversacion({
             href="/conversaciones"
             title="Tus conversaciones"
             aria-label="Tus conversaciones"
-            className="rounded-full border border-borde p-1.5 text-texto-suave transition-colors hover:bg-superficie-2"
+            className="rounded-full border border-borde bg-superficie p-2 text-texto-suave transition-colors hover:bg-superficie-2 hover:text-texto"
           >
             <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -265,7 +265,7 @@ export function Conversacion({
             href="/progreso"
             title="Tu progreso"
             aria-label="Tu progreso"
-            className="rounded-full border border-borde p-1.5 text-texto-suave transition-colors hover:bg-superficie-2"
+            className="rounded-full border border-borde bg-superficie p-2 text-texto-suave transition-colors hover:bg-superficie-2 hover:text-texto"
           >
             <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 3v18h18M7 15l4-4 3 3 5-6" />
@@ -276,7 +276,7 @@ export function Conversacion({
             onClick={() => signOut({ callbackUrl: "/" })}
             title="Cerrar sesión"
             aria-label="Cerrar sesión"
-            className="rounded-full border border-borde p-1.5 text-texto-suave transition-colors hover:bg-superficie-2"
+            className="rounded-full border border-borde bg-superficie p-2 text-texto-suave transition-colors hover:bg-superficie-2 hover:text-texto"
           >
             <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />

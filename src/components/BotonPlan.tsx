@@ -30,7 +30,7 @@ export function BotonPlan({ codigo, nombre }: { codigo: string; nombre: string }
         type="button"
         onClick={comprar}
         disabled={enviando}
-        className="mt-4 w-full rounded-xl bg-primario px-4 py-3 font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+        className="degradado-primario sombra-accion mt-4 w-full rounded-xl px-4 py-3 font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
       >
         {enviando ? "Abriendo…" : `Elegir ${nombre}`}
       </button>

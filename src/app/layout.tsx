@@ -17,8 +17,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf8f5" },
-    { media: "(prefers-color-scheme: dark)", color: "#12100e" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f8fc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a1122" },
   ],
   // La app es una conversación a pantalla completa: sin zoom accidental
   // al tocar los botones desde el celular.

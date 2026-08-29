@@ -181,7 +181,7 @@ export function BotonGrabar({
         className={`relative flex size-20 items-center justify-center rounded-full transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40 ${
           grabando
             ? "bg-error text-white shadow-lg"
-            : "bg-primario text-white shadow-md hover:brightness-110 active:scale-95"
+            : "degradado-primario sombra-accion text-white hover:brightness-110 active:scale-95"
         }`}
       >
         {grabando && (

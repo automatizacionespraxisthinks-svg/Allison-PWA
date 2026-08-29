@@ -112,7 +112,7 @@ export function FormularioRecarga({ cfg }: { cfg: ConfigPrecios }) {
         type="button"
         onClick={pagar}
         disabled={insuficiente || enviando}
-        className="rounded-2xl bg-primario px-6 py-4 text-lg font-semibold text-white transition hover:brightness-110 disabled:opacity-40"
+        className="degradado-primario sombra-accion rounded-2xl px-6 py-4 text-lg font-semibold text-white transition hover:brightness-110 disabled:opacity-40"
       >
         {insuficiente
           ? `Mínimo ${pesos(cfg.minima)}`

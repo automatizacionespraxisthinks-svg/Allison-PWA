@@ -16,8 +16,8 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/practicar",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#faf8f5",
-    theme_color: "#0f766e",
+    background_color: "#f6f8fc",
+    theme_color: "#1d4ed8",
     lang: "es-CO",
     categories: ["education"],
     icons: [

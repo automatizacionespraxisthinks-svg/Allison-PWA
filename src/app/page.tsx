@@ -28,7 +28,7 @@ export default function PaginaInicio() {
       <div className="flex flex-col items-center gap-3">
         <Link
           href="/registro"
-          className="rounded-xl bg-primario px-8 py-3.5 text-base font-semibold text-white shadow-md transition hover:brightness-110 active:scale-95"
+          className="degradado-primario sombra-accion rounded-2xl px-8 py-4 text-base font-semibold text-white transition hover:brightness-110 active:scale-95"
         >
           Empezar a hablar
         </Link>

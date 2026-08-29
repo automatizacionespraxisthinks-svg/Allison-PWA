@@ -1,45 +1,48 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------
-   Paleta de Allison
-   Verde azulado cálido: transmite calma y enseñanza, no tecnología
-   fría. Fondo arena para que las sesiones largas no cansen la vista.
+   Paleta de Allison — azul premium
+
+   Azul profundo como color de marca: transmite confianza y seriedad
+   (es el color de la banca y la educación por una razón), sobre un
+   fondo azul niebla casi blanco que se siente más cuidado que el
+   blanco puro. El ámbar queda solo para avisos que piden atención.
    --------------------------------------------------------------- */
 :root {
-  --fondo: #faf8f5;
+  --fondo: #f6f8fc;
   --superficie: #ffffff;
-  --superficie-2: #f2eee8;
-  --borde: #e3ddd4;
+  --superficie-2: #edf1f8;
+  --borde: #dbe3f0;
 
-  --texto: #1c1917;
-  --texto-suave: #6b6259;
+  --texto: #0e1a2f;
+  --texto-suave: #5a6b85;
 
-  --primario: #0f766e;
-  --primario-claro: #14b8a6;
-  --primario-suave: #ccfbf1;
+  --primario: #1d4ed8;
+  --primario-claro: #3b82f6;
+  --primario-suave: #dbe8fe;
 
-  --acento: #ea580c;
+  --acento: #b45309;
   --error: #dc2626;
-  --exito: #16a34a;
+  --exito: #047857;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --fondo: #12100e;
-    --superficie: #1c1917;
-    --superficie-2: #292524;
-    --borde: #3a3330;
+    --fondo: #0a1122;
+    --superficie: #121c33;
+    --superficie-2: #1b2946;
+    --borde: #283a5e;
 
-    --texto: #f5f1eb;
-    --texto-suave: #a8a29e;
+    --texto: #edf2fa;
+    --texto-suave: #92a3bf;
 
-    --primario: #2dd4bf;
-    --primario-claro: #5eead4;
-    --primario-suave: #134e4a;
+    --primario: #3b82f6;
+    --primario-claro: #6ba1f8;
+    --primario-suave: #16305f;
 
-    --acento: #fb923c;
+    --acento: #e8963a;
     --error: #f87171;
-    --exito: #4ade80;
+    --exito: #34d399;
   }
 }
 
@@ -65,6 +68,37 @@ body {
   background: var(--fondo);
   color: var(--texto);
   -webkit-font-smoothing: antialiased;
+}
+
+/* ---------------------------------------------------------------
+   Detalles que hacen el diseño premium
+   --------------------------------------------------------------- */
+
+/* Todo control enfocado con teclado se ve enfocado: además de
+   accesible, es lo que separa una interfaz cuidada de una genérica. */
+:where(button, a, input, select, textarea, [role="button"]):focus-visible {
+  outline: 2px solid var(--primario-claro);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Sombra con el tinte del azul de marca, para los botones de acción.
+   Una sombra gris sobre fondo azulado se ve sucia; teñida, se ve
+   intencional. */
+.sombra-accion {
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--primario) 20%, transparent),
+    0 8px 24px -8px color-mix(in srgb, var(--primario) 45%, transparent);
+}
+
+/* Degradado sutil de arriba abajo en los botones principales: les da
+   volumen sin estridencia. */
+.degradado-primario {
+  background-image: linear-gradient(
+    180deg,
+    var(--primario-claro),
+    var(--primario)
+  );
 }
 
 /* El pulso del avatar mientras Allison habla */
