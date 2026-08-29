@@ -14,7 +14,7 @@ Especificación técnica · v1 · agosto 2026
 | Avatar | Foto realista de Allison (generada por IA, sin problema de derechos). **Tres bucles de video pregenerados** — reposo, escuchando, hablando. Sin sincronía labial en vivo |
 | Idioma | Inglés casi siempre; español solo en casos puntuales. Acento neutro |
 | Nivel | Lo elige el alumno al registrarse, cambiable después. Sin test inicial |
-| Retención | Conversaciones y audios se borran a los 15 días |
+| Retención | Conversaciones y audios se borran a los **20 días**. El progreso NO se borra |
 | Registro | Email/contraseña y Google |
 | Moneda | COP |
 | Servidor | Hetzner CPX22 (2 vCPU / 4 GB) + Dokploy, **en Ashburn, Virginia (EE.UU.)** |
@@ -192,7 +192,7 @@ No puede: ver conversaciones individuales, cambiar créditos, ni tocar la config
 | "Tu plan se acabó, ¿renuevas?" | Procesar el webhook de pago |
 | "Llevas 3 días sin practicar" | Cualquier cosa que el alumno espere en pantalla |
 | Reporte semanal a colegios | |
-| Borrado de conversaciones y audios a los 15 días | |
+| Llamar cada día a `/api/tareas/limpiar` (borrado a 20 días) | |
 
 El webhook de pago lo recibe **la aplicación**, que acredita dentro de una transacción de base de
 datos con control de duplicados. n8n se entera después, solo para notificar.
@@ -235,3 +235,20 @@ entrada — sin eso, la corrección de pronunciación no funciona.
 **Pendiente de verificar con la clave de API:** consultar el endpoint de listado de modelos para
 confirmar cuáles aceptan audio de verdad. Las dos páginas de documentación consultadas no
 coinciden entre sí.
+
+## 9. Retención de datos
+
+**Se borra a los 20 días:** las conversaciones y sus mensajes (y los audios, cuando se
+almacenen). Un trabajo diario de n8n llama a `POST /api/tareas/limpiar` con el secreto
+`TAREAS_SECRETO` en la cabecera `Authorization`.
+
+**No se borra nunca:** racha, progreso diario, errores frecuentes y temas, saldos,
+movimientos de crédito y transacciones. El alumno pierde el historial de charlas, nunca su avance.
+
+> **Por qué el contador de turnos limpios vive en una columna y no se calcula.**
+> Antes se contaban las filas de `mensajes` posteriores al último error. Al borrar las
+> conversaciones viejas ese conteo se desploma, y un alumno que sí mejoró vería su progreso
+> retroceder sin entender por qué. El contador es un número que sobrevive al borrado.
+> Esto hubo que arreglarlo **antes** de activar el borrado, no después.
+
+La tarea borra además los enlaces de verificación y recuperación vencidos hace más de 30 días.

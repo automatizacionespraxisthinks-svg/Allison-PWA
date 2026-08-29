@@ -12,7 +12,8 @@
     "limpiar:pruebas": "node --env-file=.env scripts/limpiar-pruebas.mjs",
     "probar:gemini": "node --env-file=.env scripts/probar-gemini.mjs",
     "evaluar": "node --env-file=.env scripts/evaluar-correcciones.mjs",
-    "sembrar:colegio": "node --env-file=.env scripts/sembrar-colegio.mjs"
+    "sembrar:colegio": "node --env-file=.env scripts/sembrar-colegio.mjs",
+    "probar:retencion": "node --env-file=.env scripts/probar-retencion.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",

@@ -73,27 +73,21 @@ export async function progresoDe(userId: string): Promise<Progreso> {
      where user_id = ${userId} and fecha > current_date - 7
   `;
 
-  // Por cada tema: cuántas veces falló y cuántos turnos lleva sin repetirlo.
+  // Por cada tema: cuántas veces falló y cuántos turnos lleva sin
+  // repetirlo. El contador vive en la tabla y NO se calcula contando
+  // mensajes: las conversaciones se borran a los 20 días, y ese conteo
+  // se desplomaría con ellas.
   const filas = await sql`
-    with agrupado as (
-      select tema,
-             sum(veces)::int    as veces,
-             max(ultima_vez_en) as ultima
-        from errores_frecuentes
-       where user_id = ${userId} and tema is not null
-       group by tema
-    )
-    select a.tema, a.veces,
-           (select count(*)
-              from mensajes m
-             where m.user_id = ${userId}
-               and m.rol = 'alumno'
-               and m.creado_en > a.ultima)::int as turnos_limpios,
-           (select e.texto_error || ' ||| ' || e.correccion
-              from errores_frecuentes e
-             where e.user_id = ${userId} and e.tema = a.tema
-             order by e.ultima_vez_en desc limit 1) as ejemplo
-      from agrupado a
+    select tema,
+           sum(veces)::int          as veces,
+           min(turnos_limpios)::int as turnos_limpios,
+           (array_agg(
+              texto_error || ' ||| ' || correccion
+              order by ultima_vez_en desc
+            ))[1] as ejemplo
+      from errores_frecuentes
+     where user_id = ${userId} and tema is not null
+     group by tema
   `;
 
   const porClave = new Map(filas.map((f) => [f.tema as string, f]));
