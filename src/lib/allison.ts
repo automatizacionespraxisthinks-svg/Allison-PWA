@@ -195,75 +195,27 @@ export interface RespuestaAllison {
   tokensSalida: number;
 }
 
+/**
+ * La conversación completa, esperando a que termine.
+ *
+ * Es una envoltura sobre conversarEnStream y NO una segunda
+ * implementación: las dos compartían el filtrado de correcciones, y dos
+ * copias de la misma regla se separan sin que nadie lo note. Lo usan las
+ * pruebas, que así ejercitan exactamente el camino que corre en
+ * producción.
+ */
 export async function conversar(opciones: {
   audioBase64: string;
   mimeType: string;
   alumno: Alumno;
   historial?: Mensaje[];
   tema?: string;
-  /** 0 para evaluaciones reproducibles; 0.8 en conversación real. */
   temperatura?: number;
 }): Promise<RespuestaAllison> {
-  const {
-    audioBase64,
-    mimeType,
-    alumno,
-    historial = [],
-    tema,
-    temperatura = 0.8,
-  } = opciones;
-
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-  // Solo los últimos turnos: la conversación completa encarecería cada
-  // mensaje sin mejorar la respuesta.
-  const contexto = historial.slice(-12).map((m) => ({
-    role: m.rol === "alumno" ? "user" : "model",
-    parts: [{ text: m.texto }],
-  }));
-
-  const respuesta = await ai.models.generateContent({
-    model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
-    contents: [
-      ...contexto,
-      { role: "user", parts: [{ inlineData: { mimeType, data: audioBase64 } }] },
-    ],
-    config: {
-      systemInstruction: construirInstruccion(alumno, tema),
-      responseMimeType: "application/json",
-      responseSchema: ESQUEMA_RESPUESTA,
-      temperature: temperatura,
-    },
-  });
-
-  const datos = JSON.parse(respuesta.text ?? "{}");
-  const uso = respuesta.usageMetadata;
-
-  /**
-   * Se descartan las correcciones inservibles antes de que salgan de
-   * aquí. El prompt ya las prohíbe y la batería de pruebas las detecta,
-   * pero esa batería corre sobre nueve frases fijas: en producción hay
-   * que filtrarlas de verdad.
-   *
-   * Visto en pruebas: original "I am thirty years old" y corrección
-   * "I am thirty years old" -- idénticas -- con una explicación que
-   * contradecía lo que el alumno había dicho bien.
-   */
-  const normalizar = (t: string) =>
-    t.trim().toLowerCase().replace(/[.,;:!?¡¿"']/g, "").replace(/\s+/g, " ");
-
-  const correcciones = ((datos.correcciones ?? []) as Correccion[]).filter((c) => {
-    if (!c?.original?.trim() || !c?.correccion?.trim()) return false;
-    return normalizar(c.original) !== normalizar(c.correccion);
-  });
-
-  return {
-    transcripcion: datos.transcripcion ?? "",
-    respuesta: datos.respuesta ?? "",
-    correcciones,
-    tokensEntrada: uso?.promptTokenCount ?? 0,
-    tokensSalida: uso?.candidatesTokenCount ?? 0,
-  };
+  for await (const parte of conversarEnStream(opciones)) {
+    if (parte.tipo === "fin") return parte.resultado;
+  }
+  throw new Error("La respuesta terminó sin resultado");
 }
 
 /**
@@ -285,12 +237,21 @@ export async function* conversarEnStream(opciones: {
   alumno: Alumno;
   historial?: Mensaje[];
   tema?: string;
+  /** 0 para evaluaciones reproducibles; 0.8 en conversación real. */
+  temperatura?: number;
 }): AsyncGenerator<
   | { tipo: "transcripcion"; texto: string }
   | { tipo: "respuesta"; texto: string }
   | { tipo: "fin"; resultado: RespuestaAllison }
 > {
-  const { audioBase64, mimeType, alumno, historial = [], tema } = opciones;
+  const {
+    audioBase64,
+    mimeType,
+    alumno,
+    historial = [],
+    tema,
+    temperatura = 0.8,
+  } = opciones;
 
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -309,7 +270,7 @@ export async function* conversarEnStream(opciones: {
       systemInstruction: construirInstruccion(alumno, tema),
       responseMimeType: "application/json",
       responseSchema: ESQUEMA_RESPUESTA,
-      temperature: 0.8,
+      temperature: temperatura,
     },
   });
 

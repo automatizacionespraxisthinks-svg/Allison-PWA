@@ -30,7 +30,7 @@ try {
   const r = await conversar({
     audioBase64: audio.toString("base64"),
     mimeType,
-    nivel: "A2",
+    alumno: { nombre: "Alumno de prueba", nivel: "A2" },
   });
   const seg = ((Date.now() - inicio) / 1000).toFixed(1);
 

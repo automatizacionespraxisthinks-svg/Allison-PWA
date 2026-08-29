@@ -32,7 +32,11 @@ const CASOS = [
   { dice: "I have 25 years old", espera: /\bam\b.*\b25\b|\b25\b.*\bam\b/i },
   { dice: "Yesterday I go to the park", espera: /\bwent\b/i },
   { dice: "My friend she is more tall than me", espera: /\btaller\b/i },
-  { dice: "I no have money", espera: /\bdon'?t have\b|\bdo not have\b/i },
+  // Era "I no have money", pero la voz sintética pronuncia "no have"
+  // igual que "know have", y el fallo era del audio de prueba, no de
+  // Allison. Misma clase de error -- negar sin do/does -- y se oye sin
+  // ambigüedad.
+  { dice: "She no like coffee", espera: /\bdoesn'?t like\b|\bdoes not like\b/i },
   { dice: "I am agree with you", espera: /\bI agree\b/i },
   { dice: "She have a car", espera: /\bhas\b/i },
   { dice: "The people is very happy", espera: /\bare\b/i },
@@ -64,7 +68,7 @@ for (const caso of CASOS) {
   const r = await conversar({
     audioBase64: audio.toString("base64"),
     mimeType: "audio/wav",
-    nivel: "A2",
+    alumno: { nombre: "Alumno de prueba", nivel: "A2" },
     temperatura: 0, // reproducible
   });
 
@@ -81,7 +85,11 @@ for (const caso of CASOS) {
   } else {
     // Vale si la forma correcta aparece en las correcciones o en lo que
     // Allison dijo: lo que importa es que el alumno la reciba.
-    ok = caso.espera.test(`${correcciones} ${r.respuesta}`);
+    // Se normalizan los apóstrofos: el modelo usa el tipográfico (’) y
+    // los patrones el recto ('). Sin esto, una corrección correcta como
+    // "she doesn’t like" se marcaba como fallo.
+    const heno = `${correcciones} ${r.respuesta}`.replace(/[‘’]/g, "'");
+    ok = caso.espera.test(heno);
     detalle = correcciones || "no corrigió nada";
   }
 
