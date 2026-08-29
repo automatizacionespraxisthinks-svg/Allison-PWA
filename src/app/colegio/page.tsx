@@ -32,9 +32,17 @@ export default async function PaginaColegio() {
             </span>
           </p>
         </div>
-        <Link href="/practicar" className="text-sm text-texto-suave underline">
-          Ir a practicar
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/colegio/importar"
+            className="rounded-full bg-primario px-4 py-2 text-sm font-semibold text-white"
+          >
+            Cargar alumnos
+          </Link>
+          <Link href="/practicar" className="text-sm text-texto-suave underline">
+            Ir a practicar
+          </Link>
+        </div>
       </header>
 
       {/* Lo primero es a cuántos hay que empujar, no cuántos van bien */}
