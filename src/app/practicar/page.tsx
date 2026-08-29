@@ -21,6 +21,7 @@ export default async function PaginaPracticar() {
       faltaVerificar={alumno.faltaVerificar}
       mensajesPorVerificar={PRUEBA_AL_VERIFICAR}
       esCoordinador={alumno.rol === "coordinador" || alumno.rol === "admin"}
+      esAdmin={alumno.rol === "admin"}
       logro={
         p
           ? {

@@ -10,11 +10,11 @@
  * términos borra el rastro de lo que la gente aceptó de verdad.
  */
 export const EMPRESA = {
-  razonSocial: "[RAZÓN SOCIAL]",
-  nit: "[NIT]",
-  domicilio: "[DIRECCIÓN, CIUDAD, COLOMBIA]",
-  correo: "[CORREO DE CONTACTO]",
-  telefono: "[TELÉFONO]",
+  razonSocial: "PRAXIS - THINKS S.A.S.",
+  nit: "[NIT — PENDIENTE]",
+  domicilio: "[DIRECCIÓN Y CIUDAD — PENDIENTE]",
+  correo: "praxisthinks@gmail.com",
+  telefono: "311 731 8700",
   marca: "Allison",
 } as const;
 

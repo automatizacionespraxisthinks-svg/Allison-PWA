@@ -20,6 +20,7 @@ interface Props {
    *  y un número escrito a mano quedaría mintiendo si cambia el .env. */
   mensajesPorVerificar: number;
   esCoordinador: boolean;
+  esAdmin: boolean;
   logro?: LogroPrueba;
 }
 
@@ -31,6 +32,7 @@ export function Conversacion({
   faltaVerificar,
   mensajesPorVerificar,
   esCoordinador,
+  esAdmin,
   logro,
 }: Props) {
   const [estado, setEstado] = useState<EstadoConversacion>("inactivo");
@@ -140,6 +142,19 @@ export function Conversacion({
           >
             {verTranscripcion ? "Ocultar texto" : "Ver texto"}
           </button>
+          {esAdmin && (
+            <Link
+              href="/admin"
+              title="Panel de administración"
+              aria-label="Panel de administración"
+              className="rounded-full border border-borde p-1.5 text-texto-suave transition-colors hover:bg-superficie-2"
+            >
+              <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 14a1.7 1.7 0 0 0-1.5-1H1a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 3 7.6a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 8 3.2V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0 1.2 2.9H23a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+              </svg>
+            </Link>
+          )}
           {esCoordinador && (
             <Link
               href="/colegio"
