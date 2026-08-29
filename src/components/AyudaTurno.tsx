@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { fijarVelocidad, useVelocidad, VELOCIDADES } from "@/lib/velocidad";
 import type { Nivel } from "@/lib/tipos";
 
 interface Ayuda {
@@ -35,6 +36,7 @@ export function AyudaTurno({
   const [mostrando, setMostrando] = useState<"traduccion" | "sugerencia" | null>(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(false);
+  const velocidad = useVelocidad();
 
   async function pedir(que: "traduccion" | "sugerencia") {
     if (mostrando === que) {
@@ -79,6 +81,21 @@ export function AyudaTurno({
             <path d="M11 5 6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
           </svg>
           Repetir
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            const i = VELOCIDADES.findIndex((v) => v.valor === velocidad);
+            fijarVelocidad(VELOCIDADES[(i + 1) % VELOCIDADES.length].valor);
+          }}
+          title="Velocidad de la voz"
+          className={boton}
+        >
+          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M13 19V5l9 7-9 7zM2 19V5l9 7-9 7z" />
+          </svg>
+          {VELOCIDADES.find((v) => v.valor === velocidad)?.etiqueta}
         </button>
 
         <button

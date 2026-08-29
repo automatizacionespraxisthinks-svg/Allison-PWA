@@ -12,6 +12,7 @@ import { SelectorNivel } from "@/components/SelectorNivel";
 import { FinDePrueba, type LogroPrueba } from "@/components/FinDePrueba";
 import { Transcripcion } from "@/components/Transcripcion";
 import type { EstadoConversacion, Mensaje, Nivel } from "@/lib/tipos";
+import { useVelocidad } from "@/lib/velocidad";
 
 interface Props {
   nombre: string;
@@ -53,6 +54,7 @@ export function Conversacion({
   const [dichoAhora, setDichoAhora] = useState<string | null>(null);
 
   const conversacionId = useRef<string | null>(idInicial);
+  const velocidad = useVelocidad();
   const ultimoAudio = useRef<SpeechSynthesisUtterance | null>(null);
   const finRef = useRef<HTMLDivElement>(null);
 
@@ -73,7 +75,10 @@ export function Conversacion({
       }
       const voz = new SpeechSynthesisUtterance(texto);
       voz.lang = "en-US";
-      voz.rate = nivel === "A1" ? 0.8 : nivel === "A2" ? 0.9 : 1;
+      // La base del nivel por la preferencia del alumno: un A1 en
+      // "rápida" oye 1,0 — más ágil que su base, nunca la de un C1.
+      const base = nivel === "A1" ? 0.8 : nivel === "A2" ? 0.9 : 1;
+      voz.rate = base * velocidad;
       voz.onend = () => resolver();
       voz.onerror = () => resolver();
       ultimoAudio.current = voz;
@@ -177,16 +182,25 @@ export function Conversacion({
       : null;
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 pb-6">
+    <main
+      className={`mx-auto flex max-w-2xl flex-col px-4 pb-6 ${
+        verTranscripcion ? "h-dvh" : "min-h-dvh"
+      }`}
+    >
       <Bienvenida nombre={nombre} />
 
-      <header className="flex items-center justify-between py-4">
+      {/*
+        flex-wrap y no una sola línea: en un celular de 375px el contador
+        más cinco botones no caben, y el desborde horizontal mueve la
+        página entera al arrastrar.
+      */}
+      <header className="flex flex-wrap items-center justify-between gap-y-2 py-3">
         <div className="flex items-center gap-2">
           <SelectorNivel nivel={nivel} />
           <span className="hidden text-sm text-texto-suave sm:inline">{nombre}</span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-3">
           <span
             className={`text-sm tabular-nums ${
               mensajesRestantes <= 10 ? "text-acento" : "text-texto-suave"
@@ -271,47 +285,85 @@ export function Conversacion({
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col items-center justify-center gap-8 py-6">
-        <AvatarAllison estado={estado} />
-
-        {mensajes.length === 0 && (
-          <div className="max-w-sm text-center">
-            <h1 className="text-2xl font-semibold">Hi! I&apos;m Allison</h1>
-            <p className="mt-2 text-texto-suave">
-              Toca el botón y háblame en inglés. Habla tranquilo: si te
-              equivocas, te corrijo y seguimos.
+      {verTranscripcion ? (
+        <>
+          {/*
+            Con la transcripción abierta, la foto NO se va con el scroll:
+            queda fija en versión compacta y solo el texto se desplaza.
+            Antes, tres turnos de conversación bastaban para que Allison
+            desapareciera de la pantalla.
+          */}
+          <div className="flex shrink-0 items-center gap-3 border-b border-borde py-2">
+            <AvatarAllison estado={estado} compacto />
+            <p className="min-w-0 flex-1 truncate text-sm text-texto-suave">
+              {estado === "hablando"
+                ? "Allison está hablando…"
+                : estado === "procesando"
+                  ? "Allison está pensando…"
+                  : (ultimoDeAllison?.texto ?? "Allison")}
             </p>
           </div>
-        )}
 
-        {/* Lo que el alumno acaba de decir, apenas llega */}
-        {dichoAhora && (
-          <p className="max-w-md rounded-2xl bg-superficie-2 px-4 py-3 text-center text-[15px] text-texto-suave">
-            {dichoAhora}
-          </p>
-        )}
+          <div className="min-h-0 flex-1 overflow-y-auto py-4">
+            {dichoAhora && (
+              <p className="mx-auto mb-3 max-w-md rounded-2xl bg-superficie-2 px-4 py-3 text-center text-[15px] text-texto-suave">
+                {dichoAhora}
+              </p>
+            )}
+            <Transcripcion mensajes={mensajes} />
+            <div ref={finRef} />
+          </div>
 
-        {/* Lo último que dijo Allison, siempre visible aunque el texto esté oculto */}
-        {!verTranscripcion && !dichoAhora && mensajes.length > 0 && (
-          <p className="max-w-md text-center text-lg leading-relaxed">
-            {mensajes[mensajes.length - 1].texto}
-          </p>
-        )}
+          {ultimoDeAllison && estado !== "grabando" && (
+            <div className="flex shrink-0 justify-center pt-3">
+              <AyudaTurno
+                texto={ultimoDeAllison.texto}
+                nivel={nivel}
+                onRepetir={repetir}
+                puedeRepetir={estado === "inactivo"}
+              />
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="flex flex-1 flex-col items-center justify-center gap-8 py-6">
+          <AvatarAllison estado={estado} />
 
-        {verTranscripcion && mensajes.length > 0 && (
-          <Transcripcion mensajes={mensajes} />
-        )}
+          {mensajes.length === 0 && (
+            <div className="max-w-sm text-center">
+              <h1 className="text-2xl font-semibold">Hi! I&apos;m Allison</h1>
+              <p className="mt-2 text-texto-suave">
+                Toca el botón y háblame en inglés. Habla tranquilo: si te
+                equivocas, te corrijo y seguimos.
+              </p>
+            </div>
+          )}
 
-        {ultimoDeAllison && estado !== "grabando" && (
-          <AyudaTurno
-            texto={ultimoDeAllison.texto}
-            nivel={nivel}
-            onRepetir={repetir}
-            puedeRepetir={estado === "inactivo"}
-          />
-        )}
-        <div ref={finRef} />
-      </div>
+          {/* Lo que el alumno acaba de decir, apenas llega */}
+          {dichoAhora && (
+            <p className="max-w-md rounded-2xl bg-superficie-2 px-4 py-3 text-center text-[15px] text-texto-suave">
+              {dichoAhora}
+            </p>
+          )}
+
+          {/* Lo último que dijo Allison, aunque el texto esté oculto */}
+          {!dichoAhora && mensajes.length > 0 && (
+            <p className="max-w-md text-center text-lg leading-relaxed">
+              {mensajes[mensajes.length - 1].texto}
+            </p>
+          )}
+
+          {ultimoDeAllison && estado !== "grabando" && (
+            <AyudaTurno
+              texto={ultimoDeAllison.texto}
+              nivel={nivel}
+              onRepetir={repetir}
+              puedeRepetir={estado === "inactivo"}
+            />
+          )}
+          <div ref={finRef} />
+        </div>
+      )}
 
       {error && (
         <p role="alert" className="mb-3 rounded-lg bg-error/10 p-3 text-center text-sm text-error">

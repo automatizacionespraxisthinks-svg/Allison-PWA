@@ -15,7 +15,17 @@ import type { EstadoConversacion } from "@/lib/tipos";
  * hablando), se reemplaza la <Image> por un <video> que cambia de fuente
  * según el estado. La estructura ya queda preparada para eso.
  */
-export function AvatarAllison({ estado }: { estado: EstadoConversacion }) {
+export function AvatarAllison({
+  estado,
+  compacto = false,
+}: {
+  estado: EstadoConversacion;
+  /**
+   * Versión pequeña para cuando la transcripción está abierta: la foto
+   * se queda siempre en pantalla, pero le cede el espacio al texto.
+   */
+  compacto?: boolean;
+}) {
   const hablando = estado === "hablando";
   const procesando = estado === "procesando";
 
@@ -31,9 +41,9 @@ export function AvatarAllison({ estado }: { estado: EstadoConversacion }) {
       )}
 
       <div
-        className={`relative size-40 overflow-hidden rounded-full border-4 bg-primario-suave transition-colors duration-300 sm:size-52 ${
-          hablando ? "border-primario" : "border-borde"
-        }`}
+        className={`relative overflow-hidden rounded-full bg-primario-suave transition-all duration-300 ${
+          compacto ? "size-14 border-2" : "size-40 border-4 sm:size-52"
+        } ${hablando ? "border-primario" : "border-borde"}`}
       >
         <Image
           src="/allison.png"
