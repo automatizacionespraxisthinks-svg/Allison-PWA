@@ -310,7 +310,7 @@ export function Conversacion({
                 {dichoAhora}
               </p>
             )}
-            <Transcripcion mensajes={mensajes} />
+            <Transcripcion mensajes={mensajes} nivel={nivel} />
             <div ref={finRef} />
           </div>
 

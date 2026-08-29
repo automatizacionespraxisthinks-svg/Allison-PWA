@@ -36,6 +36,7 @@ export default async function PaginaConversacion({
       </header>
 
       <Transcripcion
+        nivel={c.resumen.nivel}
         mensajes={c.mensajes.map((m) => ({
           id: m.id,
           rol: m.rol,

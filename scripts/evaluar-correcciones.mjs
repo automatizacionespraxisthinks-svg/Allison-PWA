@@ -108,6 +108,12 @@ for (const caso of CASOS) {
     detalle += "  [corrección sin tema: no agruparía en el panel]";
   }
 
+  const sinEspanol = r.correcciones.filter((c) => !c.explicacionEs?.trim());
+  if (sinEspanol.length > 0) {
+    ok = false;
+    detalle += "  [corrección sin explicación en español]";
+  }
+
   if (!ok) fallos++;
   console.log(`${ok ? "OK   " : "FALLA"}  "${caso.dice}"`);
   console.log(`         ${detalle}`);

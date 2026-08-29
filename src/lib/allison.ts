@@ -122,6 +122,10 @@ correction. The student trusts this list and will memorise it.
   spoken words — that is not a mistake.
 - Correct only what the student actually got wrong, never their style
   choices.
+- Standard SPOKEN English is correct English. "Taller than me", "it's
+  me", contractions, ending with a preposition: none of these are
+  mistakes. Never "fix" informal-but-standard forms into formal ones —
+  that is hypercorrection, and it teaches the student to sound stiff.
 - In your spoken "respuesta", recast the most important one or two so
   the conversation keeps its rhythm. The full list still goes in
   "correcciones", where the student reviews it.
@@ -138,15 +142,13 @@ WHAT YOU RETURN
 - "correcciones": the mistakes you heard. Empty array if there were none.
 
 LANGUAGE OF THE EXPLANATIONS — this is a hard rule, not a preference.
-${
-  nivel === "A1" || nivel === "A2"
-    ? `This student is ${nivel}. Every "explicacion" MUST be written in
-SPANISH. A beginner who cannot follow English cannot follow an
-explanation in English either — the correction would be wasted.
-Example: "Para la edad se usa 'to be', no 'to have'."`
-    : `This student is ${nivel}. Every "explicacion" MUST be written in
-ENGLISH, short and plain.`
-}`;
+Every correction carries the rule TWICE:
+- "explicacion": in simple English. Reading it is also practice.
+- "explicacionEs": the same rule in Spanish, so the student is certain
+  they understood. A correction the student cannot understand teaches
+  nothing.
+Example: explicacion "Use 'to be' for age", explicacionEs "Para la edad
+se usa 'to be', no 'to have'".`;
 }
 
 const ESQUEMA_RESPUESTA = {
@@ -170,7 +172,11 @@ const ESQUEMA_RESPUESTA = {
           correccion: { type: Type.STRING },
           explicacion: {
             type: Type.STRING,
-            description: "One short line. Spanish for A1-A2, English from B1 up",
+            description: "The rule, one short line in simple English",
+          },
+          explicacionEs: {
+            type: Type.STRING,
+            description: "The same rule, one short line in Spanish",
           },
           prioridad: { type: Type.STRING, enum: ["alta", "media", "baja"] },
           tema: {
@@ -180,7 +186,7 @@ const ESQUEMA_RESPUESTA = {
               "Which recurring topic this mistake belongs to. Pick the closest one from the list; never invent a new label.",
           },
         },
-        required: ["tipo", "original", "correccion", "explicacion", "prioridad", "tema"],
+        required: ["tipo", "original", "correccion", "explicacion", "explicacionEs", "prioridad", "tema"],
       },
     },
   },
@@ -347,7 +353,22 @@ export async function* conversarEnStream(opciones: {
 
   const correcciones = ((datos.correcciones ?? []) as Correccion[]).filter((c) => {
     if (!c?.original?.trim() || !c?.correccion?.trim()) return false;
-    return normalizar(c.original) !== normalizar(c.correccion);
+    const o = normalizar(c.original);
+    const co = normalizar(c.correccion);
+    if (o === co) return false;
+
+    // Hipercorrección clásica: "taller than me" -> "taller than I (am)".
+    // El prompt la prohíbe y el modelo insiste igual. Se deshace el
+    // cambio de pronombre en la corrección: si con eso queda idéntica al
+    // original, lo ÚNICO que "corrigió" fue una forma estándar del
+    // inglés hablado, y se descarta. Una corrección real que además
+    // contenga "than me" cambia más cosas y sobrevive.
+    const sinHiper = co
+      .replace(/\bthan i am\b/g, "than me")
+      .replace(/\bthan i\b/g, "than me");
+    if (o === sinHiper) return false;
+
+    return true;
   });
 
   yield {

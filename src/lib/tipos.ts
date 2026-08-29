@@ -30,7 +30,13 @@ export interface Correccion {
   tipo: TipoCorreccion;
   original: string;
   correccion: string;
+  /** La regla, en inglés simple: leerla también es práctica. */
   explicacion: string;
+  /**
+   * La misma regla en español. Opcional porque los mensajes guardados
+   * antes de este cambio no la traen, y la pantalla debe soportarlos.
+   */
+  explicacionEs?: string;
   prioridad: "alta" | "media" | "baja";
   /** Tema pedagógico con el que se agrupan los errores repetidos. */
   tema: string;
