@@ -20,6 +20,7 @@ export default async function PaginaPracticar() {
       enPrueba={alumno.enPrueba}
       faltaVerificar={alumno.faltaVerificar}
       mensajesPorVerificar={PRUEBA_AL_VERIFICAR}
+      esCoordinador={alumno.rol === "coordinador" || alumno.rol === "admin"}
       logro={
         p
           ? {

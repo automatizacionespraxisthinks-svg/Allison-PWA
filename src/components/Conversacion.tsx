@@ -19,6 +19,7 @@ interface Props {
   /** Viene del servidor: las variables sin NEXT_PUBLIC_ no existen aquí,
    *  y un número escrito a mano quedaría mintiendo si cambia el .env. */
   mensajesPorVerificar: number;
+  esCoordinador: boolean;
   logro?: LogroPrueba;
 }
 
@@ -29,6 +30,7 @@ export function Conversacion({
   enPrueba,
   faltaVerificar,
   mensajesPorVerificar,
+  esCoordinador,
   logro,
 }: Props) {
   const [estado, setEstado] = useState<EstadoConversacion>("inactivo");
@@ -138,6 +140,18 @@ export function Conversacion({
           >
             {verTranscripcion ? "Ocultar texto" : "Ver texto"}
           </button>
+          {esCoordinador && (
+            <Link
+              href="/colegio"
+              title="Panel del colegio"
+              aria-label="Panel del colegio"
+              className="rounded-full border border-borde p-1.5 text-texto-suave transition-colors hover:bg-superficie-2"
+            >
+              <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" />
+              </svg>
+            </Link>
+          )}
           <Link
             href="/progreso"
             title="Tu progreso"
