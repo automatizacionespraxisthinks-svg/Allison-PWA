@@ -2,7 +2,7 @@
  * Límite de peticiones por ventana de tiempo.
  *
  * Sin esto, cualquiera puede registrar cuentas en bucle y llevarse los
- * 20 mensajes de prueba cada vez — gastando tu cuota de Gemini — o
+ * mensajes de prueba cada vez — gastando tu cuota de Gemini — o
  * martillar la conversación desde un script.
  *
  * ATENCIÓN: el contador vive en la memoria del proceso. Sirve mientras
@@ -62,16 +62,29 @@ export function limitar(
 /**
  * De dónde viene la petición.
  *
- * Detrás de Cloudflare la IP real llega en cf-connecting-ip; el resto
- * de cabeceras las puede falsificar el cliente, así que solo se
- * confían en ese orden.
+ * CUIDADO: las cabeceras de IP las inventa el cliente. Cualquiera puede
+ * mandar "X-Forwarded-For: 10.0.0.1", luego 10.0.0.2, y saltarse un
+ * límite por IP tantas veces como quiera. Comprobado: ocho registros
+ * seguidos con un tope de cinco.
+ *
+ * Solo se confía en esas cabeceras cuando PROXY_CONFIABLE declara que
+ * delante hay un proxy que las reescribe. Cloudflare sobrescribe
+ * cf-connecting-ip con la IP real, así que ahí sí es fiable. Sin esa
+ * variable, todas las peticiones comparten un mismo cubo: más estricto
+ * de la cuenta, pero nunca falsamente permisivo.
  */
 export function origenDe(peticion: Request): string {
-  const cf = peticion.headers.get("cf-connecting-ip");
-  if (cf) return cf;
+  const proxy = process.env.PROXY_CONFIABLE;
 
-  const reenviada = peticion.headers.get("x-forwarded-for");
-  if (reenviada) return reenviada.split(",")[0].trim();
+  if (proxy === "cloudflare") {
+    const cf = peticion.headers.get("cf-connecting-ip");
+    if (cf) return cf;
+  }
 
-  return peticion.headers.get("x-real-ip") ?? "desconocido";
+  if (proxy === "cloudflare" || proxy === "reverso") {
+    const reenviada = peticion.headers.get("x-forwarded-for");
+    if (reenviada) return reenviada.split(",")[0].trim();
+  }
+
+  return "sin-proxy";
 }

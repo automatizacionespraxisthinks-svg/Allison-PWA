@@ -14,7 +14,9 @@
     "evaluar": "node --env-file=.env scripts/evaluar-correcciones.mjs",
     "sembrar:colegio": "node --env-file=.env scripts/sembrar-colegio.mjs",
     "probar:retencion": "node --env-file=.env scripts/probar-retencion.mjs",
-    "auditar": "node --env-file=.env scripts/auditar.mjs"
+    "auditar": "node --env-file=.env scripts/auditar.mjs",
+    "probar:concurrencia": "node --env-file=.env scripts/probar-concurrencia.mjs",
+    "revisar": "npm run probar:creditos && npm run probar:retencion && npm run probar:concurrencia && npm run auditar"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",

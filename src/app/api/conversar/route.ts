@@ -49,17 +49,20 @@ export async function POST(peticion: Request) {
 
   // 1. Cobrar ANTES de llamar a Gemini. Es atómico: si dos pestañas
   //    intentan a la vez, solo una consigue el mensaje.
-  const [{ consumir_mensaje: cobrado }] =
+  //
+  //    La base devuelve de qué bolsa cobró. No se puede deducir del
+  //    saldo leído antes: con dos peticiones simultáneas una se lleva
+  //    el último mensaje del plan y la otra cobra de la recarga sin
+  //    saberlo, y una devolución iría a la bolsa equivocada.
+  const [{ consumir_mensaje: bolsaUsada }] =
     await sql`select consumir_mensaje(${alumno.id}, null)`;
 
-  if (!cobrado) {
+  if (!bolsaUsada) {
     return NextResponse.json(
       { error: "sin_mensajes", mensaje: "Te quedaste sin mensajes." },
       { status: 402 }
     );
   }
-
-  const bolsaUsada = alumno.mensajesPlan > 0 ? "plan" : "recarga";
 
   try {
     // 2. Historial de la conversación, para que Allison recuerde el hilo
@@ -95,6 +98,20 @@ export async function POST(peticion: Request) {
         creadoEn: "",
       })),
     });
+
+    // Si no se entendió nada, no se cobra. Un micrófono mudo o un
+    // audio dañado hacen que el modelo se invente una conversación, y
+    // cobrarle al alumno por un turno que nunca dijo es indefendible.
+    if (!resultado.transcripcion.trim()) {
+      await sql`select devolver_mensaje(${alumno.id}, ${bolsaUsada}::bolsa_credito)`;
+      return NextResponse.json(
+        {
+          error: "sin_audio",
+          mensaje: "No te escuchamos. Revisa el micrófono e intenta otra vez.",
+        },
+        { status: 422 }
+      );
+    }
 
     // 4. Guardar los dos mensajes del turno
     const [mAlumno] = await sql`

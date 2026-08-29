@@ -37,19 +37,23 @@ try {
 
   console.log("\nOrden de consumo (primero el plan, después la recarga):");
   for (const esperado of ["plan", "plan", "recarga"]) {
-    const [{ consumir_mensaje: ok }] =
+    const [{ consumir_mensaje: bolsa }] =
       await sql`select consumir_mensaje(${alumno.id}, null)`;
     const [ultimo] = await sql`
       select bolsa from movimientos_credito
       where user_id = ${alumno.id} order by id desc limit 1
     `;
-    verificar(`gasta de la bolsa "${esperado}"`, ok && ultimo.bolsa === esperado);
+    // La función debe DECIR de qué bolsa cobró, y coincidir con el libro
+    verificar(
+      `gasta de la bolsa "${esperado}" y lo informa`,
+      bolsa === esperado && ultimo.bolsa === esperado
+    );
   }
 
   console.log("\nSin saldo:");
   const [{ consumir_mensaje: sinSaldo }] =
     await sql`select consumir_mensaje(${alumno.id}, null)`;
-  verificar("devuelve false en vez de dejar el saldo negativo", sinSaldo === false);
+  verificar("devuelve null en vez de dejar el saldo negativo", sinSaldo === null);
 
   const [saldo] = await sql`
     select mensajes_plan, mensajes_recarga from saldos where user_id = ${alumno.id}

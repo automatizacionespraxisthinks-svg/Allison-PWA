@@ -28,12 +28,27 @@ const Registro = z.object({
 /** Cuentas nuevas permitidas desde una misma IP en una hora. */
 const REGISTROS_POR_HORA = 5;
 
+/**
+ * Tope de registros de TODO el sistema por hora.
+ *
+ * El límite por IP se puede burlar falsificando la cabecera cuando no
+ * hay un proxy de confianza delante. Este no: no depende de nada que el
+ * cliente controle. Es el techo que impide que un script cree mil
+ * cuentas y se lleve mil pruebas gratis en una noche.
+ */
+const REGISTROS_GLOBALES_POR_HORA = Number(
+  process.env.REGISTROS_GLOBALES_POR_HORA ?? 60
+);
+
 export async function POST(peticion: Request) {
   const limite = limitar(`registro:${origenDe(peticion)}`, REGISTROS_POR_HORA, 3600);
-  if (!limite.permitido) {
+  const global = limitar("registro:global", REGISTROS_GLOBALES_POR_HORA, 3600);
+
+  if (!limite.permitido || !global.permitido) {
+    const espera = Math.max(limite.esperaSeg, global.esperaSeg);
     return NextResponse.json(
-      { error: "Demasiadas cuentas nuevas desde aquí. Intenta más tarde." },
-      { status: 429, headers: { "Retry-After": String(limite.esperaSeg) } }
+      { error: "Demasiadas cuentas nuevas. Intenta más tarde." },
+      { status: 429, headers: { "Retry-After": String(espera) } }
     );
   }
 
@@ -88,29 +103,44 @@ export async function POST(peticion: Request) {
 
   // Cuenta y saldo se crean juntos: un usuario sin fila de saldo no
   // podría hablar, y el error aparecería mucho después.
-  const nuevoId = await sql.begin(async (tx) => {
-    const [u] = await tx`
-      insert into users ${sql({
-        tipo_acceso: "email",
-        ...campos,
-        password_hash: hash,
-        nombre,
-        nivel,
-      })}
-      returning id
-    `;
-    await tx`
-      insert into saldos (user_id, mensajes_plan, mensajes_recarga)
-      values (${u.id}, 0, ${gratis})
-    `;
-    await tx`
-      insert into movimientos_credito
-        (user_id, tipo, bolsa, cantidad, saldo_plan_despues, saldo_recarga_despues, nota)
-      values
-        (${u.id}, 'bono', 'recarga', ${gratis}, 0, ${gratis}, 'Mensajes de prueba al registrarse')
-    `;
-    return u.id;
-  });
+  // La comprobación de arriba puede perder la carrera con otra petición
+  // idéntica. La restricción única de la base es la que manda; aquí se
+  // traduce a un mensaje entendible en vez de un error de servidor.
+  let nuevoId: string;
+  try {
+    nuevoId = await sql.begin(async (tx) => {
+      const [u] = await tx`
+        insert into users ${sql({
+          tipo_acceso: "email",
+          ...campos,
+          password_hash: hash,
+          nombre,
+          nivel,
+        })}
+        returning id
+      `;
+      await tx`
+        insert into saldos (user_id, mensajes_plan, mensajes_recarga)
+        values (${u.id}, 0, ${gratis})
+      `;
+      await tx`
+        insert into movimientos_credito
+          (user_id, tipo, bolsa, cantidad, saldo_plan_despues, saldo_recarga_despues, nota)
+        values
+          (${u.id}, 'bono', 'recarga', ${gratis}, 0, ${gratis}, 'Mensajes de prueba al registrarse')
+      `;
+      return u.id;
+    });
+  } catch (e) {
+    const codigo = (e as { code?: string }).code;
+    if (codigo === "23505") {
+      return NextResponse.json(
+        { error: "Ya hay una cuenta con esos datos. Inicia sesión." },
+        { status: 409 }
+      );
+    }
+    throw e;
+  }
 
   // El correo se manda después de crear la cuenta: si el proveedor
   // falla, el alumno ya tiene cuenta y puede pedirlo de nuevo.

@@ -3,10 +3,22 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AUDIO_MAX_SEGUNDOS, type EstadoConversacion } from "@/lib/tipos";
 
+/**
+ * Volumen mínimo para dar el audio por válido.
+ *
+ * Una sala en silencio con el micrófono abierto ronda 0,005; hablar
+ * bajito ya pasa de 0,03. El umbral distingue "no entró sonido" de
+ * "habló flojito", sin castigar a quien habla en voz baja.
+ */
+const UMBRAL_SILENCIO = 0.015;
+
 interface Props {
   estado: EstadoConversacion;
   onIniciar: () => void;
   onAudioListo: (audio: Blob, duracionSeg: number) => void;
+  /** Se descartó la grabación: hay que volver el estado a inactivo o el
+   *  botón se queda en rojo para siempre. */
+  onDescartar: () => void;
   deshabilitado?: boolean;
 }
 
@@ -21,7 +33,13 @@ interface Props {
  * un setInterval se desvía si el navegador se ocupa o la pestaña pasa a
  * segundo plano, y esa duración es la que se cobra y se guarda.
  */
-export function BotonGrabar({ estado, onIniciar, onAudioListo, deshabilitado }: Props) {
+export function BotonGrabar({
+  estado,
+  onIniciar,
+  onAudioListo,
+  onDescartar,
+  deshabilitado,
+}: Props) {
   const [segundos, setSegundos] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,6 +47,8 @@ export function BotonGrabar({ estado, onIniciar, onAudioListo, deshabilitado }: 
   const trozos = useRef<Blob[]>([]);
   const intervalo = useRef<ReturnType<typeof setInterval> | null>(null);
   const inicio = useRef<number>(0);
+  const audioCtx = useRef<AudioContext | null>(null);
+  const volumenMaximo = useRef<number>(0);
 
   const grabando = estado === "grabando";
 
@@ -39,6 +59,8 @@ export function BotonGrabar({ estado, onIniciar, onAudioListo, deshabilitado }: 
     }
     grabadora.current?.stream.getTracks().forEach((t) => t.stop());
     grabadora.current = null;
+    void audioCtx.current?.close();
+    audioCtx.current = null;
   }, []);
 
   const detener = useCallback(() => {
@@ -71,10 +93,38 @@ export function BotonGrabar({ estado, onIniciar, onAudioListo, deshabilitado }: 
           Math.round((Date.now() - inicio.current) / 1000)
         );
         const audio = new Blob(trozos.current, { type: mr.mimeType || "audio/webm" });
+        const pico = volumenMaximo.current;
         limpiar();
         setSegundos(0);
-        if (duracion >= 1) onAudioListo(audio, duracion);
+
+        if (duracion < 1) {
+          onDescartar();
+          return;
+        }
+
+        // Si no se oyó nada, no se manda. Con el micrófono mudo el
+        // modelo no devuelve vacío: se INVENTA una conversación, y al
+        // alumno le cobraríamos un mensaje por algo que nunca dijo -- y
+        // le ensuciaríamos el mapa de progreso con errores ajenos.
+        if (pico < UMBRAL_SILENCIO) {
+          setError(
+            "No te escuchamos. Revisa que el micrófono no esté silenciado."
+          );
+          onDescartar();
+          return;
+        }
+
+        onAudioListo(audio, duracion);
       };
+
+      // Medidor de volumen: sirve para saber si de verdad entró sonido
+      const ctx = new AudioContext();
+      const analizador = ctx.createAnalyser();
+      analizador.fftSize = 512;
+      ctx.createMediaStreamSource(stream).connect(analizador);
+      audioCtx.current = ctx;
+      volumenMaximo.current = 0;
+      const muestras = new Uint8Array(analizador.fftSize);
 
       grabadora.current = mr;
       inicio.current = Date.now();
@@ -83,6 +133,12 @@ export function BotonGrabar({ estado, onIniciar, onAudioListo, deshabilitado }: 
 
       setSegundos(0);
       intervalo.current = setInterval(() => {
+        analizador.getByteTimeDomainData(muestras);
+        let suma = 0;
+        for (const v of muestras) suma += (v - 128) ** 2;
+        const nivel = Math.sqrt(suma / muestras.length) / 128;
+        volumenMaximo.current = Math.max(volumenMaximo.current, nivel);
+
         const transcurridos = Math.round((Date.now() - inicio.current) / 1000);
         setSegundos(transcurridos);
         if (transcurridos >= AUDIO_MAX_SEGUNDOS) detener();
@@ -90,7 +146,7 @@ export function BotonGrabar({ estado, onIniciar, onAudioListo, deshabilitado }: 
     } catch {
       setError("No pudimos usar el micrófono. Revisa los permisos del navegador.");
     }
-  }, [detener, limpiar, onIniciar, onAudioListo]);
+  }, [detener, limpiar, onIniciar, onAudioListo, onDescartar]);
 
   useEffect(() => limpiar, [limpiar]);
 

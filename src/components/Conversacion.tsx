@@ -255,6 +255,7 @@ export function Conversacion({
           estado={estado}
           onIniciar={() => setEstado("grabando")}
           onAudioListo={manejarAudio}
+          onDescartar={() => setEstado("inactivo")}
           deshabilitado={sinMensajes}
         />
       </div>

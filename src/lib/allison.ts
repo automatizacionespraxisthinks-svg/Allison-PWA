@@ -207,10 +207,28 @@ export async function conversar(opciones: {
   const datos = JSON.parse(respuesta.text ?? "{}");
   const uso = respuesta.usageMetadata;
 
+  /**
+   * Se descartan las correcciones inservibles antes de que salgan de
+   * aquí. El prompt ya las prohíbe y la batería de pruebas las detecta,
+   * pero esa batería corre sobre nueve frases fijas: en producción hay
+   * que filtrarlas de verdad.
+   *
+   * Visto en pruebas: original "I am thirty years old" y corrección
+   * "I am thirty years old" -- idénticas -- con una explicación que
+   * contradecía lo que el alumno había dicho bien.
+   */
+  const normalizar = (t: string) =>
+    t.trim().toLowerCase().replace(/[.,;:!?¡¿"']/g, "").replace(/\s+/g, " ");
+
+  const correcciones = ((datos.correcciones ?? []) as Correccion[]).filter((c) => {
+    if (!c?.original?.trim() || !c?.correccion?.trim()) return false;
+    return normalizar(c.original) !== normalizar(c.correccion);
+  });
+
   return {
     transcripcion: datos.transcripcion ?? "",
     respuesta: datos.respuesta ?? "",
-    correcciones: datos.correcciones ?? [],
+    correcciones,
     tokensEntrada: uso?.promptTokenCount ?? 0,
     tokensSalida: uso?.candidatesTokenCount ?? 0,
   };
