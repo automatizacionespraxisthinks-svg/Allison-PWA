@@ -47,13 +47,26 @@ export async function POST(peticion: Request) {
     select (select count(*) from a) + (select count(*) from b) as count
   `;
 
+  // Órdenes de pago que se abrieron y nunca se pagaron. A las 48 horas
+  // son carritos abandonados: se cierran para que no ensucien los
+  // reportes de pagos ni la auditoría de integridad. Si la pasarela
+  // llegara a confirmar una después, el webhook la encontraría
+  // rechazada y no acreditaría — correcto para una orden vencida.
+  const abandonadas = await sql`
+    update transacciones set estado = 'rechazada'
+     where estado = 'pendiente' and creado_en < now() - interval '48 hours'
+     returning id
+  `;
+
   console.log(
-    `Limpieza: ${borradas} conversaciones y ${tokens} enlaces vencidos eliminados`
+    `Limpieza: ${borradas} conversaciones, ${tokens} enlaces vencidos y ` +
+      `${abandonadas.length} órdenes abandonadas`
   );
 
   return NextResponse.json({
     ok: true,
     conversacionesBorradas: borradas,
     enlacesBorrados: Number(tokens),
+    ordenesAbandonadas: abandonadas.length,
   });
 }
