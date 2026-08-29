@@ -40,6 +40,14 @@ export default function PaginaInicio() {
           </Link>
         </p>
       </div>
+      <footer className="mt-4 flex gap-4 text-xs text-texto-suave">
+        <Link href="/legal/terminos" className="underline">
+          Términos
+        </Link>
+        <Link href="/legal/privacidad" className="underline">
+          Política de datos
+        </Link>
+      </footer>
     </main>
   );
 }

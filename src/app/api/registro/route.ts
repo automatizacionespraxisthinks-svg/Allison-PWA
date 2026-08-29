@@ -4,6 +4,7 @@ import { z } from "zod";
 import { sql } from "@/lib/db";
 import { limitar, origenDe } from "@/lib/limite";
 import { interpretar } from "@/lib/identificador";
+import { VERSION_LEGAL } from "@/lib/legal";
 import { enviarVerificacion, PRUEBA_INICIAL } from "@/lib/verificacion";
 
 /** Convierte lo que llegue en texto, para dar mensajes en español y no
@@ -23,6 +24,15 @@ const Registro = z.object({
     z.string().min(8, "La contraseña debe tener al menos 8 caracteres").max(200)
   ),
   nivel: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+
+  // La autorización tiene que ser expresa: se exige true, no se acepta
+  // la ausencia del campo ni una casilla marcada de antemano.
+  aceptaLegal: z.literal(true, {
+    error: "Debes aceptar los términos y la política de datos",
+  }),
+  declaraEdad: z.literal(true, {
+    error: "Debes confirmar que eres mayor de edad o que tu acudiente autoriza",
+  }),
 });
 
 /** Cuentas nuevas permitidas desde una misma IP en una hora. */
@@ -116,6 +126,11 @@ export async function POST(peticion: Request) {
           password_hash: hash,
           nombre,
           nivel,
+          acepto_terminos_en: new Date(),
+          version_legal: VERSION_LEGAL,
+          autoriza_transferencia: true,
+          autoriza_voz: true,
+          declara_edad_o_acudiente: true,
         })}
         returning id
       `;

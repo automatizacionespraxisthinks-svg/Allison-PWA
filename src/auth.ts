@@ -4,6 +4,7 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { sql } from "@/lib/db";
 import { interpretar } from "@/lib/identificador";
+import { VERSION_LEGAL } from "@/lib/legal";
 import { PRUEBA_TOTAL } from "@/lib/verificacion";
 import type { Nivel } from "@/lib/tipos";
 
@@ -138,9 +139,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       if (!existe) {
         const [nuevo] = await sql`
-          insert into users (tipo_acceso, email, google_id, nombre, nivel, email_verificado_en)
+          insert into users
+            (tipo_acceso, email, google_id, nombre, nivel, email_verificado_en,
+             acepto_terminos_en, version_legal, autoriza_transferencia,
+             autoriza_voz, declara_edad_o_acudiente)
           values ('email', ${email}, ${account.providerAccountId},
-                  ${profile.name ?? "Estudiante"}, 'A1', now())
+                  ${profile.name ?? "Estudiante"}, 'A1', now(),
+                  now(), ${VERSION_LEGAL}, true, true, true)
           returning id
         `;
         // Google ya verificó el correo: no hay nada que confirmar, así

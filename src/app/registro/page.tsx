@@ -14,6 +14,8 @@ export default function PaginaRegistro() {
   const [acceso, setAcceso] = useState("");
   const [password, setPassword] = useState("");
   const [nivel, setNivel] = useState<Nivel>("A1");
+  const [aceptaLegal, setAceptaLegal] = useState(false);
+  const [declaraEdad, setDeclaraEdad] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
@@ -25,7 +27,9 @@ export default function PaginaRegistro() {
     const respuesta = await fetch("/api/registro", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nombre, email, acceso, password, nivel }),
+      body: JSON.stringify({
+        nombre, email, acceso, password, nivel, aceptaLegal, declaraEdad,
+      }),
     });
     const datos = await respuesta.json();
 
@@ -66,7 +70,15 @@ export default function PaginaRegistro() {
 
       <button
         type="button"
-        onClick={() => signIn("google", { callbackUrl: "/practicar" })}
+        onClick={() => {
+          if (!aceptaLegal || !declaraEdad) {
+            setError(
+              "Marca las dos casillas de abajo antes de continuar con Google."
+            );
+            return;
+          }
+          void signIn("google", { callbackUrl: "/practicar" });
+        }}
         className="flex items-center justify-center gap-3 rounded-xl border border-borde bg-superficie px-4 py-3 font-medium transition hover:bg-superficie-2"
       >
         <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
@@ -168,6 +180,45 @@ export default function PaginaRegistro() {
           </span>
         </fieldset>
 
+        {/*
+          Las casillas van SIN marcar. Un consentimiento marcado de
+          antemano no es válido: la ley exige que sea expreso.
+        */}
+        <div className="flex flex-col gap-3 rounded-xl border border-borde bg-superficie p-4">
+          <label className="flex cursor-pointer items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              checked={aceptaLegal}
+              onChange={(e) => setAceptaLegal(e.target.checked)}
+              className="mt-0.5 size-4 shrink-0 accent-[var(--primario)]"
+            />
+            <span className="leading-snug">
+              Acepto los{" "}
+              <Link href="/legal/terminos" target="_blank" className="text-primario underline">
+                términos y condiciones
+              </Link>{" "}
+              y la{" "}
+              <Link href="/legal/privacidad" target="_blank" className="text-primario underline">
+                política de datos
+              </Link>
+              . Autorizo que se grabe mi voz para corregirme y que mis datos se
+              procesen en Estados Unidos.
+            </span>
+          </label>
+
+          <label className="flex cursor-pointer items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              checked={declaraEdad}
+              onChange={(e) => setDeclaraEdad(e.target.checked)}
+              className="mt-0.5 size-4 shrink-0 accent-[var(--primario)]"
+            />
+            <span className="leading-snug">
+              Soy mayor de edad, o mi padre, madre o acudiente autoriza mi registro.
+            </span>
+          </label>
+        </div>
+
         {error && (
           <p role="alert" className="rounded-lg bg-error/10 p-3 text-sm text-error">
             {error}
@@ -176,7 +227,7 @@ export default function PaginaRegistro() {
 
         <button
           type="submit"
-          disabled={enviando}
+          disabled={enviando || !aceptaLegal || !declaraEdad}
           className="rounded-xl bg-primario px-4 py-3.5 font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
         >
           {enviando ? "Creando…" : "Crear cuenta y empezar"}
