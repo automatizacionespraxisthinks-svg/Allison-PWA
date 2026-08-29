@@ -144,7 +144,9 @@ export function BotonGrabar({
         if (transcurridos >= AUDIO_MAX_SEGUNDOS) detener();
       }, 250);
     } catch {
-      setError("No pudimos usar el micrófono. Revisa los permisos del navegador.");
+      setError(
+        "No pudimos usar el micrófono. Revisa los permisos, o usa el teclado de abajo."
+      );
     }
   }, [detener, limpiar, onIniciar, onAudioListo, onDescartar]);
 

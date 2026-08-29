@@ -48,17 +48,25 @@ export async function POST(peticion: Request) {
   }
 
   const audio = formulario.get("audio");
+  const textoCrudo = formulario.get("texto");
   const duracionSeg = Number(formulario.get("duracion") ?? 0);
   const conversacionPedida = formulario.get("conversacion") as string | null;
 
-  if (!(audio instanceof Blob)) {
-    return NextResponse.json({ error: "Falta el audio" }, { status: 400 });
-  }
-  if (audio.size > MAX_BYTES) {
-    return NextResponse.json({ error: "El audio es demasiado grande" }, { status: 413 });
-  }
-  if (duracionSeg > AUDIO_MAX_SEGUNDOS + 5) {
-    return NextResponse.json({ error: "El audio excede el máximo" }, { status: 413 });
+  // El turno llega hablado o ESCRITO: el teclado existe para el alumno
+  // con el micrófono dañado, y vale exactamente lo mismo — un turno.
+  const textoEscrito =
+    typeof textoCrudo === "string" ? textoCrudo.trim().slice(0, 600) : null;
+
+  if (!textoEscrito) {
+    if (!(audio instanceof Blob)) {
+      return NextResponse.json({ error: "Falta el audio" }, { status: 400 });
+    }
+    if (audio.size > MAX_BYTES) {
+      return NextResponse.json({ error: "El audio es demasiado grande" }, { status: 413 });
+    }
+    if (duracionSeg > AUDIO_MAX_SEGUNDOS + 5) {
+      return NextResponse.json({ error: "El audio excede el máximo" }, { status: 413 });
+    }
   }
 
   // Cobrar ANTES de llamar a Gemini. Es atómico: si dos pestañas
@@ -80,8 +88,10 @@ export async function POST(peticion: Request) {
   const conversacionId =
     conversacionPedida ?? (await conversacionActiva(alumno.id, alumno.nivel));
 
-  // El audio se lee mientras la base contesta, no después
-  const buffer = Buffer.from(await audio.arrayBuffer());
+  const buffer =
+    !textoEscrito && audio instanceof Blob
+      ? Buffer.from(await audio.arrayBuffer())
+      : null;
   const codificador = new TextEncoder();
 
   const flujo = new ReadableStream({
@@ -111,8 +121,13 @@ export async function POST(peticion: Request) {
         }));
 
         const partes = conversarEnStream({
-          audioBase64: buffer.toString("base64"),
-          mimeType: audio.type || "audio/webm",
+          ...(textoEscrito
+            ? { texto: textoEscrito }
+            : {
+                audioBase64: buffer?.toString("base64"),
+                mimeType:
+                  (audio instanceof Blob && audio.type) || "audio/webm",
+              }),
           alumno: {
             nombre: alumno.nombre,
             nivel: alumno.nivel,

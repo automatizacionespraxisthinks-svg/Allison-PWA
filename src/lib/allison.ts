@@ -238,8 +238,11 @@ export async function conversar(opciones: {
  * mirar un círculo vacío durante todos ellos.
  */
 export async function* conversarEnStream(opciones: {
-  audioBase64: string;
-  mimeType: string;
+  /** Audio del alumno… */
+  audioBase64?: string;
+  mimeType?: string;
+  /** …o su mensaje ESCRITO, cuando el micrófono no da. */
+  texto?: string;
   alumno: Alumno;
   historial?: Mensaje[];
   tema?: string;
@@ -253,11 +256,16 @@ export async function* conversarEnStream(opciones: {
   const {
     audioBase64,
     mimeType,
+    texto,
     alumno,
     historial = [],
     tema,
     temperatura = 0.8,
   } = opciones;
+
+  if (!texto && !audioBase64) {
+    throw new Error("Hace falta el audio o el texto del alumno");
+  }
 
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -270,10 +278,31 @@ export async function* conversarEnStream(opciones: {
     model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
     contents: [
       ...contexto,
-      { role: "user", parts: [{ inlineData: { mimeType, data: audioBase64 } }] },
+      {
+        role: "user",
+        parts: texto
+          ? [{ text: texto }]
+          : [
+              {
+                inlineData: {
+                  mimeType: mimeType ?? "audio/webm",
+                  data: audioBase64 ?? "",
+                },
+              },
+            ],
+      },
     ],
     config: {
-      systemInstruction: construirInstruccion(alumno, tema),
+      systemInstruction:
+        construirInstruccion(alumno, tema) +
+        (texto
+          ? `
+
+THIS TURN WAS TYPED, not spoken — the student's microphone
+may not work. Set "transcripcion" to their text exactly as written.
+There is no audio: never invent pronunciation corrections for a typed
+message. Grammar, vocabulary and naturalness still apply.`
+          : ""),
       responseMimeType: "application/json",
       responseSchema: ESQUEMA_RESPUESTA,
       temperature: temperatura,

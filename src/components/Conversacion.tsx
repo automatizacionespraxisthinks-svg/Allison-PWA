@@ -11,6 +11,7 @@ import { SelectorNivel } from "@/components/SelectorNivel";
 import { FinDePrueba, type LogroPrueba } from "@/components/FinDePrueba";
 import { Transcripcion } from "@/components/Transcripcion";
 import type { EstadoConversacion, Mensaje, Nivel } from "@/lib/tipos";
+import { fijarModoTexto, useModoTexto } from "@/lib/entrada";
 import { useVelocidad } from "@/lib/velocidad";
 
 interface Props {
@@ -68,6 +69,8 @@ export function Conversacion({
   /** Lo que el alumno acaba de decir, mostrado apenas llega. */
   const [dichoAhora, setDichoAhora] = useState<string | null>(null);
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const modoTexto = useModoTexto();
+  const [borrador, setBorrador] = useState("");
 
   /** La idea de rescate: qué podría responder el alumno. */
   const [idea, setIdea] = useState<{ en: string; es: string } | null>(null);
@@ -104,17 +107,34 @@ export function Conversacion({
     });
   }
 
-  async function manejarAudio(audio: Blob, duracionSeg: number) {
+  function manejarAudio(audio: Blob, duracionSeg: number) {
+    const cuerpo = new FormData();
+    cuerpo.append("audio", audio);
+    cuerpo.append("duracion", String(duracionSeg));
+    void enviarTurno(cuerpo);
+  }
+
+  /** El turno escrito, para cuando el micrófono no da. */
+  function enviarTexto() {
+    const texto = borrador.trim();
+    if (!texto || estado !== "inactivo" || sinMensajes) return;
+    setBorrador("");
+    const cuerpo = new FormData();
+    cuerpo.append("texto", texto);
+    cuerpo.append("duracion", "0");
+    // El alumno ve su mensaje de inmediato: escribirlo ya es tenerlo
+    setDichoAhora(texto);
+    void enviarTurno(cuerpo, true);
+  }
+
+  async function enviarTurno(cuerpo: FormData, conservarDicho = false) {
     setEstado("procesando");
     setError(null);
-    setDichoAhora(null);
+    if (!conservarDicho) setDichoAhora(null);
     setIdea(null);
     setIdeaVisible(false);
 
     try {
-      const cuerpo = new FormData();
-      cuerpo.append("audio", audio);
-      cuerpo.append("duracion", String(duracionSeg));
       if (conversacionId.current) {
         cuerpo.append("conversacion", conversacionId.current);
       }
@@ -415,7 +435,55 @@ export function Conversacion({
         </div>
       )}
 
-      {/* ---- El dock: micrófono al centro, la idea a un lado ---- */}
+      {/* ---- El dock: voz por defecto; teclado para el micrófono dañado ---- */}
+      {modoTexto ? (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            enviarTexto();
+          }}
+          className="flex shrink-0 items-center gap-2 pb-4 pt-1"
+        >
+          <button
+            type="button"
+            onClick={() => fijarModoTexto(false)}
+            aria-label="Volver a hablar por voz"
+            title="Volver a la voz"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full border border-borde bg-superficie text-texto-suave transition hover:bg-superficie-2 hover:text-texto"
+          >
+            <svg viewBox="0 0 24 24" className="size-5" fill="currentColor">
+              <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Z" />
+              <path d="M18 11a1 1 0 1 0-2 0 4 4 0 0 1-8 0 1 1 0 1 0-2 0 6 6 0 0 0 5 5.91V19H9a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-2v-2.09A6 6 0 0 0 18 11Z" />
+            </svg>
+          </button>
+
+          <input
+            value={borrador}
+            onChange={(e) => setBorrador(e.target.value)}
+            maxLength={600}
+            placeholder="Escribe en inglés…"
+            aria-label="Escribe tu mensaje en inglés"
+            disabled={sinMensajes || estado === "procesando" || estado === "hablando"}
+            className="h-11 min-w-0 flex-1 rounded-full border border-borde bg-superficie px-4 text-[15px] outline-none transition focus:border-primario disabled:opacity-50"
+          />
+
+          <button
+            type="submit"
+            disabled={
+              !borrador.trim() ||
+              sinMensajes ||
+              estado === "procesando" ||
+              estado === "hablando"
+            }
+            aria-label="Enviar"
+            className="degradado-primario sombra-accion flex size-11 shrink-0 items-center justify-center rounded-full text-white transition hover:brightness-110 disabled:opacity-40"
+          >
+            <svg viewBox="0 0 24 24" className="ml-0.5 size-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="m22 2-7 20-4-9-9-4 20-7z" />
+            </svg>
+          </button>
+        </form>
+      ) : (
       <div className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center pb-3 pt-1">
         <div className="flex justify-end pr-5">
           <button
@@ -445,8 +513,22 @@ export function Conversacion({
           deshabilitado={sinMensajes}
         />
 
-        <div aria-hidden />
+        <div className="flex justify-start pl-5">
+          <button
+            type="button"
+            onClick={() => fijarModoTexto(true)}
+            aria-label="Escribir en vez de hablar"
+            title="¿Micrófono dañado? Escribe"
+            className="flex size-12 items-center justify-center rounded-full border border-borde bg-superficie text-texto-suave transition hover:bg-superficie-2 hover:text-texto"
+          >
+            <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="2" y="6" width="20" height="12" rx="2" />
+              <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6" />
+            </svg>
+          </button>
+        </div>
       </div>
+      )}
     </main>
   );
 }
