@@ -3,11 +3,11 @@
 import { useState } from "react";
 
 /**
- * Aviso para confirmar el correo.
+ * Aviso para confirmar el correo — una sola línea, arriba del todo.
  *
- * Va con el número de mensajes que gana al hacerlo: "confirma tu correo"
- * a secas es una tarea; "confirma y recibe 15 mensajes" es un premio, y
- * lo hace mucha más gente.
+ * Antes era un bloque entre las ayudas y el micrófono: interrumpía
+ * justo el camino del dedo hacia el botón de hablar. Arriba informa
+ * sin estorbar, y el premio va primero: "+15" es lo que convence.
  */
 export function AvisoVerificar({ mensajes }: { mensajes: number }) {
   const [estado, setEstado] = useState<"listo" | "enviando" | "enviado" | "error">(
@@ -21,29 +21,39 @@ export function AvisoVerificar({ mensajes }: { mensajes: number }) {
   }
 
   return (
-    <div className="mb-3 rounded-xl border border-primario/30 bg-primario/5 p-3 text-center text-sm">
-      <p>
-        Confirma tu correo y te damos{" "}
-        <strong className="text-primario">{mensajes} intervenciones más</strong>.
+    <div className="mb-2 flex items-center gap-2.5 rounded-xl border border-primario/25 bg-primario/5 px-3 py-2 text-sm">
+      <svg
+        viewBox="0 0 24 24"
+        className="size-4 shrink-0 text-primario"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        aria-hidden
+      >
+        <rect x="2" y="4" width="20" height="16" rx="2" />
+        <path d="m22 7-10 6L2 7" />
+      </svg>
+
+      <p className="min-w-0 flex-1 leading-snug">
+        <strong className="text-primario">+{mensajes}</strong> al confirmar tu
+        correo
+        {estado === "enviado" && (
+          <span className="text-texto-suave"> — enviado, revisa tu bandeja</span>
+        )}
+        {estado === "error" && (
+          <span className="text-error"> — no pudimos enviarlo</span>
+        )}
       </p>
 
-      {estado === "enviado" ? (
-        <p className="mt-1 text-texto-suave">
-          Te mandamos el enlace. Revisa tu correo, y el correo no deseado.
-        </p>
-      ) : (
+      {estado !== "enviado" && (
         <button
           type="button"
           onClick={reenviar}
           disabled={estado === "enviando"}
-          className="mt-1 font-semibold text-primario underline disabled:opacity-50"
+          className="shrink-0 font-semibold text-primario underline disabled:opacity-50"
         >
-          {estado === "enviando" ? "Enviando…" : "Reenviar el enlace"}
+          {estado === "enviando" ? "Enviando…" : "Reenviar"}
         </button>
-      )}
-
-      {estado === "error" && (
-        <p className="mt-1 text-error">No pudimos enviarlo. Intenta más tarde.</p>
       )}
     </div>
   );

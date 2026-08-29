@@ -167,14 +167,6 @@ export function Conversacion({
     }
   }
 
-  /** Vuelve a decir lo último, sin gastar un mensaje. */
-  function repetir() {
-    const ultimo = mensajes[mensajes.length - 1];
-    if (!ultimo || ultimo.rol !== "allison") return;
-    setEstado("hablando");
-    void hablar(ultimo.texto).then(() => setEstado("inactivo"));
-  }
-
   const sinMensajes = mensajesRestantes === 0;
   const ultimoDeAllison =
     mensajes.length > 0 && mensajes[mensajes.length - 1].rol === "allison"
@@ -285,6 +277,8 @@ export function Conversacion({
         </div>
       </header>
 
+      {faltaVerificar && <AvisoVerificar mensajes={mensajesPorVerificar} />}
+
       {verTranscripcion ? (
         <>
           {/*
@@ -316,12 +310,7 @@ export function Conversacion({
 
           {ultimoDeAllison && estado !== "grabando" && (
             <div className="flex shrink-0 justify-center pt-3">
-              <AyudaTurno
-                texto={ultimoDeAllison.texto}
-                nivel={nivel}
-                onRepetir={repetir}
-                puedeRepetir={estado === "inactivo"}
-              />
+              <AyudaTurno texto={ultimoDeAllison.texto} nivel={nivel} />
             </div>
           )}
         </>
@@ -346,20 +335,19 @@ export function Conversacion({
             </p>
           )}
 
-          {/* Lo último que dijo Allison, aunque el texto esté oculto */}
-          {!dichoAhora && mensajes.length > 0 && (
-            <p className="max-w-md text-center text-lg leading-relaxed">
-              {mensajes[mensajes.length - 1].texto}
-            </p>
+          {/*
+            Lo último de Allison, como burbuja con sus propios controles:
+            audio con velocidad al lado, y traducción al tocar el texto.
+            El mismo patrón que en la transcripción — un solo lenguaje.
+          */}
+          {!dichoAhora && ultimoDeAllison && (
+            <div className="w-full max-w-md">
+              <Transcripcion mensajes={[ultimoDeAllison]} nivel={nivel} />
+            </div>
           )}
 
           {ultimoDeAllison && estado !== "grabando" && (
-            <AyudaTurno
-              texto={ultimoDeAllison.texto}
-              nivel={nivel}
-              onRepetir={repetir}
-              puedeRepetir={estado === "inactivo"}
-            />
+            <AyudaTurno texto={ultimoDeAllison.texto} nivel={nivel} />
           )}
           <div ref={finRef} />
         </div>
@@ -390,8 +378,6 @@ export function Conversacion({
             </Link>
           </div>
         ))}
-
-      {faltaVerificar && <AvisoVerificar mensajes={mensajesPorVerificar} />}
 
       {/* Aviso antes de que se acabe, no cuando ya no puede hacer nada */}
       {enPrueba && mensajesRestantes > 0 && mensajesRestantes <= 5 && (
