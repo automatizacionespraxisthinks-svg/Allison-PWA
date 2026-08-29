@@ -69,7 +69,7 @@ export function correo(): Enviador {
 export function correoDeVerificacion(nombre: string, enlace: string, mensajes: number): Mensaje {
   const texto = `Hola ${nombre},
 
-Confirma tu correo y te damos ${mensajes} mensajes más para hablar con Allison:
+Confirma tu correo y te damos ${mensajes} intervenciones más para hablar con Allison:
 
 ${enlace}
 
@@ -77,7 +77,7 @@ El enlace vence en 48 horas. Si no creaste esta cuenta, ignora este mensaje.`;
 
   return {
     para: "",
-    asunto: `Confirma tu correo y recibe ${mensajes} mensajes más`,
+    asunto: `Confirma tu correo y recibe ${mensajes} intervenciones más`,
     texto,
   };
 }

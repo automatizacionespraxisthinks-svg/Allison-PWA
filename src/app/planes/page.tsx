@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BotonPlan } from "@/components/BotonPlan";
 import { sql } from "@/lib/db";
-import { pesos } from "@/lib/precios";
+import { pesos, tiempoEquivalente } from "@/lib/precios";
 import { alumnoActual } from "@/lib/sesion";
 
 export default async function PaginaPlanes() {
@@ -34,8 +34,8 @@ export default async function PaginaPlanes() {
       <div>
         <h1 className="text-2xl font-bold">Planes</h1>
         <p className="mt-1 text-texto-suave">
-          500 mensajes cada mes. Se gastan dentro del mes; al acabarse te
-          preguntamos si quieres seguir.
+          Conversa con Allison todos los días. Al acabarse el mes te
+          preguntamos si quieres seguir — sin cobros automáticos.
         </p>
       </div>
 
@@ -69,7 +69,10 @@ export default async function PaginaPlanes() {
                 <div>
                   <h2 className="text-lg font-bold">{p.nombre}</h2>
                   <p className="text-sm text-texto-suave">
-                    {p.mensajes_por_mes} mensajes al mes
+                    Hasta {p.mensajes_por_mes} intervenciones al mes
+                  </p>
+                  <p className="text-sm font-medium text-primario">
+                    {tiempoEquivalente(p.mensajes_por_mes)} al mes
                   </p>
                 </div>
                 {ahorro > 0 && (

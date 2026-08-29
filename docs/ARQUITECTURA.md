@@ -52,7 +52,14 @@ errores intactos, y el CPX22 pasa de ~5 a ~30 estudiantes simultáneos.
 
 ## 2. Modelo de cobro
 
-- **Unidad:** 1 mensaje = 1 turno (audio del alumno, máx. 60 s + respuesta de Allison)
+- **Unidad interna:** 1 mensaje = 1 turno (audio del alumno, máx. 60 s + respuesta de Allison)
+- **Presentación al usuario: "intervenciones" + tiempo equivalente.** Se evaluaron tokens
+  (incomprensibles), créditos (opacidad que resta confianza frente a colegios), minutos y
+  segundos (ansiedad de taxímetro: el principiante pagaría por sus silencios, castigando a
+  quien más necesita pausar). La unidad interna NO cambia — el sistema de saldos y sus 48
+  pruebas quedan intactos; solo cambia el texto: "Hasta 500 intervenciones al mes — más de
+  8 horas de conversación" (1 intervención ≈ 1 minuto, redondeado hacia abajo para prometer
+  menos de lo que se entrega). Los términos aclaran que la equivalencia es informativa
 - **Tasa:** $100 COP = 1 mensaje
 - **Recarga:** mínimo $4.000, de ahí en adelante monto libre. **No caducan**
 - **Bono por volumen:** +10% desde $20.000 · +15% desde $50.000

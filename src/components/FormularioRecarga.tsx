@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { calcularRecarga, pesos, type ConfigPrecios } from "@/lib/precios";
+import { calcularRecarga, pesos, tiempoEquivalente, type ConfigPrecios } from "@/lib/precios";
 
 const ATAJOS = [4_000, 10_000, 20_000, 50_000];
 
@@ -72,7 +72,7 @@ export function FormularioRecarga({ cfg }: { cfg: ConfigPrecios }) {
           />
         </div>
         <span className="text-xs text-texto-suave">
-          Desde {pesos(cfg.minima)}. Los mensajes de recarga no caducan.
+          Desde {pesos(cfg.minima)}. Lo que compras no caduca nunca.
         </span>
       </label>
 
@@ -81,8 +81,11 @@ export function FormularioRecarga({ cfg }: { cfg: ConfigPrecios }) {
         <p className="text-sm text-white/80">Recibes</p>
         <p className="text-4xl font-bold tabular-nums">
           {calculo.total.toLocaleString("es-CO")}
-          <span className="ml-2 text-lg font-medium text-white/80">mensajes</span>
+          <span className="ml-2 text-lg font-medium text-white/80">
+            intervenciones
+          </span>
         </p>
+        <p className="mt-1 text-sm text-white/80">{tiempoEquivalente(calculo.total)}</p>
 
         {calculo.bono > 0 && (
           <p className="mt-2 inline-block rounded-full bg-white/20 px-3 py-1 text-sm font-medium">
@@ -95,7 +98,7 @@ export function FormularioRecarga({ cfg }: { cfg: ConfigPrecios }) {
       {calculo.siguienteEscalon && !insuficiente && (
         <p className="rounded-xl bg-acento/10 p-3 text-center text-sm text-acento">
           Agrega {pesos(calculo.siguienteEscalon.faltan)} más y te regalamos{" "}
-          {Math.round(calculo.siguienteEscalon.bono * 100)}% de mensajes.
+          {Math.round(calculo.siguienteEscalon.bono * 100)}% más.
         </p>
       )}
 

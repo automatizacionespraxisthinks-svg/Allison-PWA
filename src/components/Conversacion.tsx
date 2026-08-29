@@ -206,7 +206,7 @@ export function Conversacion({
               mensajesRestantes <= 10 ? "text-acento" : "text-texto-suave"
             }`}
           >
-            {mensajesRestantes} {enPrueba ? "de prueba" : "mensajes"}
+            {mensajesRestantes} {enPrueba ? "de prueba" : "disponibles"}
           </span>
           <Link
             href="/recargar"
@@ -378,7 +378,7 @@ export function Conversacion({
           </div>
         ) : (
           <div className="mb-4 rounded-xl border border-acento/30 bg-acento/10 p-4 text-center">
-            <p className="text-sm font-medium">Se te acabaron los mensajes.</p>
+            <p className="text-sm font-medium">Se te acabaron las intervenciones.</p>
             <p className="mt-1 text-sm text-texto-suave">
               Recarga desde $4.000 y sigue practicando.
             </p>

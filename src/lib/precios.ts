@@ -83,3 +83,19 @@ export function validarMonto(montoCop: unknown, cfg: ConfigPrecios): string | nu
 }
 
 export const pesos = (n: number) => `$${n.toLocaleString("es-CO")}`;
+
+/**
+ * Tiempo de conversación equivalente a un número de intervenciones.
+ *
+ * La unidad interna sigue siendo el mensaje (un turno); esto es solo
+ * PRESENTACIÓN. Un turno real —el alumno habla, Allison responde— ronda
+ * el minuto. Se redondea hacia abajo y se dice "más de X horas" para
+ * prometer siempre menos de lo que se entrega.
+ */
+export function tiempoEquivalente(intervenciones: number): string {
+  if (intervenciones < 60) {
+    return `≈ ${intervenciones} minutos de conversación`;
+  }
+  const horas = Math.floor(intervenciones / 60);
+  return `más de ${horas} ${horas === 1 ? "hora" : "horas"} de conversación`;
+}

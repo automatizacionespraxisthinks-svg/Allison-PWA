@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { pesos } from "@/lib/precios";
+import { pesos, tiempoEquivalente } from "@/lib/precios";
 
 export interface LogroPrueba {
   mensajes: number;
@@ -25,14 +25,13 @@ export function FinDePrueba({ logro }: { logro: LogroPrueba }) {
   return (
     <div className="rounded-3xl border-2 border-primario/40 bg-primario/5 p-6">
       <h2 className="text-xl font-bold leading-tight">
-        Se te acabaron los mensajes de prueba
+        Se te acabó la prueba gratis
       </h2>
 
       {hizoAlgo && (
         <>
           <p className="mt-2 text-[15px] leading-relaxed text-texto-suave">
-            Mira lo que hiciste con solo {logro.mensajes}{" "}
-            {logro.mensajes === 1 ? "mensaje" : "mensajes"}:
+            Mira lo que hiciste en {tiempoEquivalente(logro.mensajes).replace("≈ ", "solo ")}:
           </p>
 
           <div className="mt-4 grid grid-cols-3 gap-2">

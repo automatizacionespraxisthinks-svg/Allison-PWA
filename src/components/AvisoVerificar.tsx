@@ -24,7 +24,7 @@ export function AvisoVerificar({ mensajes }: { mensajes: number }) {
     <div className="mb-3 rounded-xl border border-primario/30 bg-primario/5 p-3 text-center text-sm">
       <p>
         Confirma tu correo y te damos{" "}
-        <strong className="text-primario">{mensajes} mensajes más</strong>.
+        <strong className="text-primario">{mensajes} intervenciones más</strong>.
       </p>
 
       {estado === "enviado" ? (

@@ -32,7 +32,7 @@ export default function PaginaInicio() {
         >
           Empezar a hablar
         </Link>
-        <p className="text-sm text-texto-suave">20 mensajes gratis, sin tarjeta</p>
+        <p className="text-sm text-texto-suave">Prueba gratis, sin tarjeta</p>
         <p className="text-sm text-texto-suave">
           ¿Ya tienes cuenta?{" "}
           <Link href="/entrar" className="font-medium text-primario underline">

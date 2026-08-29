@@ -73,8 +73,10 @@ export default function PaginaTerminos() {
           <h2 className="text-lg font-semibold">5. Mensajes, planes y recargas</h2>
           <ul className="mt-2 flex list-disc flex-col gap-1.5 pl-5">
             <li>
-              <strong>Un mensaje</strong> es un turno de conversación: lo que dices tú
-              (máximo 60 segundos) más lo que responde Allison.
+              <strong>Una intervención</strong> (o mensaje) es un turno de
+              conversación: lo que dices tú (máximo 60 segundos) más lo que
+              responde Allison. Las equivalencias en horas que mostramos son
+              estimaciones informativas, no una promesa de duración.
             </li>
             <li>
               <strong>Prueba gratis:</strong> mensajes de regalo al crear tu cuenta.

@@ -18,12 +18,12 @@ export default async function PaginaRecargar() {
           ← Volver
         </Link>
         <span className="text-sm text-texto-suave">
-          Tienes {saldo} {saldo === 1 ? "mensaje" : "mensajes"}
+          Tienes {saldo} {saldo === 1 ? "intervención" : "intervenciones"}
         </span>
       </header>
 
       <div>
-        <h1 className="text-2xl font-bold">Recarga mensajes</h1>
+        <h1 className="text-2xl font-bold">Recarga y sigue hablando</h1>
         <p className="mt-1 text-texto-suave">
           Paga solo lo que vas a usar. No caducan nunca.
         </p>

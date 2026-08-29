@@ -29,7 +29,7 @@ export default async function PaginaPagar({
         <span className="text-6xl" aria-hidden>🎉</span>
         <h1 className="text-2xl font-bold">¡Listo!</h1>
         <p className="text-texto-suave">
-          Te acreditamos {t.mensajes_otorgados} mensajes.
+          Te acreditamos {t.mensajes_otorgados} intervenciones.
         </p>
         <Link
           href="/practicar"
@@ -54,7 +54,7 @@ export default async function PaginaPagar({
             </dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-texto-suave">Mensajes</dt>
+            <dt className="text-texto-suave">Intervenciones</dt>
             <dd className="font-medium tabular-nums">{t.mensajes_otorgados}</dd>
           </div>
           <div className="flex justify-between border-t border-borde pt-2">
