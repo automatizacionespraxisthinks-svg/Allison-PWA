@@ -5,7 +5,6 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { AvatarAllison } from "@/components/AvatarAllison";
 import { BotonGrabar } from "@/components/BotonGrabar";
-import { AyudaTurno } from "@/components/AyudaTurno";
 import { Bienvenida } from "@/components/Bienvenida";
 import { AvisoVerificar } from "@/components/AvisoVerificar";
 import { SelectorNivel } from "@/components/SelectorNivel";
@@ -29,9 +28,25 @@ interface Props {
   mensajesPorVerificar: number;
   esCoordinador: boolean;
   esAdmin: boolean;
+  racha: number;
   logro?: LogroPrueba;
 }
 
+const ESTADO_LINEA: Record<EstadoConversacion, string> = {
+  inactivo: "en línea",
+  grabando: "escuchándote…",
+  procesando: "pensando…",
+  hablando: "hablando…",
+};
+
+/**
+ * La conversación como un chat de verdad.
+ *
+ * Allison vive en el encabezado — foto, nombre y estado, siempre
+ * visibles — y la charla ocupa toda la pantalla, como cualquier chat
+ * que el alumno ya sabe usar. Cada mensaje trae sus propios controles;
+ * abajo solo quedan el micrófono y la idea de rescate.
+ */
 export function Conversacion({
   nombre,
   nivel,
@@ -43,30 +58,33 @@ export function Conversacion({
   mensajesPorVerificar,
   esCoordinador,
   esAdmin,
+  racha,
   logro,
 }: Props) {
   const [estado, setEstado] = useState<EstadoConversacion>("inactivo");
   const [mensajes, setMensajes] = useState<Mensaje[]>(historial);
-  const [verTranscripcion, setVerTranscripcion] = useState(false);
   const [mensajesRestantes, setMensajesRestantes] = useState(mensajesIniciales);
   const [error, setError] = useState<string | null>(null);
   /** Lo que el alumno acaba de decir, mostrado apenas llega. */
   const [dichoAhora, setDichoAhora] = useState<string | null>(null);
+  const [menuAbierto, setMenuAbierto] = useState(false);
+
+  /** La idea de rescate: qué podría responder el alumno. */
+  const [idea, setIdea] = useState<{ en: string; es: string } | null>(null);
+  const [ideaVisible, setIdeaVisible] = useState(false);
+  const [ideaCargando, setIdeaCargando] = useState(false);
 
   const conversacionId = useRef<string | null>(idInicial);
   const velocidad = useVelocidad();
-  const ultimoAudio = useRef<SpeechSynthesisUtterance | null>(null);
   const finRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     finRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [mensajes, verTranscripcion]);
+  }, [mensajes, dichoAhora, ideaVisible]);
 
   /**
    * PROVISIONAL — voz del navegador.
-   * Se reemplaza por el TTS del VPS cuando esté conectado. Mientras
-   * tanto permite probar la conversación completa: Allison responde
-   * hablando, no solo escribiendo.
+   * Se reemplaza por el TTS del VPS cuando esté conectado.
    */
   function hablar(texto: string): Promise<void> {
     return new Promise((resolver) => {
@@ -81,7 +99,6 @@ export function Conversacion({
       voz.rate = base * velocidad;
       voz.onend = () => resolver();
       voz.onerror = () => resolver();
-      ultimoAudio.current = voz;
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(voz);
     });
@@ -91,6 +108,8 @@ export function Conversacion({
     setEstado("procesando");
     setError(null);
     setDichoAhora(null);
+    setIdea(null);
+    setIdeaVisible(false);
 
     try {
       const cuerpo = new FormData();
@@ -102,7 +121,6 @@ export function Conversacion({
 
       const respuesta = await fetch("/api/conversar", { method: "POST", body: cuerpo });
 
-      // Los errores previos al turno llegan como JSON normal
       if (!respuesta.ok) {
         const datos = await respuesta.json().catch(() => ({}));
         setError(datos.mensaje ?? "Algo salió mal. Intenta de nuevo.");
@@ -132,12 +150,10 @@ export function Conversacion({
           const parte = JSON.parse(linea);
 
           if (parte.tipo === "transcripcion") {
-            // Primera señal de vida: el alumno se ve a sí mismo
             setDichoAhora(parte.texto);
           }
 
           if (parte.tipo === "respuesta") {
-            // Allison empieza a hablar sin esperar las correcciones
             setEstado("hablando");
             hablando = hablar(parte.texto);
           }
@@ -154,12 +170,12 @@ export function Conversacion({
             conversacionId.current = parte.conversacionId;
             setMensajes((prev) => [...prev, parte.alumno, parte.allison]);
             setMensajesRestantes(parte.mensajesRestantes);
+            setDichoAhora(null);
           }
         }
       }
 
       await hablando;
-      setDichoAhora(null);
       setEstado("inactivo");
     } catch {
       setError("No pudimos conectar. Revisa tu internet e intenta de nuevo.");
@@ -167,221 +183,207 @@ export function Conversacion({
     }
   }
 
+  async function pedirIdea() {
+    if (ideaVisible) {
+      setIdeaVisible(false);
+      return;
+    }
+    if (idea) {
+      setIdeaVisible(true);
+      return;
+    }
+    const ultimo = mensajes[mensajes.length - 1];
+    if (!ultimo || ultimo.rol !== "allison") return;
+
+    setIdeaCargando(true);
+    try {
+      const r = await fetch("/api/ayuda", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texto: ultimo.texto, nivel }),
+      });
+      if (r.ok) {
+        const d = await r.json();
+        setIdea({ en: d.sugerencia, es: d.sugerenciaEs });
+        setIdeaVisible(true);
+      }
+    } finally {
+      setIdeaCargando(false);
+    }
+  }
+
   const sinMensajes = mensajesRestantes === 0;
-  const ultimoDeAllison =
-    mensajes.length > 0 && mensajes[mensajes.length - 1].rol === "allison"
-      ? mensajes[mensajes.length - 1]
-      : null;
+  const hayUltimoDeAllison =
+    mensajes.length > 0 && mensajes[mensajes.length - 1].rol === "allison";
+
+  const enlaceMenu =
+    "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition hover:bg-superficie-2";
 
   return (
-    <main
-      className={`mx-auto flex max-w-2xl flex-col px-4 pb-6 ${
-        verTranscripcion ? "h-dvh" : "min-h-dvh"
-      }`}
-    >
+    <main className="mx-auto flex h-dvh max-w-2xl flex-col px-4">
       <Bienvenida nombre={nombre} />
 
-      {/*
-        flex-wrap y no una sola línea: en un celular de 375px el contador
-        más cinco botones no caben, y el desborde horizontal mueve la
-        página entera al arrastrar.
-      */}
-      <header className="flex flex-wrap items-center justify-between gap-y-2 py-3">
-        <div className="flex items-center gap-2">
-          <SelectorNivel nivel={nivel} />
-          <span className="hidden text-sm text-texto-suave sm:inline">{nombre}</span>
+      {/* ---- Identidad: Allison siempre presente ---- */}
+      <header className="flex shrink-0 items-center gap-3 py-3">
+        <AvatarAllison estado={estado} compacto />
+        <div className="min-w-0 flex-1">
+          <p className="text-base font-semibold leading-tight">Allison</p>
+          <p className="flex items-center gap-1.5 text-xs text-texto-suave">
+            <span
+              aria-hidden
+              className={`size-1.5 rounded-full ${
+                estado === "inactivo" ? "bg-exito" : "bg-primario"
+              }`}
+              style={
+                estado !== "inactivo"
+                  ? { animation: "pulso-voz 1.2s ease-in-out infinite" }
+                  : undefined
+              }
+            />
+            Tu profesora de inglés · {ESTADO_LINEA[estado]}
+          </p>
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-3">
-          <span
-            className={`text-sm tabular-nums ${
-              mensajesRestantes <= 10 ? "text-acento" : "text-texto-suave"
-            }`}
-          >
-            {mensajesRestantes} {enPrueba ? "de prueba" : "disponibles"}
-          </span>
-          <Link
-            href="/recargar"
-            title="Recargar mensajes"
-            aria-label="Recargar mensajes"
-            className="rounded-full border border-borde bg-superficie p-2 text-texto-suave transition-colors hover:bg-superficie-2 hover:text-texto"
-          >
-            <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </Link>
+        <div className="relative shrink-0">
           <button
             type="button"
-            onClick={() => setVerTranscripcion((v) => !v)}
-            aria-pressed={verTranscripcion}
-            className="rounded-full border border-borde px-3 py-1.5 text-xs font-medium text-texto-suave transition-colors hover:bg-superficie-2"
+            onClick={() => setMenuAbierto(!menuAbierto)}
+            aria-expanded={menuAbierto}
+            aria-label="Menú"
+            className="rounded-full border border-borde bg-superficie p-2 text-texto-suave transition hover:bg-superficie-2 hover:text-texto"
           >
-            {verTranscripcion ? "Ocultar texto" : "Ver texto"}
-          </button>
-          {esAdmin && (
-            <Link
-              href="/admin"
-              title="Panel de administración"
-              aria-label="Panel de administración"
-              className="rounded-full border border-borde bg-superficie p-2 text-texto-suave transition-colors hover:bg-superficie-2 hover:text-texto"
-            >
-              <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
-                <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 14a1.7 1.7 0 0 0-1.5-1H1a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 3 7.6a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 8 3.2V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0 1.2 2.9H23a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
-              </svg>
-            </Link>
-          )}
-          {esCoordinador && (
-            <Link
-              href="/colegio"
-              title="Panel del colegio"
-              aria-label="Panel del colegio"
-              className="rounded-full border border-borde bg-superficie p-2 text-texto-suave transition-colors hover:bg-superficie-2 hover:text-texto"
-            >
-              <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" />
-              </svg>
-            </Link>
-          )}
-          <Link
-            href="/conversaciones"
-            title="Tus conversaciones"
-            aria-label="Tus conversaciones"
-            className="rounded-full border border-borde bg-superficie p-2 text-texto-suave transition-colors hover:bg-superficie-2 hover:text-texto"
-          >
-            <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-          </Link>
-          <Link
-            href="/progreso"
-            title="Tu progreso"
-            aria-label="Tu progreso"
-            className="rounded-full border border-borde bg-superficie p-2 text-texto-suave transition-colors hover:bg-superficie-2 hover:text-texto"
-          >
-            <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 3v18h18M7 15l4-4 3 3 5-6" />
-            </svg>
-          </Link>
-          <button
-            type="button"
-            onClick={() => signOut({ callbackUrl: "/" })}
-            title="Cerrar sesión"
-            aria-label="Cerrar sesión"
-            className="rounded-full border border-borde bg-superficie p-2 text-texto-suave transition-colors hover:bg-superficie-2 hover:text-texto"
-          >
-            <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+            <svg viewBox="0 0 24 24" className="size-5" fill="currentColor">
+              <circle cx="12" cy="5" r="1.8" />
+              <circle cx="12" cy="12" r="1.8" />
+              <circle cx="12" cy="19" r="1.8" />
             </svg>
           </button>
+
+          {menuAbierto && (
+            <>
+              <button
+                type="button"
+                aria-label="Cerrar menú"
+                onClick={() => setMenuAbierto(false)}
+                className="fixed inset-0 z-10 cursor-default"
+              />
+              <nav className="absolute right-0 top-full z-20 mt-2 w-56 rounded-2xl border border-borde bg-superficie p-2 shadow-lg">
+                <Link href="/recargar" className={enlaceMenu}>
+                  <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
+                  Recargar
+                </Link>
+                <Link href="/progreso" className={enlaceMenu}>
+                  <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18M7 15l4-4 3 3 5-6" /></svg>
+                  Tu progreso
+                </Link>
+                <Link href="/conversaciones" className={enlaceMenu}>
+                  <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                  Tus conversaciones
+                </Link>
+                {esCoordinador && (
+                  <Link href="/colegio" className={enlaceMenu}>
+                    <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" /></svg>
+                    Panel del colegio
+                  </Link>
+                )}
+                {esAdmin && (
+                  <Link href="/admin" className={enlaceMenu}>
+                    <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z" /></svg>
+                    Administración
+                  </Link>
+                )}
+                <div className="my-1 border-t border-borde" />
+                <button
+                  type="button"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className={`${enlaceMenu} w-full text-left`}
+                >
+                  <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" /></svg>
+                  Cerrar sesión
+                </button>
+              </nav>
+            </>
+          )}
         </div>
       </header>
 
+      {/* ---- Las tres cifras que importan, cada una lleva a su sitio ---- */}
+      <div className="flex shrink-0 gap-2 pb-2">
+        <SelectorNivel nivel={nivel} />
+        <Link
+          href="/progreso"
+          className="flex items-center gap-1 rounded-full bg-superficie-2 px-2.5 py-1 text-xs font-semibold text-texto transition hover:brightness-95"
+          title="Tu racha"
+        >
+          <span aria-hidden>🔥</span> {racha}
+        </Link>
+        <Link
+          href="/recargar"
+          className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold transition hover:brightness-95 ${
+            mensajesRestantes <= 10
+              ? "bg-acento/15 text-acento"
+              : "bg-superficie-2 text-texto"
+          }`}
+          title="Recargar"
+        >
+          {mensajesRestantes} {enPrueba ? "de prueba" : "disponibles"}
+        </Link>
+      </div>
+
       {faltaVerificar && <AvisoVerificar mensajes={mensajesPorVerificar} />}
 
-      {verTranscripcion ? (
-        <>
-          {/*
-            Con la transcripción abierta, la foto NO se va con el scroll:
-            queda fija en versión compacta y solo el texto se desplaza.
-            Antes, tres turnos de conversación bastaban para que Allison
-            desapareciera de la pantalla.
-          */}
-          <div className="flex shrink-0 items-center gap-3 border-b border-borde py-2">
-            <AvatarAllison estado={estado} compacto />
-            <p className="min-w-0 flex-1 truncate text-sm text-texto-suave">
-              {estado === "hablando"
-                ? "Allison está hablando…"
-                : estado === "procesando"
-                  ? "Allison está pensando…"
-                  : (ultimoDeAllison?.texto ?? "Allison")}
-            </p>
-          </div>
-
-          <div className="min-h-0 flex-1 overflow-y-auto py-4">
-            {dichoAhora && (
-              <p className="mx-auto mb-3 max-w-md rounded-2xl bg-superficie-2 px-4 py-3 text-center text-[15px] text-texto-suave">
-                {dichoAhora}
-              </p>
-            )}
-            <Transcripcion mensajes={mensajes} nivel={nivel} />
-            <div ref={finRef} />
-          </div>
-
-          {ultimoDeAllison && estado !== "grabando" && (
-            <div className="flex shrink-0 justify-center pt-3">
-              <AyudaTurno texto={ultimoDeAllison.texto} nivel={nivel} />
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="flex flex-1 flex-col items-center justify-center gap-8 py-6">
-          <AvatarAllison estado={estado} />
-
-          {mensajes.length === 0 && (
-            <div className="max-w-sm text-center">
+      {/* ---- El chat ---- */}
+      <div className="min-h-0 flex-1 overflow-y-auto py-3">
+        {mensajes.length === 0 && !dichoAhora ? (
+          <div className="flex h-full flex-col items-center justify-center gap-6 text-center">
+            <AvatarAllison estado={estado} />
+            <div className="max-w-sm">
               <h1 className="text-2xl font-semibold">Hi! I&apos;m Allison</h1>
               <p className="mt-2 text-texto-suave">
                 Toca el botón y háblame en inglés. Habla tranquilo: si te
                 equivocas, te corrijo y seguimos.
               </p>
             </div>
-          )}
+          </div>
+        ) : (
+          <>
+            <Transcripcion mensajes={mensajes} nivel={nivel} />
 
-          {/* Lo que el alumno acaba de decir, apenas llega */}
-          {dichoAhora && (
-            <p className="max-w-md rounded-2xl bg-superficie-2 px-4 py-3 text-center text-[15px] text-texto-suave">
-              {dichoAhora}
-            </p>
-          )}
+            {dichoAhora && (
+              <div className="mt-4 flex justify-end">
+                <p className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primario-suave px-4 py-3 text-[15px] leading-relaxed text-texto opacity-80">
+                  {dichoAhora}
+                </p>
+              </div>
+            )}
+          </>
+        )}
+        <div ref={finRef} />
+      </div>
 
-          {/*
-            Lo último de Allison, como burbuja con sus propios controles:
-            audio con velocidad al lado, y traducción al tocar el texto.
-            El mismo patrón que en la transcripción — un solo lenguaje.
-          */}
-          {!dichoAhora && ultimoDeAllison && (
-            <div className="w-full max-w-md">
-              <Transcripcion mensajes={[ultimoDeAllison]} nivel={nivel} />
-            </div>
-          )}
-
-          {ultimoDeAllison && estado !== "grabando" && (
-            <AyudaTurno texto={ultimoDeAllison.texto} nivel={nivel} />
-          )}
-          <div ref={finRef} />
-        </div>
-      )}
-
+      {/* ---- Avisos ---- */}
       {error && (
-        <p role="alert" className="mb-3 rounded-lg bg-error/10 p-3 text-center text-sm text-error">
+        <p role="alert" className="mb-2 shrink-0 rounded-xl bg-error/10 p-3 text-center text-sm text-error">
           {error}
         </p>
       )}
 
       {sinMensajes &&
         (enPrueba && logro ? (
-          <div className="mb-4">
+          <div className="mb-2 max-h-[50dvh] shrink-0 overflow-y-auto">
             <FinDePrueba logro={logro} />
           </div>
         ) : (
-          <div className="mb-4 rounded-xl border border-acento/30 bg-acento/10 p-4 text-center">
-            <p className="text-sm font-medium">Se te acabaron las intervenciones.</p>
-            <p className="mt-1 text-sm text-texto-suave">
-              Recarga desde $4.000 y sigue practicando.
-            </p>
-            <Link
-              href="/recargar"
-              className="mt-3 inline-block rounded-lg bg-acento px-4 py-2 text-sm font-semibold text-white"
-            >
-              Recargar
+          <div className="mb-2 shrink-0 rounded-xl border border-acento/30 bg-acento/10 p-3 text-center text-sm">
+            <span className="font-medium">Se te acabaron las intervenciones. </span>
+            <Link href="/recargar" className="font-semibold text-acento underline">
+              Recarga desde $4.000
             </Link>
           </div>
         ))}
 
-      {/* Aviso antes de que se acabe, no cuando ya no puede hacer nada */}
       {enPrueba && mensajesRestantes > 0 && mensajesRestantes <= 5 && (
-        <p className="mb-3 rounded-xl bg-acento/10 p-3 text-center text-sm text-acento">
+        <p className="mb-2 shrink-0 rounded-xl bg-acento/10 p-2.5 text-center text-sm text-acento">
           Te quedan {mensajesRestantes} de prueba.{" "}
           <Link href="/recargar" className="font-semibold underline">
             Recarga desde $4.000
@@ -389,7 +391,52 @@ export function Conversacion({
         </p>
       )}
 
-      <div className="sticky bottom-0 flex justify-center bg-fondo pb-2 pt-4">
+      {/* ---- La idea de rescate, sobre el dock ---- */}
+      {ideaVisible && idea && (
+        <div className="mb-2 flex shrink-0 items-start gap-2.5 rounded-2xl border border-primario/30 bg-primario/5 px-4 py-3">
+          <span aria-hidden className="mt-0.5 text-base">💡</span>
+          <div className="min-w-0 flex-1">
+            <p className="font-medium leading-snug">{idea.en}</p>
+            <p className="mt-0.5 text-sm text-texto-suave">{idea.es}</p>
+            <p className="mt-1 text-xs text-texto-suave">
+              Dilo en voz alta con el micrófono. No lo copies: dilo.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIdeaVisible(false)}
+            aria-label="Cerrar la sugerencia"
+            className="shrink-0 rounded-full p-1 text-texto-suave transition hover:bg-superficie-2"
+          >
+            <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* ---- El dock: micrófono al centro, la idea a un lado ---- */}
+      <div className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center pb-3 pt-1">
+        <div className="flex justify-end pr-5">
+          <button
+            type="button"
+            onClick={pedirIdea}
+            disabled={ideaCargando || !hayUltimoDeAllison || estado === "grabando"}
+            aria-label="No sé qué decir: dame una idea"
+            aria-expanded={ideaVisible}
+            title="No sé qué decir"
+            className="flex size-12 flex-col items-center justify-center rounded-full border border-borde bg-superficie text-texto-suave transition hover:bg-superficie-2 hover:text-texto disabled:opacity-40"
+          >
+            {ideaCargando ? (
+              <span className="font-mono text-sm">…</span>
+            ) : (
+              <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />
+              </svg>
+            )}
+          </button>
+        </div>
+
         <BotonGrabar
           estado={estado}
           onIniciar={() => setEstado("grabando")}
@@ -397,6 +444,8 @@ export function Conversacion({
           onDescartar={() => setEstado("inactivo")}
           deshabilitado={sinMensajes}
         />
+
+        <div aria-hidden />
       </div>
     </main>
   );

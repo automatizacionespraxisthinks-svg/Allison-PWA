@@ -29,6 +29,7 @@ export default async function PaginaPracticar() {
       mensajesPorVerificar={PRUEBA_AL_VERIFICAR}
       esCoordinador={alumno.rol === "coordinador" || alumno.rol === "admin"}
       esAdmin={alumno.rol === "admin"}
+      racha={alumno.rachaDias}
       logro={
         p
           ? {

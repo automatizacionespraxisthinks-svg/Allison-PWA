@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { TextoTraducible } from "@/components/TextoTraducible";
 import type { Mensaje, Nivel, TipoCorreccion } from "@/lib/tipos";
 import { fijarVelocidad, useVelocidad, VELOCIDADES } from "@/lib/velocidad";
 
@@ -12,19 +11,17 @@ const ETIQUETA: Record<TipoCorreccion, string> = {
   naturalidad: "Naturalidad",
 };
 
-/** "0.75" -> "0.75×", "1" -> "1×" */
-const etiquetaVelocidad = (v: number) => `${v}×`;
+/** Alturas fijas de la onda decorativa: siempre la misma, sin azar. */
+const ONDA = [7, 12, 9, 15, 11, 16, 8, 13, 10];
 
 /**
- * La transcripción, visible solo cuando el alumno la pide.
+ * El chat con Allison.
  *
  * El texto del alumno se muestra TAL COMO LO DIJO, con sus errores
- * intactos. Corregirlo aquí escondería justo lo que tiene que aprender
- * a ver.
- *
- * Cada mensaje de Allison lleva sus controles PROPIOS: el audio con la
- * velocidad al lado, y la traducción al tocar el texto. El control vive
- * donde vive el mensaje — no en una botonera lejana al fondo.
+ * intactos — corregirlo aquí escondería justo lo que tiene que aprender
+ * a ver. Cada mensaje de Allison lleva UNA fila de controles: audio,
+ * onda, velocidad y traducción. Nada de tres pisos de botones por
+ * mensaje: el lujo es la contención.
  */
 export function Transcripcion({
   mensajes,
@@ -35,6 +32,9 @@ export function Transcripcion({
 }) {
   const velocidad = useVelocidad();
   const [sonando, setSonando] = useState<string | null>(null);
+  const [traducciones, setTraducciones] = useState<Record<string, string>>({});
+  const [abiertas, setAbiertas] = useState<Record<string, boolean>>({});
+  const [traduciendo, setTraduciendo] = useState<string | null>(null);
 
   // Si el alumno se va de la pantalla, la voz no sigue hablando sola
   useEffect(() => {
@@ -67,86 +67,140 @@ export function Transcripcion({
     fijarVelocidad(VELOCIDADES[(i + 1) % VELOCIDADES.length].valor);
   }
 
-  return (
-    <div className="w-full space-y-4">
-      {mensajes.map((m) => (
-        <div
-          key={m.id}
-          className={m.rol === "alumno" ? "flex justify-end" : "flex justify-start"}
-        >
-          <div
-            className={`relative max-w-[85%] rounded-2xl px-4 py-3 ${
-              m.rol === "alumno"
-                ? "bg-superficie-2 text-texto"
-                : "bg-primario text-white"
-            }`}
-          >
-            {m.rol === "allison" ? (
-              <div className="flex items-start gap-2.5">
-                <TextoTraducible
-                  texto={m.texto}
-                  nivel={nivel}
-                  className="text-[15px] leading-relaxed"
-                  classNameTraduccion="mt-1.5 border-t border-white/25 pt-1.5 text-sm text-white/85"
-                />
-                <span className="mt-0.5 flex shrink-0 items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => reproducir(m)}
-                    aria-label={
-                      sonando === m.id ? "Detener el audio" : "Volver a escuchar"
-                    }
-                    title={sonando === m.id ? "Detener" : "Volver a escuchar"}
-                    className="rounded-full bg-white/15 p-1.5 transition hover:bg-white/30"
-                  >
-                    {sonando === m.id ? (
-                      <svg viewBox="0 0 24 24" className="size-3.5" fill="currentColor">
-                        <rect x="6" y="6" width="12" height="12" rx="2" />
-                      </svg>
-                    ) : (
-                      <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M11 5 6 9H2v6h4l5 4V5zM15.5 8.5a5 5 0 0 1 0 7" />
-                      </svg>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={cambiarVelocidad}
-                    aria-label={`Velocidad del audio: ${etiquetaVelocidad(velocidad)}. Tocar para cambiar`}
-                    title="Cambiar la velocidad"
-                    className="rounded-full bg-white/15 px-1.5 py-1 font-mono text-[11px] font-semibold leading-none transition hover:bg-white/30"
-                  >
-                    {etiquetaVelocidad(velocidad)}
-                  </button>
-                </span>
-              </div>
-            ) : (
-              <p className="text-[15px] leading-relaxed">{m.texto}</p>
-            )}
+  async function traducir(m: Mensaje) {
+    if (abiertas[m.id]) {
+      setAbiertas((a) => ({ ...a, [m.id]: false }));
+      return;
+    }
+    if (traducciones[m.id]) {
+      setAbiertas((a) => ({ ...a, [m.id]: true }));
+      return;
+    }
 
-            {m.correcciones.length > 0 && (
-              <ul className="mt-3 space-y-2.5 border-t border-borde pt-3">
-                {m.correcciones.map((c, i) => (
-                  <li key={i} className="text-sm">
-                    <span className="mb-0.5 block text-xs font-semibold uppercase tracking-wide text-texto-suave">
-                      {ETIQUETA[c.tipo]}
-                    </span>
-                    <span className="text-error line-through">{c.original}</span>
-                    <span className="mx-1.5 text-texto-suave">→</span>
-                    <span className="font-medium text-exito">{c.correccion}</span>
-                    <span className="mt-0.5 block text-texto">{c.explicacion}</span>
-                    {c.explicacionEs && (
-                      <span className="mt-0.5 block text-texto-suave">
-                        {c.explicacionEs}
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
+    setTraduciendo(m.id);
+    try {
+      const r = await fetch("/api/ayuda", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texto: m.texto, nivel }),
+      });
+      if (r.ok) {
+        const d = await r.json();
+        setTraducciones((t) => ({ ...t, [m.id]: d.traduccion || "—" }));
+        setAbiertas((a) => ({ ...a, [m.id]: true }));
+      }
+    } finally {
+      setTraduciendo(null);
+    }
+  }
+
+  return (
+    <div className="w-full space-y-3">
+      {mensajes.map((m) =>
+        m.rol === "allison" ? (
+          <div key={m.id} className="flex justify-start">
+            <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-borde bg-superficie px-4 py-3">
+              <p className="text-[15px] leading-relaxed">{m.texto}</p>
+
+              {/* Una sola fila: audio · onda · velocidad · traducción */}
+              <div className="mt-2.5 flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => reproducir(m)}
+                  aria-label={sonando === m.id ? "Detener el audio" : "Escuchar"}
+                  className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primario text-white transition hover:brightness-110"
+                >
+                  {sonando === m.id ? (
+                    <svg viewBox="0 0 24 24" className="size-3.5" fill="currentColor">
+                      <rect x="6" y="6" width="12" height="12" rx="2" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" className="ml-0.5 size-3.5" fill="currentColor">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  )}
+                </button>
+
+                <span className="flex h-5 items-center gap-[3px]" aria-hidden>
+                  {ONDA.map((alto, i) => (
+                    <span
+                      key={i}
+                      className="w-[3px] rounded-full bg-primario/40"
+                      style={{
+                        height: alto,
+                        transformOrigin: "center",
+                        animation:
+                          sonando === m.id
+                            ? `barra-sonando 0.9s ease-in-out ${i * 0.08}s infinite`
+                            : undefined,
+                      }}
+                    />
+                  ))}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={cambiarVelocidad}
+                  aria-label={`Velocidad del audio: ${velocidad}×. Tocar para cambiar`}
+                  title="Cambiar la velocidad"
+                  className="shrink-0 rounded-full border border-borde px-2 py-0.5 font-mono text-[11px] font-semibold text-texto-suave transition hover:bg-superficie-2"
+                >
+                  {velocidad}×
+                </button>
+
+                <span className="flex-1" />
+
+                <button
+                  type="button"
+                  onClick={() => traducir(m)}
+                  disabled={traduciendo === m.id}
+                  aria-expanded={Boolean(abiertas[m.id])}
+                  className="shrink-0 text-xs font-semibold text-primario transition hover:opacity-75 disabled:opacity-40"
+                >
+                  {traduciendo === m.id
+                    ? "Traduciendo…"
+                    : abiertas[m.id]
+                      ? "Ocultar"
+                      : "Traducción"}
+                </button>
+              </div>
+
+              {abiertas[m.id] && traducciones[m.id] && (
+                <p className="mt-2 border-t border-borde pt-2 text-sm text-texto-suave">
+                  {traducciones[m.id]}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        ) : (
+          <div key={m.id} className="flex justify-end">
+            <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primario-suave px-4 py-3 text-texto">
+              <p className="text-[15px] leading-relaxed">{m.texto}</p>
+
+              {m.correcciones.length > 0 && (
+                <ul className="mt-3 space-y-2.5 border-t border-primario/15 pt-3">
+                  {m.correcciones.map((c, i) => (
+                    <li key={i} className="text-sm">
+                      <span className="mb-0.5 block text-xs font-semibold uppercase tracking-wide text-texto-suave">
+                        {ETIQUETA[c.tipo]}
+                      </span>
+                      <span className="text-error line-through">{c.original}</span>
+                      <span className="mx-1.5 text-texto-suave">→</span>
+                      <span className="font-medium text-exito">{c.correccion}</span>
+                      <span className="mt-0.5 block text-texto">{c.explicacion}</span>
+                      {c.explicacionEs && (
+                        <span className="mt-0.5 block text-texto-suave">
+                          {c.explicacionEs}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )
+      )}
     </div>
   );
 }

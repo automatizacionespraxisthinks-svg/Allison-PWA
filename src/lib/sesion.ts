@@ -14,6 +14,7 @@ export interface Alumno {
   enPrueba: boolean;
   /** Tiene correo sin confirmar: le faltan mensajes de la prueba. */
   faltaVerificar: boolean;
+  rachaDias: number;
 }
 
 /**
@@ -27,7 +28,7 @@ export async function alumnoActual(): Promise<Alumno | null> {
   if (!sesion?.user?.id) return null;
 
   const [fila] = await sql`
-    select u.id, u.nombre, u.nivel, u.rol, u.institucion_id,
+    select u.id, u.nombre, u.nivel, u.rol, u.institucion_id, u.racha_dias,
            coalesce(s.mensajes_plan, 0)    as mensajes_plan,
            coalesce(s.mensajes_recarga, 0) as mensajes_recarga,
            not exists (
@@ -61,5 +62,6 @@ export async function alumnoActual(): Promise<Alumno | null> {
     mensajesRecarga: fila.mensajes_recarga,
     enPrueba: fila.en_prueba,
     faltaVerificar: fila.falta_verificar,
+    rachaDias: fila.racha_dias ?? 0,
   };
 }
