@@ -39,10 +39,30 @@ for (const a of ALUMNOS) {
       do update set pin_hash = excluded.pin_hash, nombre = excluded.nombre
     returning id
   `;
-  await sql`
+  // El saldo y el libro se escriben SIEMPRE juntos. Un saldo sin
+  // movimiento que lo respalde descuadra la contabilidad, y el descuadre
+  // solo aparece meses después cuando alguien reclama.
+  const [saldo] = await sql`
     insert into saldos (user_id, mensajes_recarga) values (${u.id}, ${GRATIS})
     on conflict (user_id) do update set mensajes_recarga = ${GRATIS}
+    returning mensajes_plan, mensajes_recarga
   `;
+  const [previo] = await sql`
+    select coalesce(sum(cantidad), 0)::int as total
+      from movimientos_credito where user_id = ${u.id}
+  `;
+  const diferencia = saldo.mensajes_plan + saldo.mensajes_recarga - previo.total;
+  if (diferencia !== 0) {
+    await sql`
+      insert into movimientos_credito
+        (user_id, tipo, bolsa, cantidad, saldo_plan_despues,
+         saldo_recarga_despues, nota)
+      values
+        (${u.id}, 'bono', 'recarga', ${diferencia},
+         ${saldo.mensajes_plan}, ${saldo.mensajes_recarga},
+         'Prueba al cargar el alumno desde el colegio')
+    `;
+  }
 }
 
 console.log(`Colegio listo. Código de acceso: ${CODIGO}`);
