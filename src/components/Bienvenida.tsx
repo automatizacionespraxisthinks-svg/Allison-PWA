@@ -26,14 +26,12 @@ const CLAVE = "allison:bienvenida-vista";
  * Cuando esté el TTS del VPS, esto se reemplaza por un archivo
  * comprimido con la voz real de Allison, que sí vale su peso.
  */
-const GUION = `Hola, soy Allison, tu profesora de inglés. Te explico rápido cómo funciona.
-Toca el botón verde y háblame en inglés, como si estuviéramos conversando.
-No importa si te equivocas: yo te escucho, te corrijo y seguimos.
-Si no me entiendes, toca "qué dijo" y te lo traduzco.
-Si no sabes qué responder, toca "no sé qué decir" y te doy una idea.
-Y si quieres volver a escucharme, toca "repetir".
-Cada vez que hablas, aprendo qué se te dificulta y lo trabajamos.
-Vamos a empezar. Cuéntame, ¿cómo estás hoy?`;
+const GUION = `¡Hola! Soy Allison, tu profesora de inglés.
+Vamos a aprender inglés conversando, de forma natural y sin miedo a equivocarnos.
+Para empezar, toca el botón verde y háblame en inglés, como si estuviéramos charlando.
+Mientras hablamos voy notando qué se te dificulta, y lo vamos trabajando poco a poco.
+No tienes que hablar perfecto. Lo importante es que te animes a hablar.
+¿Empezamos? Cuéntame, ¿cómo estás hoy?`;
 
 /**
  * Se lee con useSyncExternalStore y no con un efecto.
