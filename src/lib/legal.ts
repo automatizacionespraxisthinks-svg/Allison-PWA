@@ -1,6 +1,12 @@
 /**
  * Datos del responsable y versión de los documentos legales.
  *
+ * Se publica la CIUDAD y no una dirección de calle. La Ley 1581 y el
+ * Estatuto del Consumidor exigen identificar al responsable y dar una
+ * dirección de notificación, pero la ciudad cumple ese papel sin exponer
+ * un domicilio particular. Si la SIC o un cliente piden la dirección
+ * exacta, se entrega por el canal de contacto.
+ *
  * Los campos entre corchetes hay que llenarlos con los datos reales de
  * la empresa ANTES de salir a producción: la Ley 1581 exige identificar
  * al responsable del tratamiento con nombre, domicilio y correo.
@@ -11,8 +17,8 @@
  */
 export const EMPRESA = {
   razonSocial: "PRAXIS - THINKS S.A.S.",
-  nit: "[NIT — PENDIENTE]",
-  domicilio: "[DIRECCIÓN Y CIUDAD — PENDIENTE]",
+  nit: "90533185",
+  domicilio: "Duitama, Boyacá, Colombia",
   correo: "praxisthinks@gmail.com",
   telefono: "311 731 8700",
   marca: "Allison",
