@@ -1,5 +1,5 @@
 import { sql } from "./db";
-import { CLAVES_TEMA, TEMAS, type ClaveTema } from "./temas";
+import { CLAVES_TEMA, TEMAS, tema as buscarTema, type ClaveTema } from "./temas";
 
 export interface DiaPracticado {
   fecha: string;
@@ -157,4 +157,34 @@ export async function progresoDe(userId: string): Promise<Progreso> {
     enJuego: temas.filter((t) => t.estado !== "sin_datos").length,
     mision,
   };
+}
+
+/**
+ * Solo los temas, en UNA consulta.
+ *
+ * progresoDe() hace seis viajes a la base y calcula racha, semana y
+ * totales. Para armar el prompt de Allison solo hacen falta los temas,
+ * y cada viaje a Ohio son ~90 ms que el alumno espera mirando la
+ * pantalla.
+ */
+export async function temasDe(
+  userId: string
+): Promise<{ abiertos: string[]; dominados: string[] }> {
+  const filas = await sql`
+    select tema, min(turnos_limpios)::int as limpios
+      from errores_frecuentes
+     where user_id = ${userId} and tema is not null
+     group by tema
+  `;
+
+  const abiertos: string[] = [];
+  const dominados: string[] = [];
+
+  for (const f of filas) {
+    const titulo = buscarTema(f.tema as string).titulo;
+    if ((f.limpios as number) >= TURNOS_PARA_DOMINAR) dominados.push(titulo);
+    else abiertos.push(titulo);
+  }
+
+  return { abiertos: abiertos.slice(0, 4), dominados: dominados.slice(0, 4) };
 }

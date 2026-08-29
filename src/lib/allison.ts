@@ -265,3 +265,138 @@ export async function conversar(opciones: {
     tokensSalida: uso?.candidatesTokenCount ?? 0,
   };
 }
+
+/**
+ * Igual que conversar(), pero entregando la respuesta por partes.
+ *
+ * El modelo devuelve el JSON en el orden del esquema: primero la
+ * transcripción, luego la respuesta y al final las correcciones. Eso
+ * permite mostrarle al alumno lo que él mismo dijo en cuanto llega
+ * -- alrededor de un segundo -- y empezar a hablar en cuanto la
+ * respuesta está completa, sin esperar a que terminen de generarse unas
+ * correcciones que va a leer después, si es que las lee.
+ *
+ * Los cinco segundos siguen ahí; lo que cambia es que el alumno deja de
+ * mirar un círculo vacío durante todos ellos.
+ */
+export async function* conversarEnStream(opciones: {
+  audioBase64: string;
+  mimeType: string;
+  alumno: Alumno;
+  historial?: Mensaje[];
+  tema?: string;
+}): AsyncGenerator<
+  | { tipo: "transcripcion"; texto: string }
+  | { tipo: "respuesta"; texto: string }
+  | { tipo: "fin"; resultado: RespuestaAllison }
+> {
+  const { audioBase64, mimeType, alumno, historial = [], tema } = opciones;
+
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+  const contexto = historial.slice(-12).map((m) => ({
+    role: m.rol === "alumno" ? "user" : "model",
+    parts: [{ text: m.texto }],
+  }));
+
+  const stream = await ai.models.generateContentStream({
+    model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
+    contents: [
+      ...contexto,
+      { role: "user", parts: [{ inlineData: { mimeType, data: audioBase64 } }] },
+    ],
+    config: {
+      systemInstruction: construirInstruccion(alumno, tema),
+      responseMimeType: "application/json",
+      responseSchema: ESQUEMA_RESPUESTA,
+      temperature: 0.8,
+    },
+  });
+
+  let acumulado = "";
+  const entregada = { transcripcion: false, respuesta: false };
+  let uso: { promptTokenCount?: number; candidatesTokenCount?: number } | undefined;
+
+  /**
+   * Saca un campo del JSON a medio escribir, solo si YA está cerrado.
+   *
+   * Se recorre a mano en vez de con una expresión regular: la comilla
+   * de cierre hay que distinguirla de una comilla escapada dentro del
+   * texto, y una expresión que haga eso bien es ilegible y fácil de
+   * romper al editarla.
+   */
+  const campoCompleto = (json: string, campo: string): string | null => {
+    const marca = '"' + campo + '"';
+    const donde = json.indexOf(marca);
+    if (donde === -1) return null;
+
+    let i = json.indexOf(":", donde + marca.length);
+    if (i === -1) return null;
+    i++;
+
+    while (i < json.length && (json[i] === " " || json[i] === "\n")) i++;
+    if (json[i] !== '"') return null;
+
+    const abre = i;
+    i++;
+
+    while (i < json.length) {
+      if (json[i] === "\\") {
+        i += 2;              // carácter escapado: se salta entero
+        continue;
+      }
+      if (json[i] === '"') {
+        try {
+          return JSON.parse(json.slice(abre, i + 1)) as string;
+        } catch {
+          return null;
+        }
+      }
+      i++;
+    }
+
+    return null;             // todavía no cierra: sigue llegando
+  };
+
+  for await (const trozo of stream) {
+    acumulado += trozo.text ?? "";
+    if (trozo.usageMetadata) uso = trozo.usageMetadata;
+
+    if (!entregada.transcripcion) {
+      const t = campoCompleto(acumulado, "transcripcion");
+      if (t !== null) {
+        entregada.transcripcion = true;
+        yield { tipo: "transcripcion", texto: t };
+      }
+    }
+
+    if (entregada.transcripcion && !entregada.respuesta) {
+      const r = campoCompleto(acumulado, "respuesta");
+      if (r !== null) {
+        entregada.respuesta = true;
+        yield { tipo: "respuesta", texto: r };
+      }
+    }
+  }
+
+  const datos = JSON.parse(acumulado || "{}");
+
+  const normalizar = (t: string) =>
+    t.trim().toLowerCase().replace(/[.,;:!?¡¿"']/g, "").replace(/\s+/g, " ");
+
+  const correcciones = ((datos.correcciones ?? []) as Correccion[]).filter((c) => {
+    if (!c?.original?.trim() || !c?.correccion?.trim()) return false;
+    return normalizar(c.original) !== normalizar(c.correccion);
+  });
+
+  yield {
+    tipo: "fin",
+    resultado: {
+      transcripcion: datos.transcripcion ?? "",
+      respuesta: datos.respuesta ?? "",
+      correcciones,
+      tokensEntrada: uso?.promptTokenCount ?? 0,
+      tokensSalida: uso?.candidatesTokenCount ?? 0,
+    },
+  };
+}

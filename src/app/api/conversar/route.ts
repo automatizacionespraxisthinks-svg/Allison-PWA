@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { conversar } from "@/lib/allison";
+import { conversarEnStream } from "@/lib/allison";
+import { conversacionActiva } from "@/lib/conversaciones";
 import { sql } from "@/lib/db";
 import { limitar } from "@/lib/limite";
-import { conversacionActiva } from "@/lib/conversaciones";
-import { progresoDe } from "@/lib/progreso";
+import { temasDe } from "@/lib/progreso";
 import { alumnoActual } from "@/lib/sesion";
 import { AUDIO_MAX_SEGUNDOS } from "@/lib/tipos";
 
@@ -16,6 +16,17 @@ const MAX_BYTES = 8 * 1024 * 1024; // 60 s de opus caben de sobra
  */
 const TURNOS_POR_MINUTO = 20;
 
+/**
+ * La conversación, enviada POR PARTES.
+ *
+ * El alumno ve lo que él mismo dijo alrededor de un segundo después de
+ * soltar el botón, y Allison empieza a hablar en cuanto su respuesta
+ * está completa — sin esperar a que terminen de generarse unas
+ * correcciones que va a leer después, si es que las lee.
+ *
+ * Cada parte viaja como una línea de JSON. Es más simple que los eventos
+ * del servidor y basta para esto.
+ */
 export async function POST(peticion: Request) {
   const alumno = await alumnoActual();
   if (!alumno) {
@@ -35,9 +46,10 @@ export async function POST(peticion: Request) {
   if (!formulario) {
     return NextResponse.json({ error: "Petición inválida" }, { status: 400 });
   }
+
   const audio = formulario.get("audio");
   const duracionSeg = Number(formulario.get("duracion") ?? 0);
-  let conversacionId = formulario.get("conversacion") as string | null;
+  const conversacionPedida = formulario.get("conversacion") as string | null;
 
   if (!(audio instanceof Blob)) {
     return NextResponse.json({ error: "Falta el audio" }, { status: 400 });
@@ -49,13 +61,9 @@ export async function POST(peticion: Request) {
     return NextResponse.json({ error: "El audio excede el máximo" }, { status: 413 });
   }
 
-  // 1. Cobrar ANTES de llamar a Gemini. Es atómico: si dos pestañas
-  //    intentan a la vez, solo una consigue el mensaje.
-  //
-  //    La base devuelve de qué bolsa cobró. No se puede deducir del
-  //    saldo leído antes: con dos peticiones simultáneas una se lleva
-  //    el último mensaje del plan y la otra cobra de la recarga sin
-  //    saberlo, y una devolución iría a la bolsa equivocada.
+  // Cobrar ANTES de llamar a Gemini. Es atómico: si dos pestañas
+  // intentan a la vez, solo una consigue el mensaje. La base devuelve de
+  // qué bolsa cobró, que no se puede deducir del saldo leído antes.
   const [{ consumir_mensaje: bolsaUsada }] =
     await sql`select consumir_mensaje(${alumno.id}, null)`;
 
@@ -66,131 +74,157 @@ export async function POST(peticion: Request) {
     );
   }
 
-  try {
-    // 2. Historial de la conversación, para que Allison recuerde el hilo
-    let historial: { rol: "alumno" | "allison"; texto: string }[] = [];
+  const devolver = () =>
+    sql`select devolver_mensaje(${alumno.id}, ${bolsaUsada}::bolsa_credito)`;
 
-    conversacionId =
-      conversacionId ?? (await conversacionActiva(alumno.id, alumno.nivel));
+  const conversacionId =
+    conversacionPedida ?? (await conversacionActiva(alumno.id, alumno.nivel));
 
-    const filas = await sql`
-      select rol, texto from mensajes
-       where conversacion_id = ${conversacionId}
-       order by creado_en desc limit 24
-    `;
-    historial = filas.reverse().map((f) => ({ rol: f.rol, texto: f.texto }));
+  // El audio se lee mientras la base contesta, no después
+  const buffer = Buffer.from(await audio.arrayBuffer());
+  const codificador = new TextEncoder();
 
-    // 3. Allison escucha el audio y responde, sabiendo con quién habla
-    //    y qué temas trae abiertos
-    const progreso = await progresoDe(alumno.id);
-    const buffer = Buffer.from(await audio.arrayBuffer());
-    const resultado = await conversar({
-      audioBase64: buffer.toString("base64"),
-      mimeType: audio.type || "audio/webm",
-      alumno: {
-        nombre: alumno.nombre,
-        nivel: alumno.nivel,
-        temasAbiertos: progreso.temas
-          .filter((t) => t.estado === "atraviesa" || t.estado === "mejorando")
-          .slice(0, 4)
-          .map((t) => t.titulo),
-        temasDominados: progreso.temas
-          .filter((t) => t.estado === "dominado")
-          .slice(0, 4)
-          .map((t) => t.titulo),
-      },
-      historial: historial.map((h, i) => ({
-        id: String(i),
-        rol: h.rol,
-        texto: h.texto,
-        correcciones: [],
-        creadoEn: "",
-      })),
-    });
+  const flujo = new ReadableStream({
+    async start(control) {
+      const enviar = (dato: unknown) =>
+        control.enqueue(codificador.encode(JSON.stringify(dato) + "\n"));
 
-    // Si no se entendió nada, no se cobra. Un micrófono mudo o un
-    // audio dañado hacen que el modelo se invente una conversación, y
-    // cobrarle al alumno por un turno que nunca dijo es indefendible.
-    if (!resultado.transcripcion.trim()) {
-      await sql`select devolver_mensaje(${alumno.id}, ${bolsaUsada}::bolsa_credito)`;
-      return NextResponse.json(
-        {
-          error: "sin_audio",
-          mensaje: "No te escuchamos. Revisa el micrófono e intenta otra vez.",
-        },
-        { status: 422 }
-      );
-    }
+      try {
+        // Las dos consultas no dependen entre sí: van juntas. Cada viaje
+        // a la base en Ohio son ~90 ms que el alumno espera mirando la
+        // pantalla, y en fila india se suman.
+        const [filas, temas] = await Promise.all([
+          sql`
+            select rol, texto from mensajes
+             where conversacion_id = ${conversacionId}
+             order by creado_en desc limit 24
+          `,
+          temasDe(alumno.id),
+        ]);
 
-    // 4. Guardar los dos mensajes del turno
-    const [mAlumno] = await sql`
-      insert into mensajes
-        (conversacion_id, user_id, rol, texto, duracion_seg, correcciones,
-         tokens_entrada, tokens_salida)
-      values
-        (${conversacionId}, ${alumno.id}, 'alumno', ${resultado.transcripcion},
-         ${duracionSeg}, ${sql.json(resultado.correcciones as unknown as never)},
-         ${resultado.tokensEntrada}, ${resultado.tokensSalida})
-      returning id, creado_en
-    `;
+        const historial = filas.reverse().map((f, i) => ({
+          id: String(i),
+          rol: f.rol as "alumno" | "allison",
+          texto: f.texto as string,
+          correcciones: [],
+          creadoEn: "",
+        }));
 
-    const [mAllison] = await sql`
-      insert into mensajes (conversacion_id, user_id, rol, texto, correcciones)
-      values (${conversacionId}, ${alumno.id}, 'allison', ${resultado.respuesta}, '[]'::jsonb)
-      returning id, creado_en
-    `;
+        const partes = conversarEnStream({
+          audioBase64: buffer.toString("base64"),
+          mimeType: audio.type || "audio/webm",
+          alumno: {
+            nombre: alumno.nombre,
+            nivel: alumno.nivel,
+            temasAbiertos: temas.abiertos,
+            temasDominados: temas.dominados,
+          },
+          historial,
+        });
 
-    await sql`
-      update conversaciones set ultima_actividad_en = now()
-       where id = ${conversacionId}
-    `;
+        let resultado = null;
 
-    // Racha, resumen del día y errores frecuentes
-    await sql`
-      select registrar_practica(
-        ${alumno.id},
-        ${Math.round(duracionSeg)},
-        ${resultado.correcciones.length}
-      )
-    `;
+        for await (const parte of partes) {
+          if (parte.tipo === "fin") {
+            resultado = parte.resultado;
+          } else {
+            enviar(parte);
+          }
+        }
 
-    for (const c of resultado.correcciones) {
-      await sql`
-        select registrar_error(${alumno.id}, ${c.tipo}, ${c.original}, ${c.correccion}, ${c.tema ?? "naturalidad"})
-      `;
-    }
+        if (!resultado || !resultado.transcripcion.trim()) {
+          // No se entendió nada: no se cobra.
+          await devolver();
+          enviar({
+            tipo: "error",
+            error: "sin_audio",
+            mensaje: "No te escuchamos. Revisa el micrófono e intenta otra vez.",
+          });
+          control.close();
+          return;
+        }
 
-    const [saldo] = await sql`
-      select mensajes_plan, mensajes_recarga from saldos where user_id = ${alumno.id}
-    `;
+        const [mAlumno] = await sql`
+          insert into mensajes
+            (conversacion_id, user_id, rol, texto, duracion_seg, correcciones,
+             tokens_entrada, tokens_salida)
+          values
+            (${conversacionId}, ${alumno.id}, 'alumno', ${resultado.transcripcion},
+             ${duracionSeg}, ${sql.json(resultado.correcciones as unknown as never)},
+             ${resultado.tokensEntrada}, ${resultado.tokensSalida})
+          returning id, creado_en
+        `;
 
-    return NextResponse.json({
-      conversacionId,
-      alumno: {
-        id: mAlumno.id,
-        rol: "alumno",
-        texto: resultado.transcripcion,
-        correcciones: resultado.correcciones,
-        creadoEn: mAlumno.creado_en,
-        duracionSeg,
-      },
-      allison: {
-        id: mAllison.id,
-        rol: "allison",
-        texto: resultado.respuesta,
-        correcciones: [],
-        creadoEn: mAllison.creado_en,
-      },
-      mensajesRestantes: saldo.mensajes_plan + saldo.mensajes_recarga,
-    });
-  } catch (e) {
-    // 5. Si algo falló después de cobrar, se devuelve el mensaje.
-    //    El alumno no paga por un turno que no recibió.
-    await sql`select devolver_mensaje(${alumno.id}, ${bolsaUsada}::bolsa_credito)`;
-    console.error("Fallo al conversar:", e);
-    return NextResponse.json(
-      { error: "fallo_ia", mensaje: "Allison no pudo responder. No te cobramos este mensaje." },
-      { status: 502 }
-    );
-  }
+        const [mAllison] = await sql`
+          insert into mensajes (conversacion_id, user_id, rol, texto, correcciones)
+          values (${conversacionId}, ${alumno.id}, 'allison', ${resultado.respuesta}, '[]'::jsonb)
+          returning id, creado_en
+        `;
+
+        await sql`
+          update conversaciones set ultima_actividad_en = now()
+           where id = ${conversacionId}
+        `;
+
+        await sql`
+          select registrar_practica(
+            ${alumno.id}, ${Math.round(duracionSeg)}, ${resultado.correcciones.length}
+          )
+        `;
+
+        for (const c of resultado.correcciones) {
+          await sql`
+            select registrar_error(${alumno.id}, ${c.tipo}, ${c.original},
+                                   ${c.correccion}, ${c.tema ?? "naturalidad"})
+          `;
+        }
+
+        const [saldo] = await sql`
+          select mensajes_plan, mensajes_recarga from saldos where user_id = ${alumno.id}
+        `;
+
+        enviar({
+          tipo: "fin",
+          conversacionId,
+          alumno: {
+            id: mAlumno.id,
+            rol: "alumno",
+            texto: resultado.transcripcion,
+            correcciones: resultado.correcciones,
+            creadoEn: mAlumno.creado_en,
+            duracionSeg,
+          },
+          allison: {
+            id: mAllison.id,
+            rol: "allison",
+            texto: resultado.respuesta,
+            correcciones: [],
+            creadoEn: mAllison.creado_en,
+          },
+          mensajesRestantes: saldo.mensajes_plan + saldo.mensajes_recarga,
+        });
+      } catch (e) {
+        // Si algo falló después de cobrar, se devuelve el mensaje.
+        await devolver().catch(() => {});
+        console.error("Fallo al conversar:", e);
+        enviar({
+          tipo: "error",
+          error: "fallo_ia",
+          mensaje: "Allison no pudo responder. No te cobramos este mensaje.",
+        });
+      } finally {
+        control.close();
+      }
+    },
+  });
+
+  return new Response(flujo, {
+    headers: {
+      "Content-Type": "application/x-ndjson; charset=utf-8",
+      "Cache-Control": "no-store",
+      // Evita que un proxy intermedio acumule la respuesta y anule el
+      // envío por partes, que es justo lo que da la sensación de rapidez.
+      "X-Accel-Buffering": "no",
+    },
+  });
 }

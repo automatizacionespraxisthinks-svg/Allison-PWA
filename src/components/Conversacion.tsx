@@ -49,6 +49,8 @@ export function Conversacion({
   const [verTranscripcion, setVerTranscripcion] = useState(false);
   const [mensajesRestantes, setMensajesRestantes] = useState(mensajesIniciales);
   const [error, setError] = useState<string | null>(null);
+  /** Lo que el alumno acaba de decir, mostrado apenas llega. */
+  const [dichoAhora, setDichoAhora] = useState<string | null>(null);
 
   const conversacionId = useRef<string | null>(idInicial);
   const ultimoAudio = useRef<SpeechSynthesisUtterance | null>(null);
@@ -83,6 +85,7 @@ export function Conversacion({
   async function manejarAudio(audio: Blob, duracionSeg: number) {
     setEstado("procesando");
     setError(null);
+    setDichoAhora(null);
 
     try {
       const cuerpo = new FormData();
@@ -93,21 +96,65 @@ export function Conversacion({
       }
 
       const respuesta = await fetch("/api/conversar", { method: "POST", body: cuerpo });
-      const datos = await respuesta.json();
 
+      // Los errores previos al turno llegan como JSON normal
       if (!respuesta.ok) {
+        const datos = await respuesta.json().catch(() => ({}));
         setError(datos.mensaje ?? "Algo salió mal. Intenta de nuevo.");
         if (datos.error === "sin_mensajes") setMensajesRestantes(0);
         setEstado("inactivo");
         return;
       }
 
-      conversacionId.current = datos.conversacionId;
-      setMensajes((prev) => [...prev, datos.alumno, datos.allison]);
-      setMensajesRestantes(datos.mensajesRestantes);
+      // La respuesta llega por partes, una línea de JSON cada vez.
+      const lector = respuesta.body?.getReader();
+      if (!lector) throw new Error("sin cuerpo");
 
-      setEstado("hablando");
-      await hablar(datos.allison.texto);
+      const decodificador = new TextDecoder();
+      let resto = "";
+      let hablando: Promise<void> | null = null;
+
+      while (true) {
+        const { done, value } = await lector.read();
+        if (done) break;
+
+        resto += decodificador.decode(value, { stream: true });
+        const lineas = resto.split("\n");
+        resto = lineas.pop() ?? "";
+
+        for (const linea of lineas) {
+          if (!linea.trim()) continue;
+          const parte = JSON.parse(linea);
+
+          if (parte.tipo === "transcripcion") {
+            // Primera señal de vida: el alumno se ve a sí mismo
+            setDichoAhora(parte.texto);
+          }
+
+          if (parte.tipo === "respuesta") {
+            // Allison empieza a hablar sin esperar las correcciones
+            setEstado("hablando");
+            hablando = hablar(parte.texto);
+          }
+
+          if (parte.tipo === "error") {
+            setError(parte.mensaje ?? "Algo salió mal.");
+            if (parte.error === "sin_mensajes") setMensajesRestantes(0);
+            setDichoAhora(null);
+            setEstado("inactivo");
+            return;
+          }
+
+          if (parte.tipo === "fin") {
+            conversacionId.current = parte.conversacionId;
+            setMensajes((prev) => [...prev, parte.alumno, parte.allison]);
+            setMensajesRestantes(parte.mensajesRestantes);
+          }
+        }
+      }
+
+      await hablando;
+      setDichoAhora(null);
       setEstado("inactivo");
     } catch {
       setError("No pudimos conectar. Revisa tu internet e intenta de nuevo.");
@@ -237,8 +284,15 @@ export function Conversacion({
           </div>
         )}
 
+        {/* Lo que el alumno acaba de decir, apenas llega */}
+        {dichoAhora && (
+          <p className="max-w-md rounded-2xl bg-superficie-2 px-4 py-3 text-center text-[15px] text-texto-suave">
+            {dichoAhora}
+          </p>
+        )}
+
         {/* Lo último que dijo Allison, siempre visible aunque el texto esté oculto */}
-        {!verTranscripcion && mensajes.length > 0 && (
+        {!verTranscripcion && !dichoAhora && mensajes.length > 0 && (
           <p className="max-w-md text-center text-lg leading-relaxed">
             {mensajes[mensajes.length - 1].texto}
           </p>
