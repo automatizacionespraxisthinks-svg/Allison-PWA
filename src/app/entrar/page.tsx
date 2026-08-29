@@ -155,6 +155,14 @@ export default function PaginaEntrar() {
       </form>
 
       {modo === "correo" && (
+        <p className="text-center text-sm">
+          <Link href="/recuperar" className="text-texto-suave underline">
+            Olvidé mi contraseña
+          </Link>
+        </p>
+      )}
+
+      {modo === "correo" && (
         <p className="text-center text-sm text-texto-suave">
           ¿No tienes cuenta?{" "}
           <Link href="/registro" className="font-medium text-primario underline">

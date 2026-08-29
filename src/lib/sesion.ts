@@ -34,7 +34,8 @@ export async function alumnoActual(): Promise<Alumno | null> {
              select 1 from transacciones t
               where t.user_id = u.id and t.estado = 'aprobada'
            ) as en_prueba,
-           (u.email is not null and u.email_verificado_en is null) as falta_verificar
+           (u.email is not null and u.email_verificado_en is null) as falta_verificar,
+           extract(epoch from u.sesiones_validas_desde)::bigint as validas_desde
       from users u
       left join saldos s on s.user_id = u.id
      where u.id = ${sesion.user.id} and u.activo
@@ -42,6 +43,13 @@ export async function alumnoActual(): Promise<Alumno | null> {
   `;
 
   if (!fila) return null;
+
+  // Cambiar la contraseña cierra las sesiones abiertas. Sin esto, a
+  // quien te robó la cuenta no lo echa cambiar la clave: su sesión
+  // sigue viva semanas, hasta que caduque sola.
+  if (sesion.user.emitidaEn && Number(fila.validas_desde) > sesion.user.emitidaEn) {
+    return null;
+  }
 
   return {
     id: fila.id,

@@ -30,6 +30,9 @@ declare module "next-auth" {
       /** Nombre propio en vez de "email": la librería lo declara
        *  obligatorio, y un alumno de colegio legítimamente no tiene. */
       correo: string | null;
+      /** Cuándo INICIÓ SESIÓN, en segundos. Sirve para invalidar las
+       *  sesiones anteriores a un cambio de contraseña. */
+      emitidaEn: number;
     };
   }
 }
@@ -170,6 +173,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           : await sql`select id, nombre, nivel, rol, institucion_id, email from users where email = ${String(email ?? "")}`;
 
         if (u) {
+          // Se fija UNA vez, al iniciar sesión, y no se vuelve a tocar.
+          // No sirve `iat`: Auth.js lo refresca en cada petición, así
+          // que el token siempre parecería recién emitido y nunca
+          // quedaría por detrás de un cambio de contraseña.
+          token.emitida = Math.floor(Date.now() / 1000);
           token.uid = u.id;
           token.nombre = u.nombre;
           token.nivel = u.nivel;
@@ -196,6 +204,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         institucionId: (token.institucionId as string | null) ?? null,
         // Los alumnos de colegio no tienen correo: null es un valor válido.
         correo: (token.correo as string | undefined) ?? null,
+        emitidaEn: (token.emitida as number | undefined) ?? 0,
       };
       return session;
     },

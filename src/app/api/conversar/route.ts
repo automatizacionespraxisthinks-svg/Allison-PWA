@@ -28,7 +28,11 @@ export async function POST(peticion: Request) {
     );
   }
 
-  const formulario = await peticion.formData();
+  // Un cuerpo mal formado no debe reventar la ruta con un 500.
+  const formulario = await peticion.formData().catch(() => null);
+  if (!formulario) {
+    return NextResponse.json({ error: "Petición inválida" }, { status: 400 });
+  }
   const audio = formulario.get("audio");
   const duracionSeg = Number(formulario.get("duracion") ?? 0);
   let conversacionId = formulario.get("conversacion") as string | null;
