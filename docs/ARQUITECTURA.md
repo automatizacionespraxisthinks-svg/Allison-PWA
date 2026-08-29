@@ -252,3 +252,11 @@ movimientos de crédito y transacciones. El alumno pierde el historial de charla
 > Esto hubo que arreglarlo **antes** de activar el borrado, no después.
 
 La tarea borra además los enlaces de verificación y recuperación vencidos hace más de 30 días.
+
+**El alumno puede borrar cuando quiera.** En `/conversaciones` ve su historial, entra a cualquiera
+para releerla, y borra una o todas. El progreso nunca se toca, y la pantalla se lo dice antes de
+confirmar.
+
+> **Decisión del cliente:** no se muestra en la app ningún aviso del plazo de 20 días. El plazo
+> debe quedar informado en la política de tratamiento de datos, que la Ley 1581 exige y sigue
+> pendiente de redactar.
