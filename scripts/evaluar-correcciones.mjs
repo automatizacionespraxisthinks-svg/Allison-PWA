@@ -50,6 +50,19 @@ const CASOS = [
     dice: "Cual es la diferencia entre el was y el did",
     idioma: "es",
     pregunta: true,
+    contiene: /i was|i did/i,
+  },
+  {
+    dice: "Cual es la diferencia entre was y were",
+    idioma: "es",
+    pregunta: true,
+    contiene: /i was|they were|you were|we were/i,
+  },
+  {
+    dice: "Como se dice quiero ir al banio en ingles",
+    idioma: "es",
+    pregunta: true,
+    contiene: /go to the (bathroom|toilet|restroom)/i,
   },
 ];
 
@@ -90,12 +103,18 @@ for (const caso of CASOS) {
   if (caso.pregunta) {
     // Pregunta en español: sin correcciones, transcripción sin traducir
     // y respuesta que explica en español.
-    const transcripcionEnEspanol = /diferencia|cu[aá]l|entre/i.test(r.transcripcion);
+    const transcripcionEnEspanol =
+      /diferencia|cu[aá]l|entre|como se dice|quiero|ba[ñn]o/i.test(r.transcripcion);
     const respondeEnEspanol =
-      r.respuesta.length > 60 && /pasado|ser|estar|hacer/i.test(r.respuesta);
-    ok = r.correcciones.length === 0 && transcripcionEnEspanol && respondeEnEspanol;
+      r.respuesta.length > 60 && /es |dice|puedes|pasado|ejemplo/i.test(r.respuesta);
+    const traeEjemplo = caso.contiene ? caso.contiene.test(r.respuesta) : true;
+    ok =
+      r.correcciones.length === 0 &&
+      transcripcionEnEspanol &&
+      respondeEnEspanol &&
+      traeEjemplo;
     detalle = ok
-      ? "transcripción en español, sin fantasmas, responde de verdad"
+      ? "en español, sin fantasmas, responde con ejemplos"
       : `transcripcion="${r.transcripcion.slice(0, 40)}" correcciones=${r.correcciones.length} respuesta="${r.respuesta.slice(0, 60)}"`;
   } else if (caso.espera === null) {
     ok = r.correcciones.length === 0;

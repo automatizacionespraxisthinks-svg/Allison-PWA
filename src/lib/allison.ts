@@ -162,7 +162,9 @@ WHAT YOU RETURN
 - "transcripcion": what the student ACTUALLY said, word for word,
   errors included. Never fix it here. If the audio is unintelligible,
   return an empty string.
-- "respuesta": what you say back, in English (see length rules above).
+- "respuesta": what you say back. Normally in English; when the
+  student asked a question in Spanish at A1-A2, in Spanish (see the
+  hard rule at the end).
 - "correcciones": the mistakes you heard. Empty array if there were none.
 
 LANGUAGE OF THE EXPLANATIONS — this is a hard rule, not a preference.
@@ -174,13 +176,32 @@ Every correction carries the rule TWICE:
 Example: explicacion "Use 'to be' for age", explicacionEs "Para la edad
 se usa 'to be', no 'to have'".
 
-LANGUAGE OF YOUR "respuesta" — also a hard rule.
-If the student's turn was IN SPANISH and their level is A1 or A2, your
-entire "respuesta" MUST be in Spanish, using English only for the words
-being discussed. Example: "¡Buena pregunta, Ana! 'Was' es el pasado de
-ser o estar. 'Did' es el pasado de hacer. Try saying: I was happy."
-A beginner who asked in Spanish cannot follow an answer in English —
-answering in English is the same as not answering.`;
+ANSWERING A REAL QUESTION — also a hard rule. You are a TEACHER:
+a question about grammar or vocabulary is your moment to actually
+teach, not to compliment the question and move on.
+
+Shape of a good answer (in Spanish for A1-A2, simple English from B1):
+  1. The rule, in one or two plain sentences.
+  2. TWO example sentences in English, each with its meaning.
+  3. An invitation: "Try saying: ...".
+
+Model answer — student asks "¿cuál es la diferencia entre was y were?":
+"¡Buena pregunta! Los dos son el pasado de 'to be'. 'Was' va con I, he,
+she, it. 'Were' va con you, we, they. Por ejemplo: 'I was happy' (yo
+estaba feliz) y 'They were at home' (ellos estaban en casa). Try
+saying: I was at school yesterday."
+
+Model answer — student asks "¿cómo se dice quiero ir al baño?":
+"Se dice 'I want to go to the bathroom'. También puedes decir 'Can I go
+to the bathroom?' (¿puedo ir al baño?), que es más educado. Try saying:
+Can I go to the bathroom, please?"
+
+Even when the question mentions English ("¿cómo se dice X en inglés?"),
+the FRAME of your answer stays in Spanish: begin "Se dice ...", never
+"You can say ...". Only the example sentences themselves are English.
+
+Answering in English a question asked in Spanish (A1-A2) is the same as
+not answering: the student will not understand you.`;
 }
 
 const ESQUEMA_RESPUESTA = {
@@ -190,7 +211,7 @@ const ESQUEMA_RESPUESTA = {
       type: Type.STRING,
       description: "Literal transcript, errors preserved exactly as spoken",
     },
-    respuesta: { type: Type.STRING, description: "Allison's reply, in English" },
+    respuesta: { type: Type.STRING, description: "Allison's reply" },
     correcciones: {
       type: Type.ARRAY,
       items: {
@@ -341,6 +362,21 @@ message. Grammar, vocabulary and naturalness still apply.`
     },
   });
 
+  /**
+   * El modelo a veces intercala marcas de tiempo ("00:01") sacadas del
+   * audio — al inicio o en la mitad de la frase. No es nada que el
+   * alumno haya dicho, así que se filtran como palabras sueltas.
+   * Costo asumido: si un alumno dictara una hora tipo "3:30", también
+   * caería; hablado casi siempre se transcribe en palabras.
+   */
+  const sinArtefactos = (t: string): string =>
+    t
+      .split(" ")
+      .filter((p) => !/^[0-9]{1,2}:[0-9]{2}$/.test(p))
+      .join(" ")
+      .replace(/ {2,}/g, " ")
+      .trim();
+
   let acumulado = "";
   const entregada = { transcripcion: false, respuesta: false };
   let uso: { promptTokenCount?: number; candidatesTokenCount?: number } | undefined;
@@ -394,7 +430,7 @@ message. Grammar, vocabulary and naturalness still apply.`
       const t = campoCompleto(acumulado, "transcripcion");
       if (t !== null) {
         entregada.transcripcion = true;
-        yield { tipo: "transcripcion", texto: t };
+        yield { tipo: "transcripcion", texto: sinArtefactos(t) };
       }
     }
 
@@ -408,6 +444,30 @@ message. Grammar, vocabulary and naturalness still apply.`
   }
 
   const datos = JSON.parse(acumulado || "{}");
+
+  /**
+   * ¿El turno fue en español? Entonces NO hay inglés que corregir:
+   * toda "corrección" sería un fantasma sobre la traducción del modelo
+   * o sobre palabras que el alumno solo estaba nombrando ("el was").
+   * La regla vive AQUÍ y no solo en el prompt porque el modelo, solo
+   * con la instrucción, la incumple una de cada tantas — comprobado
+   * dos veces con casos reales.
+   */
+  const esTurnoEnEspanol = (t: string): boolean => {
+    if (/[¿¡áéíóúñü]/i.test(t)) return true;
+    const senales = new Set([
+      "como", "cual", "que", "quiero", "dice", "entre", "para",
+      "una", "esto", "eso", "significa", "diferencia", "gracias",
+      "hola", "decir", "ingles", "espanol", "ayuda", "puedo",
+    ]);
+    let n = 0;
+    for (const palabra of t.toLowerCase().split(/[^a-záéíóúñü]+/i)) {
+      if (senales.has(palabra)) n++;
+    }
+    return n >= 2;
+  };
+
+
 
   const normalizar = (t: string) =>
     t.trim().toLowerCase().replace(/[.,;:!?¡¿"']/g, "").replace(/\s+/g, " ");
@@ -432,12 +492,14 @@ message. Grammar, vocabulary and naturalness still apply.`
     return true;
   });
 
+  const transcripcionLimpia = sinArtefactos(datos.transcripcion ?? "");
+
   yield {
     tipo: "fin",
     resultado: {
-      transcripcion: datos.transcripcion ?? "",
+      transcripcion: transcripcionLimpia,
       respuesta: datos.respuesta ?? "",
-      correcciones,
+      correcciones: esTurnoEnEspanol(transcripcionLimpia) ? [] : correcciones,
       tokensEntrada: uso?.promptTokenCount ?? 0,
       tokensSalida: uso?.candidatesTokenCount ?? 0,
     },
