@@ -43,12 +43,20 @@ const CASOS = [
   // Controles: frases correctas. Aquí NO debe corregir nada.
   { dice: "I went to the park yesterday with my family", espera: null },
   { dice: "My sister is taller than me and she likes music", espera: null },
+  // Una pregunta EN ESPAÑOL (caso real reportado): la transcripción no
+  // se traduce, no hay correcciones fantasma, y la respuesta explica
+  // EN ESPAÑOL — no el saludo vacío de "good question".
+  {
+    dice: "Cual es la diferencia entre el was y el did",
+    idioma: "es",
+    pregunta: true,
+  },
 ];
 
-function sintetizar(texto, destino) {
+function sintetizar(texto, destino, idioma = "en") {
   const ps = `Add-Type -AssemblyName System.Speech
 $s = New-Object System.Speech.Synthesis.SpeechSynthesizer
-$en = $s.GetInstalledVoices() | Where-Object { $_.VoiceInfo.Culture.TwoLetterISOLanguageName -eq 'en' } | Select-Object -First 1
+$en = $s.GetInstalledVoices() | Where-Object { $_.VoiceInfo.Culture.TwoLetterISOLanguageName -eq '${idioma}' } | Select-Object -First 1
 $s.SelectVoice($en.VoiceInfo.Name)
 $s.SetOutputToWaveFile('${destino}')
 $s.Speak('${texto.replace(/'/g, "''")}')
@@ -62,7 +70,7 @@ let fallos = 0;
 const ruta = join(tmpdir(), "allison-eval.wav");
 
 for (const caso of CASOS) {
-  sintetizar(caso.dice, ruta);
+  sintetizar(caso.dice, ruta, caso.idioma ?? "en");
   const audio = readFileSync(ruta);
 
   const r = await conversar({
@@ -79,7 +87,17 @@ for (const caso of CASOS) {
   let ok;
   let detalle;
 
-  if (caso.espera === null) {
+  if (caso.pregunta) {
+    // Pregunta en español: sin correcciones, transcripción sin traducir
+    // y respuesta que explica en español.
+    const transcripcionEnEspanol = /diferencia|cu[aá]l|entre/i.test(r.transcripcion);
+    const respondeEnEspanol =
+      r.respuesta.length > 60 && /pasado|ser|estar|hacer/i.test(r.respuesta);
+    ok = r.correcciones.length === 0 && transcripcionEnEspanol && respondeEnEspanol;
+    detalle = ok
+      ? "transcripción en español, sin fantasmas, responde de verdad"
+      : `transcripcion="${r.transcripcion.slice(0, 40)}" correcciones=${r.correcciones.length} respuesta="${r.respuesta.slice(0, 60)}"`;
+  } else if (caso.espera === null) {
     ok = r.correcciones.length === 0;
     detalle = ok ? "sin correcciones, como debe ser" : `INVENTÓ: ${correcciones}`;
   } else {
