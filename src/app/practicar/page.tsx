@@ -7,7 +7,7 @@ import {
   ultimosMensajes,
 } from "@/lib/conversaciones";
 import { META_LOGROS, unidad } from "@/lib/curriculo";
-import { progresoDe, progresoLecciones } from "@/lib/progreso";
+import { progresoDe, progresoLecciones, sugerenciaDeNivel } from "@/lib/progreso";
 import { alumnoActual } from "@/lib/sesion";
 import { PRUEBA_AL_VERIFICAR } from "@/lib/verificacion";
 
@@ -51,7 +51,14 @@ export default async function PaginaPracticar({
   const avance = laLeccion ? await progresoLecciones(alumno.id) : {};
   const deEsta = laLeccion ? avance[laLeccion.clave] : undefined;
 
-  const historial = await ultimosMensajes(conversacionId, 20);
+  // La sugerencia de nivel no aplica en prueba: con 15 mensajes no hay
+  // evidencia, y el momento de esa pantalla es convencer, no ascender.
+  const [historial, sugerencia] = await Promise.all([
+    ultimosMensajes(conversacionId, 20),
+    alumno.enPrueba
+      ? Promise.resolve(null)
+      : sugerenciaDeNivel(alumno.id, alumno.nivel),
+  ]);
 
   return (
     <Conversacion
@@ -66,6 +73,7 @@ export default async function PaginaPracticar({
       esCoordinador={alumno.rol === "coordinador" || alumno.rol === "admin"}
       esAdmin={alumno.rol === "admin"}
       racha={alumno.rachaDias}
+      sugerenciaNivel={sugerencia ?? undefined}
       leccion={
         laLeccion
           ? {

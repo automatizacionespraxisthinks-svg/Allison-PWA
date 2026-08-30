@@ -1,4 +1,7 @@
+import { evaluarAscenso, siguienteNivel } from "./ascenso";
+import { unidadesDe } from "./curriculo";
 import { sql } from "./db";
+import type { Nivel } from "./tipos";
 import { CLAVES_TEMA, TEMAS, tema as buscarTema, type ClaveTema } from "./temas";
 
 export interface DiaPracticado {
@@ -207,4 +210,56 @@ export async function progresoLecciones(
     };
   }
   return avance;
+}
+
+/**
+ * ¿Vale la pena sugerirle el siguiente nivel? Null si no (o si ya es
+ * C2). Junta las dos señales — temario completado y desempeño reciente
+ * en su nivel — y deja la decisión a la lógica pura de ascenso.ts.
+ */
+export async function sugerenciaDeNivel(
+  userId: string,
+  nivel: Nivel
+): Promise<{ siguiente: Nivel; razon: string } | null> {
+  const siguiente = siguienteNivel(nivel);
+  if (!siguiente) return null;
+
+  const claves = unidadesDe(nivel).map((u) => u.clave);
+
+  const [[completadas], [reciente]] = await Promise.all([
+    sql`
+      select count(*)::int as n
+        from progreso_lecciones
+       where user_id = ${userId}
+         and completada_en is not null
+         and leccion = any(${claves})
+    `,
+    // Solo turnos hablados EN el nivel actual: los de un nivel viejo
+    // no dicen nada de cómo le va en este.
+    sql`
+      select count(*)::int as turnos,
+             coalesce(sum(
+               case when jsonb_typeof(t.correcciones) = 'array'
+                    then jsonb_array_length(t.correcciones) else 0 end
+             ), 0)::int as correcciones
+        from (
+          select m.correcciones
+            from mensajes m
+            join conversaciones c on c.id = m.conversacion_id
+           where m.user_id = ${userId}
+             and m.rol = 'alumno'
+             and c.nivel_al_iniciar = ${nivel}
+           order by m.creado_en desc
+           limit 30
+        ) t
+    `,
+  ]);
+
+  const razon = evaluarAscenso({
+    unidadesCompletadas: completadas.n,
+    turnosRecientes: reciente.turnos,
+    correccionesRecientes: reciente.correcciones,
+  });
+
+  return razon ? { siguiente, razon } : null;
 }

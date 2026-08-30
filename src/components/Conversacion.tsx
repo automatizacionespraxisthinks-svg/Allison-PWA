@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { AvatarAllison } from "@/components/AvatarAllison";
 import { BotonGrabar } from "@/components/BotonGrabar";
@@ -14,6 +15,7 @@ import type { EstadoConversacion, Mensaje, Nivel } from "@/lib/tipos";
 import { fijarModoTexto, useModoTexto } from "@/lib/entrada";
 import { useVelocidad } from "@/lib/velocidad";
 import { desbloquearVoz, hablarIngles } from "@/lib/voz";
+import { descartarAscenso, useAscensoDescartado } from "@/lib/sugerencia";
 
 interface Props {
   nombre: string;
@@ -40,6 +42,11 @@ interface Props {
     logros: number;
     meta: number;
     completada: boolean;
+  };
+  /** Presente cuando el desempeño amerita proponer el siguiente nivel. */
+  sugerenciaNivel?: {
+    siguiente: Nivel;
+    razon: string;
   };
 }
 
@@ -72,11 +79,14 @@ export function Conversacion({
   racha,
   logro,
   leccion: leccionInicial,
+  sugerenciaNivel,
 }: Props) {
   const [estado, setEstado] = useState<EstadoConversacion>("inactivo");
   const [leccion, setLeccion] = useState(leccionInicial ?? null);
   /** true solo el turno en que la unidad se acaba de completar. */
   const [festejo, setFestejo] = useState(false);
+  const ascensoDescartado = useAscensoDescartado(nivel);
+  const [subiendo, setSubiendo] = useState(false);
   const [mensajes, setMensajes] = useState<Mensaje[]>(historial);
   const [mensajesRestantes, setMensajesRestantes] = useState(mensajesIniciales);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +104,24 @@ export function Conversacion({
   const conversacionId = useRef<string | null>(idInicial);
   const velocidad = useVelocidad();
   const finRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  /** Aceptar el ascenso: el mismo endpoint libre del selector. */
+  async function subirDeNivel() {
+    if (!sugerenciaNivel || subiendo) return;
+    setSubiendo(true);
+    const r = await fetch("/api/nivel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nivel: sugerenciaNivel.siguiente }),
+    });
+    setSubiendo(false);
+    if (r.ok) {
+      // Que no reaparezca si algún día vuelve a este nivel
+      descartarAscenso(nivel);
+      router.refresh();
+    }
+  }
 
   useEffect(() => {
     finRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -435,6 +463,40 @@ export function Conversacion({
               <path d="M18 6 6 18M6 6l12 12" />
             </svg>
           </button>
+        </div>
+      )}
+
+      {/* ---- El ascenso se PROPONE, nunca se fuerza ---- */}
+      {sugerenciaNivel && !ascensoDescartado && !festejo && (
+        <div className="mb-2 flex shrink-0 flex-wrap items-center gap-x-2.5 gap-y-2 rounded-xl border border-primario/30 bg-primario/5 px-3 py-2.5 text-sm">
+          <span aria-hidden className="shrink-0 text-base">🚀</span>
+          <p className="min-w-0 flex-1 basis-40 leading-snug">
+            <span className="font-semibold">
+              ¿Pasamos al nivel {sugerenciaNivel.siguiente}?
+            </span>{" "}
+            {sugerenciaNivel.razon}. Tú decides — puedes volver cuando
+            quieras.
+          </p>
+          <span className="flex shrink-0 items-center gap-2">
+            {/* Altura táctil real: en el celular esto se toca con el
+                dedo, y un botón de 24px se falla más de lo que se
+                acierta. */}
+            <button
+              type="button"
+              onClick={subirDeNivel}
+              disabled={subiendo}
+              className="min-h-10 rounded-full bg-primario px-4 text-xs font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+            >
+              {subiendo ? "Cambiando…" : `Subir a ${sugerenciaNivel.siguiente}`}
+            </button>
+            <button
+              type="button"
+              onClick={() => descartarAscenso(nivel)}
+              className="min-h-10 rounded-full px-3 text-xs font-semibold text-texto-suave transition hover:bg-superficie-2"
+            >
+              Ahora no
+            </button>
+          </span>
         </div>
       )}
 
