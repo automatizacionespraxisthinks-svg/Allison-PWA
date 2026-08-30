@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Mensaje, Nivel, TipoCorreccion } from "@/lib/tipos";
 import { fijarVelocidad, useVelocidad, VELOCIDADES } from "@/lib/velocidad";
+import { desbloquearVoz, detenerVoz, hablarIngles } from "@/lib/voz";
 
 const ETIQUETA: Record<TipoCorreccion, string> = {
   pronunciacion: "Pronunciación",
@@ -38,28 +39,25 @@ export function Transcripcion({
 
   // Si el alumno se va de la pantalla, la voz no sigue hablando sola
   useEffect(() => {
-    return () => window.speechSynthesis?.cancel();
+    return () => detenerVoz();
   }, []);
 
   function reproducir(m: Mensaje) {
-    if (!window.speechSynthesis) return;
-
     if (sonando === m.id) {
-      window.speechSynthesis.cancel();
+      detenerVoz();
       setSonando(null);
       return;
     }
 
-    const voz = new SpeechSynthesisUtterance(m.texto);
-    voz.lang = "en-US";
-    const base = nivel === "A1" ? 0.8 : nivel === "A2" ? 0.9 : 1;
-    voz.rate = base * velocidad;
-    voz.onend = () => setSonando(null);
-    voz.onerror = () => setSonando(null);
-
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(voz);
+    // Este clic también sirve de gesto de desbloqueo para el auto-play
+    desbloquearVoz();
     setSonando(m.id);
+    // Al terminar (o si otro mensaje lo interrumpió), se apaga SOLO si
+    // este sigue siendo el que suena: la comprobación funcional evita
+    // pisar al que lo reemplazó.
+    void hablarIngles(m.texto, nivel, velocidad).then(() => {
+      setSonando((s) => (s === m.id ? null : s));
+    });
   }
 
   function cambiarVelocidad() {

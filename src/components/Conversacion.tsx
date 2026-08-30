@@ -13,6 +13,7 @@ import { Transcripcion } from "@/components/Transcripcion";
 import type { EstadoConversacion, Mensaje, Nivel } from "@/lib/tipos";
 import { fijarModoTexto, useModoTexto } from "@/lib/entrada";
 import { useVelocidad } from "@/lib/velocidad";
+import { desbloquearVoz, hablarIngles } from "@/lib/voz";
 
 interface Props {
   nombre: string;
@@ -99,25 +100,13 @@ export function Conversacion({
   }, [mensajes, dichoAhora, ideaVisible]);
 
   /**
-   * PROVISIONAL — voz del navegador.
-   * Se reemplaza por el TTS del VPS cuando esté conectado.
+   * La voz vive en lib/voz.ts, que tapa los fallos reales del motor
+   * del navegador (el primer audio que no sonaba solo, entre ellos).
+   * La base del nivel por la preferencia del alumno: un A1 en
+   * "rápida" oye 1,0 — más ágil que su base, nunca la de un C1.
    */
-  function hablar(texto: string): Promise<void> {
-    return new Promise((resolver) => {
-      if (typeof window === "undefined" || !window.speechSynthesis) {
-        return resolver();
-      }
-      const voz = new SpeechSynthesisUtterance(texto);
-      voz.lang = "en-US";
-      // La base del nivel por la preferencia del alumno: un A1 en
-      // "rápida" oye 1,0 — más ágil que su base, nunca la de un C1.
-      const base = nivel === "A1" ? 0.8 : nivel === "A2" ? 0.9 : 1;
-      voz.rate = base * velocidad;
-      voz.onend = () => resolver();
-      voz.onerror = () => resolver();
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(voz);
-    });
+  function hablar(texto: string): Promise<boolean> {
+    return hablarIngles(texto, nivel, velocidad);
   }
 
   function manejarAudio(audio: Blob, duracionSeg: number) {
@@ -131,6 +120,9 @@ export function Conversacion({
   function enviarTexto() {
     const texto = borrador.trim();
     if (!texto || estado !== "inactivo" || sinMensajes) return;
+    // El clic de enviar es un gesto real: desbloquea la voz para que
+    // la respuesta pueda sonar sola segundos después.
+    desbloquearVoz();
     setBorrador("");
     const cuerpo = new FormData();
     cuerpo.append("texto", texto);
@@ -168,7 +160,7 @@ export function Conversacion({
 
       const decodificador = new TextDecoder();
       let resto = "";
-      let hablando: Promise<void> | null = null;
+      let hablando: Promise<boolean> | null = null;
 
       while (true) {
         const { done, value } = await lector.read();
@@ -604,7 +596,13 @@ export function Conversacion({
 
         <BotonGrabar
           estado={estado}
-          onIniciar={() => setEstado("grabando")}
+          onIniciar={() => {
+            // El toque de grabar es el gesto que desbloquea la voz:
+            // sin esto, el primer audio de Allison sale mudo en iOS
+            // y algunos Android.
+            desbloquearVoz();
+            setEstado("grabando");
+          }}
           onAudioListo={manejarAudio}
           onDescartar={() => setEstado("inactivo")}
           deshabilitado={sinMensajes}
