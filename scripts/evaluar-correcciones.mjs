@@ -105,16 +105,20 @@ for (const caso of CASOS) {
     // y respuesta que explica en español.
     const transcripcionEnEspanol =
       /diferencia|cu[aá]l|entre|como se dice|quiero|ba[ñn]o/i.test(r.transcripcion);
-    const respondeEnEspanol =
-      r.respuesta.length > 60 && /es |dice|puedes|pasado|ejemplo/i.test(r.respuesta);
+    // La respuesta va SIEMPRE en inglés: la voz es inglesa y una sola
+    // palabra en español sale destrozada por ella. El español del
+    // alumno vive en la transcripción y en el botón de traducción.
+    const respondeConSustancia = r.respuesta.length > 60;
+    const sinEspanolEnLaVoz = !/[áéíóúñ¿¡]/i.test(r.respuesta);
     const traeEjemplo = caso.contiene ? caso.contiene.test(r.respuesta) : true;
     ok =
       r.correcciones.length === 0 &&
       transcripcionEnEspanol &&
-      respondeEnEspanol &&
+      respondeConSustancia &&
+      sinEspanolEnLaVoz &&
       traeEjemplo;
     detalle = ok
-      ? "en español, sin fantasmas, responde con ejemplos"
+      ? "transcripción en español, respuesta en inglés puro, con ejemplos"
       : `transcripcion="${r.transcripcion.slice(0, 40)}" correcciones=${r.correcciones.length} respuesta="${r.respuesta.slice(0, 60)}"`;
   } else if (caso.espera === null) {
     ok = r.correcciones.length === 0;
