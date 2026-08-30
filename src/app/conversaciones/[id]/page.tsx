@@ -33,6 +33,11 @@ export default async function PaginaConversacion({
           Nivel {c.resumen.nivel} · {c.resumen.mensajes} mensajes
           {c.resumen.correcciones > 0 && ` · ${c.resumen.correcciones} correcciones`}
         </p>
+        {c.resumen.leccion && (
+          <p className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-primario-suave px-2 py-0.5 text-xs font-semibold text-primario">
+            <span aria-hidden>🎯</span> {c.resumen.leccion}
+          </p>
+        )}
       </header>
 
       <Transcripcion

@@ -1,3 +1,4 @@
+import { unidad } from "./curriculo";
 import { sql } from "./db";
 import type { Correccion, Nivel } from "./tipos";
 
@@ -12,6 +13,15 @@ export interface ResumenConversacion {
   borrarDespuesDe: string;
   /** Lo primero que dijo el alumno, para reconocerla en la lista. */
   primeraFrase: string | null;
+  /** El TÍTULO de la unidad si el hilo es una lección; null si es libre.
+   *  Se resuelve aquí, en el servidor, para no cargar las 60 unidades
+   *  del currículo en el navegador solo para pintar una etiqueta. */
+  leccion: string | null;
+}
+
+/** De la clave guardada al título que ve el alumno. */
+function tituloLeccion(clave: string | null): string | null {
+  return clave ? (unidad(clave)?.titulo ?? null) : null;
 }
 
 export interface MensajeConversacion {
@@ -27,7 +37,7 @@ export async function conversacionesDe(
   userId: string
 ): Promise<ResumenConversacion[]> {
   const filas = await sql`
-    select c.id, c.titulo, c.nivel_al_iniciar, c.iniciada_en,
+    select c.id, c.titulo, c.leccion, c.nivel_al_iniciar, c.iniciada_en,
            c.ultima_actividad_en, c.borrar_despues_de,
            count(m.id) filter (where m.rol = 'alumno')::int as mensajes,
            coalesce(sum(
@@ -54,6 +64,7 @@ export async function conversacionesDe(
     ultimaActividad: (f.ultima_actividad_en as Date).toISOString(),
     borrarDespuesDe: (f.borrar_despues_de as Date).toISOString(),
     primeraFrase: f.primera ?? null,
+    leccion: tituloLeccion(f.leccion),
   }));
 }
 
@@ -63,8 +74,8 @@ export async function conversacionDe(
   conversacionId: string
 ): Promise<{ resumen: ResumenConversacion; mensajes: MensajeConversacion[] } | null> {
   const [c] = await sql`
-    select id, titulo, nivel_al_iniciar, iniciada_en, ultima_actividad_en,
-           borrar_despues_de
+    select id, titulo, leccion, nivel_al_iniciar, iniciada_en,
+           ultima_actividad_en, borrar_despues_de
       from conversaciones
      where id = ${conversacionId} and user_id = ${userId}
      limit 1
@@ -97,6 +108,7 @@ export async function conversacionDe(
       ultimaActividad: (c.ultima_actividad_en as Date).toISOString(),
       borrarDespuesDe: (c.borrar_despues_de as Date).toISOString(),
       primeraFrase: mensajes.find((m) => m.rol === "alumno")?.texto ?? null,
+      leccion: tituloLeccion(c.leccion),
     },
     mensajes,
   };

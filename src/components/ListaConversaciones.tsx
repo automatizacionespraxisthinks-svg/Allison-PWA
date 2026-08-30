@@ -70,6 +70,11 @@ export function ListaConversaciones({
                 <p className="text-sm text-texto-suave">
                   {cuando(c.ultimaActividad)} · Nivel {c.nivel}
                 </p>
+                {c.leccion && (
+                  <p className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-primario-suave px-2 py-0.5 text-xs font-semibold text-primario">
+                    <span aria-hidden>🎯</span> {c.leccion}
+                  </p>
+                )}
                 {c.primeraFrase && (
                   <p className="mt-1 line-clamp-2 text-[15px] leading-snug">
                     {c.primeraFrase}
