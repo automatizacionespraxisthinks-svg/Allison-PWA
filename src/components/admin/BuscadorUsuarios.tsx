@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { UsuarioAdmin } from "@/lib/admin";
-import { pesos } from "@/lib/precios";
+import { calcularRecarga, pesos, type ConfigPrecios } from "@/lib/precios";
 
 const campo =
   "rounded-xl border border-borde bg-superficie px-3 py-2.5 text-sm outline-none focus:border-primario";
@@ -21,16 +21,49 @@ function cuando(iso: string | null): string {
 export function BuscadorUsuarios({
   consulta,
   usuarios,
+  cfg,
 }: {
   consulta: string;
   usuarios: UsuarioAdmin[];
+  cfg: ConfigPrecios;
 }) {
   const router = useRouter();
   const [q, setQ] = useState(consulta);
   const [abierto, setAbierto] = useState<string | null>(null);
+  const [efectivoDe, setEfectivoDe] = useState<string | null>(null);
+  const [montoEfectivo, setMontoEfectivo] = useState("");
   const [ocupado, setOcupado] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  async function registrarEfectivo(u: UsuarioAdmin) {
+    const monto = Number(montoEfectivo.replace(/[^0-9]/g, ""));
+    if (!monto) return;
+    setError(null);
+    setAviso(null);
+    setOcupado(true);
+
+    const r = await fetch("/api/admin/efectivo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: u.id, montoCop: monto }),
+    });
+    const d = await r.json();
+    setOcupado(false);
+
+    if (!r.ok) {
+      setError(d.error ?? "No pudimos registrar el pago.");
+      return;
+    }
+    setAviso(
+      `Efectivo registrado: ${u.nombre} recibe ${d.mensajes} intervenciones` +
+        (d.bono > 0 ? ` (incluye ${d.bono} de bono)` : "") +
+        ` y queda con ${d.saldo}.`
+    );
+    setEfectivoDe(null);
+    setMontoEfectivo("");
+    router.refresh();
+  }
 
   async function ajustar(e: React.FormEvent<HTMLFormElement>, u: UsuarioAdmin) {
     e.preventDefault();
@@ -134,14 +167,79 @@ export function BuscadorUsuarios({
                 )}
               </div>
 
-              <button
-                type="button"
-                onClick={() => setAbierto(abierto === u.id ? null : u.id)}
-                className="shrink-0 rounded-xl border border-borde px-3 py-2 text-sm font-medium transition hover:bg-superficie-2"
-              >
-                Ajustar saldo
-              </button>
+              <div className="flex shrink-0 flex-col gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEfectivoDe(efectivoDe === u.id ? null : u.id);
+                    setAbierto(null);
+                  }}
+                  className="rounded-xl bg-exito px-3 py-2 text-sm font-semibold text-white transition hover:brightness-110"
+                >
+                  Pago en efectivo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAbierto(abierto === u.id ? null : u.id);
+                    setEfectivoDe(null);
+                  }}
+                  className="rounded-xl border border-borde px-3 py-2 text-sm font-medium transition hover:bg-superficie-2"
+                >
+                  Ajustar saldo
+                </button>
+              </div>
             </div>
+
+            {efectivoDe === u.id && (
+              <div className="mt-4 rounded-xl bg-superficie-2 p-4">
+                <p className="text-sm text-texto-suave">
+                  Recibiste efectivo de {u.nombre.split(" ")[0]}. Registra el
+                  monto y el sistema aplica la misma tasa y los mismos bonos de
+                  la recarga en línea — queda como ingreso, no como ajuste.
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <div className="flex items-center rounded-xl border border-borde bg-superficie px-3 focus-within:border-primario">
+                    <span className="text-texto-suave">$</span>
+                    <input
+                      value={montoEfectivo}
+                      onChange={(e) =>
+                        setMontoEfectivo(
+                          Number(e.target.value.replace(/[^0-9]/g, "") || 0)
+                            ? Number(e.target.value.replace(/[^0-9]/g, "")).toLocaleString("es-CO")
+                            : ""
+                        )
+                      }
+                      inputMode="numeric"
+                      placeholder="20.000"
+                      aria-label="Monto recibido en efectivo"
+                      className="w-28 bg-transparent px-1.5 py-2.5 text-sm font-semibold tabular-nums outline-none"
+                    />
+                  </div>
+                  {(() => {
+                    const monto = Number(montoEfectivo.replace(/[^0-9]/g, ""));
+                    if (!monto) return null;
+                    const c = calcularRecarga(monto, cfg);
+                    return (
+                      <span className="text-sm">
+                        = <strong>{c.total}</strong> intervenciones
+                        {c.bono > 0 && (
+                          <span className="text-exito"> (+{c.bono} de bono)</span>
+                        )}
+                      </span>
+                    );
+                  })()}
+                  <button
+                    type="button"
+                    onClick={() => registrarEfectivo(u)}
+                    disabled={ocupado || !Number(montoEfectivo.replace(/[^0-9]/g, ""))}
+                    className="rounded-xl bg-exito px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40"
+                  >
+                    {ocupado ? "Registrando…" : "Registrar"}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {abierto === u.id && (
               <form
