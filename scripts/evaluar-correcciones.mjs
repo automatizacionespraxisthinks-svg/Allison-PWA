@@ -64,6 +64,23 @@ const CASOS = [
     pregunta: true,
     contiene: /go to the (bathroom|toilet|restroom)/i,
   },
+  // Caso real: con la pregunta anterior en el historial, el modelo
+  // "transcribia" copiando ese mensaje viejo (duplicado) en vez de
+  // escuchar el audio nuevo, y respondia la pregunta equivocada.
+  {
+    dice: "Explicame la estructura del pasado simple",
+    idioma: "es",
+    pregunta: true,
+    contiene: /-ed|did|verb/i,
+    noEnTranscripcion: /ba[ñn]o|bathroom/i,
+    historial: [
+      { rol: "alumno", texto: "como se dice quiero ir al baño en ingles" },
+      {
+        rol: "allison",
+        texto: "You say: 'I want to go to the bathroom'. Try saying it!",
+      },
+    ],
+  },
 ];
 
 function sintetizar(texto, destino, idioma = "en") {
@@ -90,6 +107,13 @@ for (const caso of CASOS) {
     audioBase64: audio.toString("base64"),
     mimeType: "audio/wav",
     alumno: { nombre: "Alumno de prueba", nivel: "A2" },
+    historial: (caso.historial ?? []).map((h, i) => ({
+      id: String(i),
+      rol: h.rol,
+      texto: h.texto,
+      correcciones: [],
+      creadoEn: "",
+    })),
     temperatura: 0, // reproducible
   });
 
@@ -104,7 +128,12 @@ for (const caso of CASOS) {
     // Pregunta en español: sin correcciones, transcripción sin traducir
     // y respuesta que explica en español.
     const transcripcionEnEspanol =
-      /diferencia|cu[aá]l|entre|como se dice|quiero|ba[ñn]o/i.test(r.transcripcion);
+      /diferencia|cu[aá]l|entre|como se dice|quiero|ba[ñn]o|estructura|pasado|explica/i.test(
+        r.transcripcion
+      );
+    const sinEcoDelHistorial = caso.noEnTranscripcion
+      ? !caso.noEnTranscripcion.test(r.transcripcion)
+      : true;
     // La respuesta va SIEMPRE en inglés: la voz es inglesa y una sola
     // palabra en español sale destrozada por ella. El español del
     // alumno vive en la transcripción y en el botón de traducción.
@@ -114,6 +143,7 @@ for (const caso of CASOS) {
     ok =
       r.correcciones.length === 0 &&
       transcripcionEnEspanol &&
+      sinEcoDelHistorial &&
       respondeConSustancia &&
       sinEspanolEnLaVoz &&
       traeEjemplo;

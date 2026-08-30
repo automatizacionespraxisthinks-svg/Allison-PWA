@@ -151,9 +151,12 @@ is often the most valuable moment of the class.
 ${tema ? `\nToday's topic: ${tema}` : ""}
 
 WHAT YOU RETURN
-- "transcripcion": what the student ACTUALLY said, word for word,
-  errors included. Never fix it here. If the audio is unintelligible,
-  return an empty string.
+- "transcripcion": what the student ACTUALLY said IN THIS TURN'S
+  AUDIO, word for word, errors included. Never fix it here. It comes
+  ONLY from the attached audio: NEVER copy, repeat or reconstruct it
+  from earlier messages — guessing from history invents a turn the
+  student never said. If you cannot hear real speech, return an empty
+  string and nothing else.
 - "respuesta": what you say back, ALWAYS in English. Your voice is an
   English voice: a single word of Spanish in "respuesta" comes out
   mangled through it. The app translates you on demand — Spanish is
@@ -327,6 +330,12 @@ export async function* conversarEnStream(opciones: {
           ? [{ text: texto }]
           : [
               {
+                // El ancla existe por un fallo real: sin ella, el modelo
+                // a veces "transcribe" copiando el mensaje anterior del
+                // historial en vez de escuchar el audio nuevo.
+                text: "[AUDIO OF THE CURRENT TURN. Transcribe exactly and only what you hear in this attachment. The chat history above is context for your reply, NEVER a source for the transcription.]",
+              },
+              {
                 inlineData: {
                   mimeType: mimeType ?? "audio/webm",
                   data: audioBase64 ?? "",
@@ -349,6 +358,10 @@ message. Grammar, vocabulary and naturalness still apply.`
       responseMimeType: "application/json",
       responseSchema: ESQUEMA_RESPUESTA,
       temperature: temperatura,
+      // Sin tope, un bucle del modelo llegó a 200KB en una prueba real.
+      // Un turno legítimo — transcripción + respuesta + correcciones —
+      // cabe de sobra en mil tokens.
+      maxOutputTokens: 1024,
     },
   });
 
@@ -359,13 +372,24 @@ message. Grammar, vocabulary and naturalness still apply.`
    * Costo asumido: si un alumno dictara una hora tipo "3:30", también
    * caería; hablado casi siempre se transcribe en palabras.
    */
-  const sinArtefactos = (t: string): string =>
-    t
+  const sinArtefactos = (t: string): string => {
+    const limpio = t
       .split(" ")
       .filter((p) => !/^[0-9]{1,2}:[0-9]{2}$/.test(p))
       .join(" ")
       .replace(/ {2,}/g, " ")
       .trim();
+
+    // Eco duplicado: cuando el modelo alucina, a veces pega la misma
+    // frase dos veces seguidas ("X X"). Ninguna frase real de más de
+    // doce letras es idéntica a su propia segunda mitad.
+    const mitad = Math.floor(limpio.length / 2);
+    const a = limpio.slice(0, mitad).trim().toLowerCase();
+    const b = limpio.slice(limpio.length - mitad).trim().toLowerCase();
+    if (a.length > 12 && a === b) return limpio.slice(0, mitad).trim();
+
+    return limpio;
+  };
 
   let acumulado = "";
   const entregada = { transcripcion: false, respuesta: false };
@@ -433,7 +457,25 @@ message. Grammar, vocabulary and naturalness still apply.`
     }
   }
 
-  const datos = JSON.parse(acumulado || "{}");
+  let datos: {
+    transcripcion?: string;
+    respuesta?: string;
+    correcciones?: Correccion[];
+  };
+  try {
+    datos = JSON.parse(acumulado || "{}");
+  } catch {
+    // El JSON llegó cortado (tope de tokens o desborde del modelo). Se
+    // rescatan los campos que alcanzaron a cerrar; si falta alguno de
+    // los dos esenciales, el turno se anula entero — la transcripción
+    // vacía hace que la ruta devuelva el crédito al alumno.
+    const t = campoCompleto(acumulado, "transcripcion") ?? "";
+    const r = campoCompleto(acumulado, "respuesta") ?? "";
+    datos =
+      t && r
+        ? { transcripcion: t, respuesta: r, correcciones: [] }
+        : { transcripcion: "", respuesta: "", correcciones: [] };
+  }
 
   /**
    * ¿El turno fue en español? Entonces NO hay inglés que corregir:
@@ -478,6 +520,13 @@ message. Grammar, vocabulary and naturalness still apply.`
       .replace(/\bthan i am\b/g, "than me")
       .replace(/\bthan i\b/g, "than me");
     if (o === sinHiper) return false;
+
+    // La misma hipercorreccion, en su forma desnuda: original "me",
+    // correccion "I". Cambiar el caso de un pronombre suelto nunca es
+    // una correccion real de habla.
+    const objeto = new Set(["me", "us", "him", "her", "them"]);
+    const sujeto = new Set(["i", "we", "he", "she", "they", "i am", "we are", "they are"]);
+    if (objeto.has(o) && sujeto.has(co)) return false;
 
     return true;
   });
