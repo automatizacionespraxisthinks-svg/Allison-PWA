@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { Correccion, Mensaje, Nivel } from "./tipos.ts";
+import type { Unidad } from "./curriculo.ts";
 import { CLAVES_TEMA } from "./temas.ts";
 
 /**
@@ -58,9 +59,44 @@ export interface Alumno {
   temasDominados?: string[];
 }
 
-export function construirInstruccion(alumno: Alumno, tema?: string): string {
+export function construirInstruccion(
+  alumno: Alumno,
+  tema?: string,
+  leccion?: Unidad
+): string {
   const { nombre, nivel } = alumno;
   const primerNombre = nombre.split(" ")[0];
+
+  /**
+   * El bloque de la lección: convierte la charla libre en una clase
+   * con objetivo. La regla de oro está al final del bloque: se enseña
+   * PREGUNTANDO cosas cuya respuesta natural obliga a usar la
+   * estructura, nunca dictando gramática que nadie pidió.
+   */
+  const bloqueLeccion = leccion
+    ? `
+
+TODAY'S LESSON — "${leccion.titulo}"
+Communicative goal: the student can ${leccion.metaEn}.
+Target structure: ${leccion.estructuraEn}.
+Useful vocabulary to work in naturally: ${leccion.vocabulario.join(", ")}.
+
+How to run the lesson:
+- Steer with your QUESTIONS: ask things whose natural answer needs the
+  target structure. Never lecture about the structure unprompted --
+  make them USE it.
+- If the conversation is just starting, open with: "${leccion.apertura}"
+  (greet them by name first, naturally).
+- If they drift to another topic, follow them for a turn -- it is a
+  conversation, not a script -- then bring it back with your next
+  question.
+- Corrections that touch the target structure matter most: recast those
+  first in your spoken reply.
+- "objetivoUsado": set it to true ONLY if in THIS turn the student
+  produced the target structure correctly in a sentence of their own --
+  not a word-for-word repetition of yours. In every other case,
+  including doubt, set false.`
+    : "";
 
   return `You are Allison, a warm and encouraging English teacher.
 
@@ -148,7 +184,7 @@ is often the most valuable moment of the class.
   The app shows a Spanish translation of everything you say with one
   tap, so the student who gets lost can read you in Spanish. What they
   can NOT do is listen to Spanish with your English voice.
-${tema ? `\nToday's topic: ${tema}` : ""}
+${tema ? `\nToday's topic: ${tema}` : ""}${bloqueLeccion}
 
 WHAT YOU RETURN
 - "transcripcion": what the student ACTUALLY said IN THIS TURN'S
@@ -235,6 +271,11 @@ const ESQUEMA_RESPUESTA = {
         required: ["tipo", "original", "correccion", "explicacion", "explicacionEs", "prioridad", "tema"],
       },
     },
+    objetivoUsado: {
+      type: Type.BOOLEAN,
+      description:
+        "Lesson mode only: true ONLY if the student produced today's target structure correctly in their own sentence this turn. Otherwise false.",
+    },
   },
   required: ["transcripcion", "respuesta", "correcciones"],
 };
@@ -243,6 +284,8 @@ export interface RespuestaAllison {
   transcripcion: string;
   respuesta: string;
   correcciones: Correccion[];
+  /** Solo en modo lección: el alumno usó bien la estructura objetivo. */
+  objetivoUsado: boolean;
   tokensEntrada: number;
   tokensSalida: number;
 }
@@ -257,11 +300,13 @@ export interface RespuestaAllison {
  * producción.
  */
 export async function conversar(opciones: {
-  audioBase64: string;
-  mimeType: string;
+  audioBase64?: string;
+  mimeType?: string;
+  texto?: string;
   alumno: Alumno;
   historial?: Mensaje[];
   tema?: string;
+  leccion?: Unidad;
   temperatura?: number;
 }): Promise<RespuestaAllison> {
   for await (const parte of conversarEnStream(opciones)) {
@@ -292,6 +337,8 @@ export async function* conversarEnStream(opciones: {
   alumno: Alumno;
   historial?: Mensaje[];
   tema?: string;
+  /** La unidad del currículo, cuando la conversación es una lección. */
+  leccion?: Unidad;
   /** 0 para evaluaciones reproducibles; 0.8 en conversación real. */
   temperatura?: number;
 }): AsyncGenerator<
@@ -306,6 +353,7 @@ export async function* conversarEnStream(opciones: {
     alumno,
     historial = [],
     tema,
+    leccion,
     temperatura = 0.8,
   } = opciones;
 
@@ -346,7 +394,7 @@ export async function* conversarEnStream(opciones: {
     ],
     config: {
       systemInstruction:
-        construirInstruccion(alumno, tema) +
+        construirInstruccion(alumno, tema, leccion) +
         (texto
           ? `
 
@@ -461,6 +509,7 @@ message. Grammar, vocabulary and naturalness still apply.`
     transcripcion?: string;
     respuesta?: string;
     correcciones?: Correccion[];
+    objetivoUsado?: boolean;
   };
   try {
     datos = JSON.parse(acumulado || "{}");
@@ -502,13 +551,26 @@ message. Grammar, vocabulary and naturalness still apply.`
 
 
   const normalizar = (t: string) =>
-    t.trim().toLowerCase().replace(/[.,;:!?¡¿"']/g, "").replace(/\s+/g, " ");
+    t.trim().toLowerCase().replace(/[.,;:!?¡¿"'‘’]/g, "").replace(/\s+/g, " ");
+
+  const transcripcionLimpia = sinArtefactos(datos.transcripcion ?? "");
+  const dicho = normalizar(transcripcionLimpia);
 
   const correcciones = ((datos.correcciones ?? []) as Correccion[]).filter((c) => {
     if (!c?.original?.trim() || !c?.correccion?.trim()) return false;
     const o = normalizar(c.original);
     const co = normalizar(c.correccion);
     if (o === co) return false;
+
+    // Corrección fantasma: el "original" no aparece en lo que el alumno
+    // dijo. Caso real de la batería: el alumno dijo bien "Yesterday I
+    // went..." y el modelo, empujado por el objetivo de la lección,
+    // inventó "I go -> I went". Si no lo dijo, no se le corrige. La
+    // pronunciación queda exenta: su "original" describe lo que se OYÓ
+    // ("espain"), que no siempre coincide con lo transcrito.
+    if (c.tipo !== "pronunciacion" && dicho.length > 0 && !dicho.includes(o)) {
+      return false;
+    }
 
     // Hipercorrección clásica: "taller than me" -> "taller than I (am)".
     // El prompt la prohíbe y el modelo insiste igual. Se deshace el
@@ -531,14 +593,28 @@ message. Grammar, vocabulary and naturalness still apply.`
     return true;
   });
 
-  const transcripcionLimpia = sinArtefactos(datos.transcripcion ?? "");
+  const enEspanol = esTurnoEnEspanol(transcripcionLimpia);
+
+  /**
+   * El logro de la lección lo declara el modelo, pero el motor lo
+   * VETA en los casos donde no puede ser verdad: sin lección no hay
+   * objetivo, un turno en español no contiene la estructura, y un
+   * turno vacío no contiene nada. La misma filosofía que las
+   * correcciones: el prompt propone, el código dispone.
+   */
+  const objetivoUsado =
+    Boolean(leccion) &&
+    datos.objetivoUsado === true &&
+    !enEspanol &&
+    transcripcionLimpia.length > 0;
 
   yield {
     tipo: "fin",
     resultado: {
       transcripcion: transcripcionLimpia,
       respuesta: datos.respuesta ?? "",
-      correcciones: esTurnoEnEspanol(transcripcionLimpia) ? [] : correcciones,
+      correcciones: enEspanol ? [] : correcciones,
+      objetivoUsado,
       tokensEntrada: uso?.promptTokenCount ?? 0,
       tokensSalida: uso?.candidatesTokenCount ?? 0,
     },

@@ -143,14 +143,75 @@ export async function borrarTodas(userId: string): Promise<number> {
 export async function conversacionActiva(
   userId: string,
   nivel: string
-): Promise<string> {
+): Promise<{ id: string; leccion: string | null }> {
   const [existente] = await sql`
-    select id from conversaciones
+    select id, leccion from conversaciones
      where user_id = ${userId}
      order by ultima_actividad_en desc
      limit 1
   `;
-  if (existente) return existente.id;
+  if (existente) return { id: existente.id, leccion: existente.leccion ?? null };
+
+  const [nueva] = await sql`
+    insert into conversaciones (user_id, modo, nivel_al_iniciar)
+    values (${userId}, 'libre', ${nivel})
+    returning id
+  `;
+  return { id: nueva.id, leccion: null };
+}
+
+/**
+ * El hilo de UNA lección: cada unidad del currículo tiene el suyo.
+ *
+ * Así el alumno puede dejar la lección a medias, charlar libre, y
+ * volver a la lección donde iba — sin que Allison mezcle el objetivo
+ * de la unidad con la conversación de ayer sobre el partido.
+ */
+export async function conversacionDeLeccion(
+  userId: string,
+  nivel: string,
+  leccion: string
+): Promise<string> {
+  const [existente] = await sql`
+    select id from conversaciones
+     where user_id = ${userId} and leccion = ${leccion}
+     order by ultima_actividad_en desc
+     limit 1
+  `;
+  if (existente) {
+    await sql`
+      update conversaciones set ultima_actividad_en = now()
+       where id = ${existente.id}
+    `;
+    return existente.id;
+  }
+
+  const [nueva] = await sql`
+    insert into conversaciones (user_id, modo, leccion, nivel_al_iniciar)
+    values (${userId}, 'leccion', ${leccion}, ${nivel})
+    returning id
+  `;
+  return nueva.id;
+}
+
+/** El hilo libre: el más reciente SIN lección, o uno nuevo. */
+export async function conversacionLibre(
+  userId: string,
+  nivel: string
+): Promise<string> {
+  const [existente] = await sql`
+    select id from conversaciones
+     where user_id = ${userId} and leccion is null
+     order by ultima_actividad_en desc
+     limit 1
+  `;
+  if (existente) {
+    await sql`
+      update conversaciones set ultima_actividad_en = now()
+       where id = ${existente.id}
+    `;
+    return existente.id;
+  }
 
   const [nueva] = await sql`
     insert into conversaciones (user_id, modo, nivel_al_iniciar)

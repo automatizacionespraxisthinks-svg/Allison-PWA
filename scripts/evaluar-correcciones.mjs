@@ -21,6 +21,7 @@ import { readFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { conversar } from "../src/lib/allison.ts";
+import { unidad } from "../src/lib/curriculo.ts";
 
 const modelo = process.argv[2];
 if (modelo) process.env.GEMINI_MODEL = modelo;
@@ -43,6 +44,21 @@ const CASOS = [
   // Controles: frases correctas. Aquí NO debe corregir nada.
   { dice: "I went to the park yesterday with my family", espera: null },
   { dice: "My sister is taller than me and she likes music", espera: null },
+  // Modo lección (a2-finde, pasado simple): el logro se otorga cuando
+  // el alumno usa la estructura por su cuenta, y NUNCA cuando no la
+  // usó. Un logro regalado infla el avance y vacía la meta de sentido.
+  {
+    dice: "Yesterday I went to the beach and I ate fish with my family",
+    espera: null,
+    leccion: "a2-finde",
+    logroEsperado: true,
+  },
+  {
+    dice: "I like coffee and I drink it every morning",
+    espera: null,
+    leccion: "a2-finde",
+    logroEsperado: false,
+  },
   // Una pregunta EN ESPAÑOL (caso real reportado): la transcripción no
   // se traduce, no hay correcciones fantasma, y la respuesta explica
   // EN ESPAÑOL — no el saludo vacío de "good question".
@@ -114,6 +130,7 @@ for (const caso of CASOS) {
       correcciones: [],
       creadoEn: "",
     })),
+    leccion: caso.leccion ? unidad(caso.leccion) : undefined,
     temperatura: 0, // reproducible
   });
 
@@ -162,6 +179,15 @@ for (const caso of CASOS) {
     const heno = `${correcciones} ${r.respuesta}`.replace(/[‘’]/g, "'");
     ok = caso.espera.test(heno);
     detalle = correcciones || "no corrigió nada";
+  }
+
+  if (caso.logroEsperado !== undefined) {
+    if (r.objetivoUsado !== caso.logroEsperado) {
+      ok = false;
+      detalle += `  [logro: esperaba ${caso.logroEsperado} y llegó ${r.objetivoUsado}]`;
+    } else {
+      detalle += `  [logro ${r.objetivoUsado ? "otorgado" : "no otorgado"}: correcto]`;
+    }
   }
 
   // Fallos que no dependen del caso

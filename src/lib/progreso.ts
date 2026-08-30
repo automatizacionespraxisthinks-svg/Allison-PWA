@@ -188,3 +188,23 @@ export async function temasDe(
 
   return { abiertos: abiertos.slice(0, 4), dominados: dominados.slice(0, 4) };
 }
+
+/** El avance del alumno en cada lección: clave -> {logros, completada}. */
+export async function progresoLecciones(
+  userId: string
+): Promise<Record<string, { logros: number; completada: boolean }>> {
+  const filas = await sql`
+    select leccion, logros, completada_en
+      from progreso_lecciones
+     where user_id = ${userId}
+  `;
+
+  const avance: Record<string, { logros: number; completada: boolean }> = {};
+  for (const f of filas) {
+    avance[f.leccion] = {
+      logros: f.logros,
+      completada: f.completada_en !== null,
+    };
+  }
+  return avance;
+}

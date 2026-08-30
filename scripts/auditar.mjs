@@ -127,6 +127,36 @@ await revisar(
   (f) => `${f.id}`
 );
 
+await revisar(
+  "toda lección en progreso existe en el currículo",
+  (async () => {
+    const { UNIDADES } = await import("../src/lib/curriculo.ts");
+    const claves = UNIDADES.map((u) => u.clave);
+    return sql`
+      select distinct leccion from (
+        select leccion from progreso_lecciones
+        union all
+        select leccion from conversaciones where leccion is not null
+      ) t where leccion <> all(${claves})
+    `;
+  })(),
+  (f) => `clave desconocida: ${f.leccion}`
+);
+
+await revisar(
+  "una lección completada tiene al menos un logro",
+  sql`select user_id, leccion from progreso_lecciones
+       where completada_en is not null and logros < 1`,
+  (f) => `${f.leccion} de ${f.user_id}`
+);
+
+await revisar(
+  "toda conversación de modo lección tiene su clave (y al revés)",
+  sql`select id from conversaciones
+       where (modo = 'leccion') <> (leccion is not null)`,
+  (f) => `${f.id}`
+);
+
 console.log(
   problemas === 0
     ? "\nSin problemas de integridad.\n"

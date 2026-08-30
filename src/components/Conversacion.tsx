@@ -31,6 +31,15 @@ interface Props {
   esAdmin: boolean;
   racha: number;
   logro?: LogroPrueba;
+  /** Presente cuando este hilo es una lección del currículo. */
+  leccion?: {
+    clave: string;
+    titulo: string;
+    gramatica: string;
+    logros: number;
+    meta: number;
+    completada: boolean;
+  };
 }
 
 const ESTADO_LINEA: Record<EstadoConversacion, string> = {
@@ -61,8 +70,12 @@ export function Conversacion({
   esAdmin,
   racha,
   logro,
+  leccion: leccionInicial,
 }: Props) {
   const [estado, setEstado] = useState<EstadoConversacion>("inactivo");
+  const [leccion, setLeccion] = useState(leccionInicial ?? null);
+  /** true solo el turno en que la unidad se acaba de completar. */
+  const [festejo, setFestejo] = useState(false);
   const [mensajes, setMensajes] = useState<Mensaje[]>(historial);
   const [mensajesRestantes, setMensajesRestantes] = useState(mensajesIniciales);
   const [error, setError] = useState<string | null>(null);
@@ -191,6 +204,18 @@ export function Conversacion({
             setMensajes((prev) => [...prev, parte.alumno, parte.allison]);
             setMensajesRestantes(parte.mensajesRestantes);
             setDichoAhora(null);
+            if (parte.leccion) {
+              setLeccion((prev) =>
+                prev && prev.clave === parte.leccion.clave
+                  ? {
+                      ...prev,
+                      logros: parte.leccion.logros,
+                      completada: parte.leccion.completada,
+                    }
+                  : prev
+              );
+              if (parte.leccion.recien) setFestejo(true);
+            }
           }
         }
       }
@@ -292,6 +317,10 @@ export function Conversacion({
                   <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
                   Recargar
                 </Link>
+                <Link href="/temas" className={enlaceMenu}>
+                  <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="0.5" /></svg>
+                  Temas de tu nivel
+                </Link>
                 <Link href="/progreso" className={enlaceMenu}>
                   <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18M7 15l4-4 3 3 5-6" /></svg>
                   Tu progreso
@@ -327,9 +356,16 @@ export function Conversacion({
         </div>
       </header>
 
-      {/* ---- Las tres cifras que importan, cada una lleva a su sitio ---- */}
-      <div className="flex shrink-0 gap-2 pb-2">
+      {/* ---- Las cifras que importan, cada una lleva a su sitio ---- */}
+      <div className="flex shrink-0 flex-wrap gap-2 pb-2">
         <SelectorNivel nivel={nivel} />
+        <Link
+          href="/temas"
+          className="flex items-center gap-1 rounded-full bg-superficie-2 px-2.5 py-1 text-xs font-semibold text-texto transition hover:brightness-95"
+          title="Temas de tu nivel"
+        >
+          <span aria-hidden>🎯</span> Temas
+        </Link>
         <Link
           href="/progreso"
           className="flex items-center gap-1 rounded-full bg-superficie-2 px-2.5 py-1 text-xs font-semibold text-texto transition hover:brightness-95"
@@ -350,6 +386,66 @@ export function Conversacion({
         </Link>
       </div>
 
+      {/* ---- El objetivo de la lección, siempre a la vista ---- */}
+      {leccion && (
+        <div className="mb-2 flex shrink-0 items-center gap-2.5 rounded-xl bg-primario-suave px-3 py-2 text-sm">
+          <span aria-hidden className="shrink-0 text-base">🎯</span>
+          <p className="min-w-0 flex-1 truncate leading-snug">
+            <span className="font-semibold">{leccion.titulo}</span>
+            <span className="text-texto-suave"> · {leccion.gramatica}</span>
+          </p>
+          {leccion.completada ? (
+            <span className="shrink-0 text-xs font-semibold text-exito">
+              Completado ✓
+            </span>
+          ) : (
+            <span
+              className="shrink-0 font-mono text-xs font-semibold text-primario"
+              title={`${Math.min(leccion.logros, leccion.meta)} de ${leccion.meta} logros`}
+            >
+              {Math.min(leccion.logros, leccion.meta)}/{leccion.meta}
+            </span>
+          )}
+          <Link
+            href="/temas"
+            aria-label="Cambiar de tema"
+            title="Cambiar de tema"
+            className="shrink-0 rounded-full p-1 text-texto-suave transition hover:bg-superficie hover:text-texto"
+          >
+            <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+            </svg>
+          </Link>
+        </div>
+      )}
+
+      {/* ---- La unidad se acaba de completar: se celebra UNA vez ---- */}
+      {festejo && (
+        <div className="mb-2 flex shrink-0 items-center gap-2.5 rounded-xl border border-exito/30 bg-exito/10 px-3 py-2.5 text-sm">
+          <span aria-hidden className="shrink-0 text-base">🎉</span>
+          <p className="min-w-0 flex-1 leading-snug">
+            <span className="font-semibold text-exito">¡Tema completado!</span>{" "}
+            Usaste bien la estructura {leccion?.meta ?? 6} veces.
+          </p>
+          <Link
+            href="/temas"
+            className="shrink-0 rounded-full bg-exito px-3 py-1 text-xs font-semibold text-white transition hover:brightness-110"
+          >
+            Elegir el siguiente
+          </Link>
+          <button
+            type="button"
+            onClick={() => setFestejo(false)}
+            aria-label="Cerrar el aviso"
+            className="shrink-0 rounded-full p-1 text-texto-suave transition hover:bg-superficie"
+          >
+            <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       {faltaVerificar && <AvisoVerificar mensajes={mensajesPorVerificar} />}
 
       {/* ---- El chat ---- */}
@@ -360,8 +456,9 @@ export function Conversacion({
             <div className="max-w-sm">
               <h1 className="text-2xl font-semibold">Hi! I&apos;m Allison</h1>
               <p className="mt-2 text-texto-suave">
-                Toca el botón y háblame en inglés. Habla tranquilo: si te
-                equivocas, te corrijo y seguimos.
+                {leccion
+                  ? `Toca el botón y salúdame: empezamos "${leccion.titulo}". Si te equivocas, te corrijo y seguimos.`
+                  : "Toca el botón y háblame en inglés. Habla tranquilo: si te equivocas, te corrijo y seguimos."}
               </p>
             </div>
           </div>

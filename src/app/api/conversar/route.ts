@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { conversarEnStream } from "@/lib/allison";
 import { conversacionActiva } from "@/lib/conversaciones";
+import { META_LOGROS, unidad } from "@/lib/curriculo";
 import { sql } from "@/lib/db";
 import { limitar } from "@/lib/limite";
 import { temasDe } from "@/lib/progreso";
@@ -85,8 +86,31 @@ export async function POST(peticion: Request) {
   const devolver = () =>
     sql`select devolver_mensaje(${alumno.id}, ${bolsaUsada}::bolsa_credito)`;
 
-  const conversacionId =
-    conversacionPedida ?? (await conversacionActiva(alumno.id, alumno.nivel));
+  // La conversación pedida se verifica como SUYA en la misma consulta
+  // que trae su lección: sin comprobar el dueño, cualquiera podría
+  // escribir en el hilo de otro pasando el id. Si no es suya o no
+  // existe, se cae al hilo activo del alumno, sin distinguir el caso.
+  let conversacionId: string;
+  let claveLeccion: string | null = null;
+
+  const propia = conversacionPedida
+    ? await sql`
+        select id, leccion from conversaciones
+         where id = ${conversacionPedida} and user_id = ${alumno.id}
+      `.then((f) => f[0] ?? null).catch(() => null)
+    : null;
+
+  if (propia) {
+    conversacionId = propia.id;
+    claveLeccion = propia.leccion ?? null;
+  } else {
+    const activa = await conversacionActiva(alumno.id, alumno.nivel);
+    conversacionId = activa.id;
+    claveLeccion = activa.leccion;
+  }
+
+  // Clave vieja o inventada: la conversación sigue, pero libre.
+  const leccion = claveLeccion ? unidad(claveLeccion) : null;
 
   const buffer =
     !textoEscrito && audio instanceof Blob
@@ -135,6 +159,7 @@ export async function POST(peticion: Request) {
             temasDominados: temas.dominados,
           },
           historial,
+          leccion: leccion ?? undefined,
         });
 
         let resultado = null;
@@ -194,6 +219,24 @@ export async function POST(peticion: Request) {
           `;
         }
 
+        // El logro de la lección se asienta ANTES de responder: si el
+        // alumno cierra la pestaña apenas oye a Allison, el avance ya
+        // es suyo. La meta viaja por parámetro porque vive en el
+        // código, junto al contenido de la unidad.
+        let avanceLeccion = null;
+        if (leccion && resultado.objetivoUsado) {
+          const [fila] = await sql`
+            select registrar_logro(${alumno.id}, ${leccion.clave}, ${META_LOGROS}) as r
+          `;
+          avanceLeccion = {
+            clave: leccion.clave,
+            logros: fila.r.logros as number,
+            meta: META_LOGROS,
+            completada: fila.r.completada as boolean,
+            recien: fila.r.recien as boolean,
+          };
+        }
+
         const [saldo] = await sql`
           select mensajes_plan, mensajes_recarga from saldos where user_id = ${alumno.id}
         `;
@@ -201,6 +244,7 @@ export async function POST(peticion: Request) {
         enviar({
           tipo: "fin",
           conversacionId,
+          leccion: avanceLeccion,
           alumno: {
             id: mAlumno.id,
             rol: "alumno",

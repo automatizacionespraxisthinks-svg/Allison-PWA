@@ -1,5 +1,5 @@
 # Currículo de Allison
-Marco Común Europeo de Referencia (MCER) · A1 → C2 · v1 borrador para revisión
+Marco Común Europeo de Referencia (MCER) · A1 → C2 · v2 · cotejado contra el Core Inventory y el English Grammar Profile
 
 > Este documento define **qué enseña Allison y cómo se comporta en cada nivel**.
 > La sección 2 se convierte directamente en el prompt del sistema. Es la parte que
@@ -59,94 +59,156 @@ Estos son los errores que un colombiano comete de forma predecible. Allison los 
 | /j/ vs /dʒ/ | Los confunde | *yellow* / *jello* |
 | Acento de palabra | Lo pone en la sílaba equivocada | *HOtel* en vez de *hoTEL* |
 
-## 4. Unidades por nivel
+## 4. Unidades por nivel — 60, analizadas contra el MCER
 
-Cada unidad tiene: objetivo comunicativo, estructura gramatical, vocabulario clave y una
-apertura sugerida para Allison. Ocho unidades por nivel, 48 en total.
+**La fuente de verdad es `src/lib/curriculo.ts`.** Estas tablas se generan
+desde ahí; si difieren, manda el código.
 
-### A1 — Principiante
-*El alumno logra presentarse y sobrevivir en situaciones básicas.*
+### El análisis
 
-| # | Unidad | Objetivo | Gramática |
-|---|---|---|---|
-| 1 | Saludos y presentarse | Decir quién es y de dónde | verbo *to be*, pronombres |
-| 2 | Mi familia | Hablar de las personas cercanas | posesivos, *have got* |
-| 3 | Números, hora y fecha | Manejar cifras y decir la hora | preposiciones de tiempo |
-| 4 | Comida y bebida | Pedir y expresar gustos | *like* / *don't like*, contables |
-| 5 | Mi casa | Describir dónde vive | *there is* / *there are* |
-| 6 | Mi rutina diaria | Contar lo que hace cada día | presente simple, adverbios de frecuencia |
-| 7 | Ropa y colores | Describir lo que lleva puesto | adjetivos, demostrativos |
-| 8 | Dónde vivo y cómo llegar | Dar y pedir direcciones | imperativo, preposiciones de lugar |
+La v1 tenía 8 unidades por nivel elegidas a ojo. Esta versión se cotejó
+contra los dos inventarios que definen qué es OBLIGATORIO en cada nivel
+del Marco Común Europeo:
 
-### A2 — Básico
-*El alumno cuenta cosas del pasado y habla de planes.*
+- **Core Inventory for General English** (British Council / EAQUALS): las
+  estructuras y funciones nucleares de cada nivel.
+- **English Grammar Profile** (Cambridge): en qué nivel los alumnos
+  realmente adquieren cada estructura.
 
-| # | Unidad | Objetivo | Gramática |
-|---|---|---|---|
-| 1 | Mi trabajo o mi estudio | Describir su ocupación | presente simple vs continuo |
-| 2 | El fin de semana pasado | Narrar hechos pasados | pasado simple, verbos irregulares |
-| 3 | Planes y futuro | Hablar de lo que va a hacer | *going to*, *will* |
-| 4 | Salud y el cuerpo | Explicar cómo se siente | *should*, *have to* |
-| 5 | Compras y precios | Comprar y negociar | cuantificadores, comparativos |
-| 6 | Viajes y transporte | Moverse y planear un viaje | preposiciones, futuro |
-| 7 | Describir personas | Hablar de carácter y físico | adjetivos, orden de adjetivos |
-| 8 | Comparaciones | Comparar cosas y personas | comparativo y superlativo |
+Huecos que el análisis encontró y esta versión llena:
 
-### B1 — Intermedio
-*El alumno se defiende solo y da opiniones.*
-
-| # | Unidad | Objetivo | Gramática |
-|---|---|---|---|
-| 1 | Contar una experiencia | Narrar algo que le pasó | presente perfecto vs pasado |
-| 2 | Opinar y estar de acuerdo | Expresar y contrastar opiniones | *I think / In my opinion*, conectores |
-| 3 | Trabajo y entrevista | Responder una entrevista | presente perfecto continuo |
-| 4 | Tecnología y redes | Hablar del mundo digital | pasiva simple |
-| 5 | Medio ambiente | Discutir problemas ambientales | *should / must*, condicional 1 |
-| 6 | Cine, música y cultura | Recomendar y reseñar | adjetivos con *-ed / -ing* |
-| 7 | Problemas y soluciones | Explicar un problema y proponer salidas | verbos modales de posibilidad |
-| 8 | Si pudiera... | Hablar de situaciones irreales | condicional 2 |
-
-### B2 — Intermedio alto
-*El alumno debate y sostiene un argumento.*
-
-| # | Unidad | Objetivo | Gramática |
-|---|---|---|---|
-| 1 | Debatir un tema polémico | Defender una postura | conectores de contraste |
-| 2 | Noticias y actualidad | Comentar hechos y reaccionar | estilo indirecto |
-| 3 | Negociar y persuadir | Convencer y llegar a acuerdos | modales de deducción |
-| 4 | Educación y futuro | Discutir sistemas y decisiones | futuro perfecto, futuro continuo |
-| 5 | Cultura y choque cultural | Comparar culturas | *used to*, *would* habitual |
-| 6 | Hacer una presentación | Exponer con estructura | oraciones de relativo |
-| 7 | Hipótesis y arrepentimientos | Hablar de lo que pudo ser | condicional 3, *wish* |
-| 8 | Humor e ironía | Captar y usar el doble sentido | entonación, colocaciones |
-
-### C1 — Avanzado
-*El alumno se expresa con fluidez y precisión en cualquier contexto.*
-
-| # | Unidad | Objetivo |
+| Nivel | Faltaba (obligatorio en el MCER) | Unidad que lo cubre ahora |
 |---|---|---|
-| 1 | Argumentación compleja | Construir un argumento de varias capas |
-| 2 | Lenguaje académico | Manejar registro formal escrito y hablado |
-| 3 | Formal vs informal | Cambiar de registro según el interlocutor |
-| 4 | Idiomatismos y expresiones | Usar lenguaje figurado con naturalidad |
-| 5 | Matizar y suavizar | *Hedging*: decir sin comprometerse |
-| 6 | Contar historias | Narrar con ritmo y efecto |
-| 7 | Temas abstractos | Ética, sociedad, filosofía |
-| 8 | Entrevista de alto nivel | Desempeñarse bajo presión |
+| A1 | can/can't (habilidad y permiso) | Lo que sé hacer |
+| A1 | presente continuo (acciones de ahora) | ¿Qué está pasando? |
+| A1 | formación de preguntas wh- | Preguntar y conocer gente |
+| A2 | pasado continuo con when/while | Una historia inesperada |
+| A2 | presente perfecto (ever/never) | ¿Alguna vez…? |
+| A2 | invitaciones y sugerencias (funciones A2 nucleares) | Invitar y sugerir |
+| A2 | presente continuo para planes cerrados | Viajes y transporte |
+| B1 | used to (el EGP lo pone en A2/B1; estaba en B2) | Cuando era niño |
+| B1 | pasado perfecto y secuencia narrativa | Una historia bien contada |
+| B1 | relativas especificativas (who/that) | Cine, música y cultura |
+| B2 | causativo have/get something done | Trámites y servicios |
+| B2 | gerundio vs infinitivo con cambio de sentido | Matices del verbo |
+| C1 | cleft sentences e inversión | Dar énfasis |
+| C1 | condicionales mixtos y pasado irreal | Lo que pudo ser |
+| C2 | mediación entre idiomas (Companion Volume 2018) | Mediar entre dos idiomas |
+| C2 | lenguaje vivo y referencias culturales | Referencias culturales y humor |
 
-### C2 — Maestría
-*El alumno funciona como un hablante nativo culto.*
+Además se corrigieron solapamientos de la v1 (comparativos estaba dos
+veces en A2; used to estaba en B2 duplicando el nuevo B1) y cada unidad
+de C1/C2 recibió un ancla gramatical que antes no tenía.
 
-| # | Unidad | Objetivo |
-|---|---|---|
-| 1 | Precisión léxica | Elegir la palabra exacta, no la aproximada |
-| 2 | Discurso persuasivo | Retórica y estructura del convencimiento |
-| 3 | Ironía, sarcasmo, subtexto | Decir una cosa y significar otra |
-| 4 | Variedades del inglés | Reconocer acentos y regionalismos |
-| 5 | Lenguaje de su profesión | Vocabulario técnico del campo del alumno |
-| 6 | Debate a nivel nativo | Sostener el ritmo de una discusión real |
-| 7 | Oralidad culta | Hablar con estructura de texto escrito |
-| 8 | Conversación libre total | Sin tema, sin red |
+### Cómo funciona el modo lección
+
+- Cada unidad esconde la gramática detrás de un contexto real: la unidad
+  no se llama "Pasado simple", se llama "El fin de semana pasado".
+- Allison dirige con PREGUNTAS cuya respuesta natural exige la
+  estructura objetivo. Nunca dicta gramática que nadie pidió.
+- Un **logro** = el alumno usa bien la estructura por su cuenta (lo
+  declara el modelo y lo veta el motor: turno en español o vacío no
+  puede ser logro). Con **6 logros** la unidad queda completada.
+- Cada lección tiene su propio hilo de conversación; la conversación
+  libre sigue disponible siempre y no desaparece.
+- El avance vive en `progreso_lecciones` y sobrevive al borrado de
+  conversaciones a los 20 días.
+
+### A1
+*Sobrevivir: el alumno se presenta y maneja situaciones básicas.*
+
+| # | Unidad | Objetivo | Gramática |
+|---|---|---|---|
+| 1 | Saludos y presentarse | Decir quién eres y de dónde vienes | verbo to be y pronombres |
+| 2 | Mi familia | Hablar de las personas cercanas | posesivos y have got |
+| 3 | Preguntar y conocer gente | Hacer preguntas básicas para conocer a alguien | preguntas con what, where, who, how |
+| 4 | Números, hora y fecha | Manejar cifras, decir la hora y la fecha | preposiciones de tiempo: in, on, at |
+| 5 | Mi rutina diaria | Contar qué haces todos los días | presente simple y adverbios de frecuencia |
+| 6 | Lo que sé hacer | Decir qué sabes y qué no sabes hacer | can y can't |
+| 7 | Comida y bebida | Pedir comida y hablar de gustos | like, would like, contables e incontables |
+| 8 | Mi casa y mi barrio | Describir dónde vives | there is, there are y preposiciones de lugar |
+| 9 | ¿Qué está pasando? | Describir lo que pasa en este momento y la ropa | presente continuo |
+| 10 | Moverse por la ciudad | Pedir y dar direcciones | imperativos y direcciones |
+
+### A2
+*Contar: el pasado, los planes y las transacciones diarias.*
+
+| # | Unidad | Objetivo | Gramática |
+|---|---|---|---|
+| 1 | Mi trabajo o mi estudio | Describir tu ocupación y tu día a día | presente simple contra presente continuo |
+| 2 | El fin de semana pasado | Narrar hechos del pasado | pasado simple |
+| 3 | Una historia inesperada | Contar qué estaba pasando cuando algo ocurrió | pasado continuo con when y while |
+| 4 | ¿Alguna vez…? | Hablar de experiencias de tu vida | presente perfecto con ever y never |
+| 5 | Planes y futuro | Hablar de lo que vas a hacer | going to y will |
+| 6 | Viajes y transporte | Planear un viaje y moverte | presente continuo para planes cerrados |
+| 7 | Invitar y sugerir | Invitar, sugerir planes y responder | would you like, let's, shall we |
+| 8 | Salud y el cuerpo | Explicar cómo te sientes y dar consejos | should, have to y must |
+| 9 | Compras y precios | Comprar, preguntar precios y cantidades | cuantificadores: much, many, some, any |
+| 10 | Personas y comparaciones | Describir y comparar personas y cosas | comparativos y superlativos |
+
+### B1
+*Defenderse solo: narrar con matices y sostener opiniones.*
+
+| # | Unidad | Objetivo | Gramática |
+|---|---|---|---|
+| 1 | Contar una experiencia | Narrar algo que te pasó y cuándo | presente perfecto contra pasado simple |
+| 2 | Cuando era niño | Hablar de hábitos y costumbres que ya cambiaron | used to |
+| 3 | Una historia bien contada | Ordenar una historia: qué pasó antes y después | pasado perfecto y conectores de tiempo |
+| 4 | Opinar y estar de acuerdo | Dar tu opinión y reaccionar a la de otros | expresiones de opinión y conectores |
+| 5 | Trabajo y entrevista | Responder una entrevista y hablar de tu experiencia | presente perfecto continuo |
+| 6 | Tecnología y redes | Hablar del mundo digital y cómo se usa | la voz pasiva |
+| 7 | Cine, música y cultura | Recomendar y reseñar lo que te gusta | adjetivos -ed/-ing y oraciones de relativo |
+| 8 | Medio ambiente | Discutir problemas y consecuencias reales | condicional 1: if + will |
+| 9 | Problemas y soluciones | Explicar un problema y proponer salidas | modales de posibilidad: might, may, could |
+| 10 | Si pudiera… | Imaginar situaciones irreales | condicional 2: if + would |
+
+### B2
+*Argumentar: debatir, matizar y manejar lo hipotético.*
+
+| # | Unidad | Objetivo | Gramática |
+|---|---|---|---|
+| 1 | Debatir un tema polémico | Defender una postura con argumentos | conectores de contraste |
+| 2 | Noticias y actualidad | Contar qué dijo alguien y comentar hechos | estilo indirecto |
+| 3 | Negociar y persuadir | Convencer, deducir y llegar a acuerdos | modales de deducción |
+| 4 | Educación y futuro | Discutir cómo será el mundo más adelante | futuro perfecto y futuro continuo |
+| 5 | Cultura y choque cultural | Comparar costumbres de aquí y de afuera | would para hábitos del pasado |
+| 6 | Hacer una presentación | Exponer un tema con estructura | oraciones de relativo explicativas |
+| 7 | Hipótesis y arrepentimientos | Hablar de lo que pudo ser y no fue | condicional 3, wish e if only |
+| 8 | Trámites y servicios | Hablar de lo que mandas a hacer | causativo: have/get something done |
+| 9 | Matices del verbo | Precisar el sentido: dejar de hacer o parar para hacer | gerundio contra infinitivo |
+| 10 | Humor e ironía | Captar y usar el doble sentido | entonación y colocaciones |
+
+### C1
+*Precisión: registro, énfasis y matiz en cualquier contexto.*
+
+| # | Unidad | Objetivo | Gramática |
+|---|---|---|---|
+| 1 | Argumentación compleja | Construir un argumento de varias capas | conectores avanzados y concesión |
+| 2 | Lenguaje académico | Manejar el registro formal hablado y escrito | nominalización y pasiva impersonal |
+| 3 | Formal e informal | Cambiar de registro según con quién hables | elipsis y cambio de registro |
+| 4 | Idiomatismos y expresiones | Usar lenguaje figurado con naturalidad | modismos y phrasal verbs avanzados |
+| 5 | Matizar y suavizar | Decir sin comprometerte del todo | hedging |
+| 6 | Dar énfasis | Resaltar exactamente lo que importa | cleft sentences e inversión |
+| 7 | Lo que pudo ser | Mezclar tiempos en lo hipotético | condicionales mixtos y pasado irreal |
+| 8 | Contar historias | Narrar con ritmo y efecto | cláusulas de participio |
+| 9 | Temas abstractos | Discutir ética, sociedad y filosofía | especulación avanzada |
+| 10 | Entrevista de alto nivel | Desempeñarte bajo presión | todo lo anterior, bajo presión |
+
+### C2
+*Maestría: funcionar como un hablante nativo culto.*
+
+| # | Unidad | Objetivo | Gramática |
+|---|---|---|---|
+| 1 | Precisión léxica | Elegir la palabra exacta, no la aproximada | connotación y matiz |
+| 2 | Discurso persuasivo | Estructurar el convencimiento | retórica: tricolon, anáfora, contraste |
+| 3 | Ironía, sarcasmo y subtexto | Decir una cosa y significar otra | subtexto e implicatura |
+| 4 | Variedades del inglés | Reconocer acentos y regionalismos | británico, americano y otros |
+| 5 | Mediar entre dos idiomas | Resumir, interpretar y explicar de un idioma a otro | mediación |
+| 6 | El inglés de tu profesión | Manejar el vocabulario técnico de tu campo | vocabulario especializado |
+| 7 | Debate a nivel nativo | Sostener el ritmo de una discusión real | interrupciones y turnos de habla |
+| 8 | Oralidad culta | Hablar con la estructura de un buen texto | discurso estructurado |
+| 9 | Referencias culturales y humor | Captar cultura pop, modismos vivos y humor actual | lenguaje vivo |
+| 10 | Conversación libre total | Sin tema, sin red, como con un nativo culto | todo el idioma |
 
 ## 5. Modo libre
 
