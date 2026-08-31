@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { calcularRecarga, pesos, tiempoEquivalente, type ConfigPrecios } from "@/lib/precios";
+import { pedir } from "@/lib/pedir";
 
 const ATAJOS = [4_000, 10_000, 20_000, 50_000];
 
@@ -25,13 +26,13 @@ export function FormularioRecarga({ cfg }: { cfg: ConfigPrecios }) {
   async function pagar() {
     setError(null);
     setEnviando(true);
-    const r = await fetch("/api/pagos/crear", {
+    const r = await pedir("/api/pagos/crear", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ tipo: "recarga", monto }),
     });
-    const d = await r.json();
-    if (!r.ok) {
+    const d = r ? await r.json().catch(() => ({})) : {};
+    if (!r?.ok) {
       setError(d.error ?? "No pudimos abrir el pago.");
       setEnviando(false);
       return;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { pedir } from "@/lib/pedir";
 
 /**
  * Aviso para confirmar el correo — una sola línea, arriba del todo.
@@ -16,8 +17,8 @@ export function AvisoVerificar({ mensajes }: { mensajes: number }) {
 
   async function reenviar() {
     setEstado("enviando");
-    const r = await fetch("/api/verificar/reenviar", { method: "POST" });
-    setEstado(r.ok ? "enviado" : "error");
+    const r = await pedir("/api/verificar/reenviar", { method: "POST" });
+    setEstado(r?.ok ? "enviado" : "error");
   }
 
   return (

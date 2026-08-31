@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { pedir } from "@/lib/pedir";
 
 export function BotonPlan({ codigo, nombre }: { codigo: string; nombre: string }) {
   const [enviando, setEnviando] = useState(false);
@@ -9,13 +10,13 @@ export function BotonPlan({ codigo, nombre }: { codigo: string; nombre: string }
   async function comprar() {
     setError(null);
     setEnviando(true);
-    const r = await fetch("/api/pagos/crear", {
+    const r = await pedir("/api/pagos/crear", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ tipo: "plan", plan: codigo }),
     });
-    const d = await r.json();
-    if (!r.ok) {
+    const d = r ? await r.json().catch(() => ({})) : {};
+    if (!r?.ok) {
       setError(d.error ?? "No pudimos abrir el pago.");
       setEnviando(false);
       return;

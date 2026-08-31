@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { NIVELES, type Nivel } from "@/lib/tipos";
+import { pedir } from "@/lib/pedir";
 
 export default function PaginaRegistro() {
   const router = useRouter();
@@ -24,16 +25,16 @@ export default function PaginaRegistro() {
     setError(null);
     setEnviando(true);
 
-    const respuesta = await fetch("/api/registro", {
+    const respuesta = await pedir("/api/registro", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         nombre, email, acceso, password, nivel, aceptaLegal, declaraEdad,
       }),
     });
-    const datos = await respuesta.json();
+    const datos = respuesta ? await respuesta.json().catch(() => ({})) : {};
 
-    if (!respuesta.ok) {
+    if (!respuesta?.ok) {
       setError(datos.error ?? "No pudimos crear la cuenta.");
       setEnviando(false);
       return;

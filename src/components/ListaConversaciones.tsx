@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ResumenConversacion } from "@/lib/conversaciones";
+import { pedir } from "@/lib/pedir";
 
 function cuando(iso: string): string {
   const fecha = new Date(iso);
@@ -28,10 +29,10 @@ export function ListaConversaciones({
   async function borrar(id: string) {
     setError(null);
     setBorrando(id);
-    const r = await fetch(`/api/conversaciones/${id}`, { method: "DELETE" });
+    const r = await pedir(`/api/conversaciones/${id}`, { method: "DELETE" });
     setBorrando(null);
     setConfirmar(null);
-    if (!r.ok) {
+    if (!r?.ok) {
       setError("No pudimos borrarla. Intenta de nuevo.");
       return;
     }
@@ -41,10 +42,10 @@ export function ListaConversaciones({
   async function borrarTodas() {
     setError(null);
     setBorrando("todas");
-    const r = await fetch("/api/conversaciones", { method: "DELETE" });
+    const r = await pedir("/api/conversaciones", { method: "DELETE" });
     setBorrando(null);
     setConfirmarTodo(false);
-    if (!r.ok) {
+    if (!r?.ok) {
       setError("No pudimos borrarlas. Intenta de nuevo.");
       return;
     }

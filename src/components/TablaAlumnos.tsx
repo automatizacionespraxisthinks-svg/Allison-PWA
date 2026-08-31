@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { AlumnoDelColegio } from "@/lib/colegio";
+import { pedir } from "@/lib/pedir";
 
 /**
  * La lista de alumnos, ordenada por quién necesita atención.
@@ -37,14 +38,14 @@ export function TablaAlumnos({ alumnos }: { alumnos: AlumnoDelColegio[] }) {
   async function reiniciarPin(a: AlumnoDelColegio) {
     setError(null);
     setOcupado(a.id);
-    const r = await fetch("/api/colegio/pin", {
+    const r = await pedir("/api/colegio/pin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ alumnoId: a.id }),
     });
-    const d = await r.json();
+    const d = r ? await r.json().catch(() => ({})) : {};
     setOcupado(null);
-    if (!r.ok) {
+    if (!r?.ok) {
       setError(d.error ?? "No se pudo reiniciar el PIN.");
       return;
     }

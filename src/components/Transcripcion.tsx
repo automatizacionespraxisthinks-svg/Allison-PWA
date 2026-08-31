@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { Mensaje, Nivel, TipoCorreccion } from "@/lib/tipos";
 import { fijarVelocidad, useVelocidad, VELOCIDADES } from "@/lib/velocidad";
 import { desbloquearVoz, detenerVoz, hablarIngles } from "@/lib/voz";
+import { pedir } from "@/lib/pedir";
 
 const ETIQUETA: Record<TipoCorreccion, string> = {
   pronunciacion: "Pronunciación",
@@ -77,13 +78,14 @@ export function Transcripcion({
 
     setTraduciendo(m.id);
     try {
-      const r = await fetch("/api/ayuda", {
+      const r = await pedir("/api/ayuda", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ texto: m.texto, nivel }),
       });
-      if (r.ok) {
-        const d = await r.json();
+      if (r?.ok) {
+        const d = await r.json().catch(() => null);
+        if (!d) return;
         setTraducciones((t) => ({ ...t, [m.id]: d.traduccion || "—" }));
         setAbiertas((a) => ({ ...a, [m.id]: true }));
       }

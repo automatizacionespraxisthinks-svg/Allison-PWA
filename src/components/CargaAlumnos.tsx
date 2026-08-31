@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { pedir as pedirHttp } from "@/lib/pedir";
 
 interface Muestra {
   nombre: string;
@@ -46,15 +47,15 @@ export function CargaAlumnos({ codigoColegio }: { codigoColegio: string }) {
   async function pedir(confirmar: boolean) {
     setError(null);
     setOcupado(true);
-    const r = await fetch("/api/colegio/importar", {
+    const r = await pedirHttp("/api/colegio/importar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ csv, confirmar }),
     });
-    const d = await r.json();
+    const d = r ? await r.json().catch(() => ({})) : {};
     setOcupado(false);
 
-    if (!r.ok) {
+    if (!r?.ok) {
       setResumen(d.aCrear !== undefined ? d : null);
       setError(d.error ?? "No pudimos leer el archivo.");
       return;

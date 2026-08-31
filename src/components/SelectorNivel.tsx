@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { NIVELES, type Nivel } from "@/lib/tipos";
+import { pedir } from "@/lib/pedir";
 
 /**
  * Cambiar de nivel, cuando el alumno quiera.
@@ -23,14 +24,14 @@ export function SelectorNivel({ nivel }: { nivel: Nivel }) {
       return;
     }
     setOcupado(true);
-    const r = await fetch("/api/nivel", {
+    const r = await pedir("/api/nivel", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nivel: nuevo }),
     });
     setOcupado(false);
     setAbierto(false);
-    if (r.ok) router.refresh();
+    if (r?.ok) router.refresh();
   }
 
   return (

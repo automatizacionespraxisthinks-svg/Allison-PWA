@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { pedir as pedirHttp } from "@/lib/pedir";
 
 export default function PaginaRecuperar() {
   const [identificador, setIdentificador] = useState("");
@@ -14,15 +15,16 @@ export default function PaginaRecuperar() {
     setError(null);
     setOcupado(true);
 
-    const r = await fetch("/api/recuperar", {
+    const r = await pedirHttp("/api/recuperar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ identificador }),
     });
 
     setOcupado(false);
-    if (!r.ok) {
-      setError((await r.json()).error ?? "No pudimos procesar la solicitud.");
+    if (!r?.ok) {
+      const d = r ? await r.json().catch(() => ({})) : {};
+      setError(d.error ?? "No pudimos procesar la solicitud.");
       return;
     }
     setEnviado(true);

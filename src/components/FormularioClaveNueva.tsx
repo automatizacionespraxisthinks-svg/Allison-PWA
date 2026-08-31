@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { pedir } from "@/lib/pedir";
 
 export function FormularioClaveNueva({ token }: { token: string }) {
   const router = useRouter();
@@ -21,15 +22,16 @@ export function FormularioClaveNueva({ token }: { token: string }) {
     }
 
     setOcupado(true);
-    const r = await fetch("/api/recuperar/cambiar", {
+    const r = await pedir("/api/recuperar/cambiar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, password }),
     });
     setOcupado(false);
 
-    if (!r.ok) {
-      setError((await r.json()).error ?? "No pudimos cambiar la contraseña.");
+    if (!r?.ok) {
+      const d = r ? await r.json().catch(() => ({})) : {};
+      setError(d.error ?? "No pudimos cambiar la contraseña.");
       return;
     }
     setListo(true);

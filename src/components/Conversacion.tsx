@@ -16,6 +16,7 @@ import { fijarModoTexto, useModoTexto } from "@/lib/entrada";
 import { useVelocidad } from "@/lib/velocidad";
 import { desbloquearVoz, hablarIngles } from "@/lib/voz";
 import { descartarAscenso, useAscensoDescartado } from "@/lib/sugerencia";
+import { pedir } from "@/lib/pedir";
 
 interface Props {
   nombre: string;
@@ -110,13 +111,13 @@ export function Conversacion({
   async function subirDeNivel() {
     if (!sugerenciaNivel || subiendo) return;
     setSubiendo(true);
-    const r = await fetch("/api/nivel", {
+    const r = await pedir("/api/nivel", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nivel: sugerenciaNivel.siguiente }),
     });
     setSubiendo(false);
-    if (r.ok) {
+    if (r?.ok) {
       // Que no reaparezca si algún día vuelve a este nivel
       descartarAscenso(nivel);
       router.refresh();
@@ -262,13 +263,14 @@ export function Conversacion({
 
     setIdeaCargando(true);
     try {
-      const r = await fetch("/api/ayuda", {
+      const r = await pedir("/api/ayuda", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ texto: ultimo.texto, nivel }),
       });
-      if (r.ok) {
-        const d = await r.json();
+      if (r?.ok) {
+        const d = await r.json().catch(() => null);
+        if (!d) return;
         setIdea({ en: d.sugerencia, es: d.sugerenciaEs });
         setIdeaVisible(true);
       }

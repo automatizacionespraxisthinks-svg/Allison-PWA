@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { pedir } from "@/lib/pedir";
 
 /**
  * Botones de la pasarela simulada.
@@ -19,13 +20,13 @@ export function PagoSimulado({ transaccionId }: { transaccionId: string }) {
     setError(null);
     setOcupado(aprobar ? "si" : "no");
 
-    const r = await fetch("/api/pagos/simular", {
+    const r = await pedir("/api/pagos/simular", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ transaccionId, aprobar }),
     });
 
-    if (!r.ok) {
+    if (!r?.ok) {
       setError("La simulación falló.");
       setOcupado(null);
       return;

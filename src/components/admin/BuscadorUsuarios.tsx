@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { UsuarioAdmin } from "@/lib/admin";
 import { calcularRecarga, pesos, type ConfigPrecios } from "@/lib/precios";
+import { pedir } from "@/lib/pedir";
 
 const campo =
   "rounded-xl border border-borde bg-superficie px-3 py-2.5 text-sm outline-none focus:border-primario";
@@ -43,15 +44,15 @@ export function BuscadorUsuarios({
     setAviso(null);
     setOcupado(true);
 
-    const r = await fetch("/api/admin/efectivo", {
+    const r = await pedir("/api/admin/efectivo", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: u.id, montoCop: monto }),
     });
-    const d = await r.json();
+    const d = r ? await r.json().catch(() => ({})) : {};
     setOcupado(false);
 
-    if (!r.ok) {
+    if (!r?.ok) {
       setError(d.error ?? "No pudimos registrar el pago.");
       return;
     }
@@ -72,7 +73,7 @@ export function BuscadorUsuarios({
     setOcupado(true);
 
     const f = new FormData(e.currentTarget);
-    const r = await fetch("/api/admin/saldo", {
+    const r = await pedir("/api/admin/saldo", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -82,10 +83,10 @@ export function BuscadorUsuarios({
         nota: f.get("nota"),
       }),
     });
-    const d = await r.json();
+    const d = r ? await r.json().catch(() => ({})) : {};
     setOcupado(false);
 
-    if (!r.ok) {
+    if (!r?.ok) {
       setError(d.error ?? "No pudimos ajustar el saldo.");
       return;
     }

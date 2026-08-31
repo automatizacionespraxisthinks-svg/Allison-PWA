@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ColegioAdmin } from "@/lib/admin";
 import { pesos } from "@/lib/precios";
+import { pedir } from "@/lib/pedir";
 
 const campo =
   "w-full rounded-xl border border-borde bg-superficie px-3 py-2.5 text-sm outline-none focus:border-primario";
@@ -39,14 +40,15 @@ export function PanelColegios({ colegios }: { colegios: ColegioAdmin[] }) {
     setError(null);
     setOcupado(true);
     const f = new FormData(e.currentTarget);
-    const r = await fetch("/api/admin/colegios", {
+    const r = await pedir("/api/admin/colegios", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(Object.fromEntries(f)),
     });
     setOcupado(false);
-    if (!r.ok) {
-      setError((await r.json()).error ?? "No pudimos crear el colegio.");
+    if (!r?.ok) {
+      const d = r ? await r.json().catch(() => ({})) : {};
+      setError(d.error ?? "No pudimos crear el colegio.");
       return;
     }
     setCreando(false);
@@ -56,14 +58,15 @@ export function PanelColegios({ colegios }: { colegios: ColegioAdmin[] }) {
   async function actualizar(id: string, cambios: Record<string, unknown>) {
     setError(null);
     setOcupado(true);
-    const r = await fetch("/api/admin/colegios", {
+    const r = await pedir("/api/admin/colegios", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, ...cambios }),
     });
     setOcupado(false);
-    if (!r.ok) {
-      setError((await r.json()).error ?? "No pudimos guardar el cambio.");
+    if (!r?.ok) {
+      const d = r ? await r.json().catch(() => ({})) : {};
+      setError(d.error ?? "No pudimos guardar el cambio.");
       return;
     }
     router.refresh();
