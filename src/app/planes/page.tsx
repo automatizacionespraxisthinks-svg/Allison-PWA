@@ -23,6 +23,14 @@ export default async function PaginaPlanes() {
 
   const mensual = planes.find((p) => p.tipo === "mensual");
 
+  /** El plan de mayor ahorro se destaca. Se calcula en vez de fijarse
+   *  con un umbral: un umbral de "20% o más" dejaba la pantalla sin
+   *  ningún plan destacado el día que los descuentos bajaron a 16%. */
+  const masLargo = planes.reduce(
+    (mejor, p) => (p.duracion_meses > (mejor?.duracion_meses ?? 0) ? p : mejor),
+    planes[0]
+  );
+
   return (
     <main className="mx-auto flex min-h-dvh max-w-lg flex-col gap-5 px-4 py-5">
       <header>
@@ -60,7 +68,7 @@ export default async function PaginaPlanes() {
             <article
               key={p.codigo}
               className={`rounded-2xl border-2 p-5 ${
-                ahorro >= 20
+                p.codigo === masLargo?.codigo
                   ? "border-primario bg-primario-suave/30"
                   : "border-borde bg-superficie"
               }`}
