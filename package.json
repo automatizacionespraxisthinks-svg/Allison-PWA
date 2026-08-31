@@ -21,7 +21,8 @@
     "probar:stream": "node scripts/probar-stream.mjs",
     "medir:stream": "node --env-file=.env scripts/medir-stream.mjs",
     "probar:curriculo": "node scripts/probar-curriculo.mjs",
-    "probar:ascenso": "node scripts/probar-ascenso.mjs"
+    "probar:ascenso": "node scripts/probar-ascenso.mjs",
+    "probar:correo": "node --env-file=.env scripts/probar-correo.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",

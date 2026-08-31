@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { correo, type Mensaje } from "./correo";
+import { correo, correoDeRecuperacion } from "./correo";
 import { sql } from "./db";
 import { interpretar } from "./identificador";
 
@@ -9,26 +9,13 @@ import { interpretar } from "./identificador";
  * Vale una hora, no 48 como el enlace de verificación: este entrega el
  * control de la cuenta, y cuanto menos tiempo esté vivo, menos margen
  * hay si el correo queda abierto en un computador compartido.
+ *
+ * La plantilla del correo vive en correo.ts junto a la de
+ * verificación: una sola cara para todos los correos de la casa.
  */
 const VIGENCIA_MINUTOS = 60;
 
 const hash = (token: string) => createHash("sha256").update(token).digest("hex");
-
-function correoDeRecuperacion(nombre: string, enlace: string): Mensaje {
-  return {
-    para: "",
-    asunto: "Recupera tu contraseña de Allison",
-    texto: `Hola ${nombre},
-
-Alguien pidió recuperar la contraseña de tu cuenta. Si fuiste tú, entra aquí:
-
-${enlace}
-
-El enlace vence en una hora y solo sirve una vez.
-
-Si no fuiste tú, ignora este mensaje: tu contraseña sigue igual.`,
-  };
-}
 
 /**
  * Manda el enlace a quien corresponda.

@@ -13,7 +13,14 @@ funciona.
 - [ ] **Rotar llaves**: crea una llave de Gemini NUEVA (la de
       desarrollo pasó por chats y logs) y ponle **límite de gasto
       mensual** en Google AI Studio.
-- [ ] **Resend**: cuenta creada, dominio verificado, llave lista.
+- [ ] **Resend**: en resend.com — (1) crear cuenta, (2) Domains →
+      agregar tu dominio y crear en tu DNS los registros SPF y DKIM
+      que te muestre, (3) esperar el verificado, (4) API Keys → crear
+      llave. Sin dominio propio solo se puede enviar al correo de tu
+      propia cuenta (sirve para probar la llave, no para alumnos).
+      Variables: CORREO=resend, RESEND_API_KEY, y CORREO_REMITENTE
+      con el dominio verificado, p. ej. "Allison <hola@tudominio.co>".
+      Prueba en un comando: npm run probar:correo -- tucorreo@gmail.com
       Sin esto no hay verificación de correo ni recuperación de
       contraseña (candado).
 - [ ] **Wompi**: llaves de producción. Sin ellas la app no puede

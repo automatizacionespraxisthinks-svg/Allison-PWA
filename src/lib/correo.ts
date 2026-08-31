@@ -81,6 +81,64 @@ export function correo(): Enviador {
   return enviador;
 }
 
+/**
+ * La plantilla HTML de la casa, compartida por todos los correos.
+ *
+ * Estilos EN LÍNEA porque los clientes de correo (Gmail, Outlook) no
+ * cargan hojas de estilo: cualquier cosa fuera del atributo style se
+ * pierde. La paleta es la misma azul de la app, y el enlace aparece
+ * también en texto plano debajo del botón — hay clientes que bloquean
+ * botones y gente que desconfía de ellos, y el correo tiene que servir
+ * igual.
+ */
+function plantillaHtml(opciones: {
+  titulo: string;
+  parrafos: string[];
+  boton: { texto: string; enlace: string };
+  notaFinal: string;
+}): string {
+  const { titulo, parrafos, boton, notaFinal } = opciones;
+
+  return `<!doctype html>
+<html lang="es">
+<body style="margin:0;padding:0;background-color:#f6f8fc;font-family:Arial,Helvetica,sans-serif;">
+  <div style="max-width:480px;margin:0 auto;padding:32px 16px;">
+    <div style="background-color:#ffffff;border-radius:16px;padding:32px 28px;border:1px solid #dbe3f0;">
+      <p style="margin:0 0 4px;font-size:22px;font-weight:bold;color:#1d4ed8;">Allison</p>
+      <p style="margin:0 0 20px;font-size:13px;color:#5a6b85;">Aprende ingl&eacute;s hablando</p>
+
+      <h1 style="margin:0 0 16px;font-size:19px;color:#0e1a2f;">${titulo}</h1>
+
+      ${parrafos
+        .map(
+          (p) =>
+            `<p style="margin:0 0 14px;font-size:15px;line-height:1.55;color:#0e1a2f;">${p}</p>`
+        )
+        .join("\n      ")}
+
+      <div style="margin:24px 0;">
+        <a href="${boton.enlace}"
+           style="display:inline-block;background-color:#1d4ed8;color:#ffffff;text-decoration:none;font-size:16px;font-weight:bold;padding:14px 28px;border-radius:12px;">
+          ${boton.texto}
+        </a>
+      </div>
+
+      <p style="margin:0 0 6px;font-size:12px;color:#5a6b85;">
+        Si el bot&oacute;n no funciona, copia este enlace en tu navegador:
+      </p>
+      <p style="margin:0 0 18px;font-size:12px;color:#1d4ed8;word-break:break-all;">${boton.enlace}</p>
+
+      <p style="margin:0;font-size:12px;color:#5a6b85;line-height:1.5;">${notaFinal}</p>
+    </div>
+
+    <p style="margin:16px 0 0;text-align:center;font-size:11px;color:#5a6b85;">
+      PRAXIS - THINKS S.A.S. &middot; Duitama, Boyac&aacute;, Colombia
+    </p>
+  </div>
+</body>
+</html>`;
+}
+
 /** El correo de confirmación, en un solo sitio. */
 export function correoDeVerificacion(nombre: string, enlace: string, mensajes: number): Mensaje {
   const texto = `Hola ${nombre},
@@ -95,5 +153,42 @@ El enlace vence en 48 horas. Si no creaste esta cuenta, ignora este mensaje.`;
     para: "",
     asunto: `Confirma tu correo y recibe ${mensajes} intervenciones más`,
     texto,
+    html: plantillaHtml({
+      titulo: `Hola ${nombre}, confirma tu correo`,
+      parrafos: [
+        `Confirma tu correo y te damos <strong>${mensajes} intervenciones más</strong> para hablar con Allison.`,
+      ],
+      boton: { texto: "Confirmar mi correo", enlace },
+      notaFinal:
+        "El enlace vence en 48 horas. Si no creaste esta cuenta, ignora este mensaje.",
+    }),
+  };
+}
+
+/** El correo de recuperación de contraseña, junto al de verificación. */
+export function correoDeRecuperacion(nombre: string, enlace: string): Mensaje {
+  const texto = `Hola ${nombre},
+
+Alguien pidió recuperar la contraseña de tu cuenta. Si fuiste tú, entra aquí:
+
+${enlace}
+
+El enlace vence en una hora y solo sirve una vez.
+
+Si no fuiste tú, ignora este mensaje: tu contraseña sigue igual.`;
+
+  return {
+    para: "",
+    asunto: "Recupera tu contraseña de Allison",
+    texto,
+    html: plantillaHtml({
+      titulo: `Hola ${nombre}, recupera tu contraseña`,
+      parrafos: [
+        "Alguien pidió recuperar la contraseña de tu cuenta. Si fuiste tú, crea una nueva con el botón.",
+      ],
+      boton: { texto: "Crear contraseña nueva", enlace },
+      notaFinal:
+        "El enlace vence en una hora y solo sirve una vez. Si no fuiste tú, ignora este mensaje: tu contraseña sigue igual.",
+    }),
   };
 }
