@@ -1,4 +1,4 @@
-import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 /** Referencia de pago propia: viaja a la pasarela y vuelve en el aviso. */
 export function nuevaReferencia(): string {
@@ -35,6 +35,8 @@ export interface Pasarela {
     montoCop: number;
     concepto: string;
     correo: string | null;
+    /** El origen de la petición, para armar la URL de regreso. */
+    origen: string;
   }): Promise<PagoCreado>;
   verificarFirma(cuerpoCrudo: string, cabeceras: Headers): boolean;
   interpretarEvento(cuerpo: unknown): EventoPago | null;
@@ -77,16 +79,54 @@ const simulada: Pasarela = {
 };
 
 // ---------------------------------------------------------------------
-//  Wompi — pendiente de llaves reales
+//  Wompi — checkout alojado, con la decisión de SOLO QR
+//
+//  El alumno paga escaneando el QR de Bancolombia/Nequi: es la tarifa
+//  del 1% contra el 2,65% + $700 de tarjetas, y en la recarga mínima
+//  la diferencia es comerse el 24% o el 1% del ingreso.
+//
+//  La restricción a solo QR NO se puede imponer desde esta URL — el
+//  checkout alojado no tiene parámetro de métodos (verificado en
+//  docs.wompi.co) — sino que se configura UNA vez en el panel del
+//  comercio: Wompi > configuración > medios de pago > dejar solo QR.
+//  El paso está en docs/DESPLIEGUE.md; si algún día se reactivan las
+//  tarjetas allá, este código no necesita cambiar.
 // ---------------------------------------------------------------------
 const wompi: Pasarela = {
   nombre: "wompi",
   simulada: false,
 
-  async crearPago() {
-    throw new Error(
-      "Wompi todavía no está configurado. Faltan WOMPI_PUBLIC_KEY y WOMPI_PRIVATE_KEY."
-    );
+  async crearPago({ referencia, montoCop, origen }) {
+    const llavePublica = process.env.WOMPI_PUBLIC_KEY;
+    const secretoIntegridad = process.env.WOMPI_INTEGRITY_SECRET;
+    if (!llavePublica || !secretoIntegridad) {
+      throw new Error(
+        "Wompi sin configurar: faltan WOMPI_PUBLIC_KEY o WOMPI_INTEGRITY_SECRET."
+      );
+    }
+
+    const centavos = montoCop * 100;
+
+    // La firma de integridad ata referencia, monto y moneda: sin ella,
+    // cualquiera podría abrir un checkout de $4.000 por una recarga de
+    // $50.000. Fórmula documentada por Wompi: sha256 de la
+    // concatenación referencia + centavos + moneda + secreto.
+    const integridad = createHash("sha256")
+      .update(`${referencia}${centavos}COP${secretoIntegridad}`)
+      .digest("hex");
+
+    const parametros = new URLSearchParams({
+      "public-key": llavePublica,
+      currency: "COP",
+      "amount-in-cents": String(centavos),
+      reference: referencia,
+      "signature:integrity": integridad,
+      // De vuelta a la conversación: el saldo del encabezado refleja
+      // la recarga en cuanto el webhook la acredita.
+      "redirect-url": `${origen}/practicar`,
+    });
+
+    return { urlPago: `https://checkout.wompi.co/p/?${parametros.toString()}` };
   },
 
   verificarFirma(cuerpoCrudo, cabeceras) {

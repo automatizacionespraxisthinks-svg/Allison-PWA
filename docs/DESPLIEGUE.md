@@ -19,6 +19,12 @@ funciona.
 - [ ] **Wompi**: llaves de producción. Sin ellas la app no puede
       cobrar en línea (candado): si aún no llegan, lanza sin cobros en
       línea y registra solo efectivo desde el panel de admin.
+      **Decisión tomada: SOLO QR.** En el panel de Wompi (configuración
+      → medios de pago) deshabilita todo salvo el código QR: la
+      comisión baja de 2,65% + $700 a 1%. El checkout alojado no
+      permite restringirlo por código, así que este paso del panel es
+      obligatorio — sin él, saldrán tarjetas y PSE con su comisión
+      completa.
 
 ## 2. Variables de entorno en Vercel
 
@@ -30,6 +36,7 @@ funciona.
 | `GEMINI_MODEL` | `gemini-2.5-flash-lite` |
 | `PASARELA` | `wompi` (candado: `simulada` revienta en producción) |
 | `WOMPI_PUBLIC_KEY` / `WOMPI_PRIVATE_KEY` / `WOMPI_EVENTS_SECRET` | de Wompi |
+| `WOMPI_INTEGRITY_SECRET` | de Wompi (Desarrolladores → secreto de integridad): firma cada checkout |
 | `CORREO` | `resend` (candado: `consola` revienta en producción) |
 | `RESEND_API_KEY` / `CORREO_REMITENTE` | de Resend (remitente del dominio verificado) |
 | `CRON_SECRET` | nuevo secreto largo — Vercel lo manda solo al cron de limpieza |
@@ -60,7 +67,9 @@ limpieza desde n8n.
 - [ ] Registrarse con un correo real → llega el correo → verificar.
 - [ ] Un turno de voz completo en el celular (micrófono pide permiso,
       Allison suena sola).
-- [ ] Una recarga real pequeña con Wompi de prueba/producción.
+- [ ] Una recarga real pequeña pagada con QR (y verificar que el
+      checkout NO ofrezca tarjeta ni PSE: si aparecen, falta el paso
+      del panel de Wompi).
 - [ ] `/admin` responde a tu admin y rechaza a un estudiante.
 - [ ] Instalar la PWA desde Android y iPhone.
 - [ ] Al día siguiente: el cron corrió (Vercel → Logs → Cron) y el
