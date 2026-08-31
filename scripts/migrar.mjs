@@ -17,7 +17,7 @@ if (!url) {
   process.exit(1);
 }
 
-const sql = postgres(url, { ssl: "require", max: 1, onnotice: () => {} });
+const sql = postgres(url, { ssl: (process.env.DATABASE_URL ?? "").includes("sslmode=disable") ? false : "require", max: 1, onnotice: () => {} });
 
 try {
   await sql`

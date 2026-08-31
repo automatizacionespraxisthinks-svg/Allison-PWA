@@ -6,11 +6,10 @@ funciona.
 
 ## 1. Antes de importar el proyecto
 
-- [ ] **Base de producción**: crea un proyecto NUEVO en Neon (no la base
-      de desarrollo, que tiene datos de prueba). Copia la cadena del
-      **pooler** — el host con `-pooler` —, no la directa: en
-      funciones sin servidor, la directa se agota en segundos. El
-      código detecta el pooler y se configura solo.
+- [x] **Base de producción**: lista. Es el Postgres propio (46.225.66.78:5421),
+      en una base dedicada `allison` — separada de n8n y del prototipo que
+      viven en la base `postgres` del mismo servidor. Las 19 migraciones ya
+      corrieron y la auditoría de integridad pasó.
 - [ ] **Rotar llaves**: crea una llave de Gemini NUEVA (la de
       desarrollo pasó por chats y logs) y ponle **límite de gasto
       mensual** en Google AI Studio.
@@ -25,7 +24,7 @@ funciona.
 
 | Variable | Valor en producción |
 |---|---|
-| `DATABASE_URL` | cadena del **pooler** de Neon (producción) |
+| `DATABASE_URL` | `postgresql://postgres:<clave>@46.225.66.78:5421/allison?sslmode=disable` |
 | `AUTH_SECRET` | nuevo: `openssl rand -base64 32` |
 | `GEMINI_API_KEY` | la llave NUEVA |
 | `GEMINI_MODEL` | `gemini-2.5-flash-lite` |
@@ -66,6 +65,18 @@ limpieza desde n8n.
 - [ ] Instalar la PWA desde Android y iPhone.
 - [ ] Al día siguiente: el cron corrió (Vercel → Logs → Cron) y el
       panel de Gemini muestra el gasto esperado.
+
+## Deudas de la base de producción (cerrar pronto)
+
+- **Sin TLS**: el Postgres del VPS no tiene certificados, así que el
+  tráfico Vercel↔base viaja SIN CIFRAR por internet (por eso la URL
+  lleva `sslmode=disable`, a conciencia). Cerrar pronto: activar SSL
+  en ese Postgres o moverlo detrás de un túnel.
+- **Puerto abierto a internet**: cualquiera puede intentar conectarse.
+  Restringe el firewall del VPS en cuanto puedas y usa una clave más
+  larga; la actual además viajó por chats.
+- **Respaldos**: ese Postgres es tuyo — programa un pg_dump diario
+  (n8n puede hacerlo) o Allison no tiene copia de nada.
 
 ## Limitaciones aceptadas en Vercel (documentadas, no urgentes)
 

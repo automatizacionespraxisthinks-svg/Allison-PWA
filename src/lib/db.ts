@@ -20,7 +20,11 @@ const crear = () => {
   const esPooler = url.includes("-pooler");
 
   return postgres(url, {
-    ssl: "require",
+    // El SSL se exige salvo que la URL diga lo contrario. El Postgres
+    // propio del VPS no tiene TLS todavía: ahí la URL lleva
+    // sslmode=disable A CONCIENCIA — está documentado en DESPLIEGUE.md
+    // como deuda a cerrar, no como decisión de diseño.
+    ssl: url.includes("sslmode=disable") ? false : "require",
     max: esPooler ? 5 : 10,
     idle_timeout: 20,
     prepare: !esPooler,
