@@ -57,6 +57,10 @@ export default async function PaginaPlanes() {
       <div className="flex flex-col gap-3">
         {planes.map((p) => {
           const porMes = Math.round(p.precio_cop / p.duracion_meses);
+          /** El total del periodo, que es lo que el alumno compra. Se
+           *  muestra junto al "cada mes" para que quede claro que se
+           *  entrega mensualmente y no todo de una vez. */
+          const total = p.mensajes_por_mes * p.duracion_meses;
           const ahorro =
             mensual && p.duracion_meses > 1
               ? Math.round(
@@ -77,10 +81,13 @@ export default async function PaginaPlanes() {
                 <div>
                   <h2 className="text-lg font-bold">{p.nombre}</h2>
                   <p className="text-sm text-texto-suave">
-                    Hasta {p.mensajes_por_mes} intervenciones al mes
+                    {total.toLocaleString("es-CO")} intervenciones
+                    {p.duracion_meses > 1
+                      ? ` · ${p.mensajes_por_mes} cada mes`
+                      : " al mes"}
                   </p>
                   <p className="text-sm font-medium text-primario">
-                    {tiempoEquivalente(p.mensajes_por_mes)} al mes
+                    {tiempoEquivalente(total)}
                   </p>
                 </div>
                 {ahorro > 0 && (
