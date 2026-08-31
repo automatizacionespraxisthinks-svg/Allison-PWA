@@ -18,6 +18,7 @@ export default async function LayoutAdmin({
 
   const enlaces = [
     { href: "/admin", texto: "Resumen" },
+    { href: "/admin/uso", texto: "Uso e IA" },
     { href: "/admin/colegios", texto: "Colegios" },
     { href: "/admin/usuarios", texto: "Usuarios" },
   ];

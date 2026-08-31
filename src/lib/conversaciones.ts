@@ -169,7 +169,19 @@ export async function conversacionActiva(
     values (${userId}, 'libre', ${nivel})
     returning id
   `;
+  await anotarConversacion(userId);
   return { id: nueva.id, leccion: null };
+}
+
+/**
+ * Deja constancia de la conversación abierta en el acumulado del
+ * panel. Va aparte porque son tres los sitios que abren hilos, y una
+ * regla repetida tres veces se olvida en el cuarto.
+ */
+async function anotarConversacion(userId: string): Promise<void> {
+  await sql`
+    select registrar_uso(${userId}, 'conversar', 0, 0, 0, false, true)
+  `.catch(() => {});
 }
 
 /**
@@ -203,6 +215,7 @@ export async function conversacionDeLeccion(
     values (${userId}, 'leccion', ${leccion}, ${nivel})
     returning id
   `;
+  await anotarConversacion(userId);
   return nueva.id;
 }
 
@@ -230,6 +243,7 @@ export async function conversacionLibre(
     values (${userId}, 'libre', ${nivel})
     returning id
   `;
+  await anotarConversacion(userId);
   return nueva.id;
 }
 

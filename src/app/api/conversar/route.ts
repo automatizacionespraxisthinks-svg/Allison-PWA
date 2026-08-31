@@ -212,6 +212,16 @@ export async function POST(peticion: Request) {
           )
         `;
 
+        // Acumulado para el panel: sobrevive al borrado de los 20 días,
+        // que es lo que permite mirar meses y años hacia atrás.
+        await sql`
+          select registrar_uso(
+            ${alumno.id}, 'conversar',
+            ${resultado.tokensEntrada}, ${resultado.tokensSalida},
+            ${Math.round(duracionSeg)}, true, false
+          )
+        `;
+
         for (const c of resultado.correcciones) {
           await sql`
             select registrar_error(${alumno.id}, ${c.tipo}, ${c.original},

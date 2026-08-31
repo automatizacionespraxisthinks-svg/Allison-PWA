@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI, Type } from "@google/genai";
 import { z } from "zod";
+import { sql } from "@/lib/db";
 import { limitar } from "@/lib/limite";
 import { alumnoActual } from "@/lib/sesion";
 
@@ -67,6 +68,25 @@ this from their English teacher and needs help. Return:
   });
 
   const d = JSON.parse(r.text ?? "{}");
+
+  /**
+   * Esta llamada también cuesta dinero, y hasta ahora no quedaba
+   * registrada en ninguna parte: era el único gasto ciego del sistema.
+   * Se anota aparte de la conversación para poder saber cuánto pesan
+   * de verdad las traducciones y las ideas.
+   *
+   * No se espera (`void`): el alumno no tiene por qué esperar a que se
+   * anote una estadística, y si la anotación falla, la traducción se
+   * entrega igual.
+   */
+  void sql`
+    select registrar_uso(
+      ${alumno.id}, 'ayuda',
+      ${r.usageMetadata?.promptTokenCount ?? 0},
+      ${r.usageMetadata?.candidatesTokenCount ?? 0},
+      0, false, false
+    )
+  `.catch(() => {});
 
   return NextResponse.json({
     traduccion: d.traduccion ?? "",
