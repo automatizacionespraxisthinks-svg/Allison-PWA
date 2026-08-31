@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { NIVELES, type Nivel } from "@/lib/tipos";
 import { pedir } from "@/lib/pedir";
 
@@ -17,6 +17,9 @@ export function SelectorNivel({ nivel }: { nivel: Nivel }) {
   const router = useRouter();
   const [abierto, setAbierto] = useState(false);
   const [ocupado, setOcupado] = useState(false);
+  // El refresh no navega, así que loading.tsx no aplica: la transición
+  // es lo único que sabe cuándo llegó de verdad la página fresca.
+  const [refrescando, empezarTransicion] = useTransition();
 
   async function cambiar(nuevo: Nivel) {
     if (nuevo === nivel) {
@@ -31,7 +34,7 @@ export function SelectorNivel({ nivel }: { nivel: Nivel }) {
     });
     setOcupado(false);
     setAbierto(false);
-    if (r?.ok) router.refresh();
+    if (r?.ok) empezarTransicion(() => router.refresh());
   }
 
   return (
@@ -42,7 +45,7 @@ export function SelectorNivel({ nivel }: { nivel: Nivel }) {
         aria-expanded={abierto}
         className="flex items-center gap-1 rounded-full bg-primario-suave px-2.5 py-1 text-xs font-semibold text-primario transition hover:brightness-95"
       >
-        Nivel {nivel}
+        {ocupado || refrescando ? "Cambiando…" : `Nivel ${nivel}`}
         <svg viewBox="0 0 24 24" className="size-3" fill="none" stroke="currentColor" strokeWidth="3">
           <path d="m6 9 6 6 6-6" />
         </svg>

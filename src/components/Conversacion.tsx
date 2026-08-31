@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -88,6 +88,9 @@ export function Conversacion({
   const [festejo, setFestejo] = useState(false);
   const ascensoDescartado = useAscensoDescartado(nivel);
   const [subiendo, setSubiendo] = useState(false);
+  // El refresh tras subir no navega: la transición es la única señal
+  // de que la página fresca (con el nivel nuevo) ya llegó.
+  const [refrescandoNivel, empezarTransicion] = useTransition();
   const [mensajes, setMensajes] = useState<Mensaje[]>(historial);
   const [mensajesRestantes, setMensajesRestantes] = useState(mensajesIniciales);
   const [error, setError] = useState<string | null>(null);
@@ -120,7 +123,7 @@ export function Conversacion({
     if (r?.ok) {
       // Que no reaparezca si algún día vuelve a este nivel
       descartarAscenso(nivel);
-      router.refresh();
+      empezarTransicion(() => router.refresh());
     }
   }
 
@@ -486,10 +489,12 @@ export function Conversacion({
             <button
               type="button"
               onClick={subirDeNivel}
-              disabled={subiendo}
+              disabled={subiendo || refrescandoNivel}
               className="min-h-10 rounded-full bg-primario px-4 text-xs font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
             >
-              {subiendo ? "Cambiando…" : `Subir a ${sugerenciaNivel.siguiente}`}
+              {subiendo || refrescandoNivel
+                ? "Cambiando…"
+                : `Subir a ${sugerenciaNivel.siguiente}`}
             </button>
             <button
               type="button"
