@@ -8,6 +8,7 @@ import { AvatarAllison } from "@/components/AvatarAllison";
 import { BotonGrabar } from "@/components/BotonGrabar";
 import { Bienvenida } from "@/components/Bienvenida";
 import { AvisoVerificar } from "@/components/AvisoVerificar";
+import { BotonInstalar } from "@/components/InstalarApp";
 import { SelectorNivel } from "@/components/SelectorNivel";
 import { FinDePrueba, type LogroPrueba } from "@/components/FinDePrueba";
 import { Transcripcion } from "@/components/Transcripcion";
@@ -367,6 +368,10 @@ export function Conversacion({
                   </Link>
                 )}
                 <div className="my-1 border-t border-borde" />
+                {/* El uso principal es desde el celular: la instalación
+                    vive en el menú, siempre disponible, y no en un
+                    aviso que aparece una vez y no vuelve. */}
+                <BotonInstalar className={`${enlaceMenu} w-full text-left text-texto-suave`} />
                 <button
                   type="button"
                   onClick={() => signOut({ callbackUrl: "/" })}
@@ -391,6 +396,15 @@ export function Conversacion({
         >
           <span aria-hidden>🎯</span> Temas
         </Link>
+        {/* Siempre a la vista mientras no esté instalada: el uso
+            principal es desde el celular, y un acceso escondido en un
+            menú cerrado no es "siempre disponible". Desaparece solo
+            cuando la app ya está instalada. */}
+        <BotonInstalar
+          texto="Instalar"
+          tamanoIcono="size-3.5"
+          className="flex items-center gap-1 rounded-full bg-primario-suave px-2.5 py-1 text-xs font-semibold text-primario transition hover:brightness-95"
+        />
         <Link
           href="/progreso"
           className="flex items-center gap-1 rounded-full bg-superficie-2 px-2.5 py-1 text-xs font-semibold text-texto transition hover:brightness-95"
