@@ -59,7 +59,52 @@ const resend: Enviador = {
   },
 };
 
-const ENVIADORES: Record<string, Enviador> = { consola, resend };
+/**
+ * Gmail por SMTP con contraseña de aplicación.
+ *
+ * Es el camino SIN dominio propio: como es Gmail enviando a través de
+ * Gmail, SPF, DKIM y DMARC pasan solos — nada de suplantación, nada de
+ * spam. El costo es el tope de ~500 correos al día de una cuenta
+ * normal y un remitente @gmail.com menos comercial; cuando haya
+ * dominio, se cambia CORREO=resend y este enviador queda de respaldo.
+ *
+ * La contraseña de aplicación NO es la clave de la cuenta: se genera
+ * en Cuenta de Google → Seguridad → Verificación en dos pasos →
+ * Contraseñas de aplicaciones, y solo sirve para esto.
+ */
+const gmail: Enviador = {
+  nombre: "gmail",
+  simulado: false,
+  async enviar({ para, asunto, texto, html }) {
+    const usuario = process.env.GMAIL_USUARIO;
+    const clave = process.env.GMAIL_APP_PASSWORD;
+    if (!usuario || !clave) {
+      throw new Error("Faltan GMAIL_USUARIO o GMAIL_APP_PASSWORD");
+    }
+
+    // Importación diferida: nodemailer solo se carga si este enviador
+    // se usa, y nunca termina en un bundle del navegador.
+    const { default: nodemailer } = await import("nodemailer");
+    const transporte = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: { user: usuario, pass: clave },
+    });
+
+    // Gmail solo permite enviar COMO la cuenta autenticada; el nombre
+    // visible sí es nuestro, y es lo que el alumno ve en la bandeja.
+    await transporte.sendMail({
+      from: `Allison <${usuario}>`,
+      to: para,
+      subject: asunto,
+      text: texto,
+      html,
+    });
+  },
+};
+
+const ENVIADORES: Record<string, Enviador> = { consola, resend, gmail };
 
 export function correo(): Enviador {
   const enviador = ENVIADORES[process.env.CORREO ?? "consola"] ?? consola;

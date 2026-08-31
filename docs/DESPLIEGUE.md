@@ -13,16 +13,17 @@ funciona.
 - [ ] **Rotar llaves**: crea una llave de Gemini NUEVA (la de
       desarrollo pasó por chats y logs) y ponle **límite de gasto
       mensual** en Google AI Studio.
-- [ ] **Resend**: en resend.com — (1) crear cuenta, (2) Domains →
-      agregar tu dominio y crear en tu DNS los registros SPF y DKIM
-      que te muestre, (3) esperar el verificado, (4) API Keys → crear
-      llave. Sin dominio propio solo se puede enviar al correo de tu
-      propia cuenta (sirve para probar la llave, no para alumnos).
-      Variables: CORREO=resend, RESEND_API_KEY, y CORREO_REMITENTE
-      con el dominio verificado, p. ej. "Allison <hola@tudominio.co>".
-      Prueba en un comando: npm run probar:correo -- tucorreo@gmail.com
-      Sin esto no hay verificación de correo ni recuperación de
-      contraseña (candado).
+- [ ] **Correo — camino elegido: Gmail, sin dominio.** En tu Cuenta de
+      Google: Seguridad → activar Verificación en dos pasos → buscar
+      "Contraseñas de aplicaciones" → crear una llamada "Allison".
+      Variables: CORREO=gmail, GMAIL_USUARIO=praxisthinks@gmail.com y
+      GMAIL_APP_PASSWORD=la generada (16 letras). Tope ~500 correos/día,
+      de sobra para empezar. Prueba: npm run probar:correo -- tucorreo
+      Sin esto no hay verificación ni recuperación (candado).
+      *Mejora futura con dominio propio*: cambiar a CORREO=resend
+      (cuenta en resend.com, dominio verificado con SPF/DKIM,
+      RESEND_API_KEY y CORREO_REMITENTE del dominio) — remitente más
+      comercial y sin tope diario.
 - [ ] **Wompi**: llaves de producción. Sin ellas la app no puede
       cobrar en línea (candado): si aún no llegan, lanza sin cobros en
       línea y registra solo efectivo desde el panel de admin.
@@ -44,8 +45,8 @@ funciona.
 | `PASARELA` | `wompi` (candado: `simulada` revienta en producción) |
 | `WOMPI_PUBLIC_KEY` / `WOMPI_PRIVATE_KEY` / `WOMPI_EVENTS_SECRET` | de Wompi |
 | `WOMPI_INTEGRITY_SECRET` | de Wompi (Desarrolladores → secreto de integridad): firma cada checkout |
-| `CORREO` | `resend` (candado: `consola` revienta en producción) |
-| `RESEND_API_KEY` / `CORREO_REMITENTE` | de Resend (remitente del dominio verificado) |
+| `CORREO` | `gmail` (candado: `consola` revienta en producción) |
+| `GMAIL_USUARIO` / `GMAIL_APP_PASSWORD` | tu Gmail y su contraseña de aplicación |
 | `CRON_SECRET` | nuevo secreto largo — Vercel lo manda solo al cron de limpieza |
 | `PROXY_CONFIABLE` | `reverso` (Vercel reescribe `x-forwarded-for`) |
 | `COP_POR_MENSAJE` | `60` |
