@@ -33,7 +33,16 @@ const USD_SALIDA = 0.4;
 const USD_A_COP = 4000;
 
 export async function resumenGeneral(): Promise<Resumen> {
-  const [u] = await sql`
+  /**
+   * Las cinco consultas van JUNTAS, no en fila india.
+   *
+   * Ninguna depende de otra, y cada viaje a la base en Ohio son unos
+   * 90 ms que el administrador espera mirando la pantalla: en fila se
+   * sumaban hasta casi dos segundos. Es el mismo criterio que ya se
+   * aplica en la ruta de conversar.
+   */
+  const [[u], [c], [m], [i], [t]] = await Promise.all([
+    sql`
     select count(*)::int as total,
            count(*) filter (
              where ultima_practica_en > now() - interval '7 days'
@@ -53,28 +62,29 @@ export async function resumenGeneral(): Promise<Resumen> {
            )::int as pagaron,
            count(*) filter (where institucion_id is not null)::int as de_colegio
       from users where activo
-  `;
+  `,
 
-  const [c] = await sql`select count(*)::int as n from instituciones where estado = 'activa'`;
+    sql`select count(*)::int as n from instituciones where estado = 'activa'`,
 
-  const [m] = await sql`
+    sql`
     select coalesce(sum(mensajes), 0)::int as n
       from progreso_diario where fecha > current_date - 7
-  `;
+  `,
 
-  const [i] = await sql`
+    sql`
     select coalesce(sum(monto_cop) filter (
              where confirmado_en > date_trunc('month', now())
            ), 0)::int as mes,
            coalesce(sum(monto_cop), 0)::int as total
       from transacciones where estado = 'aprobada'
-  `;
+  `,
 
-  const [t] = await sql`
+    sql`
     select coalesce(sum(tokens_entrada), 0)::bigint as entrada,
            coalesce(sum(tokens_salida), 0)::bigint  as salida
       from mensajes where creado_en > date_trunc('month', now())
-  `;
+  `,
+  ]);
 
   const costoIaMes = Math.round(
     ((Number(t.entrada) / 1e6) * USD_ENTRADA +
