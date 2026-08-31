@@ -8,7 +8,17 @@ import { temasDe } from "@/lib/progreso";
 import { alumnoActual } from "@/lib/sesion";
 import { AUDIO_MAX_SEGUNDOS } from "@/lib/tipos";
 
-const MAX_BYTES = 8 * 1024 * 1024; // 60 s de opus caben de sobra
+/**
+ * Tope de ejecución para Vercel: un turno con audio son varios viajes
+ * (base, Gemini en streaming, base otra vez) y puede pasar de los 10
+ * segundos que algunas cuentas traen por defecto. Sin esto, el turno
+ * se cortaría a mitad de respuesta.
+ */
+export const maxDuration = 60;
+
+// 60 s de opus caben de sobra. Ojo: Vercel corta el cuerpo en 4,5 MB
+// antes de llegar aquí, así que ese es el tope efectivo desplegado.
+const MAX_BYTES = 8 * 1024 * 1024;
 
 /**
  * Turnos por minuto y por alumno. Una conversación real ronda uno cada

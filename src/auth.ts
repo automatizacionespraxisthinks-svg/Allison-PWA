@@ -53,11 +53,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
 
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      allowDangerousEmailAccountLinking: true,
-    }),
+    // Google solo se registra cuando hay llaves: registrado sin ellas,
+    // el botón existiría y fallaría al tocarlo. La pantalla de entrar
+    // lo oculta con el mismo criterio (hayGoogle).
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          Google({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : []),
 
     Credentials({
       id: "acceso",

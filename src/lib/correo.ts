@@ -62,7 +62,23 @@ const resend: Enviador = {
 const ENVIADORES: Record<string, Enviador> = { consola, resend };
 
 export function correo(): Enviador {
-  return ENVIADORES[process.env.CORREO ?? "consola"] ?? consola;
+  const enviador = ENVIADORES[process.env.CORREO ?? "consola"] ?? consola;
+
+  /**
+   * CANDADO DE PRODUCCIÓN. El enviador de consola imprime el correo en
+   * el log y reporta éxito: en producción eso sería mentirle al alumno
+   * — "te enviamos el enlace" — sin enviarle nada, y quedaría fuera de
+   * su cuenta para siempre. Fallar con ruido es mejor que prometer en
+   * silencio.
+   */
+  if (process.env.NODE_ENV === "production" && enviador.simulado) {
+    throw new Error(
+      "El correo de consola no puede correr en producción. " +
+        "Define CORREO=resend con RESEND_API_KEY y CORREO_REMITENTE."
+    );
+  }
+
+  return enviador;
 }
 
 /** El correo de confirmación, en un solo sitio. */

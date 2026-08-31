@@ -111,7 +111,24 @@ const PASARELAS: Record<string, Pasarela> = { simulada, wompi };
 
 export function pasarela(): Pasarela {
   const elegida = process.env.PASARELA ?? "simulada";
-  return PASARELAS[elegida] ?? simulada;
+  const via = PASARELAS[elegida] ?? simulada;
+
+  /**
+   * CANDADO DE PRODUCCIÓN. La simulada aprueba pagos sin dinero real:
+   * en producción, un despliegue con la variable olvidada regalaría
+   * recargas a cualquiera. El candado vive en el CÓDIGO y no en una
+   * lista de chequeo porque las listas se saltan y esto no puede
+   * depender de que nadie olvide nada. Reventar la página de pago es
+   * infinitamente mejor negocio que vender gratis.
+   */
+  if (process.env.NODE_ENV === "production" && via.simulada) {
+    throw new Error(
+      "La pasarela simulada no puede correr en producción. " +
+        "Define PASARELA=wompi con sus llaves, o no cobres."
+    );
+  }
+
+  return via;
 }
 
 /** Firma un cuerpo como lo haría la pasarela. Solo para pruebas. */
