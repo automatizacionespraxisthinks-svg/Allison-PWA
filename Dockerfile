@@ -1,7 +1,7 @@
 # =====================================================================
 #  Allison — imagen de producción para Dokploy
 #
-#  Cuatro etapas para que la imagen final pese ~250 MB en vez de ~1,5 GB:
+#  Tres etapas para que la imagen final pese ~250 MB en vez de ~1,5 GB:
 #  las herramientas de compilación y el código fuente se quedan en las
 #  etapas intermedias y nunca llegan al servidor.
 #
@@ -26,20 +26,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 
-# --- 2. Dependencias SOLO de producción (para los scripts) ------------
-#  Los scripts de migración y de creación de administradores corren
-#  DENTRO del contenedor (es la única forma de tocar la base sin abrir
-#  su puerto al mundo), y necesitan 'postgres' y 'bcryptjs'. El
-#  node_modules de la salida autónoma no los trae: Next solo copia lo
-#  que las páginas usan, y los scripts no son páginas.
-FROM node:22-alpine AS deps-prod
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
-
-
-# --- 3. Compilación ---------------------------------------------------
+# --- 2. Compilación ---------------------------------------------------
 FROM node:22-alpine AS builder
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
@@ -57,7 +44,7 @@ ENV NODE_ENV=production
 RUN npm run build
 
 
-# --- 4. Ejecución -----------------------------------------------------
+# --- 3. Ejecución -----------------------------------------------------
 FROM node:22-alpine AS runner
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
@@ -84,14 +71,20 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # --- Herramientas de operación: migrar la base y crear administradores
-# desde dentro del contenedor. Van DESPUÉS del standalone para no
-# pisarlo, y con sus dependencias propias.
+# desde dentro del contenedor, que es la única forma de tocar la base
+# sin abrir su puerto al mundo. Van DESPUÉS del standalone para no
+# pisarlo. Necesitan postgres y bcryptjs, que la salida autónoma no
+# trae: Next solo copia lo que usan las páginas, y estos no son páginas.
 COPY --from=builder --chown=nextjs:nodejs /app/db ./db
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/migrar.mjs ./scripts/migrar.mjs
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/crear-admin.mjs ./scripts/crear-admin.mjs
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/auditar.mjs ./scripts/auditar.mjs
-COPY --from=deps-prod --chown=nextjs:nodejs /app/node_modules/postgres ./node_modules/postgres
-COPY --from=deps-prod --chown=nextjs:nodejs /app/node_modules/bcryptjs ./node_modules/bcryptjs
+# postgres y bcryptjs salen de la etapa deps, que ya los instaló: son
+# dependencias de producción y no tienen dependencias propias, así que
+# copiarlas basta. Una etapa aparte con npm ci --omit=dev solo para
+# esto reinstalaría el árbol entero para nada.
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/postgres ./node_modules/postgres
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/bcryptjs ./node_modules/bcryptjs
 
 USER nextjs
 EXPOSE 3000

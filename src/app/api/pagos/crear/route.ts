@@ -4,6 +4,7 @@ import { limitar } from "@/lib/limite";
 import { nuevaReferencia, pasarela } from "@/lib/pasarela";
 import { calcularRecarga, configPrecios, validarMonto } from "@/lib/precios";
 import { alumnoActual } from "@/lib/sesion";
+import { origenPublico } from "@/lib/origen";
 
 /** Órdenes de pago que puede abrir un alumno por hora. */
 const ORDENES_POR_HORA = 10;
@@ -81,7 +82,7 @@ export async function POST(peticion: Request) {
       montoCop,
       concepto,
       correo: null,
-      origen: new URL(peticion.url).origin,
+      origen: origenPublico(peticion),
     });
   } catch (e) {
     // Sin esto la fila queda pendiente para siempre y ensucia los

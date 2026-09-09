@@ -6,6 +6,7 @@ import { limitar, origenDe } from "@/lib/limite";
 import { interpretar } from "@/lib/identificador";
 import { VERSION_LEGAL } from "@/lib/legal";
 import { enviarVerificacion, PRUEBA_INICIAL } from "@/lib/verificacion";
+import { origenPublico } from "@/lib/origen";
 
 /** Convierte lo que llegue en texto, para dar mensajes en español y no
  *  el error técnico de la librería cuando falta un campo. */
@@ -163,7 +164,7 @@ export async function POST(peticion: Request) {
     userId: nuevoId,
     nombre,
     email,
-    origen: new URL(peticion.url).origin,
+    origen: origenPublico(peticion),
   });
 
   return NextResponse.json(

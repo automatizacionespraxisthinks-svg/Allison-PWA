@@ -3,6 +3,7 @@ import { sql } from "@/lib/db";
 import { limitar } from "@/lib/limite";
 import { alumnoActual } from "@/lib/sesion";
 import { anularPendientes, enviarVerificacion } from "@/lib/verificacion";
+import { origenPublico } from "@/lib/origen";
 
 /** Reenvíos por hora y por alumno: el correo cuesta y se puede abusar. */
 const REENVIOS_POR_HORA = 3;
@@ -39,7 +40,7 @@ export async function POST(peticion: Request) {
     userId: alumno.id,
     nombre: u.nombre,
     email: u.email,
-    origen: new URL(peticion.url).origin,
+    origen: origenPublico(peticion),
   });
 
   return NextResponse.json({ ok: true, enviado });

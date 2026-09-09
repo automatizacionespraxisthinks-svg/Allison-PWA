@@ -72,7 +72,7 @@ consulta, no al importar el módulo.
 |---|---|
 | `DATABASE_URL` | **ajustar**: nombre interno del servicio + puerto `5432` |
 | `AUTH_SECRET` | generado, listo |
-| `AUTH_URL` | **falta**: tu dominio con https, sin barra final |
+| `AUTH_URL` | **falta — OBLIGATORIA**: tu dominio con https, sin barra final. De aquí salen los enlaces de los correos y el retorno de Wompi; sin ella apuntan a una dirección muerta |
 | `GEMINI_API_KEY` | **falta**: la llave nueva |
 | `GEMINI_MODEL` | listo |
 | `CORREO`, `GMAIL_USUARIO`, `GMAIL_APP_PASSWORD` | listos y probados |
@@ -143,14 +143,22 @@ secreto.
 - [ ] `https://TU-DOMINIO/api/salud` responde `{"ok":true}`.
 - [ ] `https://TU-DOMINIO/api/salud?base=1` responde `{"ok":true,"base":true}`
       — si esta falla y la anterior no, el problema es la base, no la app.
-- [ ] Registrarse con un correo real → llega el correo → verificar suma
-      las +15 intervenciones.
+- [ ] Registrarse con un correo real → llega el correo → **el enlace
+      abre tu dominio** (si dice 0.0.0.0, falta `AUTH_URL`) → verificar
+      suma las +15 intervenciones.
+- [ ] Pedir "olvidé mi contraseña" y comprobar que ese enlace también
+      abre: el correo es el único canal para recuperar una cuenta.
 - [ ] Un turno de voz completo **desde el celular**: pide permiso de
       micrófono, transcribe, y Allison **suena sola**.
 - [ ] Instalar la PWA (aparece el chip "Instalar").
 - [ ] `/admin` responde a tu administrador y rechaza a un estudiante.
-- [ ] Una recarga pequeña real pagada con QR — y que el checkout **no**
-      ofrezca tarjeta ni PSE (si aparecen, faltó el paso del panel).
+- [ ] Una recarga pequeña real pagada con QR, comprobando **las tres**:
+      (a) el checkout **no** ofrece tarjeta ni PSE (si aparecen, faltó el
+      paso del panel de Wompi); (b) al terminar, el navegador vuelve a
+      **tu dominio**, no a una dirección rara; (c) **el saldo del
+      encabezado sube** y la transacción queda `aprobada` en la base.
+      La (c) es la que importa: si el aviso de Wompi se rechazara, el
+      cobro se haría igual y el alumno no recibiría nada.
 - [ ] Al día siguiente: la limpieza corrió y el panel de Gemini muestra
       el gasto esperado.
 

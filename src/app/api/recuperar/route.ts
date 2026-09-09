@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { limitar, origenDe } from "@/lib/limite";
 import { pedirRecuperacion } from "@/lib/recuperacion";
+import { origenPublico } from "@/lib/origen";
 
 /** Solicitudes por hora desde una misma IP. */
 const POR_HORA = 5;
@@ -19,7 +20,7 @@ export async function POST(peticion: Request) {
   };
 
   if (typeof identificador === "string" && identificador.trim()) {
-    await pedirRecuperacion(identificador, new URL(peticion.url).origin);
+    await pedirRecuperacion(identificador, origenPublico(peticion));
   }
 
   // Siempre lo mismo, exista la cuenta o no: si dijéramos "esa cuenta

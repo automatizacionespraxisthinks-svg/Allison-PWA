@@ -129,12 +129,71 @@ const wompi: Pasarela = {
     return { urlPago: `https://checkout.wompi.co/p/?${parametros.toString()}` };
   },
 
+  /**
+   * Verifica la firma de un evento COMO LA CALCULA WOMPI.
+   *
+   * No es un HMAC sobre el cuerpo — eso fue un error que habría
+   * rechazado todos los avisos reales, dejando al alumno pagando sin
+   * recibir nada. Wompi documenta otra cosa (docs.wompi.co, "Eventos"):
+   *
+   *   sha256( valores de signature.properties, en orden
+   *           + timestamp
+   *           + secreto de eventos )
+   *
+   * Los "properties" son rutas dentro de `data` ("transaction.status"),
+   * y pueden CAMBIAR con el tiempo: por eso se leen del propio evento
+   * en vez de fijarlas aquí. El checksum llega por partida doble — en
+   * la cabecera y en el cuerpo —; se prefiere la cabecera, que es lo
+   * que un atacante tendría que falsificar junto con todo lo demás.
+   */
   verificarFirma(cuerpoCrudo, cabeceras) {
     const secreto = process.env.WOMPI_EVENTS_SECRET ?? "";
     if (!secreto) return false;
-    const firma = cabeceras.get("x-event-checksum") ?? "";
-    const esperada = createHmac("sha256", secreto).update(cuerpoCrudo).digest("hex");
-    return igualSeguro(firma.toLowerCase(), esperada);
+
+    let evento: {
+      data?: Record<string, unknown>;
+      timestamp?: number | string;
+      signature?: { properties?: unknown; checksum?: unknown };
+    };
+    try {
+      evento = JSON.parse(cuerpoCrudo);
+    } catch {
+      return false;
+    }
+
+    const propiedades = evento?.signature?.properties;
+    if (!Array.isArray(propiedades) || propiedades.length === 0) return false;
+    if (evento.timestamp === undefined || !evento.data) return false;
+
+    // "transaction.status" -> data.transaction.status
+    const valor = (ruta: unknown): string | null => {
+      if (typeof ruta !== "string") return null;
+      let actual: unknown = evento.data;
+      for (const paso of ruta.split(".")) {
+        if (actual === null || typeof actual !== "object") return null;
+        actual = (actual as Record<string, unknown>)[paso];
+      }
+      // Un campo ausente NO puede pasar como cadena vacía: dos eventos
+      // distintos firmarían igual.
+      if (actual === null || actual === undefined) return null;
+      if (typeof actual === "object") return null;
+      return String(actual);
+    };
+
+    let concatenado = "";
+    for (const ruta of propiedades) {
+      const v = valor(ruta);
+      if (v === null) return false;
+      concatenado += v;
+    }
+    concatenado += String(evento.timestamp) + secreto;
+
+    const esperada = createHash("sha256").update(concatenado).digest("hex");
+    const recibida = String(
+      cabeceras.get("x-event-checksum") ?? evento.signature?.checksum ?? ""
+    ).toLowerCase();
+
+    return igualSeguro(recibida, esperada);
   },
 
   interpretarEvento(cuerpo) {
