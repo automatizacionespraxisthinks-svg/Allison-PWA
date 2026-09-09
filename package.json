@@ -16,13 +16,14 @@
     "probar:retencion": "node --env-file=.env scripts/probar-retencion.mjs",
     "auditar": "node --env-file=.env scripts/auditar.mjs",
     "probar:concurrencia": "node --env-file=.env scripts/probar-concurrencia.mjs",
-    "revisar": "npm run probar:curriculo && npm run probar:ascenso && npm run probar:creditos && npm run probar:retencion && npm run probar:concurrencia && npm run probar:stream && npm run auditar",
+    "revisar": "npm run probar:curriculo && npm run probar:legal && npm run probar:ascenso && npm run probar:creditos && npm run probar:retencion && npm run probar:concurrencia && npm run probar:stream && npm run auditar",
     "crear:admin": "node --env-file=.env scripts/crear-admin.mjs",
     "probar:stream": "node scripts/probar-stream.mjs",
     "medir:stream": "node --env-file=.env scripts/medir-stream.mjs",
     "probar:curriculo": "node scripts/probar-curriculo.mjs",
     "probar:ascenso": "node scripts/probar-ascenso.mjs",
-    "probar:correo": "node --env-file=.env scripts/probar-correo.mjs"
+    "probar:correo": "node --env-file=.env scripts/probar-correo.mjs",
+    "probar:legal": "node scripts/probar-legal.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",

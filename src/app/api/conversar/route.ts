@@ -9,15 +9,18 @@ import { alumnoActual } from "@/lib/sesion";
 import { AUDIO_MAX_SEGUNDOS } from "@/lib/tipos";
 
 /**
- * Tope de ejecución para Vercel: un turno con audio son varios viajes
- * (base, Gemini en streaming, base otra vez) y puede pasar de los 10
- * segundos que algunas cuentas traen por defecto. Sin esto, el turno
- * se cortaría a mitad de respuesta.
+ * Tope de ejecución de la ruta.
+ *
+ * Un turno con audio son varios viajes (base, Gemini en streaming,
+ * base otra vez) y puede pasar de los diez segundos. Corriendo en un
+ * contenedor propio no hay tope impuesto, pero se declara igual: si
+ * algún día esto vuelve a una plataforma sin servidor, la respuesta
+ * no se corta a la mitad.
  */
 export const maxDuration = 60;
 
-// 60 s de opus caben de sobra. Ojo: Vercel corta el cuerpo en 4,5 MB
-// antes de llegar aquí, así que ese es el tope efectivo desplegado.
+// 60 s de opus caben de sobra en 8 MB. En el contenedor no hay tope
+// de cuerpo impuesto por la plataforma: este es el único límite.
 const MAX_BYTES = 8 * 1024 * 1024;
 
 /**
@@ -135,7 +138,7 @@ export async function POST(peticion: Request) {
 
       try {
         // Las dos consultas no dependen entre sí: van juntas. Cada viaje
-        // a la base en Ohio son ~90 ms que el alumno espera mirando la
+        // a la base cuesta tiempo que el alumno espera mirando la
         // pantalla, y en fila india se suman.
         const [filas, temas] = await Promise.all([
           sql`

@@ -36,10 +36,10 @@ export async function resumenGeneral(): Promise<Resumen> {
   /**
    * Las cinco consultas van JUNTAS, no en fila india.
    *
-   * Ninguna depende de otra, y cada viaje a la base en Ohio son unos
-   * 90 ms que el administrador espera mirando la pantalla: en fila se
-   * sumaban hasta casi dos segundos. Es el mismo criterio que ya se
-   * aplica en la ruta de conversar.
+   * Ninguna depende de otra, y en fila india sus tiempos se suman:
+   * contra una base remota llegaron a casi dos segundos de pantalla
+   * vacía. Juntas, el costo es el de la más lenta. Es el mismo
+   * criterio que ya se aplica en la ruta de conversar.
    */
   const [[u], [c], [m], [i], [t]] = await Promise.all([
     sql`

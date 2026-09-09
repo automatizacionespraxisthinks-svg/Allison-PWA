@@ -1,0 +1,41 @@
+# Lo que NO debe entrar a la imagen de Docker.
+#
+# La primera sección importa de verdad: sin ella, Next copiaría los
+# archivos .env dentro de .next/standalone y los secretos quedarían
+# horneados en la imagen, al alcance de cualquiera que pueda
+# descargarla. Las variables se inyectan al arrancar, desde Dokploy.
+# NO toques estas líneas.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencias y compilados: se instalan y construyen dentro
+node_modules
+.next
+out
+dist
+build
+
+# Historia y herramientas de desarrollo
+.git
+.gitignore
+.claude
+*.log
+npm-debug.log*
+
+# Scripts que solo sirven en la máquina de desarrollo. Se dejan fuera
+# a propósito los de migrar, crear-admin y auditar: esos SÍ corren
+# dentro del contenedor y el Dockerfile los copia.
+scripts/probar-*.mjs
+scripts/evaluar-*.mjs
+scripts/medir-*.mjs
+scripts/limpiar-*.mjs
+scripts/sembrar-*.mjs
+
+# Documentación y editores
+README.md
+docs
+.vscode
+.idea

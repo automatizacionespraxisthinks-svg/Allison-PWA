@@ -5,7 +5,7 @@ import { sql } from "@/lib/db";
 import { limitar } from "@/lib/limite";
 import { alumnoActual } from "@/lib/sesion";
 
-/** Tope para Vercel: una traducción tarda 2-5 s; 30 da margen. */
+/** Tope de la ruta: una traducción tarda 2-5 s; 30 da margen. */
 export const maxDuration = 30;
 
 const Peticion = z.object({

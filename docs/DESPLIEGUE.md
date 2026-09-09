@@ -1,106 +1,178 @@
-# Desplegar Allison en Vercel
+# Desplegar Allison en Dokploy
 
-Guía corta y en orden. Lo que aquí dice "candado" está garantizado por
-código: si falta, la app **falla con ruido** en vez de fingir que
-funciona.
+Guía en orden. Lo que aquí dice "candado" está garantizado por código:
+si falta, la app **falla con ruido** en vez de fingir que funciona.
 
-## 1. Antes de importar el proyecto
+Las variables con sus valores ya generados están en **`.env.production`**
+(raíz del proyecto, fuera de git). Ábrelo y cópialas de ahí.
 
-- [x] **Base de producción**: lista. Es el Postgres propio (46.225.66.78:5421),
-      en una base dedicada `allison` — separada de n8n y del prototipo que
-      viven en la base `postgres` del mismo servidor. Las 19 migraciones ya
-      corrieron y la auditoría de integridad pasó.
-- [ ] **Rotar llaves**: crea una llave de Gemini NUEVA (la de
-      desarrollo pasó por chats y logs) y ponle **límite de gasto
-      mensual** en Google AI Studio.
-- [ ] **Correo — camino elegido: Gmail, sin dominio.** En tu Cuenta de
-      Google: Seguridad → activar Verificación en dos pasos → buscar
-      "Contraseñas de aplicaciones" → crear una llamada "Allison".
-      Variables: CORREO=gmail, GMAIL_USUARIO=praxisthinks@gmail.com y
-      GMAIL_APP_PASSWORD=la generada (16 letras). Tope ~500 correos/día,
-      de sobra para empezar. Prueba: npm run probar:correo -- tucorreo
-      Sin esto no hay verificación ni recuperación (candado).
-      *Mejora futura con dominio propio*: cambiar a CORREO=resend
-      (cuenta en resend.com, dominio verificado con SPF/DKIM,
-      RESEND_API_KEY y CORREO_REMITENTE del dominio) — remitente más
-      comercial y sin tope diario.
-- [ ] **Wompi**: llaves de producción. Sin ellas la app no puede
-      cobrar en línea (candado): si aún no llegan, lanza sin cobros en
-      línea y registra solo efectivo desde el panel de admin.
-      **Decisión tomada: SOLO QR.** En el panel de Wompi (configuración
-      → medios de pago) deshabilita todo salvo el código QR: la
-      comisión baja de 2,65% + $700 a 1%. El checkout alojado no
-      permite restringirlo por código, así que este paso del panel es
-      obligatorio — sin él, saldrán tarjetas y PSE con su comisión
-      completa.
+---
 
-## 2. Variables de entorno en Vercel
+## 1. Antes de desplegar
 
-| Variable | Valor en producción |
+- [x] **Base de datos**: lista. Postgres del mismo servidor, base
+      dedicada `allison` — separada de n8n y del prototipo, que viven en
+      la base `postgres`. Las 19 migraciones corrieron y la auditoría de
+      integridad pasó. *No crees otro Postgres*: sería un segundo motor
+      comiendo memoria para guardar lo mismo.
+
+- [ ] **Llave de Gemini NUEVA**: la de desarrollo pasó por chats y logs.
+      Créala en Google AI Studio y **ponle límite de gasto mensual** ahí
+      mismo: es lo único que te protege de que un error en bucle o un
+      abuso disparen la factura.
+
+- [x] **Correo**: Gmail SMTP probado y funcionando con
+      `allison.teacher00@gmail.com`. Tope ~500 correos/día.
+
+- [ ] **Wompi**: las tres llaves (pública, integridad, eventos) y **dos
+      pasos que no están en el código**:
+      1. Panel de Wompi → configuración → medios de pago → dejar **solo
+         código QR**. Baja la comisión de 2,65% + $700 a 1%.
+      2. Panel de Wompi → registrar la **URL de eventos**:
+         `https://TU-DOMINIO/api/pagos/webhook`. Sin esto Wompi cobra y
+         nunca avisa: el alumno paga y no recibe nada.
+
+      Si aún no la tienes: lanza sin cobro en línea y registra los pagos
+      en efectivo desde el panel de administración.
+
+- [ ] **Salida a internet del servidor**: el build descarga la
+      tipografía Geist de Google. Compruébalo antes del primer
+      despliegue con `curl -I https://fonts.googleapis.com` en el VPS.
+
+---
+
+## 2. Crear la aplicación en Dokploy
+
+1. Tu proyecto → **Create Service → Application**.
+2. **Provider**: GitHub (o Git), apuntando a la rama `main`.
+3. **Build Type**: **Dockerfile**. El repositorio trae uno probado en la
+   raíz. No uses Nixpacks: el Dockerfile controla la versión de Node y
+   produce una imagen de ~250 MB en vez de ~1,5 GB.
+4. **Port**: `3000`.
+5. Pega las variables (punto 3) **antes** del primer despliegue.
+
+**Importante — la red interna.** Para que la app le hable a la base por
+la red de Docker (y no por internet), ambas deben estar en el mismo
+proyecto/red de Dokploy. Es lo que hace que el tráfico no salga del
+servidor.
+
+---
+
+## 3. Variables de entorno
+
+Ábrelas de **`.env.production`** y pégalas en Dokploy → tu aplicación →
+**Environment**. Las marcadas `[FALTA]` son las que debes llenar.
+
+**Se leen al arrancar el contenedor, no al construir la imagen**: no hay
+ningún secreto horneado. La única que el *build* necesitaría era
+`DATABASE_URL`, y eso ya se arregló — la conexión se abre en la primera
+consulta, no al importar el módulo.
+
+| Variable | Estado |
 |---|---|
-| `DATABASE_URL` | `postgresql://postgres:<clave>@46.225.66.78:5421/allison?sslmode=disable` |
-| `AUTH_SECRET` | nuevo: `openssl rand -base64 32` |
-| `GEMINI_API_KEY` | la llave NUEVA |
-| `GEMINI_MODEL` | `gemini-2.5-flash-lite` |
+| `DATABASE_URL` | **ajustar**: nombre interno del servicio + puerto `5432` |
+| `AUTH_SECRET` | generado, listo |
+| `AUTH_URL` | **falta**: tu dominio con https, sin barra final |
+| `GEMINI_API_KEY` | **falta**: la llave nueva |
+| `GEMINI_MODEL` | listo |
+| `CORREO`, `GMAIL_USUARIO`, `GMAIL_APP_PASSWORD` | listos y probados |
 | `PASARELA` | `wompi` (candado: `simulada` revienta en producción) |
-| `WOMPI_PUBLIC_KEY` / `WOMPI_PRIVATE_KEY` / `WOMPI_EVENTS_SECRET` | de Wompi |
-| `WOMPI_INTEGRITY_SECRET` | de Wompi (Desarrolladores → secreto de integridad): firma cada checkout |
-| `CORREO` | `gmail` (candado: `consola` revienta en producción) |
-| `GMAIL_USUARIO` / `GMAIL_APP_PASSWORD` | tu Gmail y su contraseña de aplicación |
-| `CRON_SECRET` | nuevo secreto largo — Vercel lo manda solo al cron de limpieza |
-| `PROXY_CONFIABLE` | `reverso` (Vercel reescribe `x-forwarded-for`) |
-| `COP_POR_MENSAJE` | `60` |
-| `RECARGA_MINIMA_COP` | `4000` |
-| `MENSAJES_PRUEBA_INICIAL` / `MENSAJES_PRUEBA_VERIFICAR` | `5` / `15` |
-| `AUDIO_MAX_SEGUNDOS` | `60` |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | opcionales — sin ellas el botón de Google no existe |
+| `WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET`, `WOMPI_EVENTS_SECRET` | **faltan** — las tres o ninguna |
+| `TAREAS_SECRETO` | generado, listo |
+| `PROXY_CONFIABLE` | `reverso` — Traefik reescribe `x-forwarded-for` |
+| `COP_POR_MENSAJE`, `RECARGA_MINIMA_COP`, `MENSAJES_PRUEBA_*`, `REGISTROS_GLOBALES_POR_HORA` | listos |
 
-`AUTH_URL` no hace falta: `trustHost` ya está activo y Vercel pone las
-cabeceras correctas. `TAREAS_SECRETO` solo si además llamas la
-limpieza desde n8n.
+---
 
-## 3. Importar y desplegar
+## 4. Dominio y HTTPS
 
-1. Sube el repositorio a GitHub y proyecto nuevo en Vercel.
-2. Framework: Next.js (auto). Sin configuración extra: `vercel.json`
-   ya trae el cron de limpieza (2:00 am hora de Colombia).
-3. Primer deploy → corre las migraciones contra la base de
-   producción DESDE TU MÁQUINA:
-   `DATABASE_URL=<pooler de producción> npm run migrar`
-4. Crea tu admin real:
-   `DATABASE_URL=<...> node scripts/crear-admin.mjs tu@correo "Tu Nombre" <clave-fuerte>`
+Dokploy → tu aplicación → **Domains** → agregar el dominio y activar
+**HTTPS (Let's Encrypt)**. Traefik saca el certificado solo.
 
-## 4. Después del primer deploy — lista de humo
+**El HTTPS no es opcional**: sin él el navegador **bloquea el micrófono**
+y Allison no puede oír a nadie. Si no tienes dominio todavía, Dokploy
+ofrece una dirección temporal que ya viene con HTTPS.
 
-- [ ] Registrarse con un correo real → llega el correo → verificar.
-- [ ] Un turno de voz completo en el celular (micrófono pide permiso,
-      Allison suena sola).
-- [ ] Una recarga real pequeña pagada con QR (y verificar que el
-      checkout NO ofrezca tarjeta ni PSE: si aparecen, falta el paso
-      del panel de Wompi).
-- [ ] `/admin` responde a tu admin y rechaza a un estudiante.
-- [ ] Instalar la PWA desde Android y iPhone.
-- [ ] Al día siguiente: el cron corrió (Vercel → Logs → Cron) y el
-      panel de Gemini muestra el gasto esperado.
+Cuando fijes el dominio: actualiza `AUTH_URL` **y** la URL de eventos en
+el panel de Wompi.
 
-## Deudas de la base de producción (cerrar pronto)
+---
 
-- **Sin TLS**: el Postgres del VPS no tiene certificados, así que el
-  tráfico Vercel↔base viaja SIN CIFRAR por internet (por eso la URL
-  lleva `sslmode=disable`, a conciencia). Cerrar pronto: activar SSL
-  en ese Postgres o moverlo detrás de un túnel.
-- **Puerto abierto a internet**: cualquiera puede intentar conectarse.
-  Restringe el firewall del VPS en cuanto puedas y usa una clave más
-  larga; la actual además viajó por chats.
-- **Respaldos**: ese Postgres es tuyo — programa un pg_dump diario
-  (n8n puede hacerlo) o Allison no tiene copia de nada.
+## 5. Migraciones y administrador
 
-## Limitaciones aceptadas en Vercel (documentadas, no urgentes)
+Se hacen **desde dentro del contenedor** (Dokploy → tu aplicación →
+Terminal), que es la forma de tocar producción sin abrir puertos. El
+Dockerfile ya copia los scripts y sus dependencias.
 
-- **Límites de velocidad en memoria**: cada instancia de función lleva
-  su propio conteo, así que el límite real es más laxo que el
-  configurado. Suficiente para empezar; con tracción, moverlos a Redis.
-- **Cuerpo máximo 4,5 MB** impuesto por Vercel: sobra para 60 s de
-  audio opus (~200 KB).
-- **La voz sigue siendo la del navegador** (provisional hasta el TTS
-  propio); calidad variable según el teléfono.
+Migraciones futuras (la base ya está al día):
+
+```
+node scripts/migrar.mjs
+```
+
+Tu administrador real (la base de producción está vacía):
+
+```
+node scripts/crear-admin.mjs tu@correo.com "Tu Nombre" TuClaveFuerte
+```
+
+Usa una contraseña que **no** hayas escrito en ningún chat.
+
+---
+
+## 6. La limpieza diaria
+
+Borra conversaciones de más de 20 días, enlaces vencidos y órdenes de
+pago abandonadas. **Sin ella incumples tu propia política de
+privacidad**, que promete borrarlas a los 20 días.
+
+Dokploy → **Schedules** → tarea diaria `0 7 * * *` (2:00 a.m. en
+Colombia) con:
+
+```
+curl -fsS -X POST -H "Authorization: Bearer EL_TAREAS_SECRETO" https://TU-DOMINIO/api/tareas/limpiar
+```
+
+La ruta acepta POST y GET, y rechaza con 401 cualquier llamada sin el
+secreto.
+
+---
+
+## 7. Lista de humo, después del primer despliegue
+
+- [ ] `https://TU-DOMINIO/api/salud` responde `{"ok":true}`.
+- [ ] `https://TU-DOMINIO/api/salud?base=1` responde `{"ok":true,"base":true}`
+      — si esta falla y la anterior no, el problema es la base, no la app.
+- [ ] Registrarse con un correo real → llega el correo → verificar suma
+      las +15 intervenciones.
+- [ ] Un turno de voz completo **desde el celular**: pide permiso de
+      micrófono, transcribe, y Allison **suena sola**.
+- [ ] Instalar la PWA (aparece el chip "Instalar").
+- [ ] `/admin` responde a tu administrador y rechaza a un estudiante.
+- [ ] Una recarga pequeña real pagada con QR — y que el checkout **no**
+      ofrezca tarjeta ni PSE (si aparecen, faltó el paso del panel).
+- [ ] Al día siguiente: la limpieza corrió y el panel de Gemini muestra
+      el gasto esperado.
+
+---
+
+## 8. Deudas y decisiones pendientes
+
+- **Respaldos**: Dokploy los hace automáticos hacia un destino S3
+  (Settings → S3 Destinations). Actívalos: hoy Allison **no tiene copia
+  de nada**, y todo lo demás se arregla pero unos datos perdidos no.
+  Que el destino esté **fuera del servidor** — un respaldo en el mismo
+  disco no protege de perder el disco.
+- **Puerto 5421 abierto a internet**: una vez la app hable por la red
+  interna, ese puerto ya no hace falta para nada. Ciérralo en el
+  firewall. La clave actual además viajó por chats: cámbiala.
+- **Monitoreo**: un Uptime Kuma en el mismo Dokploy apuntando a
+  `/api/salud?base=1` te avisa por Telegram cuando algo se cae, antes de
+  que lo haga un alumno.
+- **La voz sigue siendo la del navegador** (provisional): calidad
+  variable según el teléfono. Cuando se mejore, que sea con un motor
+  propio en este servidor — **nunca un TTS cobrado por uso**, que
+  multiplicaría el costo por intervención unas cincuenta veces.
+- **Los planes largos no renuevan**: el de 6 meses y el anual entregan
+  700 intervenciones una sola vez, no cada mes. Está pendiente de
+  arreglar y es lo más grave del proyecto ahora mismo.

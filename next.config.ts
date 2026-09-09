@@ -13,6 +13,18 @@ import type { NextConfig } from "next";
  * probarla con calma, se agrega con nonce.
  */
 const nextConfig: NextConfig = {
+  /**
+   * Salida autónoma para Docker.
+   *
+   * Next rastrea qué archivos necesita de verdad y arma
+   * .next/standalone con un server.js mínimo y solo el node_modules
+   * imprescindible: la imagen baja de ~1,5 GB a unos 200 MB.
+   *
+   * OJO: server.js NO copia public/ ni .next/static. Eso lo hace el
+   * Dockerfile a mano, y el orden de esos COPY no es negociable.
+   */
+  output: "standalone",
+
   async headers() {
     return [
       {

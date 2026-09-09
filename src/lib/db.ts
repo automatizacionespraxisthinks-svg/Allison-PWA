@@ -3,27 +3,45 @@ import postgres from "postgres";
 /**
  * Conexión a PostgreSQL.
  *
- * En desarrollo Next.js recarga los módulos en cada cambio, así que
- * guardamos la conexión en el objeto global para no abrir una nueva cada
- * vez y agotar el límite de Neon.
- */
-/**
- * En Vercel (funciones sin servidor) la URL debe ser la del POOLER de
- * Neon — el host con "-pooler" —: cada instancia de función abre sus
- * propias conexiones, y contra el Postgres directo un pico de tráfico
- * agota el límite en segundos. El pooler corre en modo transacción,
- * donde las sentencias preparadas de esta librería no funcionan: se
- * apagan solas al detectar el host.
+ * La conexión se abre PEREZOSAMENTE, en la primera consulta, no al
+ * importar el módulo. Es lo que permite construir la imagen de Docker
+ * sin secretos: `next build` importa este archivo para analizar las
+ * rutas, y si aquí se leyera DATABASE_URL de entrada, el build fallaría
+ * en cualquier máquina que no tenga la base a mano — cosa comprobada,
+ * no teórica ("Failed to collect page data for /api/admin/colegios").
+ *
+ * Hornear una URL falsa en el build sería la otra salida, pero deja una
+ * imagen que "construye bien" con una base que no existe, y el día que
+ * alguien consulte de verdad durante el build el fallo aparece
+ * disfrazado. Mejor que el build simplemente no necesite la base.
  */
 const crear = () => {
-  const url = process.env.DATABASE_URL!;
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error(
+      "Falta DATABASE_URL. Defínela en el entorno del servidor " +
+        "(en Dokploy: tu aplicación → Environment)."
+    );
+  }
+
+  /**
+   * El pooler es cosa de Neon: con funciones sin servidor cada
+   * instancia abría sus propias conexiones y el Postgres directo se
+   * agotaba. Corriendo en un contenedor propio y persistente contra un
+   * Postgres del mismo servidor, esto no aplica — pero se queda
+   * detectado por si la base vuelve a un servicio administrado.
+   */
   const esPooler = url.includes("-pooler");
 
   return postgres(url, {
-    // El SSL se exige salvo que la URL diga lo contrario. El Postgres
-    // propio del VPS no tiene TLS todavía: ahí la URL lleva
-    // sslmode=disable A CONCIENCIA — está documentado en DESPLIEGUE.md
-    // como deuda a cerrar, no como decisión de diseño.
+    /**
+     * Se exige TLS salvo que la URL diga lo contrario. Con la app y la
+     * base en la misma red interna de Docker el tráfico no sale del
+     * servidor, así que `sslmode=disable` ahí es equivalente a hablar
+     * por localhost. Lo que NO es aceptable es esa misma URL apuntando
+     * a una IP pública: eso manda credenciales y datos de alumnos en
+     * claro por internet.
+     */
     ssl: url.includes("sslmode=disable") ? false : "require",
     max: esPooler ? 5 : 10,
     idle_timeout: 20,
@@ -36,6 +54,38 @@ declare global {
   var __sql: ReturnType<typeof crear> | undefined;
 }
 
-export const sql = globalThis.__sql ?? crear();
+/**
+ * La conexión real, creada la primera vez que alguien la usa.
+ *
+ * En desarrollo se guarda en el objeto global: Next recarga los módulos
+ * en cada cambio y sin esto se abriría una conexión nueva cada vez
+ * hasta agotar el límite del servidor.
+ */
+let conexion: ReturnType<typeof crear> | undefined;
 
-if (process.env.NODE_ENV !== "production") globalThis.__sql = sql;
+function conectar(): ReturnType<typeof crear> {
+  if (conexion) return conexion;
+
+  conexion = globalThis.__sql ?? crear();
+  if (process.env.NODE_ENV !== "production") globalThis.__sql = conexion;
+
+  return conexion;
+}
+
+/**
+ * Se exporta un intermediario y no la conexión directa para poder
+ * retrasar su creación sin cambiar los cincuenta sitios que la usan
+ * como plantilla etiquetada: `sql\`select ...\`` sigue escribiéndose
+ * igual, y sus propiedades (sql.json, sql.unsafe, sql.end…) también
+ * funcionan.
+ */
+export const sql = new Proxy(function () {} as unknown as ReturnType<typeof crear>, {
+  apply(_destino, _this, argumentos) {
+    return (conectar() as unknown as (...a: unknown[]) => unknown)(...argumentos);
+  },
+  get(_destino, propiedad) {
+    const real = conectar() as unknown as Record<string | symbol, unknown>;
+    const valor = real[propiedad];
+    return typeof valor === "function" ? valor.bind(real) : valor;
+  },
+}) as ReturnType<typeof crear>;

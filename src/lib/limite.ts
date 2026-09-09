@@ -69,7 +69,8 @@ export function limitar(
  *
  * Solo se confía en esas cabeceras cuando PROXY_CONFIABLE declara que
  * delante hay un proxy que las reescribe. Cloudflare sobrescribe
- * cf-connecting-ip con la IP real, así que ahí sí es fiable. Sin esa
+ * cf-connecting-ip con la IP real, y Traefik (el proxy de Dokploy)
+ * reescribe x-forwarded-for: en ambos casos es fiable. Sin esa
  * variable, todas las peticiones comparten un mismo cubo: más estricto
  * de la cuenta, pero nunca falsamente permisivo.
  */

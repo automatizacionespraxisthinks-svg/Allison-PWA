@@ -127,21 +127,38 @@ await revisar(
   (f) => `${f.id}`
 );
 
-await revisar(
-  "toda lección en progreso existe en el currículo",
-  (async () => {
-    const { UNIDADES } = await import("../src/lib/curriculo.ts");
-    const claves = UNIDADES.map((u) => u.clave);
-    return sql`
+/**
+ * Esta comprobación necesita el currículo, que vive en TypeScript.
+ *
+ * Dentro del contenedor de producción no hay código fuente — solo la
+ * aplicación compilada —, así que ahí el import falla. En vez de
+ * reventar a media auditoría y dejar las comprobaciones siguientes sin
+ * correr, se salta ESTA y lo dice en voz alta: una comprobación
+ * omitida en silencio es peor que no tenerla, porque el informe
+ * parecería completo.
+ */
+const claves = await import("../src/lib/curriculo.ts")
+  .then((m) => m.UNIDADES.map((u) => u.clave))
+  .catch(() => null);
+
+if (claves === null) {
+  console.log(
+    "  OMITIDA  toda lección en progreso existe en el currículo\n" +
+      "           (no hay código fuente aquí; córrela desde el proyecto)"
+  );
+} else {
+  await revisar(
+    "toda lección en progreso existe en el currículo",
+    sql`
       select distinct leccion from (
         select leccion from progreso_lecciones
         union all
         select leccion from conversaciones where leccion is not null
       ) t where leccion <> all(${claves})
-    `;
-  })(),
-  (f) => `clave desconocida: ${f.leccion}`
-);
+    `,
+    (f) => `clave desconocida: ${f.leccion}`
+  );
+}
 
 await revisar(
   "una lección completada tiene al menos un logro",

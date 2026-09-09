@@ -153,7 +153,7 @@ export async function informeDeUso(rango: Rango): Promise<InformeUso> {
   const { desde, hasta, granularidad } = rango;
 
   // Las tres consultas no dependen entre sí: van juntas. Cada viaje a
-  // Ohio son ~90 ms que el administrador espera mirando la pantalla.
+  // la base cuesta tiempo que el administrador espera en pantalla.
   const [[t], filas, usuarios] = await Promise.all([
     sql`
       select count(distinct user_id)::int          as usuarios_activos,

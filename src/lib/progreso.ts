@@ -167,7 +167,7 @@ export async function progresoDe(userId: string): Promise<Progreso> {
  *
  * progresoDe() hace seis viajes a la base y calcula racha, semana y
  * totales. Para armar el prompt de Allison solo hacen falta los temas,
- * y cada viaje a Ohio son ~90 ms que el alumno espera mirando la
+ * y cada viaje a la base es tiempo que el alumno espera mirando la
  * pantalla.
  */
 export async function temasDe(

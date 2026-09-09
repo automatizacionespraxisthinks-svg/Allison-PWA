@@ -1,6 +1,17 @@
 import { FormularioEntrar } from "./FormularioEntrar";
 
 /**
+ * Se renderiza en CADA petición, no al construir la imagen.
+ *
+ * Sin esto Next marcaba esta página como estática y horneaba la
+ * decisión de abajo en el momento del build: cambiar las llaves de
+ * Google en el panel no tendría ningún efecto hasta reconstruir la
+ * imagen entera. Cuesta un render por visita en una pantalla trivial;
+ * a cambio, la configuración se lee en caliente como todas las demás.
+ */
+export const dynamic = "force-dynamic";
+
+/**
  * Envoltura de servidor: decide si el botón de Google existe.
  *
  * La decisión depende de variables SIN NEXT_PUBLIC_, que el navegador

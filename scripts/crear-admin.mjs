@@ -13,7 +13,14 @@
  */
 import bcrypt from "bcryptjs";
 import postgres from "postgres";
-import { VERSION_LEGAL } from "../src/lib/legal.ts";
+
+/**
+ * Copiada de src/lib/legal.ts en vez de importada: este script corre
+ * DENTRO del contenedor, donde no existe el codigo fuente en
+ * TypeScript. Si cambia la version legal, hay que cambiarla aqui
+ * tambien -- lo recuerda la prueba de scripts/probar-legal.mjs.
+ */
+const VERSION_LEGAL = "2026-08-29";
 
 const [email, nombre, password] = process.argv.slice(2);
 
@@ -24,7 +31,20 @@ if (!email) {
   process.exit(1);
 }
 
-const sql = postgres(process.env.DATABASE_URL, { ssl: "require", max: 1, onnotice: () => {} });
+const url = process.env.DATABASE_URL;
+if (!url) {
+  console.error("Falta DATABASE_URL.");
+  process.exit(1);
+}
+
+// Mismo criterio de TLS que el resto del proyecto: se exige salvo que
+// la URL diga lo contrario. Antes forzaba ssl:"require" y fallaba
+// contra un Postgres sin TLS con un error de red incomprensible.
+const sql = postgres(url, {
+  ssl: url.includes("sslmode=disable") ? false : "require",
+  max: 1,
+  onnotice: () => {},
+});
 
 const [existente] = await sql`
   select id, nombre, rol from users where email = ${email.toLowerCase()}
