@@ -13,6 +13,7 @@
  */
 import bcrypt from "bcryptjs";
 import postgres from "postgres";
+import { modoSslOSalir } from "../db/conexion.mjs";
 
 /**
  * Copiada de src/lib/legal.ts en vez de importada: este script corre
@@ -37,14 +38,11 @@ if (!url) {
   process.exit(1);
 }
 
-// Mismo criterio de TLS que el resto del proyecto: se exige salvo que
-// la URL diga lo contrario. Antes forzaba ssl:"require" y fallaba
-// contra un Postgres sin TLS con un error de red incomprensible.
-const sql = postgres(url, {
-  ssl: url.includes("sslmode=disable") ? false : "require",
-  max: 1,
-  onnotice: () => {},
-});
+// El cifrado lo decide db/conexion.mjs, con el mismo criterio que la
+// aplicación y los demás scripts. Antes este archivo forzaba TLS por
+// su cuenta y fallaba contra un Postgres sin TLS con un error de red
+// incomprensible.
+const sql = postgres(url, { ssl: modoSslOSalir(url), max: 1, onnotice: () => {} });
 
 const [existente] = await sql`
   select id, nombre, rol from users where email = ${email.toLowerCase()}

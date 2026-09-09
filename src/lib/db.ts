@@ -1,4 +1,5 @@
 import postgres from "postgres";
+import { modoSsl } from "../../db/conexion.mjs";
 
 /**
  * Conexión a PostgreSQL.
@@ -35,14 +36,12 @@ const crear = () => {
 
   return postgres(url, {
     /**
-     * Se exige TLS salvo que la URL diga lo contrario. Con la app y la
-     * base en la misma red interna de Docker el tráfico no sale del
-     * servidor, así que `sslmode=disable` ahí es equivalente a hablar
-     * por localhost. Lo que NO es aceptable es esa misma URL apuntando
-     * a una IP pública: eso manda credenciales y datos de alumnos en
-     * claro por internet.
+     * Cómo se cifra lo decide db/conexion.mjs a partir del HOST, con un
+     * solo criterio para la app y los scripts: red interna de Docker =
+     * dentro del límite de confianza del servidor; dirección pública =
+     * TLS obligatorio, y en producción se niega a mandar nada en claro.
      */
-    ssl: url.includes("sslmode=disable") ? false : "require",
+    ssl: modoSsl(url),
     max: esPooler ? 5 : 10,
     idle_timeout: 20,
     prepare: !esPooler,

@@ -245,11 +245,20 @@ const archivos = {
 };
 
 if (VERIFICAR) {
+  // Las tres líneas del administrador son las que el usuario DEBE
+  // editar para correr el archivo; si aquí se compararan tal cual, la
+  // batería fallaría justo después de un uso correcto. Se comparan con
+  // los valores tapados.
+  const sinDatosAdmin = (texto) =>
+    texto
+      .replace(/\r\n/g, "\n")
+      .replace(/'[^'\n]*'::text(\s+)as (email|nombre|clave)/g, "'…'::text$1as $2");
+
   let desfasados = 0;
   for (const [nombre, contenido] of Object.entries(archivos)) {
     const ruta = join(SALIDA, nombre);
-    const enDisco = existsSync(ruta) ? readFileSync(ruta, "utf8").replace(/\r\n/g, "\n") : null;
-    const ok = enDisco === contenido;
+    const enDisco = existsSync(ruta) ? sinDatosAdmin(readFileSync(ruta, "utf8")) : null;
+    const ok = enDisco === sinDatosAdmin(contenido);
     console.log(`  ${ok ? "ok   " : "FALLO"} db/manual/${nombre}${ok ? "" : " no coincide con las migraciones"}`);
     if (!ok) desfasados++;
   }

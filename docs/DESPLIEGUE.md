@@ -74,7 +74,7 @@ consulta, no al importar el módulo.
 
 | Variable | Estado |
 |---|---|
-| `DATABASE_URL` | **ajustar**: nombre interno del servicio + puerto `5432` |
+| `DATABASE_URL` | **ajustar**: nombre interno del servicio + puerto `5432`, base `allison`, sin `sslmode` (punto 8 explica por qué es seguro) |
 | `AUTH_SECRET` | generado, listo |
 | `AUTH_URL` | **falta — OBLIGATORIA**: tu dominio con https, sin barra final. De aquí salen los enlaces de los correos y el retorno de Wompi; sin ella apuntan a una dirección muerta |
 | `GEMINI_API_KEY` | **falta**: la llave nueva |
@@ -209,9 +209,16 @@ secreto.
   de nada**, y todo lo demás se arregla pero unos datos perdidos no.
   Que el destino esté **fuera del servidor** — un respaldo en el mismo
   disco no protege de perder el disco.
-- **Puerto 5421 abierto a internet**: una vez la app hable por la red
-  interna, ese puerto ya no hace falta para nada. Ciérralo en el
-  firewall. La clave actual además viajó por chats: cámbiala.
+- **Cifrado con la base — cómo queda seguro**: la app le habla a
+  Postgres por la red interna de Docker (nombre interno + `5432`), y ese
+  tráfico **no sale del servidor**: es el mismo límite de confianza que
+  `localhost`. El código lo garantiza (`db/conexion.mjs`, un solo
+  criterio para la app y los scripts): hacia un host interno usa TLS si
+  lo hay y texto plano si no; hacia una dirección **pública** exige TLS,
+  y en producción **se niega** a mandar nada en claro — la app no
+  arranca su primera consulta y dice qué corregir. Lo que sí queda en
+  tus manos: **cerrar el puerto 5421** en el firewall (ya no hace falta
+  para nada) y **cambiar la clave** de Postgres, que viajó por chats.
 - **Monitoreo**: un Uptime Kuma en el mismo Dokploy apuntando a
   `/api/salud?base=1` te avisa por Telegram cuando algo se cae, antes de
   que lo haga un alumno.

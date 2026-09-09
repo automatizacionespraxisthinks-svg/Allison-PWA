@@ -10,6 +10,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import postgres from "postgres";
+import { modoSslOSalir } from "../db/conexion.mjs";
 
 const url = process.env.DATABASE_URL;
 if (!url) {
@@ -17,7 +18,7 @@ if (!url) {
   process.exit(1);
 }
 
-const sql = postgres(url, { ssl: (process.env.DATABASE_URL ?? "").includes("sslmode=disable") ? false : "require", max: 1, onnotice: () => {} });
+const sql = postgres(url, { ssl: modoSslOSalir(url), max: 1, onnotice: () => {} });
 
 try {
   await sql`

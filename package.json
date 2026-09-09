@@ -16,7 +16,7 @@
     "probar:retencion": "node --env-file=.env scripts/probar-retencion.mjs",
     "auditar": "node --env-file=.env scripts/auditar.mjs",
     "probar:concurrencia": "node --env-file=.env scripts/probar-concurrencia.mjs",
-    "revisar": "npm run probar:curriculo && npm run probar:legal && npm run probar:sql && npm run probar:wompi && npm run probar:origen && npm run probar:ascenso && npm run probar:creditos && npm run probar:retencion && npm run probar:concurrencia && npm run probar:stream && npm run auditar",
+    "revisar": "npm run probar:curriculo && npm run probar:legal && npm run probar:sql && npm run probar:conexion && npm run probar:wompi && npm run probar:origen && npm run probar:ascenso && npm run probar:creditos && npm run probar:retencion && npm run probar:concurrencia && npm run probar:stream && npm run auditar",
     "crear:admin": "node --env-file=.env scripts/crear-admin.mjs",
     "probar:stream": "node scripts/probar-stream.mjs",
     "medir:stream": "node --env-file=.env scripts/medir-stream.mjs",
@@ -29,7 +29,8 @@
     "probar:semilla": "node scripts/probar-semilla.mjs",
     "generar:sql": "node scripts/generar-sql-manual.mjs",
     "probar:sql": "node scripts/generar-sql-manual.mjs --verificar",
-    "probar:base": "node scripts/probar-base-completa.mjs"
+    "probar:base": "node scripts/probar-base-completa.mjs",
+    "probar:conexion": "node scripts/probar-conexion.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",

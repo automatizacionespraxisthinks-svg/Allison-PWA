@@ -6,8 +6,13 @@
  * rastro aquí aunque el código ya esté arreglado.
  */
 import postgres from "postgres";
+import { modoSslOSalir } from "../db/conexion.mjs";
 
-const sql = postgres(process.env.DATABASE_URL, { ssl: (process.env.DATABASE_URL ?? "").includes("sslmode=disable") ? false : "require", max: 1, onnotice: () => {} });
+const sql = postgres(process.env.DATABASE_URL, {
+  ssl: modoSslOSalir(process.env.DATABASE_URL ?? ""),
+  max: 1,
+  onnotice: () => {},
+});
 let problemas = 0;
 
 const revisar = async (descripcion, consulta, detalle) => {
