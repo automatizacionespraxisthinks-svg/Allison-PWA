@@ -25,7 +25,8 @@
     "probar:correo": "node --env-file=.env scripts/probar-correo.mjs",
     "probar:legal": "node scripts/probar-legal.mjs",
     "probar:wompi": "node scripts/probar-wompi.mjs",
-    "probar:origen": "node scripts/probar-origen.mjs"
+    "probar:origen": "node scripts/probar-origen.mjs",
+    "probar:semilla": "node scripts/probar-semilla.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",

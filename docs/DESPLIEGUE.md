@@ -110,13 +110,24 @@ Migraciones futuras (la base ya está al día):
 node scripts/migrar.mjs
 ```
 
-Tu administrador real (la base de producción está vacía):
+Tu administrador real (la base de producción está vacía). Dos caminos,
+el que te resulte cómodo:
+
+**a) Desde el contenedor**, con el script:
 
 ```
 node scripts/crear-admin.mjs tu@correo.com "Tu Nombre" TuClaveFuerte
 ```
 
-Usa una contraseña que **no** hayas escrito en ningún chat.
+**b) Con SQL**, si prefieres una herramienta de base de datos: usa
+`db/semilla-produccion.sql`. Cambia las tres líneas del principio
+(correo, nombre y contraseña) y ejecútalo. Se niega a correr si dejas
+la contraseña de ejemplo o si es más corta de 12 caracteres, y puedes
+ejecutarlo dos veces sin duplicar nada ni pisar una contraseña ya
+cambiada.
+
+En ambos casos usa una contraseña que **no** hayas escrito en ningún
+chat, y no dejes el archivo guardado con ella dentro.
 
 ---
 
