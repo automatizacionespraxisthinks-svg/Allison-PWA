@@ -31,8 +31,14 @@ try {
     (await sql`select archivo from migraciones`).map((f) => f.archivo)
   );
 
+  // Solo los archivos NUMERADOS son migraciones. En db/manual/ viven
+  // scripts que se corren a mano (la base completa, la semilla del
+  // administrador) y que reventarían aquí a propósito: llevan un
+  // candado que exige poner una contraseña antes de ejecutarlos.
   const carpeta = join(process.cwd(), "db");
-  const archivos = readdirSync(carpeta).filter((f) => f.endsWith(".sql")).sort();
+  const archivos = readdirSync(carpeta)
+    .filter((f) => /^\d{3}_.+\.sql$/.test(f))
+    .sort();
 
   let nuevas = 0;
   for (const archivo of archivos) {

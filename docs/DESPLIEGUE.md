@@ -10,11 +10,15 @@ Las variables con sus valores ya generados están en **`.env.production`**
 
 ## 1. Antes de desplegar
 
-- [x] **Base de datos**: lista. Postgres del mismo servidor, base
-      dedicada `allison` — separada de n8n y del prototipo, que viven en
-      la base `postgres`. Las 19 migraciones corrieron y la auditoría de
-      integridad pasó. *No crees otro Postgres*: sería un segundo motor
-      comiendo memoria para guardar lo mismo.
+- [ ] **Base de datos**: la app necesita una base con el esquema de
+      Allison. Dos situaciones:
+      - **Ya existe** la base `allison` en el Postgres del VPS (el del
+        puerto 5421), completa y migrada. Si `DATABASE_URL` apunta ahí no
+        hay nada que hacer — pero fíjate en que el nombre de la base sea
+        `allison`, no `postgres`: esa es la de n8n y no tiene el esquema.
+      - **Creaste un Postgres nuevo en Dokploy** (nace vacío): corre
+        `db/manual/base-completa.sql` (punto 5). Un solo archivo, y la
+        base queda lista con esquema y administrador.
 
 - [ ] **Llave de Gemini NUEVA**: la de desarrollo pasó por chats y logs.
       Créala en Google AI Studio y **ponle límite de gasto mensual** ahí
@@ -104,29 +108,52 @@ Se hacen **desde dentro del contenedor** (Dokploy → tu aplicación →
 Terminal), que es la forma de tocar producción sin abrir puertos. El
 Dockerfile ya copia los scripts y sus dependencias.
 
-Migraciones futuras (la base ya está al día):
+### Si la base está VACÍA (un Postgres recién creado)
+
+Un solo archivo: **`db/manual/base-completa.sql`**. Crea todo el esquema
+(las 19 migraciones, en orden y en una sola transacción: si algo falla
+no queda nada a medias), lo deja registrado para que futuras
+migraciones sepan que ya corrió, siembra los planes y crea tu
+administrador.
+
+1. Ábrelo, cambia las **tres líneas del administrador** (correo, nombre,
+   contraseña) al principio del archivo.
+2. Pégalo entero en tu herramienta de base de datos, conectada a la base
+   vacía, y ejecútalo como script completo.
+3. Al final muestra el administrador y los planes creados.
+
+Se niega a correr si dejas la contraseña de ejemplo, si es más corta de
+12 caracteres, o si la base ya tiene esquema — y en los tres casos no
+toca nada. Está probado contra una base vacía de verdad
+(`npm run probar:base`).
+
+*Alternativa desde el contenedor* (Dokploy → tu aplicación → Terminal),
+en dos comandos:
+
+```
+node scripts/migrar.mjs
+node scripts/crear-admin.mjs tu@correo.com "Tu Nombre" TuClaveFuerte
+```
+
+### Si la base YA tiene el esquema
+
+Solo falta el administrador: `db/manual/semilla-admin.sql` (mismas tres
+líneas, misma herramienta) o el comando `crear-admin.mjs` de arriba.
+Puedes correrlo dos veces: no duplica nada ni pisa una contraseña ya
+cambiada.
+
+### Migraciones futuras
 
 ```
 node scripts/migrar.mjs
 ```
 
-Tu administrador real (la base de producción está vacía). Dos caminos,
-el que te resulte cómodo:
+Solo aplica los archivos numerados de `db/`; los de `db/manual/` son
+para correr a mano y los ignora. **Ojo**: esos dos archivos se generan
+a partir de las migraciones (`npm run generar:sql`); si agregas una
+migración y no los regeneras, `npm run revisar` falla para avisarte.
 
-**a) Desde el contenedor**, con el script:
-
-```
-node scripts/crear-admin.mjs tu@correo.com "Tu Nombre" TuClaveFuerte
-```
-
-**b) Con SQL**, si prefieres una herramienta de base de datos: usa
-`db/semilla-produccion.sql`. Cambia las tres líneas del principio
-(correo, nombre y contraseña) y ejecútalo. Se niega a correr si dejas
-la contraseña de ejemplo o si es más corta de 12 caracteres, y puedes
-ejecutarlo dos veces sin duplicar nada ni pisar una contraseña ya
-cambiada.
-
-En ambos casos usa una contraseña que **no** hayas escrito en ningún
+En todos los casos usa una contraseña que **no** hayas escrito en ningún
 chat, y no dejes el archivo guardado con ella dentro.
 
 ---

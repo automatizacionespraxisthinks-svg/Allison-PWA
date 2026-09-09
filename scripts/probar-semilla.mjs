@@ -1,5 +1,5 @@
 /**
- * La semilla de produccion (db/semilla-produccion.sql).
+ * La semilla de produccion (db/manual/semilla-admin.sql).
  *
  * Crea el administrador con el que se entra por primera vez a una base
  * nueva, asi que un fallo aqui deja la plataforma sin dueno. Se prueba
@@ -27,7 +27,7 @@ const sql = postgres(url, {
   onnotice: () => {},
 });
 
-const original = readFileSync("db/semilla-produccion.sql", "utf8");
+const original = readFileSync("db/manual/semilla-admin.sql", "utf8");
 let fallos = 0;
 const probar = (nombre, ok, detalle = "") => {
   console.log(`  ${ok ? "ok   " : "FALLO"} ${nombre}${ok ? "" : ` -- ${detalle}`}`);
