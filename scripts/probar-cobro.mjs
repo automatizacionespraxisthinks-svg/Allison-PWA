@@ -57,7 +57,7 @@ try {
       referencia: orden.referencia,
       aprobado: true,
       montoCop: 10000,
-      detalle: { prueba: true },
+      rastro: { prueba: true },
       origen: "aviso",
       ...cambios,
     });
@@ -91,8 +91,15 @@ try {
   const [{ payload }] = await sql`select payload from transacciones where id = ${a.id}`;
   probar(
     "el id del link sigue guardado después de los avisos",
-    payload?.id_pasarela === "LNK_PRUEBA_A" && payload?.aviso?.prueba === true,
+    payload?.id_pasarela === "LNK_PRUEBA_A",
     JSON.stringify(payload)
+  );
+  probar(
+    "y cada aviso quedó en el historial, sin reemplazar al anterior",
+    Array.isArray(payload?.historial) &&
+      payload.historial.length === 2 &&
+      payload.historial.every((e) => e.origen === "aviso" && e.prueba === true && typeof e.en === "string"),
+    JSON.stringify(payload?.historial)
   );
 
   // 4. El monto
@@ -120,6 +127,35 @@ try {
     "un rechazo que llega tarde no deshace una aprobación",
     (await resultado(d, { aprobado: false })) === "ya_acreditado" && (await estado(d)) === "aprobada"
   );
+  const [{ payload: historialD }] = await sql`select payload from transacciones where id = ${d.id}`;
+  probar(
+    "y no borra del historial el rastro de la aprobación",
+    historialD.historial.filter((e) => e.origen === "aviso").length === 3,
+    JSON.stringify(historialD.historial)
+  );
+
+  // 6b. Una orden cerrada a mano
+  const g = await nuevaOrden();
+  await sql`update transacciones set estado = 'reversada' where id = ${g.id}`;
+  const antesReversada = (await saldo()).mensajes_recarga;
+  probar(
+    "una orden REVERSADA a mano no se acredita aunque el link diga pagado",
+    (await resultado(g, { origen: "consulta" })) === "cerrada" &&
+      (await estado(g)) === "reversada" &&
+      (await saldo()).mensajes_recarga === antesReversada
+  );
+
+  // 6c. La alerta de monto sobrevive a la otra puerta
+  const h = await nuevaOrden();
+  await resultado(h, { montoCop: 1 });
+  const antesAlerta = (await saldo()).mensajes_recarga;
+  probar(
+    "tras un aviso con monto distinto, la consulta con el monto correcto TAMPOCO acredita",
+    (await resultado(h, { origen: "consulta" })) === "monto_distinto" &&
+      (await saldo()).mensajes_recarga === antesAlerta
+  );
+  const [{ alerta }] = await sql`select payload->>'alerta' as alerta from transacciones where id = ${h.id}`;
+  probar("la orden queda marcada para revisarla a mano", alerta === "monto_distinto", String(alerta));
 
   // 7. Lo que no es nuestro
   probar(
@@ -154,6 +190,21 @@ try {
   const acreditaron = carrera.filter((x) => x === "acreditado").length;
   probar("8 avisos y consultas a la vez: acredita UNO solo", acreditaron === 1, carrera.join(","));
   probar("y el saldo sube una sola vez", (await saldo()).mensajes_recarga === antesCarrera + 167);
+
+  // 10. Un plan en carrera: una sola suscripción activa
+  const p = await nuevaOrden({ tipo: "plan", monto: 35000, mensajes: plan.mensajes_por_mes, planId: plan.id });
+  const carreraPlan = await Promise.all(
+    Array.from({ length: 4 }, () => resultado(p, { montoCop: 35000 }))
+  );
+  const [{ activas }] = await sql`
+    select count(*)::int as activas from suscripciones
+     where user_id = ${alumno.id} and estado = 'activa'
+  `;
+  probar(
+    "4 aprobaciones del mismo plan a la vez: acredita una y deja UNA suscripción activa",
+    carreraPlan.filter((x) => x === "acreditado").length === 1 && activas === 1,
+    `${carreraPlan.join(",")} · activas: ${activas}`
+  );
 } catch (e) {
   errorOriginal("\nError:", e);
   fallos++;

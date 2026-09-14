@@ -147,6 +147,16 @@ probar(
 // 11. El monto viaja en centavos: se lee en pesos para compararlo con la
 //     orden, y si es de otra moneda no puede coincidir.
 probar("lee el monto en PESOS (400.000 centavos = $4.000)", leido?.montoCop === 4000);
+
+const conPagador = base();
+conPagador.data.transaction.customer_email = "pagador@correo.co";
+conPagador.data.transaction.payment_method = { type: "NEQUI", phone_number: "3001234567" };
+const rastroWompi = JSON.stringify(via.interpretarEvento(conPagador)?.rastro);
+probar(
+  "el rastro que se guarda NO trae el correo ni el teléfono del pagador",
+  !/pagador@|3001234567/.test(rastroWompi) && rastroWompi.includes("1234-1610641025-49201"),
+  rastroWompi
+);
 const enDolares = base();
 enDolares.data.transaction.currency = "USD";
 probar(

@@ -33,6 +33,8 @@ export function ConfirmarPago({
   const [fase, setFase] = useState<"confirmando" | "rechazada" | "demorada">(
     "confirmando"
   );
+  // Cambiarla vuelve a empezar la ronda de preguntas.
+  const [ronda, setRonda] = useState(0);
 
   useEffect(() => {
     let activo = true;
@@ -52,8 +54,11 @@ export function ConfirmarPago({
       if (!activo) return;
 
       if (datos?.estado === "aprobada") {
-        // La página del servidor ya sabe mostrar la orden aprobada.
+        // La página del servidor ya sabe mostrar la orden aprobada, y al
+        // mostrarla esta pantalla desaparece. Si el refresco se pierde
+        // por la red, sigue aquí: entonces se recarga la página entera.
         router.refresh();
+        temporizador = setTimeout(() => window.location.reload(), 8_000);
         return;
       }
       if (datos?.estado === "rechazada") {
@@ -73,7 +78,7 @@ export function ConfirmarPago({
       activo = false;
       clearTimeout(temporizador);
     };
-  }, [transaccionId, router]);
+  }, [transaccionId, router, ronda]);
 
   if (fase === "rechazada") {
     return (
@@ -102,6 +107,16 @@ export function ConfirmarPago({
           minutos: <strong>si ya pagaste, las intervenciones se acreditan
           solas</strong> en cuanto llegue la confirmación. No pagues otra vez.
         </p>
+        <button
+          type="button"
+          onClick={() => {
+            setFase("confirmando");
+            setRonda((r) => r + 1);
+          }}
+          className="rounded-2xl border border-borde px-6 py-3 font-medium"
+        >
+          Volver a consultar
+        </button>
         <Link
           href="/practicar"
           className="rounded-2xl bg-primario px-6 py-4 text-lg font-semibold text-white"

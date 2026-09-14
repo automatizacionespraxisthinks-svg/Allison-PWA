@@ -40,7 +40,7 @@ Las variables con sus valores ya generados están en **`.env.production`**
       3. **Registrar el webhook** (Integraciones → Webhooks):
          `https://TU-DOMINIO/api/pagos/webhook`. Sin él, el pago igual se
          acredita cuando el alumno vuelve a la app o en la conciliación
-         diaria, pero con demora.
+         de cada hora, pero con demora.
 
       Comprueba los medios activos con `npm run bold:medios` (usa la
       llave de identidad). Si aún no tienes Bold: lanza sin cobro en
@@ -166,18 +166,20 @@ chat, y no dejes el archivo guardado con ella dentro.
 
 ---
 
-## 6. La limpieza diaria
+## 6. La limpieza (cada hora)
 
 Borra conversaciones de más de 20 días, enlaces vencidos y órdenes de
 pago abandonadas. **Sin ella incumples tu propia política de
 privacidad**, que promete borrarlas a los 20 días.
 
 Además es la red de seguridad de los pagos: le pregunta a Bold por las
-órdenes de los últimos tres días que sigan sin aprobar, y acredita las
-que sí se pagaron aunque su aviso se haya perdido.
+órdenes de los últimos tres días que sigan abiertas, y acredita las que
+sí se pagaron aunque su aviso se haya perdido y el alumno no haya vuelto
+a la app. Por eso corre **cada hora** y no una vez al día: así ese
+alumno recibe lo que pagó en menos de una hora, no al día siguiente. Lo
+demás que hace es idempotente y liviano; correrlo seguido no cuesta.
 
-Dokploy → **Schedules** → tarea diaria `0 7 * * *` (2:00 a.m. en
-Colombia) con:
+Dokploy → **Schedules** → tarea `0 * * * *` (cada hora, en punto) con:
 
 ```
 curl -fsS -X POST -H "Authorization: Bearer EL_TAREAS_SECRETO" https://TU-DOMINIO/api/tareas/limpiar
@@ -209,8 +211,22 @@ secreto.
       también PSE o Nequi con `BOLD_MEDIOS`; (c) al terminar, vuelves a
       **tu dominio** y la pantalla dice "Confirmando tu pago…"; (d) en
       segundos pasa a **"¡Listo!"** y el saldo del encabezado sube.
-      La (d) es la que importa: es la prueba de que el cobro y la
-      acreditación están conectados.
+- [ ] **15 minutos después de esa recarga, que el AVISO de Bold llegó.**
+      La pantalla del punto anterior pasa aunque el webhook esté roto,
+      porque ella misma le pregunta a Bold; lo que falla en silencio es
+      el alumno que paga y cierra la pestaña. Comprueba las dos cosas:
+      - en el log del servidor **no** aparece "firma inválida" (si
+        aparece, la `BOLD_LLAVE_SECRETA` no es la de Botón de pagos);
+      - en la base, la orden tiene un aviso en su historial:
+        ```
+        select payload->'historial' from transacciones order by creado_en desc limit 1;
+        ```
+        Debe haber una entrada con `"origen": "aviso"`. Si solo hay
+        `"consulta"`, el webhook no está registrado o no llega.
+- [ ] **61 minutos después, que el link venció**: abre otra vez el link
+      de esa recarga (queda en el historial del navegador). Debe decir
+      que venció. Si todavía deja pagar, avísame: Bold estaría leyendo
+      el vencimiento en otra unidad.
 - [ ] Al día siguiente: la limpieza corrió y el panel de Gemini muestra
       el gasto esperado.
 

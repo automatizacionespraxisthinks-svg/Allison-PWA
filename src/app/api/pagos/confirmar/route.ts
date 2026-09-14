@@ -16,6 +16,20 @@ const Peticion = z.object({ transaccionId: z.string().uuid() });
 const CONSULTAS_POR_MINUTO = 30;
 
 /**
+ * Cada cuánto, como máximo, se le pregunta a la pasarela por la MISMA
+ * orden. Entre tanto se responde con lo que ya sabe la base: varias
+ * pestañas o varias cuentas no multiplican las llamadas a la pasarela.
+ */
+const MS_ENTRE_CONSULTAS = 8_000;
+
+/** La última consulta por orden: cuándo, y si había un pago en curso.
+ *  Lo segundo se recuerda porque la pantalla pregunta más seguido de lo
+ *  que se consulta: sin eso, la pregunta intermedia respondería con el
+ *  "rechazada" de la base y la pantalla dejaría de esperar un pago que
+ *  sigue en curso. */
+const ultimaConsulta = new Map<string, { en: number; enCurso: boolean }>();
+
+/**
  * ¿Ya se confirmó mi pago?
  *
  * La pregunta la hace la pantalla a la que vuelve el alumno después de
@@ -46,7 +60,7 @@ export async function POST(peticion: Request) {
 
   // La orden tiene que ser de quien pregunta.
   const leer = () => sql`
-    select estado, pasarela, referencia_externa, mensajes_otorgados,
+    select id, estado, pasarela, referencia_externa, mensajes_otorgados,
            payload->>'id_pasarela' as id_pasarela
       from transacciones
      where id = ${datos.data.transaccionId} and user_id = ${alumno.id}
@@ -58,27 +72,48 @@ export async function POST(peticion: Request) {
     return NextResponse.json({ error: "Orden no encontrada" }, { status: 404 });
   }
 
+  let estado: string = orden.estado;
+
   // También se consulta una orden RECHAZADA: con Bold, un intento
   // fallido deja el link activo, y el alumno pudo pagar al reintentar.
-  if (orden.estado !== "aprobada" && orden.id_pasarela) {
+  // Una orden en cualquier otro estado (aprobada, reversada a mano) no.
+  const consultable =
+    (orden.estado === "pendiente" || orden.estado === "rechazada") && orden.id_pasarela;
+  const ahora = Date.now();
+  const anterior = ultimaConsulta.get(orden.id);
+  const reciente = anterior !== undefined && ahora - anterior.en < MS_ENTRE_CONSULTAS;
+
+  if (consultable && reciente && anterior.enCurso) {
+    estado = "pendiente";
+  } else if (consultable && !reciente) {
     const via = pasarela();
     if (via.consultarEstado && via.nombre === orden.pasarela) {
+      if (ultimaConsulta.size > 5_000) ultimaConsulta.clear();
+      ultimaConsulta.set(orden.id, { en: ahora, enCurso: false });
+
       try {
         const consulta = await via.consultarEstado({
           referencia: orden.referencia_externa,
           idExterno: orden.id_pasarela,
         });
 
-        if (consulta.estado !== "pendiente") {
+        if (consulta.estado === "aprobado" || consulta.estado === "rechazado") {
           await registrarResultado({
             pasarela: orden.pasarela,
             referencia: orden.referencia_externa,
             aprobado: consulta.estado === "aprobado",
             montoCop: consulta.estado === "aprobado" ? consulta.montoCop : undefined,
-            detalle: consulta.detalle,
+            rastro: consulta.rastro,
             origen: "consulta",
           });
           [orden] = await leer();
+          estado = orden.estado;
+        } else if (consulta.estado === "pendiente") {
+          // Hay un pago EN CURSO: aunque un intento anterior dejara la
+          // orden rechazada, la pantalla debe seguir esperando y no
+          // invitar a pagar otra vez.
+          ultimaConsulta.set(orden.id, { en: ahora, enCurso: true });
+          estado = "pendiente";
         }
       } catch (e) {
         // Si la pasarela no responde, se contesta con lo que hay: el
@@ -91,8 +126,5 @@ export async function POST(peticion: Request) {
     }
   }
 
-  return NextResponse.json({
-    estado: orden.estado,
-    mensajes: orden.mensajes_otorgados,
-  });
+  return NextResponse.json({ estado, mensajes: orden.mensajes_otorgados });
 }

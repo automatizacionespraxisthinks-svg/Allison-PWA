@@ -200,6 +200,29 @@ await con(REAL, () => {
     JSON.stringify(aprobado)
   );
   probar("venta rechazada: no aprobado", leer(aviso({ raiz: { type: "SALE_REJECTED" } }))?.aprobado === false);
+
+  const conDatosPersonales = leer(
+    aviso({
+      data: {
+        payer_email: "pagador@correo.co",
+        card: { cardholder_name: "JUAN PEREZ", masked_pan: "411111******5432" },
+      },
+      raiz: { seller: { name: "Vendedor", email: "vendedor@correo.co" } },
+    })
+  );
+  const rastroTexto = JSON.stringify(conDatosPersonales?.rastro);
+  probar(
+    "el rastro que se guarda NO trae correo, titular ni tarjeta",
+    !/pagador@|JUAN PEREZ|411111|vendedor@|Vendedor/.test(rastroTexto),
+    rastroTexto
+  );
+  probar(
+    "pero sí lo necesario para auditar: id de Bold, medio y total",
+    conDatosPersonales?.rastro.transaccion === "CNPCGSPS2WBA8" &&
+      conDatosPersonales.rastro.medio === "PSE" &&
+      conDatosPersonales.rastro.total === 35000,
+    rastroTexto
+  );
   probar("una anulación no es un cobro que procesar", leer(aviso({ raiz: { type: "VOID_APPROVED" } })) === null);
   probar(
     "un aviso sin referencia (como el del QR presencial) no se ata a nada",
@@ -298,13 +321,13 @@ await con(REAL, async () => {
   );
 });
 
-await con({ ...REAL, BOLD_MEDIOS: " qr, pse,,nequi ; DROP TABLE" }, async () => {
+await con({ ...REAL, BOLD_MEDIOS: " qr, pse,,nequi " }, async () => {
   responder = () => LINK_CREADO;
   await pasarela().crearPago(ORDEN);
   const cuerpo = JSON.parse(ultima().opciones.body);
   probar(
-    "BOLD_MEDIOS se limpia: mayúsculas, sin vacíos ni basura",
-    JSON.stringify(cuerpo.payment_methods) === JSON.stringify(["QR", "PSE"]),
+    "BOLD_MEDIOS se normaliza: mayúsculas, sin espacios ni vacíos",
+    JSON.stringify(cuerpo.payment_methods) === JSON.stringify(["QR", "PSE", "NEQUI"]),
     JSON.stringify(cuerpo.payment_methods)
   );
 });
@@ -331,6 +354,11 @@ await lanzaSinLlamar(
   "sin llave secreta NO crea el link (se cobraría sin poder acreditar)",
   { ...REAL, BOLD_LLAVE_SECRETA: undefined },
   /BOLD_LLAVE_SECRETA/
+);
+await lanzaSinLlamar(
+  "un BOLD_MEDIOS mal escrito (BRE-B) revienta, en vez de ofrecer TODOS los medios",
+  { ...REAL, BOLD_MEDIOS: "QR,BRE-B" },
+  /BOLD_MEDIOS tiene valores inválidos \(BRE-B\)/
 );
 await lanzaSinLlamar(
   "sin llave de identidad no crea el link",
@@ -409,20 +437,32 @@ await con(REAL, async () => {
 
     responder = () => estadoLink({ is_sandbox: true });
     probar("un pago de PRUEBAS no aprueba nada cobrando de verdad", (await consultar()).estado === "pendiente");
+
+    responder = () => estadoLink({ is_sandbox: undefined });
+    probar("un link SIN la marca is_sandbox tampoco (solo false explícito es real)", (await consultar()).estado === "pendiente");
+
+    responder = () => estadoLink({ is_sandbox: "false" });
+    probar("ni con la marca como texto", (await consultar()).estado === "pendiente");
   } finally {
     console.error = errorOriginal;
   }
-  probar("y los dos casos quedan en el log", avisos.length === 2, String(avisos.length));
+  probar("y los cuatro casos quedan en el log", avisos.length === 4, String(avisos.length));
 
-  for (const [status, esperado] of [
-    ["REJECTED", "rechazado"],
-    ["CANCELLED", "rechazado"],
-    ["EXPIRED", "rechazado"],
-    ["ACTIVE", "pendiente"],
+  for (const [status, esperado, definitivo] of [
+    ["EXPIRED", "rechazado", true],
+    ["REJECTED", "rechazado", false],
+    ["CANCELLED", "rechazado", false],
+    ["ACTIVE", "abierto"],
     ["PROCESSING", "pendiente"],
+    ["UN_ESTADO_NUEVO", "pendiente"],
   ]) {
     responder = () => estadoLink({ status });
-    probar(`${status.padEnd(10)} → ${esperado}`, (await consultar()).estado === esperado);
+    const r = await consultar();
+    probar(
+      `${status.padEnd(15)} → ${esperado}${definitivo === undefined ? "" : definitivo ? " (definitivo)" : " (puede reintentarse)"}`,
+      r.estado === esperado && (definitivo === undefined || r.definitivo === definitivo),
+      JSON.stringify(r)
+    );
   }
 
   responder = () => ({ status: 200, cuerpo: { payload: estadoLink().cuerpo } });

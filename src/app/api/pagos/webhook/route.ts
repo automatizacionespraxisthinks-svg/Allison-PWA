@@ -23,7 +23,9 @@ export async function POST(peticion: Request) {
   const via = pasarela();
 
   if (!via.verificarFirma(crudo, peticion.headers)) {
-    console.warn("Webhook con firma inválida");
+    // Uno suelto puede ser ruido de internet. TODOS los avisos así
+    // significan que la llave secreta configurada no es la de la pasarela.
+    console.warn(`Webhook de ${via.nombre} con firma inválida (si pasa con todos, revisa la llave secreta)`);
     return NextResponse.json({ error: "Firma inválida" }, { status: 401 });
   }
 
@@ -37,10 +39,13 @@ export async function POST(peticion: Request) {
   const evento = via.interpretarEvento(cuerpo);
   if (!evento) {
     // Una anulación, otro tipo de evento, un pago sin referencia. Se
-    // registra el tipo y nada más: el cuerpo trae datos del pagador.
-    const e = cuerpo as { type?: unknown; event?: unknown };
+    // registran el tipo y el id de la transacción en la pasarela —para
+    // poder buscarla en su panel— y nada más: el cuerpo trae datos del
+    // pagador.
+    const e = cuerpo as { type?: unknown; event?: unknown; subject?: unknown };
+    const id = typeof e?.subject === "string" ? ` (transacción ${e.subject.slice(0, 40)})` : "";
     console.warn(
-      `Aviso de ${via.nombre} sin cobro que procesar: ${String(e?.type ?? e?.event ?? "sin tipo")}`
+      `Aviso de ${via.nombre} sin cobro que procesar: ${String(e?.type ?? e?.event ?? "sin tipo")}${id}`
     );
     return NextResponse.json({ ok: true, ignorado: true });
   }
@@ -50,7 +55,7 @@ export async function POST(peticion: Request) {
     referencia: evento.referencia,
     aprobado: evento.aprobado,
     montoCop: evento.montoCop,
-    detalle: cuerpo,
+    rastro: evento.rastro,
     origen: "aviso",
   });
 

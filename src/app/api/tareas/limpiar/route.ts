@@ -7,9 +7,9 @@ import { pasarela } from "@/lib/pasarela";
 /**
  * Borrado de conversaciones vencidas.
  *
- * La llama n8n una vez al día. Vive en el servidor de la aplicación y
- * no en n8n porque n8n está en Europa: hacerle borrar fila por fila
- * cruzando el Atlántico sería lentísimo. Aquí es una sola sentencia.
+ * La llama cada hora una tarea programada de Dokploy (cada hora y no
+ * cada día por la conciliación de pagos, más abajo). Vive en la
+ * aplicación porque borrar aquí es una sola sentencia contra la base.
  *
  * Se protege con un secreto compartido, no con sesión: quien la invoca
  * es una máquina, no una persona.
@@ -99,14 +99,21 @@ async function limpiar(peticion: Request) {
  * vuelve a la app. Si las dos cosas fallan —el aviso se perdió, o llegó
  * sin referencia, y el alumno cerró el navegador—, la persona pagó y no
  * recibió nada. Aquí se le pregunta a la pasarela por cada orden de los
- * últimos tres días que siga sin aprobar, y lo que diga entra por el
- * mismo camino de siempre.
+ * últimos tres días que siga abierta, y lo que diga entra por el mismo
+ * camino de siempre.
+ *
+ * Revisa TODAS las abiertas, de la más vieja a la más nueva: con un tope
+ * pequeño, unos cuantos checkouts abandonados bastaban para dejar por
+ * fuera, día tras día, justo la orden pagada. Un link vencido se marca y
+ * no se vuelve a consultar, así que la lista no crece con el abandono.
  *
  * Solo acredita; no rechaza: cerrar órdenes viejas es trabajo de la
  * limpieza. Y nunca tumba la limpieza: si la pasarela no está
  * configurada o no responde, las conversaciones se borran igual —eso
  * es lo que promete la política de privacidad.
  */
+const TOPE_CONCILIACION = 500;
+
 async function conciliarPagos(): Promise<number> {
   let acreditados = 0;
   try {
@@ -114,16 +121,22 @@ async function conciliarPagos(): Promise<number> {
     if (!via.consultarEstado) return 0;
 
     const abiertas = await sql`
-      select referencia_externa, payload->>'id_pasarela' as id_pasarela
+      select id, referencia_externa, payload->>'id_pasarela' as id_pasarela
         from transacciones
        where pasarela = ${via.nombre}
-         and estado <> 'aprobada'
+         and estado in ('pendiente', 'rechazada')
          and payload->>'id_pasarela' is not null
+         and payload->>'link_vencido' is null
          and creado_en > now() - interval '72 hours'
          and creado_en < now() - interval '15 minutes'
-       order by creado_en desc
-       limit 100
+       order by creado_en
+       limit ${TOPE_CONCILIACION}
     `;
+    if (abiertas.length === TOPE_CONCILIACION) {
+      console.warn(
+        `Conciliación: ${TOPE_CONCILIACION} órdenes abiertas o más; las que no alcanzaron quedan para la próxima corrida.`
+      );
+    }
 
     for (const orden of abiertas) {
       try {
@@ -131,6 +144,15 @@ async function conciliarPagos(): Promise<number> {
           referencia: orden.referencia_externa,
           idExterno: orden.id_pasarela,
         });
+
+        if (consulta.estado === "rechazado" && consulta.definitivo) {
+          await sql`
+            update transacciones
+               set payload = coalesce(payload, '{}'::jsonb) || '{"link_vencido": true}'::jsonb
+             where id = ${orden.id}
+          `;
+          continue;
+        }
         if (consulta.estado !== "aprobado") continue;
 
         const desenlace = await registrarResultado({
@@ -138,7 +160,7 @@ async function conciliarPagos(): Promise<number> {
           referencia: orden.referencia_externa,
           aprobado: true,
           montoCop: consulta.montoCop,
-          detalle: consulta.detalle,
+          rastro: consulta.rastro,
           origen: "consulta",
         });
         if (desenlace === "acreditado") {

@@ -96,7 +96,7 @@ como actividad restringida; PSE directo exige persona jurídica y ≥$2,4M de im
 Integración: link de pago creado por API (monto cerrado, vence en 60 min), aviso firmado
 (HMAC-SHA256 del cuerpo en base64) y **consulta activa del estado del link** — Bold avisa los pagos
 de links con hasta 10 minutos de demora, así que la página a la que vuelve el alumno pregunta, y
-la limpieza diaria concilia lo que no llegó. Aviso y consulta pasan por el mismo camino
+la limpieza, que corre cada hora, concilia lo que no llegó. Aviso y consulta pasan por el mismo camino
 (`src/lib/cobro.ts`).
 
 PSE, Nequi y QR no permiten cobro recurrente automático — por eso la renovación es a elección del alumno.

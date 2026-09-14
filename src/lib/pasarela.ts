@@ -20,6 +20,15 @@ export interface PagoCreado {
   idExterno?: string;
 }
 
+/**
+ * Lo que se guarda de un aviso o una consulta, para la auditoría.
+ *
+ * Solo identificadores y montos, NUNCA el cuerpo entero: los avisos
+ * traen el nombre del titular, la tarjeta enmascarada y el correo del
+ * pagador, y la política de privacidad promete que eso no se guarda.
+ */
+export type Rastro = Record<string, string | number | boolean | null>;
+
 export interface EventoPago {
   referencia: string;
   aprobado: boolean;
@@ -30,13 +39,21 @@ export interface EventoPago {
    * moneda, un texto), y eso nunca coincide con nada.
    */
   montoCop?: number;
+  rastro: Rastro;
 }
 
-/** Lo que responde la pasarela cuando se le PREGUNTA por un pago. */
+/**
+ * Lo que responde la pasarela cuando se le PREGUNTA por un pago.
+ *
+ *   pendiente  hay un pago en curso (o un estado desconocido): esperar.
+ *   abierto    el link se puede pagar y no hay nada en curso.
+ *   rechazado  `definitivo` si ya no se puede pagar (vencido).
+ */
 export type EstadoConsultado =
-  | { estado: "aprobado"; montoCop: number; detalle: unknown }
-  | { estado: "rechazado"; detalle: unknown }
-  | { estado: "pendiente"; detalle: unknown };
+  | { estado: "aprobado"; montoCop: number; rastro: Rastro }
+  | { estado: "rechazado"; definitivo: boolean; rastro: Rastro }
+  | { estado: "pendiente"; rastro: Rastro }
+  | { estado: "abierto"; rastro: Rastro };
 
 export interface Pasarela {
   nombre: string;
@@ -75,6 +92,13 @@ function igualSeguro(a: string, b: string): boolean {
   return ba.length === bb.length && timingSafeEqual(ba, bb);
 }
 
+/** Un valor de afuera, reducido a algo que se puede guardar en un Rastro. */
+function plano(valor: unknown): string | number | boolean | null {
+  if (typeof valor === "string") return valor.slice(0, 120);
+  if (typeof valor === "number" || typeof valor === "boolean") return valor;
+  return null;
+}
+
 /** Un monto que llegó de afuera, leído como pesos (ver EventoPago.montoCop). */
 function pesosDelAviso(valor: unknown, moneda: unknown): number | undefined {
   if (valor === undefined || valor === null) return undefined;
@@ -107,7 +131,11 @@ const simulada: Pasarela = {
   interpretarEvento(cuerpo) {
     const e = cuerpo as { referencia?: string; estado?: string };
     if (!e?.referencia) return null;
-    return { referencia: e.referencia, aprobado: e.estado === "APPROVED" };
+    return {
+      referencia: e.referencia,
+      aprobado: e.estado === "APPROVED",
+      rastro: { estado: plano(e.estado) },
+    };
   },
 };
 
@@ -136,12 +164,27 @@ const BOLD_MINUTOS_LINK = 60;
  */
 const boldEnPruebas = () => process.env.BOLD_PRUEBAS === "true" && !enProduccion();
 
-/** BOLD_MEDIOS, si se definió: los medios que ofrece el checkout. */
+/**
+ * BOLD_MEDIOS, si se definió: los medios que ofrece el checkout.
+ *
+ * Un valor inválido revienta en vez de descartarse: quien restringe los
+ * medios lo hace para no pagar los $900 fijos de PSE y tarjeta, y
+ * descartar un "BRE-B" mal escrito dejaría el checkout con TODOS los
+ * medios sin que nadie lo note.
+ */
 function boldMedios(): string[] {
-  return (process.env.BOLD_MEDIOS ?? "")
+  const medios = (process.env.BOLD_MEDIOS ?? "")
     .split(",")
     .map((m) => m.trim().toUpperCase())
-    .filter((m) => /^[A-Z_]{2,40}$/.test(m));
+    .filter((m) => m !== "");
+  const invalidos = medios.filter((m) => !/^[A-Z_]{2,40}$/.test(m));
+  if (invalidos.length > 0) {
+    throw new Error(
+      `BOLD_MEDIOS tiene valores inválidos (${invalidos.join(", ")}). ` +
+        "Los nombres exactos salen de: npm run bold:medios"
+    );
+  }
+  return medios;
 }
 
 const bold: Pasarela = {
@@ -174,8 +217,11 @@ const bold: Pasarela = {
       description: `Allison · ${concepto}`.slice(0, 100),
       // En NANOSEGUNDOS: así lo dicen el texto y los tres ejemplos de
       // código de Bold (el JSON de muestra trae milisegundos, y es el
-      // equivocado). Si algún día Bold esperara milisegundos, este valor
-      // solo haría que el link no venza: la dirección segura del error.
+      // equivocado). Si Bold esperara milisegundos, el link no vencería
+      // en vez de nacer vencido: menos grave, pero NO inocuo — un pago
+      // hecho días después solo se acreditaría por su aviso o cuando el
+      // alumno vuelva, porque la conciliación mira tres días. La lista
+      // de humo de DESPLIEGUE.md comprueba que el link venza.
       // Se redondea a segundos para que el número sea exacto en JSON.
       expiration_date: (Math.floor(Date.now() / 1000) + BOLD_MINUTOS_LINK * 60) * 1e9,
     };
@@ -247,7 +293,11 @@ const bold: Pasarela = {
   interpretarEvento(cuerpo) {
     const e = cuerpo as {
       type?: string;
+      subject?: unknown;
       data?: {
+        payment_id?: unknown;
+        payment_method?: unknown;
+        created_at?: unknown;
         metadata?: { reference?: string | null };
         amount?: { total?: unknown; currency?: unknown };
       };
@@ -261,6 +311,15 @@ const bold: Pasarela = {
       referencia,
       aprobado: e.type === "SALE_APPROVED",
       montoCop: pesosDelAviso(e.data?.amount?.total, e.data?.amount?.currency),
+      // Sin card, payer_email ni seller: datos del pagador.
+      rastro: {
+        tipo: e.type,
+        transaccion: plano(e.data?.payment_id ?? e.subject),
+        medio: plano(e.data?.payment_method),
+        total: plano(e.data?.amount?.total),
+        moneda: plano(e.data?.amount?.currency),
+        creada: plano(e.data?.created_at),
+      },
     };
   },
 
@@ -288,23 +347,36 @@ const bold: Pasarela = {
     // La documentación muestra esta respuesta sin envoltura, y la de
     // crear la trae dentro de "payload". Se aceptan las dos formas.
     const link = ((datos?.payload as Record<string, unknown> | undefined) ?? datos ?? {}) as {
-      status?: string;
+      status?: unknown;
       total?: unknown;
-      reference?: string | null;
-      is_sandbox?: boolean;
+      reference?: unknown;
+      is_sandbox?: unknown;
+      transaction_id?: unknown;
+      payment_method?: unknown;
+    };
+
+    const rastro: Rastro = {
+      link: idExterno,
+      estado_link: plano(link.status),
+      total: plano(link.total),
+      transaccion: plano(link.transaction_id),
+      medio: plano(link.payment_method),
+      sandbox: plano(link.is_sandbox),
     };
 
     // Un link que no es de esta orden no puede acreditarla.
     if (link.reference !== referencia) {
       console.error(
-        `Bold devolvió el link ${idExterno} con otra referencia (${link.reference}); se esperaba ${referencia}.`
+        `Bold devolvió el link ${idExterno} con otra referencia (${String(link.reference)}); se esperaba ${referencia}.`
       );
-      return { estado: "pendiente", detalle: datos };
+      return { estado: "pendiente", rastro };
     }
-    // Un pago de pruebas no vale plata.
-    if (link.is_sandbox === true && !boldEnPruebas()) {
-      console.error(`El link ${idExterno} es de pruebas y la app está cobrando de verdad.`);
-      return { estado: "pendiente", detalle: datos };
+    // Un pago de pruebas no vale plata. Solo cuenta como real el link que
+    // Bold marca EXPLÍCITAMENTE como no-sandbox: un campo ausente o con
+    // otro tipo no puede abrir la puerta.
+    if (link.is_sandbox !== false && !boldEnPruebas()) {
+      console.error(`El link ${idExterno} no viene marcado como real (is_sandbox=${String(link.is_sandbox)}): no acredita.`);
+      return { estado: "pendiente", rastro };
     }
 
     switch (link.status) {
@@ -314,15 +386,20 @@ const bold: Pasarela = {
         return {
           estado: "aprobado",
           montoCop: pesosDelAviso(link.total, undefined) ?? Number.NaN,
-          detalle: datos,
+          rastro,
         };
+      case "EXPIRED":
+        return { estado: "rechazado", definitivo: true, rastro };
       case "REJECTED":
       case "CANCELLED":
-      case "EXPIRED":
-        return { estado: "rechazado", detalle: datos };
+        return { estado: "rechazado", definitivo: false, rastro };
+      case "ACTIVE":
+        // Se puede pagar y no hay nada en curso: tras un intento
+        // fallido, Bold deja el link así para reintentar.
+        return { estado: "abierto", rastro };
       default:
-        // ACTIVE o PROCESSING: todavía puede pagarse.
-        return { estado: "pendiente", detalle: datos };
+        // PROCESSING, o un estado que Bold agregue después: esperar.
+        return { estado: "pendiente", rastro };
     }
   },
 };
@@ -445,10 +522,12 @@ const wompi: Pasarela = {
     const e = cuerpo as {
       data?: {
         transaction?: {
+          id?: unknown;
           reference?: string;
           status?: string;
           amount_in_cents?: unknown;
           currency?: unknown;
+          payment_method_type?: unknown;
         };
       };
     };
@@ -460,6 +539,14 @@ const wompi: Pasarela = {
       referencia: t.reference,
       aprobado: t.status === "APPROVED",
       montoCop: centavos === undefined ? undefined : centavos / 100,
+      // Sin customer_email ni los datos del medio de pago.
+      rastro: {
+        transaccion: plano(t.id),
+        estado: plano(t.status),
+        medio: plano(t.payment_method_type),
+        centavos: plano(t.amount_in_cents),
+        moneda: plano(t.currency),
+      },
     };
   },
 };
