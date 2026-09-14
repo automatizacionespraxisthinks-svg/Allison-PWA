@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { pedir } from "@/lib/pedir";
+import { CampoContrasena } from "@/components/CampoContrasena";
 
 export function FormularioClaveNueva({ token }: { token: string }) {
   const router = useRouter();
@@ -57,32 +58,26 @@ export function FormularioClaveNueva({ token }: { token: string }) {
 
   return (
     <form onSubmit={enviar} className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium">Contraseña nueva</span>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={8}
-          autoComplete="new-password"
-          className={campo}
-        />
-        <span className="text-xs text-texto-suave">Mínimo 8 caracteres</span>
-      </label>
+      <CampoContrasena
+        etiqueta="Contraseña nueva"
+        ayuda="Mínimo 8 caracteres"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+        minLength={8}
+        autoComplete="new-password"
+        className={campo}
+      />
 
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium">Repítela</span>
-        <input
-          type="password"
-          value={repetir}
-          onChange={(e) => setRepetir(e.target.value)}
-          required
-          minLength={8}
-          autoComplete="new-password"
-          className={campo}
-        />
-      </label>
+      <CampoContrasena
+        etiqueta="Repítela"
+        value={repetir}
+        onChange={(e) => setRepetir(e.target.value)}
+        required
+        minLength={8}
+        autoComplete="new-password"
+        className={campo}
+      />
 
       {error && (
         <p role="alert" className="rounded-lg bg-error/10 p-3 text-sm text-error">

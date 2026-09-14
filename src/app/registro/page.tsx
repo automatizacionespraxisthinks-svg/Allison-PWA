@@ -7,6 +7,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { NIVELES, type Nivel } from "@/lib/tipos";
 import { pedir } from "@/lib/pedir";
+import { CampoContrasena } from "@/components/CampoContrasena";
 
 export default function PaginaRegistro() {
   const router = useRouter();
@@ -140,19 +141,16 @@ export default function PaginaRegistro() {
           </span>
         </label>
 
-        <label className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Contraseña</span>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={8}
-            autoComplete="new-password"
-            className="rounded-xl border border-borde bg-superficie px-4 py-3 outline-none focus:border-primario"
-          />
-          <span className="text-xs text-texto-suave">Mínimo 8 caracteres</span>
-        </label>
+        <CampoContrasena
+          etiqueta="Contraseña"
+          ayuda="Mínimo 8 caracteres"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          minLength={8}
+          autoComplete="new-password"
+          className="rounded-xl border border-borde bg-superficie px-4 py-3 outline-none focus:border-primario"
+        />
 
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-sm font-medium">¿Cómo está tu inglés?</legend>

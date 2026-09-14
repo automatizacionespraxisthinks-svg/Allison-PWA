@@ -18,6 +18,7 @@ import { useVelocidad } from "@/lib/velocidad";
 import { desbloquearVoz, hablarIngles } from "@/lib/voz";
 import { descartarAscenso, useAscensoDescartado } from "@/lib/sugerencia";
 import { pedir } from "@/lib/pedir";
+import { pesos } from "@/lib/precios";
 
 interface Props {
   nombre: string;
@@ -32,6 +33,8 @@ interface Props {
   /** Viene del servidor: las variables sin NEXT_PUBLIC_ no existen aquí,
    *  y un número escrito a mano quedaría mintiendo si cambia el .env. */
   mensajesPorVerificar: number;
+  /** La recarga mínima, por la misma razón. */
+  recargaMinima: number;
   esCoordinador: boolean;
   esAdmin: boolean;
   racha: number;
@@ -76,6 +79,7 @@ export function Conversacion({
   enPrueba,
   faltaVerificar,
   mensajesPorVerificar,
+  recargaMinima,
   esCoordinador,
   esAdmin,
   racha,
@@ -563,13 +567,13 @@ export function Conversacion({
       {sinMensajes &&
         (enPrueba && logro ? (
           <div className="mb-2 max-h-[50dvh] shrink-0 overflow-y-auto">
-            <FinDePrueba logro={logro} />
+            <FinDePrueba logro={logro} recargaMinima={recargaMinima} />
           </div>
         ) : (
           <div className="mb-2 shrink-0 rounded-xl border border-acento/30 bg-acento/10 p-3 text-center text-sm">
             <span className="font-medium">Se te acabaron las intervenciones. </span>
             <Link href="/recargar" className="font-semibold text-acento underline">
-              Recarga desde $4.000
+              Recarga desde {pesos(recargaMinima)}
             </Link>
           </div>
         ))}
@@ -578,7 +582,7 @@ export function Conversacion({
         <p className="mb-2 shrink-0 rounded-xl bg-acento/10 p-2.5 text-center text-sm text-acento">
           Te quedan {mensajesRestantes} de prueba.{" "}
           <Link href="/recargar" className="font-semibold underline">
-            Recarga desde $4.000
+            Recarga desde {pesos(recargaMinima)}
           </Link>
         </p>
       )}

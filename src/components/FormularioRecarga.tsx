@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import { calcularRecarga, pesos, tiempoEquivalente, type ConfigPrecios } from "@/lib/precios";
 import { pedir } from "@/lib/pedir";
 
-const ATAJOS = [4_000, 10_000, 20_000, 50_000];
+/** Los montos sugeridos después del mínimo. El primer atajo es siempre
+ *  la recarga mínima configurada: un número fijo aquí ofrecería un monto
+ *  que el servidor rechaza el día que el mínimo cambie. */
+const ATAJOS_MAYORES = [10_000, 20_000, 50_000];
 
 export function FormularioRecarga({ cfg }: { cfg: ConfigPrecios }) {
   const [monto, setMonto] = useState(10_000);
@@ -14,6 +17,7 @@ export function FormularioRecarga({ cfg }: { cfg: ConfigPrecios }) {
 
   const calculo = useMemo(() => calcularRecarga(monto, cfg), [monto, cfg]);
   const insuficiente = monto < cfg.minima;
+  const atajos = [cfg.minima, ...ATAJOS_MAYORES.filter((a) => a > cfg.minima)];
 
   function escribir(valor: string) {
     const limpio = valor.replace(/\D/g, "").slice(0, 7);
@@ -43,7 +47,7 @@ export function FormularioRecarga({ cfg }: { cfg: ConfigPrecios }) {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap gap-2">
-        {ATAJOS.map((a) => (
+        {atajos.map((a) => (
           <button
             key={a}
             type="button"

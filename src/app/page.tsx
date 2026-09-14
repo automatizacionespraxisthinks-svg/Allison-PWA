@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { BotonInstalar } from "@/components/InstalarApp";
 
 export default function PaginaInicio() {
   return (
@@ -39,6 +40,14 @@ export default function PaginaInicio() {
             Entrar
           </Link>
         </p>
+        {/* Desde la primera pantalla, no solo dentro de la práctica: quien
+            llega por un enlace desde el celular puede dejarla instalada
+            antes de crear la cuenta. Se oculta sola si ya está instalada
+            o si el navegador no permite instalar. */}
+        <BotonInstalar
+          texto="Instalar la app"
+          className="mt-1 flex items-center gap-2 rounded-full bg-primario-suave px-4 py-2 text-sm font-semibold text-primario transition hover:brightness-95"
+        />
       </div>
       <footer className="mt-4 flex gap-4 text-xs text-texto-suave">
         <Link href="/legal/terminos" className="underline">

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { CampoContrasena } from "@/components/CampoContrasena";
 
 type Modo = "correo" | "colegio";
 
@@ -102,11 +103,14 @@ export function FormularioEntrar({ hayGoogle }: { hayGoogle: boolean }) {
                      placeholder="Lo que usaste al registrarte"
                      className={campo} />
             </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">Contraseña</span>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                     required autoComplete="current-password" className={campo} />
-            </label>
+            <CampoContrasena
+              etiqueta="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              className={campo}
+            />
           </>
         ) : (
           <>

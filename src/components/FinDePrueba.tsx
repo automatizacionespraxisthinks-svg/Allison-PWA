@@ -18,7 +18,14 @@ export interface LogroPrueba {
  * funcionó — por eso lo primero que ve es lo que LOGRÓ, con sus
  * propios números.
  */
-export function FinDePrueba({ logro }: { logro: LogroPrueba }) {
+export function FinDePrueba({
+  logro,
+  recargaMinima,
+}: {
+  logro: LogroPrueba;
+  /** Viene del servidor: es la misma que valida el cobro. */
+  recargaMinima: number;
+}) {
   // Sin nada que mostrar, las cifras sobran: quedarían todas en cero.
   const hizoAlgo = logro.mensajes > 0 && logro.correcciones > 0;
 
@@ -60,7 +67,7 @@ export function FinDePrueba({ logro }: { logro: LogroPrueba }) {
         {hizoAlgo
           ? "Allison ya sabe en qué fallas. Sigue y verás cómo esos temas pasan a dominados."
           : "Sigue practicando con Allison."}{" "}
-        Desde <strong>{pesos(4000)}</strong>, sin tarjeta y sin suscripción. Los
+        Desde <strong>{pesos(recargaMinima)}</strong>, sin tarjeta y sin suscripción. Los
         mensajes que compras <strong>no caducan</strong>.
       </p>
 
@@ -69,7 +76,7 @@ export function FinDePrueba({ logro }: { logro: LogroPrueba }) {
           href="/recargar"
           className="rounded-2xl bg-primario px-6 py-4 text-center text-lg font-semibold text-white transition hover:brightness-110"
         >
-          Recargar desde {pesos(4000)}
+          Recargar desde {pesos(recargaMinima)}
         </Link>
         <Link
           href="/planes"

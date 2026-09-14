@@ -24,7 +24,7 @@ export function configPrecios(): ConfigPrecios {
     // mensual: pagar sobre la marcha cuesta un poco más que
     // suscribirse, que es justo lo que empuja hacia el plan.
     copPorMensaje: Number(process.env.COP_POR_MENSAJE ?? 60),
-    minima: Number(process.env.RECARGA_MINIMA_COP ?? 4000),
+    minima: Number(process.env.RECARGA_MINIMA_COP ?? 7900),
     maxima: 500_000,
   };
 }

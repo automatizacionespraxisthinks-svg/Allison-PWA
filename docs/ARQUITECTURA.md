@@ -61,7 +61,7 @@ errores intactos, y el CPX22 pasa de ~5 a ~30 estudiantes simultáneos.
   8 horas de conversación" (1 intervención ≈ 1 minuto, redondeado hacia abajo para prometer
   menos de lo que se entrega). Los términos aclaran que la equivalencia es informativa
 - **Tasa:** $100 COP = 1 mensaje
-- **Recarga:** mínimo $4.000, de ahí en adelante monto libre. **No caducan**
+- **Recarga:** mínimo $7.900 (sep-2026; antes $4.000), de ahí en adelante monto libre. **No caducan**
 - **Bono por volumen:** +10% desde $20.000 · +15% desde $50.000
 - **Planes:** mensual $35.000 / semestral $180.000 / anual $320.000 — 500 mensajes por mes
 - **Los mensajes del plan caducan** al terminar el mes. Al agotarse se le **pregunta** al alumno si quiere renovar (no hay débito automático forzado)
@@ -87,8 +87,8 @@ errores intactos, y el CPX22 pasa de ~5 a ~30 estudiantes simultáneos.
 ### Comisiones de pasarela — decisión (sep-2026)
 
 La pasarela es **Bold**, con el **QR Bre-B** como medio principal: 2,89% + IVA **sin valor fijo**
-(exige la Cuenta Bold). Es lo único que hace viable la recarga de $4.000: ahí el QR cuesta ≈3,4%,
-mientras PSE o tarjeta ($900 fijos) se llevan ≈30%, y en Wompi ≈24%. Wompi quedó como alternativa
+(exige la Cuenta Bold). Es lo que hace viable la recarga mínima de $7.900: ahí el QR cuesta ≈3,4%,
+mientras PSE o tarjeta ($900 fijos) se llevan ≈17%, y en Wompi ≈13,7%. Wompi quedó como alternativa
 en el código, pero solo desembolsa a Bancolombia o Nequi. Comparativa completa verificada en las
 páginas oficiales el 14-sep-2026: ePayco exige mínimo $5.000 por transacción y trata las recargas
 como actividad restringida; PSE directo exige persona jurídica y ≥$2,4M de implementación.

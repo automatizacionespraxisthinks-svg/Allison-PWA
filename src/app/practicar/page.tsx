@@ -8,6 +8,7 @@ import {
 } from "@/lib/conversaciones";
 import { META_LOGROS, unidad } from "@/lib/curriculo";
 import { progresoDe, progresoLecciones, sugerenciaDeNivel } from "@/lib/progreso";
+import { configPrecios } from "@/lib/precios";
 import { alumnoActual } from "@/lib/sesion";
 import { PRUEBA_AL_VERIFICAR } from "@/lib/verificacion";
 
@@ -70,6 +71,7 @@ export default async function PaginaPracticar({
       enPrueba={alumno.enPrueba}
       faltaVerificar={alumno.faltaVerificar}
       mensajesPorVerificar={PRUEBA_AL_VERIFICAR}
+      recargaMinima={configPrecios().minima}
       esCoordinador={alumno.rol === "coordinador" || alumno.rol === "admin"}
       esAdmin={alumno.rol === "admin"}
       racha={alumno.rachaDias}

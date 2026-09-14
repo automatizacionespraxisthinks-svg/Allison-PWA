@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BotonPlan } from "@/components/BotonPlan";
 import { sql } from "@/lib/db";
-import { pesos, tiempoEquivalente } from "@/lib/precios";
+import { configPrecios, pesos, tiempoEquivalente } from "@/lib/precios";
 import { alumnoActual } from "@/lib/sesion";
 
 export default async function PaginaPlanes() {
@@ -117,7 +117,9 @@ export default async function PaginaPlanes() {
         className="rounded-xl border border-borde bg-superficie p-4 text-center text-sm transition hover:bg-superficie-2"
       >
         ¿Prefieres pagar solo lo que usas?{" "}
-        <strong className="text-primario">Recarga desde $4.000</strong>
+        <strong className="text-primario">
+          Recarga desde {pesos(configPrecios().minima)}
+        </strong>
       </Link>
     </main>
   );

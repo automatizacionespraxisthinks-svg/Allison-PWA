@@ -32,8 +32,8 @@ Las variables con sus valores ya generados están en **`.env.production`**
       en su panel que no están en el código**:
       1. **Activar la Cuenta Bold.** Sin ella no aparece el QR Bre-B,
          que es el medio más barato: 2,89% sin valor fijo, contra 2,89%
-         + $900 de PSE o tarjeta. En la recarga de $4.000 es la
-         diferencia entre perder 3% o 30%.
+         + $900 de PSE o tarjeta. En la recarga mínima de $7.900 es la
+         diferencia entre perder 3,4% o 17%.
       2. **Activar las llaves** de *Botón de pagos* (Integraciones →
          Llaves de integración). La API de links usa esas. Van en
          `BOLD_LLAVE_IDENTIDAD` y `BOLD_LLAVE_SECRETA`.
@@ -204,7 +204,7 @@ secreto.
       micrófono, transcribe, y Allison **suena sola**.
 - [ ] Instalar la PWA (aparece el chip "Instalar").
 - [ ] `/admin` responde a tu administrador y rechaza a un estudiante.
-- [ ] Una recarga pequeña real ($4.000) pagada **con QR desde el
+- [ ] Una recarga pequeña real ($7.900, la mínima) pagada **con QR desde el
       celular**, comprobando **las cuatro**: (a) el checkout de Bold
       ofrece el QR (si no, falta activar la Cuenta Bold); (b) pagar el
       QR desde el mismo teléfono es cómodo — si no, considera dejar
