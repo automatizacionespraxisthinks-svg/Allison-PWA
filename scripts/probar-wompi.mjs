@@ -144,6 +144,52 @@ probar(
   leido?.referencia === "ALL-PRUEBA-01" && leido?.aprobado === true
 );
 
+// 11. El monto viaja en centavos: se lee en pesos para compararlo con la
+//     orden, y si es de otra moneda no puede coincidir.
+probar("lee el monto en PESOS (400.000 centavos = $4.000)", leido?.montoCop === 4000);
+const enDolares = base();
+enDolares.data.transaction.currency = "USD";
+probar(
+  "un pago en otra moneda no pasa por el monto de la orden",
+  Number.isNaN(via.interpretarEvento(enDolares)?.montoCop)
+);
+
+// 12. Sin el secreto de eventos no se abre un cobro: Wompi cobraría y
+//     su aviso se rechazaría, y el alumno pagaría sin recibir nada.
+delete process.env.WOMPI_EVENTS_SECRET;
+let sinSecreto = null;
+try {
+  await via.crearPago({
+    transaccionId: "5f0c1d8e-1111-4222-8333-944455556666",
+    referencia: "ALL-PRUEBA-01",
+    montoCop: 4000,
+    concepto: "Recarga",
+    correo: null,
+    origen: "https://allison.ejemplo.co",
+  });
+} catch (e) {
+  sinSecreto = e;
+}
+probar(
+  "sin WOMPI_EVENTS_SECRET se niega a abrir el cobro",
+  sinSecreto !== null && /WOMPI_EVENTS_SECRET/.test(sinSecreto.message)
+);
+process.env.WOMPI_EVENTS_SECRET = guardado;
+
+const pago = await via.crearPago({
+  transaccionId: "5f0c1d8e-1111-4222-8333-944455556666",
+  referencia: "ALL-PRUEBA-01",
+  montoCop: 4000,
+  concepto: "Recarga",
+  correo: null,
+  origen: "https://allison.ejemplo.co",
+});
+probar(
+  "al terminar, Wompi devuelve al alumno a la página de SU orden",
+  new URL(pago.urlPago).searchParams.get("redirect-url") ===
+    "https://allison.ejemplo.co/pagar/5f0c1d8e-1111-4222-8333-944455556666"
+);
+
 if (fallos > 0) {
   console.error(`\n${fallos} fallo(s).`);
   process.exit(1);

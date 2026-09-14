@@ -46,7 +46,7 @@ export const ENCARGADOS = [
     para: "Servidor donde corre la aplicación",
   },
   {
-    nombre: "[PASARELA DE PAGO]",
+    nombre: "Bold",
     pais: "Colombia",
     para: "Procesar los pagos. Nosotros no vemos ni guardamos datos de tarjetas",
   },

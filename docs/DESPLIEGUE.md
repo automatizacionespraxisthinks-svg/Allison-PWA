@@ -28,16 +28,23 @@ Las variables con sus valores ya generados están en **`.env.production`**
 - [x] **Correo**: Gmail SMTP probado y funcionando con
       `allison.teacher00@gmail.com`. Tope ~500 correos/día.
 
-- [ ] **Wompi**: las tres llaves (pública, integridad, eventos) y **dos
-      pasos que no están en el código**:
-      1. Panel de Wompi → configuración → medios de pago → dejar **solo
-         código QR**. Baja la comisión de 2,65% + $700 a 1%.
-      2. Panel de Wompi → registrar la **URL de eventos**:
-         `https://TU-DOMINIO/api/pagos/webhook`. Sin esto Wompi cobra y
-         nunca avisa: el alumno paga y no recibe nada.
+- [ ] **Bold** (la pasarela): cuenta creada con tu cédula y **tres pasos
+      en su panel que no están en el código**:
+      1. **Activar la Cuenta Bold.** Sin ella no aparece el QR Bre-B,
+         que es el medio más barato: 2,89% sin valor fijo, contra 2,89%
+         + $900 de PSE o tarjeta. En la recarga de $4.000 es la
+         diferencia entre perder 3% o 30%.
+      2. **Activar las llaves** de *Botón de pagos* (Integraciones →
+         Llaves de integración). La API de links usa esas. Van en
+         `BOLD_LLAVE_IDENTIDAD` y `BOLD_LLAVE_SECRETA`.
+      3. **Registrar el webhook** (Integraciones → Webhooks):
+         `https://TU-DOMINIO/api/pagos/webhook`. Sin él, el pago igual se
+         acredita cuando el alumno vuelve a la app o en la conciliación
+         diaria, pero con demora.
 
-      Si aún no la tienes: lanza sin cobro en línea y registra los pagos
-      en efectivo desde el panel de administración.
+      Comprueba los medios activos con `npm run bold:medios` (usa la
+      llave de identidad). Si aún no tienes Bold: lanza sin cobro en
+      línea y registra los pagos en efectivo desde el panel.
 
 - [ ] **Salida a internet del servidor**: el build descarga la
       tipografía Geist de Google. Compruébalo antes del primer
@@ -76,12 +83,13 @@ consulta, no al importar el módulo.
 |---|---|
 | `DATABASE_URL` | **ajustar**: nombre interno del servicio + puerto `5432`, base `allison`, sin `sslmode` (punto 8 explica por qué es seguro) |
 | `AUTH_SECRET` | generado, listo |
-| `AUTH_URL` | **falta — OBLIGATORIA**: tu dominio con https, sin barra final. De aquí salen los enlaces de los correos y el retorno de Wompi; sin ella apuntan a una dirección muerta |
+| `AUTH_URL` | **falta — OBLIGATORIA**: tu dominio con https, sin barra final. De aquí salen los enlaces de los correos y el regreso desde el pago; sin ella apuntan a una dirección muerta |
 | `GEMINI_API_KEY` | **falta**: la llave nueva |
 | `GEMINI_MODEL` | listo |
 | `CORREO`, `GMAIL_USUARIO`, `GMAIL_APP_PASSWORD` | listos y probados |
-| `PASARELA` | `wompi` (candado: `simulada` revienta en producción) |
-| `WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET`, `WOMPI_EVENTS_SECRET` | **faltan** — las tres o ninguna |
+| `PASARELA` | `bold` (candado: `simulada` revienta en producción) |
+| `BOLD_LLAVE_IDENTIDAD`, `BOLD_LLAVE_SECRETA` | **faltan** — las dos de *Botón de pagos*, las de producción. Sin la secreta la app se niega a cobrar |
+| `BOLD_MEDIOS` | opcional — vacío ofrece todos los medios activos, incluido el QR |
 | `TAREAS_SECRETO` | generado, listo |
 | `PROXY_CONFIABLE` | `reverso` — Traefik reescribe `x-forwarded-for` |
 | `COP_POR_MENSAJE`, `RECARGA_MINIMA_COP`, `MENSAJES_PRUEBA_*`, `REGISTROS_GLOBALES_POR_HORA` | listos |
@@ -97,8 +105,8 @@ Dokploy → tu aplicación → **Domains** → agregar el dominio y activar
 y Allison no puede oír a nadie. Si no tienes dominio todavía, Dokploy
 ofrece una dirección temporal que ya viene con HTTPS.
 
-Cuando fijes el dominio: actualiza `AUTH_URL` **y** la URL de eventos en
-el panel de Wompi.
+Cuando fijes el dominio: actualiza `AUTH_URL` **y** el webhook en el
+panel de Bold.
 
 ---
 
@@ -164,6 +172,10 @@ Borra conversaciones de más de 20 días, enlaces vencidos y órdenes de
 pago abandonadas. **Sin ella incumples tu propia política de
 privacidad**, que promete borrarlas a los 20 días.
 
+Además es la red de seguridad de los pagos: le pregunta a Bold por las
+órdenes de los últimos tres días que sigan sin aprobar, y acredita las
+que sí se pagaron aunque su aviso se haya perdido.
+
 Dokploy → **Schedules** → tarea diaria `0 7 * * *` (2:00 a.m. en
 Colombia) con:
 
@@ -190,13 +202,15 @@ secreto.
       micrófono, transcribe, y Allison **suena sola**.
 - [ ] Instalar la PWA (aparece el chip "Instalar").
 - [ ] `/admin` responde a tu administrador y rechaza a un estudiante.
-- [ ] Una recarga pequeña real pagada con QR, comprobando **las tres**:
-      (a) el checkout **no** ofrece tarjeta ni PSE (si aparecen, faltó el
-      paso del panel de Wompi); (b) al terminar, el navegador vuelve a
-      **tu dominio**, no a una dirección rara; (c) **el saldo del
-      encabezado sube** y la transacción queda `aprobada` en la base.
-      La (c) es la que importa: si el aviso de Wompi se rechazara, el
-      cobro se haría igual y el alumno no recibiría nada.
+- [ ] Una recarga pequeña real ($4.000) pagada **con QR desde el
+      celular**, comprobando **las cuatro**: (a) el checkout de Bold
+      ofrece el QR (si no, falta activar la Cuenta Bold); (b) pagar el
+      QR desde el mismo teléfono es cómodo — si no, considera dejar
+      también PSE o Nequi con `BOLD_MEDIOS`; (c) al terminar, vuelves a
+      **tu dominio** y la pantalla dice "Confirmando tu pago…"; (d) en
+      segundos pasa a **"¡Listo!"** y el saldo del encabezado sube.
+      La (d) es la que importa: es la prueba de que el cobro y la
+      acreditación están conectados.
 - [ ] Al día siguiente: la limpieza corrió y el panel de Gemini muestra
       el gasto esperado.
 
@@ -226,6 +240,11 @@ secreto.
   variable según el teléfono. Cuando se mejore, que sea con un motor
   propio en este servidor — **nunca un TTS cobrado por uso**, que
   multiplicaría el costo por intervención unas cincuenta veces.
+- **Las anulaciones de Bold no descuentan saldo solas**: si devuelves un
+  pago desde Bold, el alumno conserva sus intervenciones (pudo haberlas
+  gastado ya). El aviso queda en el log del servidor como
+  `VOID_APPROVED`; ajusta el saldo a mano desde el panel, que exige una
+  nota que lo explique.
 - **Los planes largos no renuevan**: el de 6 meses y el anual entregan
   700 intervenciones una sola vez, no cada mes. Está pendiente de
   arreglar y es lo más grave del proyecto ahora mismo.

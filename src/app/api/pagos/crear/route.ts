@@ -84,6 +84,17 @@ export async function POST(peticion: Request) {
       correo: null,
       origen: origenPublico(peticion),
     });
+
+    // Sin este identificador no se le puede preguntar a la pasarela por
+    // el pago, y el alumno que vuelve antes que el aviso no vería su
+    // saldo. Si no se pudo guardar, la orden no se entrega.
+    if (pago.idExterno) {
+      await sql`
+        update transacciones
+           set payload = ${sql.json({ id_pasarela: pago.idExterno })}
+         where id = ${transaccion.id}
+      `;
+    }
   } catch (e) {
     // Sin esto la fila queda pendiente para siempre y ensucia los
     // reportes de pagos sin completar.

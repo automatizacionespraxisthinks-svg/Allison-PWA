@@ -84,12 +84,22 @@ errores intactos, y el CPX22 pasa de ~5 a ~30 estudiantes simultáneos.
 
 > Verificar tarifas de Gemini en la página oficial antes de fijar precios definitivos.
 
-### Comisiones de pasarela — riesgo conocido
+### Comisiones de pasarela — decisión (sep-2026)
 
-Sobre una recarga de $4.000: tarjeta y PSE se llevan cerca del 30%, Nequi cerca del 10%.
-**Nequi debe ir de primero** en la pantalla de pago.
+La pasarela es **Bold**, con el **QR Bre-B** como medio principal: 2,89% + IVA **sin valor fijo**
+(exige la Cuenta Bold). Es lo único que hace viable la recarga de $4.000: ahí el QR cuesta ≈3,4%,
+mientras PSE o tarjeta ($900 fijos) se llevan ≈30%, y en Wompi ≈24%. Wompi quedó como alternativa
+en el código, pero solo desembolsa a Bancolombia o Nequi. Comparativa completa verificada en las
+páginas oficiales el 14-sep-2026: ePayco exige mínimo $5.000 por transacción y trata las recargas
+como actividad restringida; PSE directo exige persona jurídica y ≥$2,4M de implementación.
 
-PSE y Nequi no permiten cobro recurrente automático — por eso la renovación es a elección del alumno.
+Integración: link de pago creado por API (monto cerrado, vence en 60 min), aviso firmado
+(HMAC-SHA256 del cuerpo en base64) y **consulta activa del estado del link** — Bold avisa los pagos
+de links con hasta 10 minutos de demora, así que la página a la que vuelve el alumno pregunta, y
+la limpieza diaria concilia lo que no llegó. Aviso y consulta pasan por el mismo camino
+(`src/lib/cobro.ts`).
+
+PSE, Nequi y QR no permiten cobro recurrente automático — por eso la renovación es a elección del alumno.
 
 ## 3. Arquitectura
 

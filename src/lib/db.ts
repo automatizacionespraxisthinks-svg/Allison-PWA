@@ -34,19 +34,33 @@ const crear = () => {
    */
   const esPooler = url.includes("-pooler");
 
-  return postgres(url, {
-    /**
-     * Cómo se cifra lo decide db/conexion.mjs a partir del HOST, con un
-     * solo criterio para la app y los scripts: red interna de Docker =
-     * dentro del límite de confianza del servidor; dirección pública =
-     * TLS obligatorio, y en producción se niega a mandar nada en claro.
-     */
-    ssl: modoSsl(url),
-    max: esPooler ? 5 : 10,
-    idle_timeout: 20,
-    prepare: !esPooler,
-    onnotice: () => {},
-  });
+  try {
+    return postgres(url, {
+      /**
+       * Cómo se cifra lo decide db/conexion.mjs a partir del HOST, con
+       * un solo criterio para la app y los scripts: red interna de
+       * Docker = dentro del límite de confianza del servidor; dirección
+       * pública = TLS obligatorio, y en producción se niega a mandar
+       * nada en claro.
+       */
+      ssl: modoSsl(url),
+      max: esPooler ? 5 : 10,
+      idle_timeout: 20,
+      prepare: !esPooler,
+      onnotice: () => {},
+    });
+  } catch (e) {
+    // Ante una URL ilegible, el error de la librería trae la URL ENTERA
+    // —contraseña incluida— y el servidor lo imprime en su log. Se
+    // reemplaza por uno que dice qué revisar sin repetir el secreto.
+    if ((e as { code?: string })?.code === "ERR_INVALID_URL") {
+      throw new Error(
+        "DATABASE_URL no es una URL válida. Revisa que no esté entre comillas " +
+          "y que los caracteres especiales de la clave vayan codificados (# → %23, @ → %40)."
+      );
+    }
+    throw e;
+  }
 };
 
 declare global {

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createHash, timingSafeEqual } from "node:crypto";
+import { registrarResultado } from "@/lib/cobro";
 import { sql } from "@/lib/db";
+import { pasarela } from "@/lib/pasarela";
 
 /**
  * Borrado de conversaciones vencidas.
@@ -62,11 +64,14 @@ async function limpiar(peticion: Request) {
     select (select count(*) from a) + (select count(*) from b) as count
   `;
 
+  const conciliados = await conciliarPagos();
+
   // Órdenes de pago que se abrieron y nunca se pagaron. A las 48 horas
   // son carritos abandonados: se cierran para que no ensucien los
-  // reportes de pagos ni la auditoría de integridad. Si la pasarela
-  // llegara a confirmar una después, el webhook la encontraría
-  // rechazada y no acreditaría — correcto para una orden vencida.
+  // reportes de pagos ni la auditoría de integridad. Cerrarla no le
+  // quita nada a nadie: si la pasarela confirmara después un pago que
+  // SÍ se hizo, acreditar_transaccion acredita también una orden
+  // rechazada — el dinero llegó, y cobrar sin entregar sería peor.
   const abandonadas = await sql`
     update transacciones set estado = 'rechazada'
      where estado = 'pendiente' and creado_en < now() - interval '48 hours'
@@ -74,8 +79,8 @@ async function limpiar(peticion: Request) {
   `;
 
   console.log(
-    `Limpieza: ${borradas} conversaciones, ${tokens} enlaces vencidos y ` +
-      `${abandonadas.length} órdenes abandonadas`
+    `Limpieza: ${borradas} conversaciones, ${tokens} enlaces vencidos, ` +
+      `${conciliados} pagos conciliados y ${abandonadas.length} órdenes abandonadas`
   );
 
   return NextResponse.json({
@@ -83,5 +88,74 @@ async function limpiar(peticion: Request) {
     conversacionesBorradas: borradas,
     enlacesBorrados: Number(tokens),
     ordenesAbandonadas: abandonadas.length,
+    pagosConciliados: conciliados,
   });
+}
+
+/**
+ * La red de seguridad de los pagos.
+ *
+ * Un pago se acredita por el aviso de la pasarela o cuando el alumno
+ * vuelve a la app. Si las dos cosas fallan —el aviso se perdió, o llegó
+ * sin referencia, y el alumno cerró el navegador—, la persona pagó y no
+ * recibió nada. Aquí se le pregunta a la pasarela por cada orden de los
+ * últimos tres días que siga sin aprobar, y lo que diga entra por el
+ * mismo camino de siempre.
+ *
+ * Solo acredita; no rechaza: cerrar órdenes viejas es trabajo de la
+ * limpieza. Y nunca tumba la limpieza: si la pasarela no está
+ * configurada o no responde, las conversaciones se borran igual —eso
+ * es lo que promete la política de privacidad.
+ */
+async function conciliarPagos(): Promise<number> {
+  let acreditados = 0;
+  try {
+    const via = pasarela();
+    if (!via.consultarEstado) return 0;
+
+    const abiertas = await sql`
+      select referencia_externa, payload->>'id_pasarela' as id_pasarela
+        from transacciones
+       where pasarela = ${via.nombre}
+         and estado <> 'aprobada'
+         and payload->>'id_pasarela' is not null
+         and creado_en > now() - interval '72 hours'
+         and creado_en < now() - interval '15 minutes'
+       order by creado_en desc
+       limit 100
+    `;
+
+    for (const orden of abiertas) {
+      try {
+        const consulta = await via.consultarEstado({
+          referencia: orden.referencia_externa,
+          idExterno: orden.id_pasarela,
+        });
+        if (consulta.estado !== "aprobado") continue;
+
+        const desenlace = await registrarResultado({
+          pasarela: via.nombre,
+          referencia: orden.referencia_externa,
+          aprobado: true,
+          montoCop: consulta.montoCop,
+          detalle: consulta.detalle,
+          origen: "consulta",
+        });
+        if (desenlace === "acreditado") {
+          acreditados++;
+          console.warn(
+            `Pago conciliado sin aviso de la pasarela: ${orden.referencia_externa}`
+          );
+        }
+      } catch (e) {
+        console.warn(
+          `No se pudo conciliar ${orden.referencia_externa}:`,
+          e instanceof Error ? e.message : e
+        );
+      }
+    }
+  } catch (e) {
+    console.warn("Conciliación de pagos omitida:", e instanceof Error ? e.message : e);
+  }
+  return acreditados;
 }
