@@ -21,7 +21,7 @@ import { modoSslOSalir } from "../db/conexion.mjs";
  * TypeScript. Si cambia la version legal, hay que cambiarla aqui
  * tambien -- lo recuerda la prueba de scripts/probar-legal.mjs.
  */
-const VERSION_LEGAL = "2026-08-29";
+const VERSION_LEGAL = "2026-09-14";
 
 const [email, nombre, password] = process.argv.slice(2);
 

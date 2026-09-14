@@ -66,7 +66,7 @@ insert into users (
 )
 select
   'email', a.email, crypt(a.clave, gen_salt('bf', 12)), a.nombre, 'C1', 'admin',
-  now(), now(), '2026-08-29',
+  now(), now(), '2026-09-14',
   true, true, true
 from _admin a
 on conflict (email) do update

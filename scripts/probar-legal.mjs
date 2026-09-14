@@ -12,7 +12,10 @@
 import { readFileSync } from "node:fs";
 
 const fuente = readFileSync(new URL("../src/lib/legal.ts", import.meta.url), "utf8");
-const copia = readFileSync(new URL("./crear-admin.mjs", import.meta.url), "utf8");
+const copias = {
+  "scripts/crear-admin.mjs": readFileSync(new URL("./crear-admin.mjs", import.meta.url), "utf8"),
+  "scripts/generar-sql-manual.mjs": readFileSync(new URL("./generar-sql-manual.mjs", import.meta.url), "utf8"),
+};
 
 const sacar = (texto, donde) => {
   const m = texto.match(/VERSION_LEGAL\s*=\s*"([^"]+)"/);
@@ -24,16 +27,19 @@ const sacar = (texto, donde) => {
 };
 
 const original = sacar(fuente, "src/lib/legal.ts");
-const duplicada = sacar(copia, "scripts/crear-admin.mjs");
 
-if (original !== duplicada) {
-  console.error(
-    `FALLO: la versión legal no coincide.\n` +
-      `  src/lib/legal.ts ......... ${original}\n` +
-      `  scripts/crear-admin.mjs .. ${duplicada}\n\n` +
-      `Actualiza la copia de crear-admin.mjs a "${original}".`
-  );
-  process.exit(1);
+let desfasadas = 0;
+for (const [archivo, texto] of Object.entries(copias)) {
+  const copia = sacar(texto, archivo);
+  if (copia !== original) {
+    console.error(
+      `FALLO: la versión legal de ${archivo} es ${copia}, y la de src/lib/legal.ts es ${original}.
+` +
+        `Actualiza la copia a "${original}".`
+    );
+    desfasadas++;
+  }
 }
+if (desfasadas > 0) process.exit(1);
 
-console.log(`  ok    la versión legal coincide en los dos sitios (${original})`);
+console.log(`  ok    la versión legal coincide en los ${Object.keys(copias).length + 1} sitios (${original})`);

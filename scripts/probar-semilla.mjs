@@ -15,10 +15,13 @@ import postgres from "postgres";
 import bcrypt from "bcryptjs";
 import { readFileSync } from "node:fs";
 
+/** La versión legal vigente, leída de donde vive. */
+const VERSION_LEGAL = readFileSync("src/lib/legal.ts", "utf8").match(/VERSION_LEGAL\s*=\s*"([^"]+)"/)[1];
+
 const url = process.env.DATABASE_URL;
 if (!url) {
   console.error("Falta DATABASE_URL. Ejemplo:");
-  console.error("  DATABASE_URL= npm run probar:semilla");
+  console.error("  DATABASE_URL=$DATABASE_URL_PRODUCCION npm run probar:semilla");
   process.exit(1);
 }
 const sql = postgres(url, {
@@ -81,7 +84,7 @@ probar("crea el usuario con rol admin", creado?.rol === "admin");
 probar("le crea su fila de saldo", creado?.tiene_saldo === true);
 probar("el saldo queda en cero (no ensucia el libro)", Number(creado?.saldo) === 0);
 probar("marca el correo como verificado", creado?.verificado === true);
-probar("registra el consentimiento y su versión", creado?.acepto === true && creado?.version_legal === "2026-08-29");
+probar("registra el consentimiento y su versión", creado?.acepto === true && creado?.version_legal === VERSION_LEGAL);
 
 // 4. LO QUE IMPORTA: que pueda entrar con esa contraseña
 probar(

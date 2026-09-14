@@ -24,9 +24,9 @@ export const EMPRESA = {
   marca: "Allison",
 } as const;
 
-export const VERSION_LEGAL = "2026-08-29";
+export const VERSION_LEGAL = "2026-09-14";
 
-export const ACTUALIZADO = "29 de agosto de 2026";
+export const ACTUALIZADO = "14 de septiembre de 2026";
 
 /** Terceros a los que llegan datos. Debe coincidir con la realidad. */
 export const ENCARGADOS = [
@@ -36,14 +36,9 @@ export const ENCARGADOS = [
     para: "Escuchar el audio del alumno y generar la respuesta y las correcciones",
   },
   {
-    nombre: "Neon",
-    pais: "Estados Unidos",
-    para: "Base de datos donde vive la cuenta, el saldo y el progreso",
-  },
-  {
     nombre: "Hetzner",
     pais: "Estados Unidos",
-    para: "Servidor donde corre la aplicación",
+    para: "Servidor donde corre la aplicación y se guardan la cuenta, el saldo y el progreso",
   },
   {
     nombre: "Bold",
@@ -51,7 +46,7 @@ export const ENCARGADOS = [
     para: "Procesar los pagos. Nosotros no vemos ni guardamos datos de tarjetas",
   },
   {
-    nombre: "[PROVEEDOR DE CORREO]",
+    nombre: "Google (Gmail)",
     pais: "Estados Unidos",
     para: "Enviar correos de verificación y recuperación de contraseña",
   },
