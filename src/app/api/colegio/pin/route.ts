@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { randomInt } from "node:crypto";
 import { alumnoPertenece } from "@/lib/colegio";
 import { sql } from "@/lib/db";
+import { cuentaDeColegio, liberarCuenta } from "@/lib/intentos";
 import { limitar } from "@/lib/limite";
 import { alumnoActual } from "@/lib/sesion";
 
@@ -49,10 +50,18 @@ export async function POST(peticion: Request) {
 
   const pin = String(randomInt(0, 10_000)).padStart(4, "0");
 
-  await sql`
-    update users set pin_hash = ${await bcrypt.hash(pin, 12)}, actualizado_en = now()
-     where id = ${alumnoId}
+  const [alumno] = await sql`
+    update users u set pin_hash = ${await bcrypt.hash(pin, 12)}, actualizado_en = now()
+      from instituciones i
+     where u.id = ${alumnoId} and i.id = u.institucion_id
+    returning u.username, i.codigo_acceso
   `;
+
+  // Un PIN nuevo también destraba la entrada: si un compañero la bloqueó
+  // a punta de intentos fallidos, el alumno no tiene que esperar el día.
+  if (alumno?.username) {
+    liberarCuenta(cuentaDeColegio(alumno.codigo_acceso, alumno.username));
+  }
 
   return NextResponse.json({ ok: true, pin });
 }

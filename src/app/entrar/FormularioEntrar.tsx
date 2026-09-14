@@ -32,10 +32,15 @@ export function FormularioEntrar({ hayGoogle }: { hayGoogle: boolean }) {
         : await signIn("colegio", { codigo, username, pin, redirect: false });
 
     if (resultado?.error) {
+      const bloqueada = resultado.code === "demasiados_intentos";
       setError(
         modo === "correo"
-          ? "Los datos no coinciden. Revisa e intenta de nuevo."
-          : "Revisa el código del colegio, tu usuario y tu PIN."
+          ? bloqueada
+            ? "Demasiados intentos fallidos. Por seguridad, espera unos minutos antes de volver a intentar, o recupera tu contraseña."
+            : "Los datos no coinciden. Revisa e intenta de nuevo."
+          : bloqueada
+            ? "Demasiados intentos fallidos. Espera unos minutos, o pídele al coordinador de tu colegio que te reinicie el PIN."
+            : "Revisa el código del colegio, tu usuario y tu PIN."
       );
       setEnviando(false);
       return;

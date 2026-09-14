@@ -60,6 +60,38 @@ export function limitar(
 }
 
 /**
+ * Límite de intentos FALLIDOS, para el inicio de sesión.
+ *
+ * `limitar` cuenta toda petición; estas funciones cuentan solo fallos.
+ * La diferencia importa en un colegio: cuarenta alumnos entran al
+ * empezar la clase desde la MISMA IP pública, y contar también sus
+ * entradas buenas dejaría a medio salón por fuera.
+ *
+ * Mismo mapa y misma advertencia que `limitar`: sirve con un solo
+ * servidor.
+ */
+export function intentosAgotados(clave: string, maximo: number): boolean {
+  const actual = contadores.get(clave);
+  return Boolean(actual && actual.reinicia > Date.now() && actual.cuenta >= maximo);
+}
+
+export function sumarFallo(clave: string, ventanaSeg: number): void {
+  const ahora = Date.now();
+  limpiar(ahora);
+
+  const actual = contadores.get(clave);
+  if (!actual || actual.reinicia <= ahora) {
+    contadores.set(clave, { cuenta: 1, reinicia: ahora + ventanaSeg * 1000 });
+  } else {
+    actual.cuenta++;
+  }
+}
+
+export function olvidarFallos(clave: string): void {
+  contadores.delete(clave);
+}
+
+/**
  * De dónde viene la petición.
  *
  * CUIDADO: las cabeceras de IP las inventa el cliente. Cualquiera puede

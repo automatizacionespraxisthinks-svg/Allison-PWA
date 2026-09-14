@@ -1,9 +1,16 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { sql } from "@/lib/db";
 import { interpretar } from "@/lib/identificador";
+import {
+  anotarFallo,
+  cuentaDeColegio,
+  cuentaDeCorreo,
+  entradaBloqueada,
+  liberarCuenta,
+} from "@/lib/intentos";
 import { VERSION_LEGAL } from "@/lib/legal";
 import { PRUEBA_TOTAL } from "@/lib/verificacion";
 import type { Nivel } from "@/lib/tipos";
@@ -38,6 +45,15 @@ declare module "next-auth" {
   }
 }
 
+/**
+ * El único motivo de fallo que se le dice a quien intenta entrar: que
+ * espere. No dice si la cuenta existe, porque el bloqueo se aplica igual
+ * a las cuentas inventadas (ver src/lib/intentos.ts).
+ */
+class DemasiadosIntentos extends CredentialsSignin {
+  code = "demasiados_intentos";
+}
+
 interface UsuarioAutenticado {
   id: string;
   nombre: string;
@@ -70,10 +86,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       id: "acceso",
       name: "Correo, celular o usuario",
       credentials: { identificador: {}, password: {} },
-      async authorize(datos) {
+      async authorize(datos, peticion) {
         const password = String(datos.password ?? "");
         const id = interpretar(String(datos.identificador ?? ""));
         if (!password || id.error || !id.valor) return null;
+
+        const cuenta = cuentaDeCorreo(String(datos.identificador ?? ""))!;
+        if (entradaBloqueada(cuenta, peticion)) throw new DemasiadosIntentos();
 
         // Se busca por la columna que corresponda al tipo detectado.
         const columna =
@@ -87,8 +106,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
              and institucion_id is null
            limit 1
         `;
-        if (!u || !u.activo || !u.password_hash) return null;
-        if (!(await bcrypt.compare(password, u.password_hash))) return null;
+        if (
+          !u ||
+          !u.activo ||
+          !u.password_hash ||
+          !(await bcrypt.compare(password, u.password_hash))
+        ) {
+          anotarFallo(cuenta, peticion);
+          return null;
+        }
+        liberarCuenta(cuenta);
 
         return {
           id: u.id,
@@ -105,11 +132,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       id: "colegio",
       name: "Código de colegio",
       credentials: { codigo: {}, username: {}, pin: {} },
-      async authorize(datos) {
+      async authorize(datos, peticion) {
         const codigo = String(datos.codigo ?? "").trim();
         const username = String(datos.username ?? "").trim().toLowerCase();
         const pin = String(datos.pin ?? "");
         if (!codigo || !username || !pin) return null;
+
+        const cuenta = cuentaDeColegio(codigo, username);
+        if (entradaBloqueada(cuenta, peticion)) throw new DemasiadosIntentos();
 
         const [u] = await sql`
           select u.id, u.nombre, u.nivel, u.rol, u.institucion_id, u.pin_hash, u.activo
@@ -121,8 +151,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
              and u.tipo_acceso = 'institucional'
            limit 1
         `;
-        if (!u || !u.activo || !u.pin_hash) return null;
-        if (!(await bcrypt.compare(pin, u.pin_hash))) return null;
+        if (!u || !u.activo || !u.pin_hash || !(await bcrypt.compare(pin, u.pin_hash))) {
+          anotarFallo(cuenta, peticion);
+          return null;
+        }
+        liberarCuenta(cuenta);
 
         return {
           id: u.id,

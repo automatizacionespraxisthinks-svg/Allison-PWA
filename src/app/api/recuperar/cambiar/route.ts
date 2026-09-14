@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { sql } from "@/lib/db";
+import { cuentaDeCorreo, liberarCuenta } from "@/lib/intentos";
 import { limitar, origenDe } from "@/lib/limite";
 import { cambiarClave } from "@/lib/recuperacion";
 
@@ -34,6 +36,15 @@ export async function POST(peticion: Request) {
       { error: "Este enlace ya no sirve. Pide uno nuevo." },
       { status: 410 }
     );
+  }
+
+  // Quien recuperó su contraseña probó ser el dueño de la cuenta: si
+  // estaba bloqueada por intentos fallidos, se libera con cualquiera de
+  // las formas en que puede escribir su usuario.
+  const [u] = await sql`select email, telefono, username from users where id = ${userId}`;
+  for (const identificador of [u?.email, u?.telefono, u?.username]) {
+    const cuenta = identificador ? cuentaDeCorreo(String(identificador)) : null;
+    if (cuenta) liberarCuenta(cuenta);
   }
 
   return NextResponse.json({ ok: true });
