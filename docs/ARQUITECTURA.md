@@ -65,6 +65,7 @@ errores intactos, y el CPX22 pasa de ~5 a ~30 estudiantes simultáneos.
 - **Bono por volumen:** +10% desde $20.000 · +15% desde $50.000
 - **Planes:** mensual $35.000 / semestral $180.000 / anual $320.000 — 500 mensajes por mes
 - **Los mensajes del plan caducan** al terminar el mes. Al agotarse se le **pregunta** al alumno si quiere renovar (no hay débito automático forzado)
+- **Planes de varios meses:** entregan los mensajes **cada mes**, contados desde el día de compra (un plan del 31 no se corre al 28). Lo pone al día `renovar_suscripcion` (db/020): al cargar el saldo del alumno y en la tarea de cada hora. Los meses en que nadie la pone al día no se entregan de golpe: habrían vencido igual
 - **Orden de consumo:** primero los del plan, después los de recarga
 - **Prueba gratis: 20 mensajes, entregados en dos partes**
   - **5 al registrarse** — para que pruebe el producto sin fricción

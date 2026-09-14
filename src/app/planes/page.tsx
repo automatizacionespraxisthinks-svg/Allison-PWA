@@ -14,8 +14,13 @@ export default async function PaginaPlanes() {
       from planes where activo order by orden
   `;
 
+  // Las fechas se arman en hora de Colombia en la base: calculadas en
+  // UTC, un plan que vence de noche en Colombia mostraría el día siguiente.
   const [suscripcion] = await sql`
-    select p.nombre, s.periodo_fin::date as hasta
+    select p.nombre, p.mensajes_por_mes,
+           to_char(s.fin_en at time zone 'America/Bogota', 'DD/MM/YYYY') as hasta,
+           to_char(s.periodo_fin at time zone 'America/Bogota', 'DD/MM/YYYY') as proximo_mes,
+           s.periodo_fin < s.fin_en as quedan_meses
       from suscripciones s join planes p on p.id = s.plan_id
      where s.user_id = ${alumno.id} and s.estado = 'activa'
      limit 1
@@ -50,7 +55,9 @@ export default async function PaginaPlanes() {
       {suscripcion && (
         <p className="rounded-xl bg-primario-suave p-3 text-sm text-primario">
           Ya tienes el <strong>{suscripcion.nombre}</strong> activo hasta el{" "}
-          {new Date(suscripcion.hasta).toLocaleDateString("es-CO")}.
+          {suscripcion.hasta}.
+          {suscripcion.quedan_meses &&
+            ` Tus próximas ${suscripcion.mensajes_por_mes} intervenciones llegan el ${suscripcion.proximo_mes}.`}
         </p>
       )}
 

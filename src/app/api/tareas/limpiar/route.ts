@@ -64,6 +64,7 @@ async function limpiar(peticion: Request) {
     select (select count(*) from a) + (select count(*) from b) as count
   `;
 
+  const renovadas = await renovarPlanes();
   const conciliados = await conciliarPagos();
 
   // Órdenes de pago que se abrieron y nunca se pagaron. A las 48 horas
@@ -79,7 +80,7 @@ async function limpiar(peticion: Request) {
   `;
 
   console.log(
-    `Limpieza: ${borradas} conversaciones, ${tokens} enlaces vencidos, ` +
+    `Limpieza: ${borradas} conversaciones, ${tokens} enlaces vencidos, ${renovadas} planes renovados, ` +
       `${conciliados} pagos conciliados y ${abandonadas.length} órdenes abandonadas`
   );
 
@@ -88,8 +89,43 @@ async function limpiar(peticion: Request) {
     conversacionesBorradas: borradas,
     enlacesBorrados: Number(tokens),
     ordenesAbandonadas: abandonadas.length,
+    planesRenovados: renovadas,
     pagosConciliados: conciliados,
   });
+}
+
+/**
+ * Los planes cuyo mes terminó: vence lo que sobró y llega el mes nuevo,
+ * o el plan termina (db/020_renovacion_planes.sql).
+ *
+ * Quien entra a la app se pone al día solo, al cargar su saldo; esto es
+ * para quien no entra, y para que el panel no muestre como activos
+ * planes que ya terminaron. Una persona a la vez, y cada una con su
+ * propio intento: un error con alguien no deja sin renovar a los demás.
+ */
+async function renovarPlanes(): Promise<number> {
+  let renovadas = 0;
+  try {
+    const pendientes = await sql`
+      select user_id from suscripciones
+       where estado = 'activa' and periodo_fin <= now()
+       order by periodo_fin
+    `;
+    for (const { user_id } of pendientes) {
+      try {
+        const [{ cambio }] = await sql`select renovar_suscripcion(${user_id}) as cambio`;
+        if (cambio) renovadas++;
+      } catch (e) {
+        console.error(
+          `No se pudo renovar el plan de ${user_id}:`,
+          e instanceof Error ? e.message : e
+        );
+      }
+    }
+  } catch (e) {
+    console.error("Renovación de planes omitida:", e instanceof Error ? e.message : e);
+  }
+  return renovadas;
 }
 
 /**

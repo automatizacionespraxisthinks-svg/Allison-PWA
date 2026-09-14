@@ -119,7 +119,7 @@ Dockerfile ya copia los scripts y sus dependencias.
 ### Si la base está VACÍA (un Postgres recién creado)
 
 Un solo archivo: **`db/manual/base-completa.sql`**. Crea todo el esquema
-(las 19 migraciones, en orden y en una sola transacción: si algo falla
+(todas las migraciones, en orden y en una sola transacción: si algo falla
 no queda nada a medias), lo deja registrado para que futuras
 migraciones sepan que ya corrió, siembra los planes y crea tu
 administrador.
@@ -155,6 +155,13 @@ cambiada.
 ```
 node scripts/migrar.mjs
 ```
+
+**Pendiente en producción: la migración 020** (renovación mensual de
+los planes). La base de producción se creó con las 19 anteriores, y la
+app nueva la necesita: sin ella, los planes no se renuevan y el log del
+servidor lo dice ("No se pudo renovar el plan"). Córrela
+en la Terminal del contenedor **justo después de desplegar esta
+versión**; el comando de arriba solo aplica lo que falta.
 
 Solo aplica los archivos numerados de `db/`; los de `db/manual/` son
 para correr a mano y los ignora. **Ojo**: esos dos archivos se generan
@@ -261,6 +268,8 @@ secreto.
   gastado ya). El aviso queda en el log del servidor como
   `VOID_APPROVED`; ajusta el saldo a mano desde el panel, que exige una
   nota que lo explique.
-- **Los planes largos no renuevan**: el de 6 meses y el anual entregan
-  700 intervenciones una sola vez, no cada mes. Está pendiente de
-  arreglar y es lo más grave del proyecto ahora mismo.
+- **Planes: sin aviso antes de que termine el mes.** La renovación
+  mensual ya funciona (el anual entrega 700 cada mes y lo que sobra
+  vence, como dicen los términos), pero la app no le avisa al alumno
+  que sus mensajes del plan están por vencer. Un aviso unos días antes
+  evitaría la sorpresa.

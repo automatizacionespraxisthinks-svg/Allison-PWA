@@ -56,6 +56,19 @@ await revisar(
   (f) => `${f.nombre}: saldo ${f.saldo} vs libro ${f.libro}`
 );
 
+// Un plan activo con su mes terminado hace horas significa que la
+// renovación dejó de correr: quien pagó un plan largo no está recibiendo
+// su mes nuevo. La tarea corre cada hora; dos horas de margen.
+await revisar(
+  "ningún plan activo lleva más de 2 horas sin renovar su mes",
+  sql`
+    select u.nombre, s.periodo_fin
+      from suscripciones s join users u on u.id = s.user_id
+     where s.estado = 'activa' and s.periodo_fin < now() - interval '2 hours'
+  `,
+  (f) => `${f.nombre}: su mes terminó el ${new Date(f.periodo_fin).toISOString()}`
+);
+
 console.log("\nIDENTIDAD");
 
 await revisar(
