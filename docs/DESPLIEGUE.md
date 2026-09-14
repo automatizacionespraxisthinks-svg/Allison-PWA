@@ -28,8 +28,12 @@ Las variables con sus valores ya generados están en **`.env.production`**
 - [x] **Correo**: Gmail SMTP probado y funcionando con
       `allison.teacher00@gmail.com`. Tope ~500 correos/día.
 
-- [ ] **Bold** (la pasarela): cuenta creada con tu cédula y **tres pasos
-      en su panel que no están en el código**:
+- [ ] **Bold** (la pasarela): cuenta **a nombre de PRAXIS - THINKS
+      S.A.S.** —registro de persona jurídica, con el certificado de Cámara
+      de Comercio y la cuenta Davivienda de la empresa—, porque es la
+      empresa la que figura como vendedora en los términos y como
+      responsable en la política de privacidad. Y **tres pasos en su
+      panel que no están en el código**:
       1. **Activar la Cuenta Bold.** Sin ella no aparece el QR Bre-B,
          que es el medio más barato: 2,89% sin valor fijo, contra 2,89%
          + $900 de PSE o tarjeta. En la recarga mínima de $7.900 es la
