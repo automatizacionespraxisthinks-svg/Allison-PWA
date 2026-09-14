@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { randomInt } from "node:crypto";
-import { alumnoPertenece } from "@/lib/colegio";
+import { alumnoPertenece, COSTO_HASH_PIN } from "@/lib/colegio";
 import { sql } from "@/lib/db";
 import { cuentaDeColegio, liberarCuenta } from "@/lib/intentos";
 import { limitar } from "@/lib/limite";
@@ -51,7 +51,7 @@ export async function POST(peticion: Request) {
   const pin = String(randomInt(0, 10_000)).padStart(4, "0");
 
   const [alumno] = await sql`
-    update users u set pin_hash = ${await bcrypt.hash(pin, 12)}, actualizado_en = now()
+    update users u set pin_hash = ${await bcrypt.hash(pin, COSTO_HASH_PIN)}, actualizado_en = now()
       from instituciones i
      where u.id = ${alumnoId} and i.id = u.institucion_id
     returning u.username, i.codigo_acceso

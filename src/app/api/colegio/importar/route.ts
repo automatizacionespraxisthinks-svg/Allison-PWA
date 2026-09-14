@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { randomInt } from "node:crypto";
+import { COSTO_HASH_PIN } from "@/lib/colegio";
 import { sql } from "@/lib/db";
 import { leerCsv } from "@/lib/importar";
 import { limitar } from "@/lib/limite";
@@ -107,17 +108,24 @@ export async function POST(peticion: Request) {
   }
 
   // --- Creación real ---
-  const credenciales: { nombre: string; username: string; pin: string }[] = [];
+  // Los PIN se cifran ANTES de abrir la transacción. Adentro, cada hash
+  // —cientos de milisegundos de CPU— retenía una conexión de la base y
+  // una transacción abierta durante toda la carga: con mil alumnos,
+  // minutos.
+  const preparados: { fila: (typeof nuevos)[number]; pin: string; hash: string }[] = [];
+  for (const fila of nuevos) {
+    const pin = String(randomInt(0, 10_000)).padStart(4, "0");
+    preparados.push({ fila, pin, hash: await bcrypt.hash(pin, COSTO_HASH_PIN) });
+  }
 
   await sql.begin(async (tx) => {
-    for (const f of nuevos) {
-      const pin = String(randomInt(0, 10_000)).padStart(4, "0");
+    for (const { fila: f, hash } of preparados) {
       const [u] = await tx`
         insert into users
           (tipo_acceso, institucion_id, username, pin_hash, nombre, nivel, rol)
         values
           ('institucional', ${usuario.institucionId}, ${f.username},
-           ${await bcrypt.hash(pin, 12)}, ${f.nombre}, ${f.nivel}, 'estudiante')
+           ${hash}, ${f.nombre}, ${f.nivel}, 'estudiante')
         returning id
       `;
       await tx`
@@ -131,9 +139,14 @@ export async function POST(peticion: Request) {
           (${u.id}, 'bono', 'recarga', ${PRUEBA_TOTAL}, 0, ${PRUEBA_TOTAL},
            'Prueba al cargar el alumno desde el colegio')
       `;
-      credenciales.push({ nombre: f.nombre, username: f.username, pin });
     }
   });
+
+  const credenciales = preparados.map(({ fila, pin }) => ({
+    nombre: fila.nombre,
+    username: fila.username,
+    pin,
+  }));
 
   // Los PINes viajan UNA vez. En la base solo queda el hash.
   return NextResponse.json({ ...resumen, modo: "creado", credenciales });

@@ -14,6 +14,19 @@ import type { Nivel } from "./tipos";
  * línea es deliberada — son menores de edad.
  */
 
+/**
+ * El costo del hash de un PIN de alumno.
+ *
+ * Más bajo que el de las contraseñas (12) a propósito. Un PIN de 4
+ * dígitos no lo protege el costo: sus 10.000 combinaciones se prueban
+ * sin conexión en minutos con cualquier costo. Lo protegen los límites
+ * de intentos al entrar (src/lib/intentos.ts). Y el costo sí se paga:
+ * cada hash es CPU del mismo servidor que atiende las conversaciones, y
+ * una carga de mil alumnos a costo 12 lo ocupaba más de cuatro minutos.
+ * A costo 10, cuatro veces menos.
+ */
+export const COSTO_HASH_PIN = 10;
+
 export interface AlumnoDelColegio {
   id: string;
   nombre: string;
