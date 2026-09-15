@@ -9,10 +9,17 @@ import { CampoContrasena } from "@/components/CampoContrasena";
 
 type Modo = "correo" | "colegio";
 
-export function FormularioEntrar({ hayGoogle }: { hayGoogle: boolean }) {
+export function FormularioEntrar({
+  hayGoogle,
+  aviso,
+}: {
+  hayGoogle: boolean;
+  /** Con qué mensaje se llega (un regreso fallido de Google), si alguno. */
+  aviso?: string | null;
+}) {
   const router = useRouter();
   const [modo, setModo] = useState<Modo>("correo");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(aviso ?? null);
   const [enviando, setEnviando] = useState(false);
 
   const [identificador, setIdentificador] = useState("");
@@ -85,7 +92,7 @@ export function FormularioEntrar({ hayGoogle }: { hayGoogle: boolean }) {
       {modo === "correo" && hayGoogle && (
         <button
           type="button"
-          onClick={() => signIn("google", { callbackUrl: "/practicar" })}
+          onClick={() => signIn("google", { redirectTo: "/practicar" })}
           className="flex items-center justify-center gap-3 rounded-xl border border-borde bg-superficie px-4 py-3 font-medium transition hover:bg-superficie-2"
         >
           <svg viewBox="0 0 24 24" className="size-5" aria-hidden>

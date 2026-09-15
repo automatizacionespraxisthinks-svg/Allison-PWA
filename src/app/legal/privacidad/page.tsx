@@ -39,7 +39,8 @@ export default function PaginaPrivacidad() {
             <li>
               <strong>De tu cuenta:</strong> nombre, correo y, si lo registras,
               celular o nombre de usuario. Los alumnos de colegio solo dan nombre,
-              usuario y PIN.
+              usuario y PIN. Si entras con Google, tu nombre y tu correo nos los
+              entrega Google.
             </li>
             <li>
               <strong>Tu voz:</strong> los audios que grabas al hablar con Allison.

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { sql } from "@/lib/db";
-import { limitar, origenDe } from "@/lib/limite";
+import { limitar, origenDe, REGISTROS_GLOBALES_POR_HORA } from "@/lib/limite";
 import { interpretar } from "@/lib/identificador";
 import { VERSION_LEGAL } from "@/lib/legal";
 import { enviarVerificacion, PRUEBA_INICIAL } from "@/lib/verificacion";
@@ -39,17 +39,6 @@ const Registro = z.object({
 /** Cuentas nuevas permitidas desde una misma IP en una hora. */
 const REGISTROS_POR_HORA = 5;
 
-/**
- * Tope de registros de TODO el sistema por hora.
- *
- * El límite por IP se puede burlar falsificando la cabecera cuando no
- * hay un proxy de confianza delante. Este no: no depende de nada que el
- * cliente controle. Es el techo que impide que un script cree mil
- * cuentas y se lleve mil pruebas gratis en una noche.
- */
-const REGISTROS_GLOBALES_POR_HORA = Number(
-  process.env.REGISTROS_GLOBALES_POR_HORA ?? 60
-);
 
 export async function POST(peticion: Request) {
   const limite = limitar(`registro:${origenDe(peticion)}`, REGISTROS_POR_HORA, 3600);

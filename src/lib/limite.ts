@@ -121,3 +121,17 @@ export function origenDe(peticion: Request): string {
 
   return "sin-proxy";
 }
+
+/**
+ * Tope de cuentas nuevas de TODO el sistema por hora.
+ *
+ * El límite por IP se puede burlar falsificando la cabecera cuando no
+ * hay un proxy de confianza delante. Este no: no depende de nada que el
+ * cliente controle. Es el techo que impide que un script cree mil
+ * cuentas y se lleve mil pruebas gratis en una noche. Lo comparten el
+ * registro con formulario y el registro con Google, bajo la misma
+ * clave ("registro:global"): son la misma puerta con dos manijas.
+ */
+export const REGISTROS_GLOBALES_POR_HORA = Number(
+  process.env.REGISTROS_GLOBALES_POR_HORA ?? 60
+);

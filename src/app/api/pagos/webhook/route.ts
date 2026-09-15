@@ -15,7 +15,7 @@ import { pasarela } from "@/lib/pasarela";
  *      si el monto cobrado no coincide con la orden, no se acredita.
  *
  * Todo aviso auténtico recibe 200, incluso el que no se procesa: la
- * pasarela reintenta lo que no recibe 200 (Bold, durante un día entero),
+ * pasarela reintenta lo que no recibe 200 (Bold: cinco veces, hasta 37 horas después),
  * y reintentar no puede cambiar el resultado.
  */
 export async function POST(peticion: Request) {

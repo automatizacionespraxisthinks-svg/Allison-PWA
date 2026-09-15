@@ -45,10 +45,23 @@ Las variables con sus valores ya generados están en **`.env.production`**
          `https://TU-DOMINIO/api/pagos/webhook`. Sin él, el pago igual se
          acredita cuando el alumno vuelve a la app o en la conciliación
          de cada hora, pero con demora.
+         Bold espera la respuesta en menos de 2 segundos y reintenta
+         hasta 5 veces (a los 15 min, 1 h, 4 h, 8 h y 24 h) lo que no
+         reciba un 200; un aviso repetido no acredita dos veces.
 
       Comprueba los medios activos con `npm run bold:medios` (usa la
       llave de identidad). Si aún no tienes Bold: lanza sin cobro en
       línea y registra los pagos en efectivo desde el panel.
+
+- [ ] **Google** (entrar con Google, opcional): en console.cloud.google.com,
+      pantalla de consentimiento OAuth (tipo Externo, **publicada**, con
+      los enlaces a `/legal/privacidad` y `/legal/terminos` de tu dominio)
+      y una credencial *ID de cliente de OAuth → Aplicación web* con la
+      URI de redirección **exacta** `https://TU-DOMINIO/api/auth/callback/google`.
+      Las dos llaves van en `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`;
+      sin ellas el botón simplemente no aparece. `.env.example` trae el
+      paso a paso. El consentimiento legal no se salta: quien crea la
+      cuenta con Google marca las casillas en `/registro`.
 
 - [ ] **Salida a internet del servidor**: el build descarga la
       tipografía Geist de Google. Compruébalo antes del primer
@@ -94,6 +107,7 @@ consulta, no al importar el módulo.
 | `PASARELA` | `bold` (candado: `simulada` revienta en producción) |
 | `BOLD_LLAVE_IDENTIDAD`, `BOLD_LLAVE_SECRETA` | **faltan** — las dos de *Botón de pagos*, las de producción. Sin la secreta la app se niega a cobrar |
 | `BOLD_MEDIOS` | opcional — vacío ofrece todos los medios activos, incluido el QR |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | opcionales — las dos o ninguna. Con ellas aparece "Entrar con Google" (punto 1) |
 | `TAREAS_SECRETO` | generado, listo |
 | `PROXY_CONFIABLE` | `reverso` — Traefik reescribe `x-forwarded-for` |
 | `COP_POR_MENSAJE`, `RECARGA_MINIMA_COP`, `MENSAJES_PRUEBA_*`, `REGISTROS_GLOBALES_POR_HORA` | listos |
@@ -110,7 +124,8 @@ y Allison no puede oír a nadie. Si no tienes dominio todavía, Dokploy
 ofrece una dirección temporal que ya viene con HTTPS.
 
 Cuando fijes el dominio: actualiza `AUTH_URL` **y** el webhook en el
-panel de Bold.
+panel de Bold, y la URI de redirección del cliente OAuth en Google Cloud (si
+usas el botón de Google).
 
 ---
 
@@ -215,6 +230,15 @@ secreto.
       micrófono, transcribe, y Allison **suena sola**.
 - [ ] Instalar la PWA (aparece el chip "Instalar").
 - [ ] `/admin` responde a tu administrador y rechaza a un estudiante.
+- [ ] **Google**, si lo activaste, las tres puertas: (a) en `/entrar`,
+      "Entrar con Google" con una cuenta de Google que NO existe en Allison
+      vuelve a `/registro` con el aviso de marcar las casillas; (b) en
+      `/registro`, marcar las casillas y "Continuar con Google" crea la
+      cuenta y entra con las 20 intervenciones, sin correo que confirmar;
+      (c) una cuenta creada con correo y contraseña entra también con
+      Google y, si no había confirmado el correo, recibe sus +15 al
+      instante. Si Google muestra `redirect_uri_mismatch`, la URI de
+      redirección no coincide letra por letra con `AUTH_URL`.
 - [ ] Una recarga pequeña real ($7.900, la mínima) pagada **con QR desde el
       celular**, comprobando **las cuatro**: (a) el checkout de Bold
       ofrece el QR (si no, falta activar la Cuenta Bold); (b) pagar el

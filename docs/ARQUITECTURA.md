@@ -71,6 +71,7 @@ errores intactos, y el CPX22 pasa de ~5 a ~30 estudiantes simultáneos.
   - **5 al registrarse** — para que pruebe el producto sin fricción
   - **15 al confirmar el correo** — el enlace vence en 48 h y solo sirve una vez
   - Con **Google** llegan los 20 de una: el correo ya viene verificado
+  - *Cómo se recoge el consentimiento con Google:* las casillas se marcan en `/registro` y viajan en una cookie firmada de 10 minutos hasta el regreso de Google; sin ella la cuenta no se crea, ni siquiera el nombre y el correo (`src/lib/entrada-google.ts`). Quien toca "Entrar con Google" en `/entrar` sin tener cuenta rebota a `/registro` con el aviso
   - Los **alumnos de colegio reciben los 20 completos**: no tienen correo que confirmar
   - *Por qué partido:* entregar los 20 de golpe significa pagarle a Google 20 mensajes por cada correo inventado
 - **Sin factura electrónica** por ahora

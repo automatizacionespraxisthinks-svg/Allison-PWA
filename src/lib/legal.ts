@@ -50,4 +50,9 @@ export const ENCARGADOS = [
     pais: "Estados Unidos",
     para: "Enviar correos de verificación y recuperación de contraseña",
   },
+  {
+    nombre: "Google (inicio de sesión)",
+    pais: "Estados Unidos",
+    para: "Si eliges entrar con tu cuenta de Google: Google confirma quién eres y nos entrega solo tu nombre y tu correo",
+  },
 ] as const;
