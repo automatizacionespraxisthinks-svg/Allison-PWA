@@ -5,8 +5,7 @@ import { sql } from "@/lib/db";
 import { limitar, origenDe, REGISTROS_GLOBALES_POR_HORA } from "@/lib/limite";
 import { interpretar } from "@/lib/identificador";
 import { VERSION_LEGAL } from "@/lib/legal";
-import { enviarVerificacion, PRUEBA_INICIAL } from "@/lib/verificacion";
-import { origenPublico } from "@/lib/origen";
+import { MENSAJES_PRUEBA } from "@/lib/prueba";
 
 /** Convierte lo que llegue en texto, para dar mensajes en español y no
  *  el error técnico de la librería cuando falta un campo. */
@@ -38,7 +37,6 @@ const Registro = z.object({
 
 /** Cuentas nuevas permitidas desde una misma IP en una hora. */
 const REGISTROS_POR_HORA = 5;
-
 
 export async function POST(peticion: Request) {
   const limite = limitar(`registro:${origenDe(peticion)}`, REGISTROS_POR_HORA, 3600);
@@ -98,8 +96,8 @@ export async function POST(peticion: Request) {
   }
 
   const hash = await bcrypt.hash(password, 12);
-  // Solo la primera parte de la prueba. El resto llega al confirmar.
-  const gratis = PRUEBA_INICIAL;
+  // La prueba completa, de una vez: no hay correo que confirmar.
+  const gratis = MENSAJES_PRUEBA;
 
   // Cuenta y saldo se crean juntos: un usuario sin fila de saldo no
   // podría hablar, y el error aparecería mucho después.
@@ -147,17 +145,5 @@ export async function POST(peticion: Request) {
     throw e;
   }
 
-  // El correo se manda después de crear la cuenta: si el proveedor
-  // falla, el alumno ya tiene cuenta y puede pedirlo de nuevo.
-  const { enviado } = await enviarVerificacion({
-    userId: nuevoId,
-    nombre,
-    email,
-    origen: origenPublico(peticion),
-  });
-
-  return NextResponse.json(
-    { ok: true, id: nuevoId, mensajes: gratis, correoEnviado: enviado },
-    { status: 201 }
-  );
+  return NextResponse.json({ ok: true, id: nuevoId, mensajes: gratis }, { status: 201 });
 }

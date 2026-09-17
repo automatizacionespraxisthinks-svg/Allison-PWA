@@ -9,7 +9,7 @@ import {
 } from "./google";
 import { VERSION_LEGAL } from "./legal";
 import { limitar, REGISTROS_GLOBALES_POR_HORA } from "./limite";
-import { PRUEBA_AL_VERIFICAR, PRUEBA_TOTAL } from "./verificacion";
+import { MENSAJES_PRUEBA } from "./prueba";
 
 /**
  * Lo que pasa cuando Google devuelve a alguien a la aplicación.
@@ -20,9 +20,8 @@ import { PRUEBA_AL_VERIFICAR, PRUEBA_TOTAL } from "./verificacion";
  * sesión. Tres casos:
  *
  *   1. El correo ya tiene cuenta: entra. Se le anota el id de Google
- *      para reconocerla aunque un día cambie de correo, y si nunca había
- *      confirmado el correo, Google acaba de confirmarlo por ella: se
- *      le entregan los mensajes que faltaban de la prueba.
+ *      para reconocerla aunque un día cambie de correo, y el correo
+ *      queda marcado como verificado: Google acaba de confirmarlo.
  *   2. No hay cuenta y viene de /registro con las casillas marcadas
  *      (la cookie firmada de src/lib/google.ts): se crea la cuenta con
  *      ese consentimiento y la prueba completa.
@@ -46,7 +45,7 @@ export async function entrarConGoogle(
   }
 
   const [existente] = await sql`
-    select id, activo, tipo_acceso, email_verificado_en
+    select id, activo
       from users
      where google_id = ${sub} or email = ${email}
      order by (google_id is not distinct from ${sub}) desc
@@ -55,11 +54,7 @@ export async function entrarConGoogle(
 
   if (existente) {
     if (!existente.activo) return "/entrar?error=cuenta-inactiva";
-    await vincular(
-      existente.id,
-      sub,
-      existente.tipo_acceso === "email" && !existente.email_verificado_en
-    );
+    await vincular(existente.id, sub);
     return true;
   }
 
@@ -124,61 +119,27 @@ async function borrarCookieDeConsentimiento(): Promise<void> {
 }
 
 /**
- * Una cuenta que ya existía entra con Google.
- *
- * Si nunca confirmó el correo, se hace ahora lo mismo que hace el enlace
- * del correo (db/009): marcarlo verificado y entregar los mensajes que
- * faltaban. Los enlaces pendientes se anulan PRIMERO, y a propósito:
- * el canje del enlace bloquea su fila antes de entregar los mensajes,
- * así que quien de los dos llegue primero a esa fila gana, y el otro
- * no encuentra nada que entregar. Sin ese orden, hacer clic en el
- * correo y entrar con Google en el mismo segundo regalaría 30.
+ * Una cuenta que ya existía entra con Google: se le anota el id de
+ * Google (si no lo tenía) y el correo queda verificado, porque Google
+ * lo acaba de confirmar. No entrega mensajes: la prueba ya se entregó
+ * completa al crear la cuenta.
  */
-async function vincular(userId: string, sub: string, verificarAhora: boolean): Promise<void> {
-  await sql.begin(async (tx) => {
-    await tx`
-      update users set google_id = ${sub}, actualizado_en = now()
-       where id = ${userId} and google_id is null
-    `;
-    if (!verificarAhora) return;
-
-    await tx`
-      update verificaciones_correo set usado_en = now()
-       where user_id = ${userId} and usado_en is null
-    `;
-    const [marcado] = await tx`
-      update users set email_verificado_en = now(), actualizado_en = now()
-       where id = ${userId} and email_verificado_en is null
-       returning id
-    `;
-    if (!marcado) return;
-
-    await tx`insert into saldos (user_id) values (${userId}) on conflict (user_id) do nothing`;
-    const [s] = await tx`
-      select mensajes_plan, mensajes_recarga from saldos
-       where user_id = ${userId} for update
-    `;
-    const recarga = s.mensajes_recarga + PRUEBA_AL_VERIFICAR;
-    await tx`
-      update saldos set mensajes_recarga = ${recarga}, actualizado_en = now()
-       where user_id = ${userId}
-    `;
-    await tx`
-      insert into movimientos_credito
-        (user_id, tipo, bolsa, cantidad, saldo_plan_despues, saldo_recarga_despues, nota)
-      values
-        (${userId}, 'bono', 'recarga', ${PRUEBA_AL_VERIFICAR}, ${s.mensajes_plan}, ${recarga},
-         'Mensajes por confirmar el correo (lo confirmó Google)')
-    `;
-  });
+async function vincular(userId: string, sub: string): Promise<void> {
+  await sql`
+    update users
+       set google_id = coalesce(google_id, ${sub}),
+           email_verificado_en = coalesce(email_verificado_en, now()),
+           actualizado_en = now()
+     where id = ${userId}
+  `;
 }
 
 /**
  * La cuenta nueva, con todo lo que el formulario de registro también
  * deja: saldo, movimiento en el libro y constancia del consentimiento.
  * La fecha de aceptación es la de las casillas, no la de ahora: es
- * cuando la persona dijo que sí. Google ya verificó el correo, así que
- * la prueba se entrega completa de una vez, sin enlace que confirmar.
+ * cuando la persona dijo que sí. El correo nace verificado: lo
+ * confirmó Google.
  */
 async function crearCuenta(datos: {
   email: string;
@@ -200,14 +161,14 @@ async function crearCuenta(datos: {
     `;
     await tx`
       insert into saldos (user_id, mensajes_plan, mensajes_recarga)
-      values (${nuevo.id}, 0, ${PRUEBA_TOTAL})
+      values (${nuevo.id}, 0, ${MENSAJES_PRUEBA})
     `;
     await tx`
       insert into movimientos_credito
         (user_id, tipo, bolsa, cantidad, saldo_plan_despues, saldo_recarga_despues, nota)
       values
-        (${nuevo.id}, 'bono', 'recarga', ${PRUEBA_TOTAL}, 0, ${PRUEBA_TOTAL},
-         'Prueba completa: Google ya verificó el correo')
+        (${nuevo.id}, 'bono', 'recarga', ${MENSAJES_PRUEBA}, 0, ${MENSAJES_PRUEBA},
+         'Mensajes de prueba al crear la cuenta con Google')
     `;
   });
 }

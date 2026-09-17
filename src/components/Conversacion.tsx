@@ -7,7 +7,6 @@ import { signOut } from "next-auth/react";
 import { AvatarAllison } from "@/components/AvatarAllison";
 import { BotonGrabar } from "@/components/BotonGrabar";
 import { Bienvenida } from "@/components/Bienvenida";
-import { AvisoVerificar } from "@/components/AvisoVerificar";
 import { BotonInstalar } from "@/components/InstalarApp";
 import { SelectorNivel } from "@/components/SelectorNivel";
 import { FinDePrueba, type LogroPrueba } from "@/components/FinDePrueba";
@@ -29,11 +28,8 @@ interface Props {
   conversacionId: string;
   historial: Mensaje[];
   enPrueba: boolean;
-  faltaVerificar: boolean;
   /** Viene del servidor: las variables sin NEXT_PUBLIC_ no existen aquí,
    *  y un número escrito a mano quedaría mintiendo si cambia el .env. */
-  mensajesPorVerificar: number;
-  /** La recarga mínima, por la misma razón. */
   recargaMinima: number;
   esCoordinador: boolean;
   esAdmin: boolean;
@@ -77,8 +73,6 @@ export function Conversacion({
   conversacionId: idInicial,
   historial,
   enPrueba,
-  faltaVerificar,
-  mensajesPorVerificar,
   recargaMinima,
   esCoordinador,
   esAdmin,
@@ -524,8 +518,6 @@ export function Conversacion({
           </span>
         </div>
       )}
-
-      {faltaVerificar && <AvisoVerificar mensajes={mensajesPorVerificar} />}
 
       {/* ---- El chat ---- */}
       <div className="min-h-0 flex-1 overflow-y-auto py-3">

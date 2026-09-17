@@ -25,8 +25,16 @@ Las variables con sus valores ya generados están en **`.env.production`**
       mismo: es lo único que te protege de que un error en bucle o un
       abuso disparen la factura.
 
-- [x] **Correo**: Gmail SMTP probado y funcionando con
-      `allison.teacher00@gmail.com`. Tope ~500 correos/día.
+- [ ] **Correo**: Gmail SMTP con `allison.teacher00@gmail.com` (tope ~500
+      correos/día), **por el puerto 587**. Hetzner bloquea la salida por
+      el 25 y el 465 en las cuentas nuevas, y con 465 el envío se quedaba
+      colgado sin decir nada. `GMAIL_PUERTO=587` va por defecto.
+      Compruébalo desde el propio servidor, ya desplegado:
+      ```
+      curl -H "Authorization: Bearer EL_TAREAS_SECRETO" "https://TU-DOMINIO/api/salud?correo=1"
+      ```
+      Responde `"conecta": true`, o el motivo en palabras (`pista`).
+
 
 - [ ] **Bold** (la pasarela): cuenta **a nombre de PRAXIS - THINKS
       S.A.S.** —registro de persona jurídica, con el certificado de Cámara
@@ -36,7 +44,7 @@ Las variables con sus valores ya generados están en **`.env.production`**
       panel que no están en el código**:
       1. **Activar la Cuenta Bold.** Sin ella no aparece el QR Bre-B,
          que es el medio más barato: 2,89% sin valor fijo, contra 2,89%
-         + $900 de PSE o tarjeta. En la recarga mínima de $7.900 es la
+         + $900 de PSE o tarjeta. En la recarga mínima de $8.000 es la
          diferencia entre perder 3,4% o 17%.
       2. **Activar las llaves** de *Botón de pagos* (Integraciones →
          Llaves de integración). La API de links usa esas. Van en
@@ -103,14 +111,14 @@ consulta, no al importar el módulo.
 | `AUTH_URL` | **falta — OBLIGATORIA**: tu dominio con https, sin barra final. De aquí salen los enlaces de los correos y el regreso desde el pago; sin ella apuntan a una dirección muerta |
 | `GEMINI_API_KEY` | **falta**: la llave nueva |
 | `GEMINI_MODEL` | listo |
-| `CORREO`, `GMAIL_USUARIO`, `GMAIL_APP_PASSWORD` | listos y probados |
+| `CORREO`, `GMAIL_USUARIO`, `GMAIL_APP_PASSWORD`, `GMAIL_PUERTO` | `GMAIL_PUERTO=587` (punto 1: Hetzner bloquea el 465) |
 | `PASARELA` | `bold` (candado: `simulada` revienta en producción) |
 | `BOLD_LLAVE_IDENTIDAD`, `BOLD_LLAVE_SECRETA` | **faltan** — las dos de *Botón de pagos*, las de producción. Sin la secreta la app se niega a cobrar |
 | `BOLD_MEDIOS` | opcional — vacío ofrece todos los medios activos, incluido el QR |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | opcionales — las dos o ninguna. Con ellas aparece "Entrar con Google" (punto 1) |
 | `TAREAS_SECRETO` | generado, listo |
 | `PROXY_CONFIABLE` | `reverso` — Traefik reescribe `x-forwarded-for` |
-| `COP_POR_MENSAJE`, `RECARGA_MINIMA_COP`, `MENSAJES_PRUEBA_*`, `REGISTROS_GLOBALES_POR_HORA` | listos |
+| `COP_POR_MENSAJE`, `RECARGA_MINIMA_COP`, `MENSAJES_PRUEBA`, `REGISTROS_GLOBALES_POR_HORA` | **ajustar**: `RECARGA_MINIMA_COP=8000` y `MENSAJES_PRUEBA=20`; borra `MENSAJES_PRUEBA_INICIAL` y `MENSAJES_PRUEBA_VERIFICAR` si siguen ahí |
 
 ---
 
@@ -221,10 +229,9 @@ secreto.
 - [ ] `https://TU-DOMINIO/api/salud` responde `{"ok":true}`.
 - [ ] `https://TU-DOMINIO/api/salud?base=1` responde `{"ok":true,"base":true}`
       — si esta falla y la anterior no, el problema es la base, no la app.
-- [ ] Registrarse con un correo real → llega el correo → **el enlace
-      abre tu dominio** (si dice 0.0.0.0, falta `AUTH_URL`) → verificar
-      suma las +15 intervenciones.
-- [ ] Pedir "olvidé mi contraseña" y comprobar que ese enlace también
+- [ ] Registrarse con un correo real: entra directo con sus 20
+      intervenciones, sin correo que confirmar.
+- [ ] Pedir "olvidé mi contraseña" y comprobar que el correo llega y su enlace
       abre: el correo es el único canal para recuperar una cuenta.
 - [ ] Un turno de voz completo **desde el celular**: pide permiso de
       micrófono, transcribe, y Allison **suena sola**.
@@ -236,10 +243,14 @@ secreto.
       `/registro`, marcar las casillas y "Continuar con Google" crea la
       cuenta y entra con las 20 intervenciones, sin correo que confirmar;
       (c) una cuenta creada con correo y contraseña entra también con
-      Google y, si no había confirmado el correo, recibe sus +15 al
-      instante. Si Google muestra `redirect_uri_mismatch`, la URI de
+      Google. Si Google muestra `redirect_uri_mismatch`, la URI de
       redirección no coincide letra por letra con `AUTH_URL`.
-- [ ] Una recarga pequeña real ($7.900, la mínima) pagada **con QR desde el
+      Diagnóstico rápido: `https://TU-DOMINIO/api/salud?google=1` dice si el
+      servidor ve las llaves y cuál es la URI de regreso exacta, y
+      `https://TU-DOMINIO/api/auth/providers` debe listar `google`; si no lo
+      lista, el contenedor arrancó sin las llaves y hay que volver a
+      desplegar (la pantalla las lee en caliente; el proveedor, al arrancar).
+- [ ] Una recarga pequeña real ($8.000, la mínima) pagada **con QR desde el
       celular**, comprobando **las cuatro**: (a) el checkout de Bold
       ofrece el QR (si no, falta activar la Cuenta Bold); (b) pagar el
       QR desde el mismo teléfono es cómodo — si no, considera dejar

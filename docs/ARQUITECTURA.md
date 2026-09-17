@@ -61,19 +61,17 @@ errores intactos, y el CPX22 pasa de ~5 a ~30 estudiantes simultáneos.
   8 horas de conversación" (1 intervención ≈ 1 minuto, redondeado hacia abajo para prometer
   menos de lo que se entrega). Los términos aclaran que la equivalencia es informativa
 - **Tasa:** $100 COP = 1 mensaje
-- **Recarga:** mínimo $7.900 (sep-2026; antes $4.000), de ahí en adelante monto libre. **No caducan**
+- **Recarga:** mínimo $8.000 (sep-2026; antes $4.000), de ahí en adelante monto libre. **No caducan**
 - **Bono por volumen:** +10% desde $20.000 · +15% desde $50.000
 - **Planes:** mensual $35.000 / semestral $180.000 / anual $320.000 — 500 mensajes por mes
 - **Los mensajes del plan caducan** al terminar el mes. Al agotarse se le **pregunta** al alumno si quiere renovar (no hay débito automático forzado)
 - **Planes de varios meses:** entregan los mensajes **cada mes**, contados desde el día de compra (un plan del 31 no se corre al 28). Lo pone al día `renovar_suscripcion` (db/020): al cargar el saldo del alumno y en la tarea de cada hora. Los meses en que nadie la pone al día no se entregan de golpe: habrían vencido igual
 - **Orden de consumo:** primero los del plan, después los de recarga
-- **Prueba gratis: 20 mensajes, entregados en dos partes**
-  - **5 al registrarse** — para que pruebe el producto sin fricción
-  - **15 al confirmar el correo** — el enlace vence en 48 h y solo sirve una vez
-  - Con **Google** llegan los 20 de una: el correo ya viene verificado
+- **Prueba gratis: 20 mensajes, entregados completos al crear la cuenta** (`MENSAJES_PRUEBA`)
+  - Antes venían partidos (5 al registrarse y 15 al confirmar el correo) para no pagarle a Google 20 mensajes por cada correo inventado. Se quitó en sep-2026: el aviso de "+15 al confirmar" estorbaba y el correo era un paso más donde se perdía gente. El freno contra el abuso es el tope global de cuentas nuevas por hora
+  - Con **Google** son los mismos 20, y el correo queda verificado por Google
   - *Cómo se recoge el consentimiento con Google:* las casillas se marcan en `/registro` y viajan en una cookie firmada de 10 minutos hasta el regreso de Google; sin ella la cuenta no se crea, ni siquiera el nombre y el correo (`src/lib/entrada-google.ts`). Quien toca "Entrar con Google" en `/entrar` sin tener cuenta rebota a `/registro` con el aviso
-  - Los **alumnos de colegio reciben los 20 completos**: no tienen correo que confirmar
-  - *Por qué partido:* entregar los 20 de golpe significa pagarle a Google 20 mensajes por cada correo inventado
+  - Los **alumnos de colegio reciben los 20 completos** al cargarlos desde el colegio
 - **Sin factura electrónica** por ahora
 
 ### Costo real por mensaje
@@ -89,7 +87,7 @@ errores intactos, y el CPX22 pasa de ~5 a ~30 estudiantes simultáneos.
 ### Comisiones de pasarela — decisión (sep-2026)
 
 La pasarela es **Bold**, con el **QR Bre-B** como medio principal: 2,89% + IVA **sin valor fijo**
-(exige la Cuenta Bold). Es lo que hace viable la recarga mínima de $7.900: ahí el QR cuesta ≈3,4%,
+(exige la Cuenta Bold). Es lo que hace viable la recarga mínima de $8.000: ahí el QR cuesta ≈3,4%,
 mientras PSE o tarjeta ($900 fijos) se llevan ≈17%, y en Wompi ≈13,7%. Wompi quedó como alternativa
 en el código, pero solo desembolsa a Bancolombia o Nequi. Comparativa completa verificada en las
 páginas oficiales el 14-sep-2026: ePayco exige mínimo $5.000 por transacción y trata las recargas

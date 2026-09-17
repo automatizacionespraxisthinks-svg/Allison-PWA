@@ -8,13 +8,11 @@
  * contenedor escucha en 0.0.0.0 el origen resultaba ser literalmente
  * `https://0.0.0.0:3000`.
  *
- * Con eso, cuatro caminos de negocio quedaban rotos en silencio — los
+ * Con eso, varios caminos de negocio quedaban rotos en silencio — los
  * correos se envían "correctamente", solo que con enlaces muertos:
  *
- *   · el enlace de verificación (y sus +15 intervenciones)
- *   · el reenvío de ese enlace
  *   · la recuperación de contraseña, único canal para recuperar cuenta
- *   · el retorno de Wompi: el alumno paga y aterriza en la nada
+ *   · el retorno de la pasarela: el alumno paga y aterriza en la nada
  *
  * Por eso el origen se toma de AUTH_URL, que es configuración del
  * despliegue y no un dato que venga del cliente. Las cabeceras del

@@ -80,7 +80,7 @@ export default function PaginaTerminos() {
             </li>
             <li>
               <strong>Prueba gratis:</strong> mensajes de regalo al crear tu cuenta.
-              Parte al registrarte y el resto al confirmar tu correo.
+              Se entregan completos al crear la cuenta.
             </li>
             <li>
               <strong>Recargas:</strong> los mensajes que compras{" "}

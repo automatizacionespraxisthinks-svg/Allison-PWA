@@ -12,8 +12,6 @@ export interface Alumno {
   mensajesRecarga: number;
   /** Nunca ha pagado: sigue con los mensajes de regalo. */
   enPrueba: boolean;
-  /** Tiene correo sin confirmar: le faltan mensajes de la prueba. */
-  faltaVerificar: boolean;
   rachaDias: number;
 }
 
@@ -35,7 +33,6 @@ export async function alumnoActual(): Promise<Alumno | null> {
              select 1 from transacciones t
               where t.user_id = u.id and t.estado = 'aprobada'
            ) as en_prueba,
-           (u.email is not null and u.email_verificado_en is null) as falta_verificar,
            extract(epoch from u.sesiones_validas_desde)::bigint as validas_desde,
            exists (
              select 1 from suscripciones x
@@ -83,7 +80,6 @@ export async function alumnoActual(): Promise<Alumno | null> {
     mensajesPlan: fila.mensajes_plan,
     mensajesRecarga: fila.mensajes_recarga,
     enPrueba: fila.en_prueba,
-    faltaVerificar: fila.falta_verificar,
     rachaDias: fila.racha_dias ?? 0,
   };
 }
