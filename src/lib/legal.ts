@@ -24,9 +24,9 @@ export const EMPRESA = {
   marca: "Allison",
 } as const;
 
-export const VERSION_LEGAL = "2026-09-14";
+export const VERSION_LEGAL = "2026-09-18";
 
-export const ACTUALIZADO = "14 de septiembre de 2026";
+export const ACTUALIZADO = "18 de septiembre de 2026";
 
 /** Terceros a los que llegan datos. Debe coincidir con la realidad. */
 export const ENCARGADOS = [

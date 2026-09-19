@@ -2,7 +2,7 @@
 --  Allison — BASE COMPLETA para una base de datos VACÍA
 --
 --  Un solo archivo que deja la base lista para producción:
---    1. todo el esquema (20 migraciones, en orden)
+--    1. todo el esquema (21 migraciones, en orden)
 --    2. el registro de que ya se aplicaron
 --    3. el administrador con el que entras por primera vez
 --
@@ -1680,11 +1680,44 @@ $$;
 
 
 -- =====================================================================
+--  021_glosario.sql
+-- =====================================================================
+
+-- =====================================================================
+--  Glosario del alumno
+--
+--  Las palabras y frases que el alumno guarda desde una conversación
+--  (selecciona un trozo de un mensaje y lo manda aquí) o escribe a mano.
+--
+--  NO se borra a los 20 días con las conversaciones: es de las cosas
+--  que el alumno construye y espera conservar, como su progreso. Por eso
+--  el contexto (la frase completa de donde salió) se COPIA aquí en vez
+--  de apuntar al mensaje: el mensaje se va, el contexto se queda.
+--
+--  Una misma frase no se guarda dos veces (sin distinguir mayúsculas).
+-- =====================================================================
+
+create table if not exists glosario (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null references users(id) on delete cascade,
+  texto      text not null check (length(texto) between 1 and 200),
+  contexto   text check (contexto is null or length(contexto) <= 600),
+  creado_en  timestamptz not null default now()
+);
+
+create unique index if not exists glosario_texto_unico
+  on glosario (user_id, lower(texto));
+
+create index if not exists glosario_usuario
+  on glosario (user_id, creado_en desc);
+
+
+-- =====================================================================
 --  Registro de migraciones
 --
 --  Exactamente la tabla que lleva scripts/migrar.mjs. Con esto, la
 --  próxima vez que alguien corra las migraciones contra esta base, verá
---  las 20 como "ya aplicada" y solo aplicará las nuevas.
+--  las 21 como "ya aplicada" y solo aplicará las nuevas.
 -- =====================================================================
 
 create table if not exists migraciones (
@@ -1712,7 +1745,8 @@ insert into migraciones (archivo) values
   ('017_lecciones.sql'),
   ('018_precios_planes.sql'),
   ('019_uso_diario.sql'),
-  ('020_renovacion_planes.sql')
+  ('020_renovacion_planes.sql'),
+  ('021_glosario.sql')
 on conflict (archivo) do nothing;
 
 -- ---------------------------------------------------------------------
@@ -1733,7 +1767,7 @@ insert into users (
 )
 select
   'email', a.email, crypt(a.clave, gen_salt('bf', 12)), a.nombre, 'C1', 'admin',
-  now(), now(), '2026-09-14',
+  now(), now(), '2026-09-18',
   true, true, true
 from _admin a
 on conflict (email) do update

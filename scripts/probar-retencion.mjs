@@ -9,8 +9,9 @@
  *   node --env-file=.env scripts/probar-retencion.mjs
  */
 import postgres from "postgres";
+import { modoSslOSalir } from "../db/conexion.mjs";
 
-const sql = postgres(process.env.DATABASE_URL, { ssl: "require", max: 1, onnotice: () => {} });
+const sql = postgres(process.env.DATABASE_URL, { ssl: modoSslOSalir(process.env.DATABASE_URL ?? ""), max: 1, onnotice: () => {} });
 let fallos = 0;
 const verificar = (d, ok) => {
   console.log(`  ${ok ? "OK   " : "FALLA"}  ${d}`);

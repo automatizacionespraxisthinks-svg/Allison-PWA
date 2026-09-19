@@ -147,6 +147,7 @@ export function Bienvenida({ nombre }: { nombre: string }) {
             ["✅", "Si te equivocas, te corrijo y seguimos"],
             ["🔁", "¿No entendiste? Toca Repetir o Qué dijo"],
             ["💡", "¿No sabes qué decir? Te doy una idea"],
+            ["📖", "Selecciona una palabra de un mensaje para oírla o guardarla"],
           ].map(([icono, texto]) => (
             <li key={texto} className="flex items-start gap-2.5">
               <span aria-hidden className="text-base leading-tight">

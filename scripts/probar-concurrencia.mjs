@@ -9,8 +9,9 @@
  *   node --env-file=.env scripts/probar-concurrencia.mjs
  */
 import postgres from "postgres";
+import { modoSslOSalir } from "../db/conexion.mjs";
 
-const sql = postgres(process.env.DATABASE_URL, { ssl: "require", max: 20, onnotice: () => {} });
+const sql = postgres(process.env.DATABASE_URL, { ssl: modoSslOSalir(process.env.DATABASE_URL ?? ""), max: 20, onnotice: () => {} });
 
 let fallos = 0;
 const verificar = (d, ok, extra = "") => {

@@ -9,9 +9,10 @@
  *   node --env-file=.env scripts/probar-creditos.mjs
  */
 import postgres from "postgres";
+import { modoSslOSalir } from "../db/conexion.mjs";
 
 const sql = postgres(process.env.DATABASE_URL, {
-  ssl: "require",
+  ssl: modoSslOSalir(process.env.DATABASE_URL ?? ""),
   max: 1,
   onnotice: () => {},
 });

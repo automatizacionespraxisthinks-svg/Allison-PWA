@@ -199,6 +199,7 @@ No puede: ver conversaciones individuales, cambiar créditos, ni tocar la config
 - **errores_frecuentes** — user_id, tipo, texto_error, correccion, veces
 - **progreso_diario** — user_id, fecha, mensajes, minutos, errores_corregidos, palabras_nuevas
 - **temas** — nivel, titulo, objetivo, vocabulario_clave, estructura_gramatical, prompt_sistema
+- **glosario** — user_id, texto, contexto, creado_en. Las palabras y frases que el alumno guarda desde un mensaje (selecciona el texto → **Guardar**) o escribe a mano en `/glosario`. Única por alumno sin distinguir mayúsculas. **No se borra** con las conversaciones: el contexto se copia porque el mensaje se va a los 20 días y el glosario se queda
 
 ## 5. Papel de n8n
 

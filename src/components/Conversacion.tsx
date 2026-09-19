@@ -353,6 +353,14 @@ export function Conversacion({
                   <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                   Tus conversaciones
                 </Link>
+                <Link href="/glosario" className={enlaceMenu}>
+                  <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z" /></svg>
+                  Tu glosario
+                </Link>
+                <Link href="/perfil" className={enlaceMenu}>
+                  <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
+                  Tu perfil
+                </Link>
                 {esCoordinador && (
                   <Link href="/colegio" className={enlaceMenu}>
                     <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" /></svg>

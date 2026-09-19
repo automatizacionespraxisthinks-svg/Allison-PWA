@@ -33,7 +33,7 @@ export async function alumnoActual(): Promise<Alumno | null> {
              select 1 from transacciones t
               where t.user_id = u.id and t.estado = 'aprobada'
            ) as en_prueba,
-           extract(epoch from u.sesiones_validas_desde)::bigint as validas_desde,
+           floor(extract(epoch from u.sesiones_validas_desde))::bigint as validas_desde,
            exists (
              select 1 from suscripciones x
               where x.user_id = u.id and x.estado = 'activa' and x.periodo_fin <= now()
@@ -68,6 +68,11 @@ export async function alumnoActual(): Promise<Alumno | null> {
   // quien te robó la cuenta no lo echa cambiar la clave: su sesión
   // sigue viva semanas, hasta que caduque sola.
   if (sesion.user.emitidaEn && Number(fila.validas_desde) > sesion.user.emitidaEn) {
+    // Queda en el log: es la explicación de por qué a alguien "lo sacó"
+    // la app, que vista desde afuera parece un fallo cualquiera.
+    console.info(
+      `Sesión cerrada por cambio de contraseña: emitida en ${sesion.user.emitidaEn}, válidas desde ${fila.validas_desde}`
+    );
     return null;
   }
 
