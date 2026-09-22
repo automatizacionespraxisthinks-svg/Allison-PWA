@@ -6,6 +6,7 @@ import { sql } from "@/lib/db";
 import { limitar } from "@/lib/limite";
 import { temasDe } from "@/lib/progreso";
 import { alumnoActual } from "@/lib/sesion";
+import { senalesDeEspanol } from "@/lib/habla";
 import { AUDIO_MAX_SEGUNDOS } from "@/lib/tipos";
 
 /**
@@ -142,7 +143,7 @@ export async function POST(peticion: Request) {
         // pantalla, y en fila india se suman.
         const [filas, temas] = await Promise.all([
           sql`
-            select rol, texto from mensajes
+            select rol, texto, texto_voz from mensajes
              where conversacion_id = ${conversacionId}
              order by creado_en desc limit 24
           `,
@@ -153,6 +154,7 @@ export async function POST(peticion: Request) {
           id: String(i),
           rol: f.rol as "alumno" | "allison",
           texto: f.texto as string,
+          textoVoz: (f.texto_voz as string | null) ?? undefined,
           correcciones: [],
           creadoEn: "",
         }));
@@ -173,6 +175,8 @@ export async function POST(peticion: Request) {
           },
           historial,
           leccion: leccion ?? undefined,
+          // Cuánto español lleva la charla: el prompt decide con las cifras.
+          senales: senalesDeEspanol(historial),
         });
 
         let resultado = null;
@@ -209,8 +213,10 @@ export async function POST(peticion: Request) {
         `;
 
         const [mAllison] = await sql`
-          insert into mensajes (conversacion_id, user_id, rol, texto, correcciones)
-          values (${conversacionId}, ${alumno.id}, 'allison', ${resultado.respuesta}, '[]'::jsonb)
+          insert into mensajes (conversacion_id, user_id, rol, texto, texto_voz, correcciones)
+          values (${conversacionId}, ${alumno.id}, 'allison', ${resultado.respuesta},
+                  ${resultado.respuestaVoz !== resultado.respuesta ? resultado.respuestaVoz : null},
+                  '[]'::jsonb)
           returning id, creado_en
         `;
 
@@ -280,6 +286,7 @@ export async function POST(peticion: Request) {
             id: mAllison.id,
             rol: "allison",
             texto: resultado.respuesta,
+            textoVoz: resultado.respuestaVoz !== resultado.respuesta ? resultado.respuestaVoz : undefined,
             correcciones: [],
             creadoEn: mAllison.creado_en,
           },

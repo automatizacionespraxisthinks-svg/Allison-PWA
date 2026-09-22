@@ -12,7 +12,7 @@ Especificación técnica · v1 · agosto 2026
 | Corrección | Pronunciación y gramática corregidas dentro de la conversación. **Sin puntaje numérico** |
 | Transcripción | Visible con botón mostrar/ocultar |
 | Avatar | Foto realista de Allison (generada por IA, sin problema de derechos). **Tres bucles de video pregenerados** — reposo, escuchando, hablando. Sin sincronía labial en vivo |
-| Idioma | Inglés casi siempre; español solo en casos puntuales. Acento neutro |
+| Idioma | Inglés siempre primero; español de apoyo según nivel, frustración y hábito, dicho por la misma voz con marcadores [es] (política en src/lib/allison.ts, "SPANISH IN YOUR VOICE"). Acento neutro |
 | Nivel | Lo elige el alumno al registrarse, cambiable después. Sin test inicial |
 | Retención | Conversaciones y audios se borran a los **20 días**. El progreso NO se borra |
 | Registro | Email/contraseña y Google |

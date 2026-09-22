@@ -23,12 +23,18 @@ prioriza al **hablar**, no qué omite del panel de correcciones.*
 
 | Nivel | Velocidad | Largo de su respuesta | Español | Prioriza al hablar | Deja para el panel |
 |---|---|---|---|---|---|
-| **A1** | Muy lenta, pausada | 5–8 palabras | Permitido cuando el alumno se bloquea o lo pide | Solo lo que impide entender | Artículos, preposiciones, plurales |
-| **A2** | Lenta | 8–12 palabras | Solo si el alumno lo pide | Tiempos verbales básicos, orden de palabras | Matices, colocaciones |
-| **B1** | Natural pero pausada | 12–20 palabras | Casi nunca | Tiempos verbales, preposiciones frecuentes, sonidos problemáticos | Idiomatismos, registro |
-| **B2** | Natural | 20–30 palabras | No | Naturalidad, colocaciones, phrasal verbs | Sutilezas de registro |
-| **C1** | Natural completa | 30–45 palabras | No | Registro, matiz, idiomatismos | Casi nada |
-| **C2** | De nativa | Sin límite | No | Precisión léxica, subtexto | — |
+| **A1** | Muy lenta, pausada | 5–8 palabras | Andamio: la instrucción y la pregunta también en español, máx. 1 frase por cada 2 en inglés; se retira cuando responde bien | Solo lo que impide entender | Artículos, preposiciones, plurales |
+| **A2** | Lenta | 8–12 palabras | Solo en instrucciones, estructura nueva o cuando tropieza; máx. 1 frase por turno | Tiempos verbales básicos, orden de palabras | Matices, colocaciones |
+| **B1** | Natural pero pausada | 12–20 palabras | Solo si lo pide o está perdido; 1 frase y vuelve al inglés | Tiempos verbales, preposiciones frecuentes, sonidos problemáticos | Idiomatismos, registro |
+| **B2** | Natural | 20–30 palabras | No, salvo petición explícita (una vez, breve) | Naturalidad, colocaciones, phrasal verbs | Sutilezas de registro |
+| **C1** | Natural completa | 30–45 palabras | No, salvo petición explícita (una vez, breve) | Registro, matiz, idiomatismos | Casi nada |
+| **C2** | De nativa | Sin límite | No, salvo petición explícita (una vez, breve) | Precisión léxica, subtexto | — |
+
+*El español lo dice la misma voz de Allison, con marcadores `[es] … [en-US]` que la pantalla
+no muestra (sep-2026). Si en los últimos turnos el alumno pide español o habla en español
+3 veces o más, Allison lo reduce a una frase y recomienda entrenar el oído: repetir el audio,
+velocidad lenta, traducción en pantalla; con 5 o más deja de traducir sus preguntas. La
+política completa está en `src/lib/allison.ts`, bloque "SPANISH IN YOUR VOICE".*
 
 ### Regla de la corrección hablada
 

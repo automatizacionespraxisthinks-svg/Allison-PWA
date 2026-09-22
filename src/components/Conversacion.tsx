@@ -215,7 +215,9 @@ export function Conversacion({
 
           if (parte.tipo === "respuesta") {
             // Sigue "pensando" hasta que suene: hablar() cambia el estado.
-            hablando = hablar(parte.texto);
+            // Se dice la versión con marcadores de idioma (voz), no la
+            // que se muestra (texto): así el español suena en español.
+            hablando = hablar(parte.voz ?? parte.texto);
           }
 
           if (parte.tipo === "error") {

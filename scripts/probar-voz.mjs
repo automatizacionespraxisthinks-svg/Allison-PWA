@@ -125,6 +125,17 @@ console.log("\nLa petición a la API:");
   probar("un idioma explícito manda sobre la detección", JSON.parse(ultima().opciones.body).lang === "es");
 }
 
+{
+  const r = await sintetizar({ texto: "You went. [ES] Fuiste. [en_us] Great!" });
+  await leerTodo(r.cuerpo);
+  const cuerpo = JSON.parse(ultima().opciones.body);
+  probar(
+    "una respuesta mixta va con la voz inglesa, lang en-US y los marcadores normalizados",
+    cuerpo.voice === "af_heart" && cuerpo.lang === "en-US" && cuerpo.text === "You went. [es] Fuiste. [en-US] Great!",
+    ultima().opciones.body
+  );
+}
+
 // ---------------------------------------------------------------------
 console.log("\nEl texto que se manda:");
 probar("se quitan marcas de formato y emojis, y se colapsan espacios", limpiarParaVoz("**Great** job! 🎉\n\nKeep  going.") === "Great job! Keep going.", JSON.stringify(limpiarParaVoz("**Great** job! 🎉\n\nKeep  going.")));

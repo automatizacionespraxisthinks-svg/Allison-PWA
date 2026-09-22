@@ -46,6 +46,7 @@ export default async function PaginaConversacion({
           id: m.id,
           rol: m.rol,
           texto: m.texto,
+          textoVoz: m.textoVoz,
           correcciones: m.correcciones,
           creadoEn: m.creadoEn,
         }))}

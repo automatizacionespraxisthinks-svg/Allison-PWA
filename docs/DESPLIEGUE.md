@@ -189,10 +189,10 @@ node scripts/migrar.mjs
 ```
 
 **Pendiente en producción: las migraciones 020 (renovación mensual de
-los planes) y 021 (glosario)**, las que no se hayan corrido. Sin la 020
+los planes), 021 (glosario) y 022 (texto de la voz)**, las que no se hayan corrido. Sin la 020
 los planes no se renuevan (el log dice "No se pudo renovar el plan");
 sin la 021, guardar una palabra responde error de servidor y `/glosario`
-no abre. Córrelas en la Terminal del contenedor **justo después de
+no abre; sin la 022, la voz de Allison no puede mezclar español. Córrelas en la Terminal del contenedor **justo después de
 desplegar**: el comando de arriba solo aplica las que falten.
 
 Solo aplica los archivos numerados de `db/`; los de `db/manual/` son

@@ -1,8 +1,9 @@
 import {
   idiomaDe,
-  limpiarParaVoz,
   nuevoIdPeticion,
+  prepararParaVoz,
   TEXTO_VOZ_MAX,
+  tieneMarcadores,
   tiempoDeEsperaMs,
   type IdiomaVoz,
 } from "./habla.ts";
@@ -199,13 +200,22 @@ export async function sintetizar(opciones: {
 }): Promise<AudioTts> {
   const cfg = configTts();
 
-  const texto = limpiarParaVoz(opciones.texto);
+  const texto = prepararParaVoz(opciones.texto);
   if (!texto) throw new ErrorTts("empty_text", 400, false, "No hay nada que decir.");
   if (texto.length > LIMITE_API) {
     throw new ErrorTts("text_too_long", 413, false, `Más de ${LIMITE_API} caracteres.`);
   }
 
-  const idioma = !opciones.idioma || opciones.idioma === "auto" ? idiomaDe(texto) : opciones.idioma;
+  // Un texto con marcadores ([es] … [en-US]) es una respuesta de
+  // Allison que mezcla idiomas: va con SU voz de inglés y la API cambia
+  // de idioma donde diga el marcador, sin cambiar de voz. Los demás
+  // textos son de un solo idioma y llevan la voz de ese idioma.
+  const hibrido = tieneMarcadores(texto);
+  const idioma = hibrido
+    ? "en"
+    : !opciones.idioma || opciones.idioma === "auto"
+      ? idiomaDe(texto)
+      : opciones.idioma;
   const idPeticion = opciones.idPeticion ?? nuevoIdPeticion();
   const cuerpo = JSON.stringify({
     text: texto,

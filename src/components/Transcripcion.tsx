@@ -63,7 +63,9 @@ export function Transcripcion({
     // Al terminar (o si otro mensaje lo interrumpió), se apaga SOLO si
     // este sigue siendo el que suena: la comprobación funcional evita
     // pisar al que lo reemplazó.
-    void hablarIngles(m.texto, nivel, velocidad).then(() => {
+    // La versión con marcadores, si la hay: es la que sabe decir el
+    // español en español. La pantalla sigue mostrando `texto`.
+    void hablarIngles(m.textoVoz ?? m.texto, nivel, velocidad).then(() => {
       setSonando((s) => (s === m.id ? null : s));
     });
   }

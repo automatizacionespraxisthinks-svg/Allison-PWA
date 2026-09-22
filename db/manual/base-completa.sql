@@ -2,7 +2,7 @@
 --  Allison — BASE COMPLETA para una base de datos VACÍA
 --
 --  Un solo archivo que deja la base lista para producción:
---    1. todo el esquema (21 migraciones, en orden)
+--    1. todo el esquema (22 migraciones, en orden)
 --    2. el registro de que ya se aplicaron
 --    3. el administrador con el que entras por primera vez
 --
@@ -1713,11 +1713,34 @@ create index if not exists glosario_usuario
 
 
 -- =====================================================================
+--  022_texto_voz.sql
+-- =====================================================================
+
+-- =====================================================================
+--  El texto de la voz, aparte del texto de la pantalla
+--
+--  Allison puede mezclar español en su respuesta para que su voz lo
+--  diga en español: la API de voz cambia de idioma con marcadores
+--  ([es] … [en-US]) dentro del texto. Esos marcadores son para el
+--  audio y no deben verse en el chat, así que el mensaje guarda dos
+--  versiones: `texto`, limpio, es lo que se muestra; `texto_voz`, con
+--  marcadores, es lo que se manda a sintetizar cuando el alumno vuelve
+--  a oír el mensaje. Null = no hubo mezcla y la voz usa `texto`.
+-- =====================================================================
+
+alter table mensajes
+  add column if not exists texto_voz text;
+
+comment on column mensajes.texto_voz is
+  'Solo mensajes de Allison con español: el texto con marcadores [es]/[en-US] para la voz. Null = usar texto.';
+
+
+-- =====================================================================
 --  Registro de migraciones
 --
 --  Exactamente la tabla que lleva scripts/migrar.mjs. Con esto, la
 --  próxima vez que alguien corra las migraciones contra esta base, verá
---  las 21 como "ya aplicada" y solo aplicará las nuevas.
+--  las 22 como "ya aplicada" y solo aplicará las nuevas.
 -- =====================================================================
 
 create table if not exists migraciones (
@@ -1746,7 +1769,8 @@ insert into migraciones (archivo) values
   ('018_precios_planes.sql'),
   ('019_uso_diario.sql'),
   ('020_renovacion_planes.sql'),
-  ('021_glosario.sql')
+  ('021_glosario.sql'),
+  ('022_texto_voz.sql')
 on conflict (archivo) do nothing;
 
 -- ---------------------------------------------------------------------

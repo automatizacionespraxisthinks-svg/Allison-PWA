@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { limpiarParaVoz } from "@/lib/habla";
+import { prepararParaVoz } from "@/lib/habla";
 import { limitar } from "@/lib/limite";
 import { alumnoActual } from "@/lib/sesion";
 import { registrarVoz, ttsConfigurado, validarTextoVoz } from "@/lib/tts";
@@ -42,7 +42,7 @@ export async function POST(peticion: Request) {
     idioma?: unknown;
   } | null;
 
-  const texto = limpiarParaVoz(cuerpo?.texto);
+  const texto = prepararParaVoz(cuerpo?.texto);
   const error = validarTextoVoz(texto);
   if (error) return NextResponse.json({ error }, { status: 400 });
 
