@@ -23,18 +23,20 @@ prioriza al **hablar**, no qué omite del panel de correcciones.*
 
 | Nivel | Velocidad | Largo de su respuesta | Español | Prioriza al hablar | Deja para el panel |
 |---|---|---|---|---|---|
-| **A1** | Muy lenta, pausada | 5–8 palabras | Andamio: la instrucción y la pregunta también en español, máx. 1 frase por cada 2 en inglés; se retira cuando responde bien | Solo lo que impide entender | Artículos, preposiciones, plurales |
-| **A2** | Lenta | 8–12 palabras | Solo en instrucciones, estructura nueva o cuando tropieza; máx. 1 frase por turno | Tiempos verbales básicos, orden de palabras | Matices, colocaciones |
-| **B1** | Natural pero pausada | 12–20 palabras | Solo si lo pide o está perdido; 1 frase y vuelve al inglés | Tiempos verbales, preposiciones frecuentes, sonidos problemáticos | Idiomatismos, registro |
-| **B2** | Natural | 20–30 palabras | No, salvo petición explícita (una vez, breve) | Naturalidad, colocaciones, phrasal verbs | Sutilezas de registro |
-| **C1** | Natural completa | 30–45 palabras | No, salvo petición explícita (una vez, breve) | Registro, matiz, idiomatismos | Casi nada |
-| **C2** | De nativa | Sin límite | No, salvo petición explícita (una vez, breve) | Precisión léxica, subtexto | — |
+| **A1** | Muy lenta, pausada | 5–8 palabras | Solo al corregir: una frase en español tras la corrección en inglés, para el error más importante | Solo lo que impide entender | Artículos, preposiciones, plurales |
+| **A2** | Lenta | 8–12 palabras | Solo al corregir: una frase en español tras la corrección en inglés, para el error más importante | Tiempos verbales básicos, orden de palabras | Matices, colocaciones |
+| **B1** | Natural pero pausada | 12–20 palabras | Solo al corregir, y solo si la regla es nueva o sutil; una frase | Tiempos verbales, preposiciones frecuentes, sonidos problemáticos | Idiomatismos, registro |
+| **B2** | Natural | 20–30 palabras | No, ni al corregir | Naturalidad, colocaciones, phrasal verbs | Sutilezas de registro |
+| **C1** | Natural completa | 30–45 palabras | No, ni al corregir | Registro, matiz, idiomatismos | Casi nada |
+| **C2** | De nativa | Sin límite | No, ni al corregir | Precisión léxica, subtexto | — |
 
 *El español lo dice la misma voz de Allison, con marcadores `[es] … [en-US]` que la pantalla
-no muestra (sep-2026). Si en los últimos turnos el alumno pide español o habla en español
-3 veces o más, Allison lo reduce a una frase y recomienda entrenar el oído: repetir el audio,
-velocidad lenta, traducción en pantalla; con 5 o más deja de traducir sus preguntas. La
-política completa está en `src/lib/allison.ts`, bloque "SPANISH IN YOUR VOICE".*
+no muestra, y tiene un solo trabajo: que la corrección se entienda. Nunca traduce la
+respuesta ni la pregunta (eso sonaba a mensaje repetido). Si el alumno pide español o dice
+que no entendió, Allison lo repite en inglés más simple y le recuerda el botón de traducción
+y la velocidad lenta; a la tercera vez le recomienda entrenar el oído. El código garantiza
+como máximo un tramo en español por turno, ninguno de B2 en adelante y ninguna frase
+repetida (`src/lib/habla.ts`). Política completa en `src/lib/allison.ts`.*
 
 ### Regla de la corrección hablada
 

@@ -66,6 +66,60 @@ export function normalizarMarcadores(texto: string): string {
   return salida.replace(/\s+([.,;:!?])/g, "$1").replace(/\s+/g, " ").trim();
 }
 
+/** Las oraciones y los marcadores de un texto, como unidades sueltas. */
+function trozos(texto: string): string[] {
+  return texto.match(/\[(?:es|en-US)\]|[^.!?[]+[.!?]+["')]?|[^.!?[]+/g) ?? [];
+}
+
+/**
+ * Sin frases repetidas.
+ *
+ * El modelo, a veces, dice lo mismo dos veces: repite su pregunta al
+ * final, vuelve a decir en inglés lo que acaba de decir en español, o
+ * pega la respuesta entera dos veces. Al alumno le llega un mensaje que
+ * suena a máquina. Se conserva la primera vez que aparece cada oración
+ * (sin distinguir mayúsculas ni puntuación) y se descartan las demás.
+ */
+export function sinRepeticiones(texto: string): string {
+  const clave = (s: string) =>
+    s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, "").replace(/\s+/g, " ").trim();
+  const vistas = new Set<string>();
+  const salida: string[] = [];
+  for (const parte of trozos(normalizarMarcadores(texto))) {
+    const t = parte.trim();
+    if (!t) continue;
+    if (t === MARCADOR_ES || t === MARCADOR_EN) {
+      salida.push(t);
+      continue;
+    }
+    const k = clave(t);
+    if (k.length > 0 && vistas.has(k)) continue;
+    vistas.add(k);
+    salida.push(t);
+  }
+  return normalizarMarcadores(salida.join(" "));
+}
+
+/**
+ * Como máximo `maximo` tramos en español; los demás se quitan enteros,
+ * con su texto. El prompt pide UNA frase en español por turno y solo al
+ * corregir; si el modelo se pasa, el candado está aquí, antes de que
+ * suene. Con 0 no queda español.
+ */
+export function limitarEspanol(texto: string, maximo = 1): string {
+  let n = 0;
+  const salida = normalizarMarcadores(texto).replace(
+    /\[es\][^[]*(?:\[en-US\]|$)/g,
+    (tramo) => (++n <= maximo ? tramo : " ")
+  );
+  return normalizarMarcadores(salida);
+}
+
+/** Sin ningún español: para los niveles donde Allison no lo usa. */
+export function sinEspanol(texto: string): string {
+  return limitarEspanol(texto, 0);
+}
+
 /**
  * Limpia el texto para que suene bien: el motor lee lo que ve, y un
  * asterisco de negrita o un emoji se convierten en ruido o en una

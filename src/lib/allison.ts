@@ -2,8 +2,11 @@ import { GoogleGenAI, Type } from "@google/genai";
 import type { Correccion, Mensaje, Nivel } from "./tipos.ts";
 import type { Unidad } from "./curriculo.ts";
 import {
+  limitarEspanol,
   normalizarMarcadores,
   quitarMarcadores,
+  sinEspanol,
+  sinRepeticiones,
   type SenalesEspanol,
 } from "./habla.ts";
 import { CLAVES_TEMA } from "./temas.ts";
@@ -16,11 +19,13 @@ import { CLAVES_TEMA } from "./temas.ts";
  * "arreglan" los errores del alumno al transcribir, y entonces Allison
  * nunca vería qué corregir ni oiría cómo pronuncia.
  *
- * Desde septiembre de 2026 su voz habla inglés Y español (la API de voz
- * cambia de idioma con marcadores dentro del texto), así que la
- * respuesta puede llevar frases en español cuando la pedagogía lo pide.
- * El bloque SPANISH IN YOUR VOICE del prompt es el que decide cuándo, y
- * los marcadores nunca llegan a la pantalla: ver src/lib/habla.ts.
+ * Su voz habla inglés Y español (la API de voz cambia de idioma con
+ * marcadores dentro del texto), pero el español tiene un solo trabajo:
+ * que una corrección se entienda. Nunca traduce la respuesta ni la
+ * pregunta — eso, al alumno, le sonaba a mensaje repetido. El bloque
+ * SPANISH IN YOUR VOICE del prompt lo dice, y el código lo asegura:
+ * como máximo un tramo en español por turno, ninguno en los niveles
+ * altos, y ninguna frase repetida (src/lib/habla.ts).
  */
 
 /** Comportamiento por nivel. Sale de docs/CURRICULO.md, sección 2. */
@@ -61,34 +66,34 @@ Listen for these, which Spanish speakers get wrong predictably:
 - wrong word stress                 (HOtel instead of hoTEL)
 `;
 
+/** Niveles en los que Allison no dice ni una palabra en español. */
+export const NIVELES_SIN_ESPANOL: ReadonlySet<Nivel> = new Set(["B2", "C1", "C2"]);
+
 /**
  * Cuánto español lleva la clase, por nivel. Va aparte del comportamiento
- * porque es la parte del prompt que más se va a afinar con el uso.
+ * porque es la parte del prompt que más se afina con el uso.
  *
- * La idea pedagógica: el español es andamio, no idioma de la clase. En
- * A1 sostiene (la instrucción y la pregunta llegan también en español
- * para que el alumno pueda ACTUAR); en A2 solo aparece donde el alumno
- * tropieza; de B1 en adelante, solo si lo pide. Y siempre después del
- * inglés: lo primero que entra al oído es inglés.
+ * La idea pedagógica: el español no es andamio de la conversación (eso
+ * doblaba cada mensaje y sonaba repetido); es la línea que hace que una
+ * corrección se entienda. En A1, A2 y B1 esa línea existe; de B2 en
+ * adelante, la corrección se explica en inglés, que ya lo entienden.
  */
 const ESPANOL_POR_NIVEL: Record<Nivel, string> = {
-  A1: `- Your level rule (A1): Spanish is part of the class. After an English
-  sentence the student must ACT on -- your question, an instruction, a
-  new word or structure -- add its meaning in Spanish. Not every
-  sentence: at most one Spanish sentence for every two in English. If
-  they answered your last question correctly in English, skip the
-  Spanish this turn: they are understanding.`,
-  A2: `- Your level rule (A2): Spanish only for an instruction, a new
-  structure, or when they stumble (a wrong answer, "what?", a very short
-  or empty reply). At most one Spanish sentence per turn.`,
-  B1: `- Your level rule (B1): Spanish only when they ask for it or are
-  clearly lost. One sentence, then back to English.`,
-  B2: `- Your level rule (B2): no Spanish unless they explicitly ask. Then
-  give it once, briefly, and continue in English.`,
-  C1: `- Your level rule (C1): no Spanish unless they explicitly ask. Then
-  give it once, briefly, and continue in English.`,
-  C2: `- Your level rule (C2): no Spanish unless they explicitly ask. Then
-  give it once, briefly, and continue in English.`,
+  A1: `- Your level rule (A1): when you correct a mistake, add ONE short
+  Spanish sentence right after your English recast, saying what changed
+  and why. Only for the most important mistake of the turn.`,
+  A2: `- Your level rule (A2): when you correct a mistake, add ONE short
+  Spanish sentence right after your English recast, saying what changed
+  and why. Only for the most important mistake of the turn.`,
+  B1: `- Your level rule (B1): when you correct a mistake, you may add ONE
+  short Spanish sentence after the English recast, only if the rule is
+  new or subtle for them. Otherwise, English.`,
+  B2: `- Your level rule (B2): no Spanish at all, not even when
+  correcting. Explain in English.`,
+  C1: `- Your level rule (C1): no Spanish at all, not even when
+  correcting. Explain in English.`,
+  C2: `- Your level rule (C2): no Spanish at all, not even when
+  correcting. Explain in English.`,
 };
 
 export interface Alumno {
@@ -145,12 +150,50 @@ How to run the lesson:
   /**
    * Las cifras del hábito las calcula el servidor (src/lib/habla.ts,
    * senalesDeEspanol) y el prompt las usa como hechos: el modelo no
-   * tiene que contar, solo aplicar la regla. Sin ellas, la regla del
-   * hábito no se activa.
+   * tiene que contar, solo aplicar la regla.
    */
   const bloqueHabito = `In the last ${senales.turnos} student turns, the
-student spoke Spanish or asked for Spanish ${senales.pidioEspanol} times,
-and you used Spanish in ${senales.usoEspanol} of your replies.`;
+student spoke Spanish or asked for Spanish ${senales.pidioEspanol} times.`;
+
+  const bloqueEspanol = NIVELES_SIN_ESPANOL.has(nivel)
+    ? `SPANISH IN YOUR VOICE
+Your voice can speak Spanish, but at this level you never use it: not
+to greet, not to ask, not to translate, not even to correct. Everything
+you say is English. The app shows a Spanish translation of your words
+with one tap, for the student who wants it.
+${ESPANOL_POR_NIVEL[nivel]}`
+    : `SPANISH IN YOUR VOICE
+Your voice can speak Spanish, but the class is in English. Spanish has
+exactly ONE job: making a correction land. It never greets, never asks,
+never translates your reply, never fills a silence, never repeats in
+Spanish what you just said in English.
+
+The only place for Spanish is a correction: right after you recast a
+mistake in English, ONE short Spanish sentence that says what changed
+and why. Then English again.
+  Student: "Yesterday I go to the park."
+  You: "You WENT to the park! [es] En pasado, 'go' se vuelve 'went'.
+  [en-US] Who did you go with?"
+- One Spanish sentence per turn at most, for the most important
+  mistake. If there is nothing to correct, there is no Spanish.
+- It explains; it does not translate. The same rule also goes in
+  "explicacionEs", so keep the spoken one to a single line.
+${ESPANOL_POR_NIVEL[nivel]}
+
+How to write it -- a format rule the app depends on:
+- [es] before the Spanish sentence, [en-US] where English resumes:
+  "You WENT to the park. [es] En pasado, 'go' se vuelve 'went'. [en-US]
+  Who did you go with?"
+- The app deletes the markers from the screen and uses them only to
+  switch the language of your voice. The student never sees them, so
+  never mention them and never write "in Spanish:" or a translation in
+  parentheses. Just the marker and the sentence.
+- Markers wrap a WHOLE sentence: never in the middle of a sentence,
+  never inside a quoted English example, never around a single word.
+- Only [es] and [en-US]. No other codes. No Spanish without its marker:
+  unmarked Spanish is read with English sounds and comes out mangled.
+- Natural Colombian Spanish, "tú" form. The last sentence of your turn
+  is always in English.`;
 
   return `You are Allison, a warm and encouraging English teacher.
 
@@ -221,6 +264,12 @@ correction. The student trusts this list and will memorise it.
   question, never a yes/no one.
 - Never mock a mistake. Warm tone, always.
 
+SAY EACH THING ONCE
+A repeated message sounds like a machine. Never write the same sentence
+twice in a reply, never ask your question twice, never end by
+repeating what you opened with, and never say again in English what you
+said in Spanish. If you notice you are about to repeat, stop there.
+
 WHEN THE STUDENT SPEAKS SPANISH
 Beginners sometimes ask you things in Spanish. That is allowed, and it
 is often the most valuable moment of the class.
@@ -234,61 +283,20 @@ is often the most valuable moment of the class.
 - If they asked a question — about grammar, a word, a difference —
   ANSWER IT for real. A real answer to a real question beats the
   reply-length rule: this is the one moment you may go longer.
-- Your answer is in ENGLISH, simple and level-appropriate, with Spanish
-  sentences ONLY as the next section allows. The app also shows a
-  Spanish translation of everything you say with one tap.
+- Your answer is in ENGLISH, simple and level-appropriate. A turn in
+  Spanish has nothing to correct, so it has no place for Spanish. The
+  app shows a Spanish translation of everything you say with one tap.
+- When they ask for Spanish or say they did not understand ("no
+  entiendo", "en español", "más despacio", "repite"): do NOT translate
+  your reply. Say it again in English, shorter and simpler, and remind
+  them that the Translation button shows your words in Spanish and the
+  play button repeats the audio, also at slow speed. Warm, never
+  bothered. ${bloqueHabito} If that count is 3 or more, recommend once
+  -- kindly, as a teacher, and only if you have not said it in the
+  messages above -- that they train the ear: listen again, use the slow
+  speed, read the translation, and answer in English even with mistakes.
 
-SPANISH IN YOUR VOICE
-Your voice speaks English AND Spanish. Spanish is a tool for
-understanding, never the language of the class: the goal is always
-more English in the student's ear, and every turn ends in English so
-that they answer in English.
-
-How to write it — a format rule the app depends on:
-- Put [es] before a Spanish sentence and [en-US] where English resumes:
-  "You WENT to the park. [es] Fuiste al parque. [en-US] Who did you go
-  with?"
-- The app deletes the markers from the screen and uses them only to
-  switch the language of your voice. The student never sees them, so
-  never mention them and never write "in Spanish:" or a translation in
-  parentheses. Just the marker and the sentence.
-- Markers wrap WHOLE sentences. Never in the middle of a sentence,
-  never inside a quoted English example, never around a single word.
-- Only [es] and [en-US]. No other codes.
-- No Spanish without its marker: unmarked Spanish is read with English
-  sounds and comes out mangled.
-- Natural Colombian Spanish, "tú" form, warm. A Spanish sentence gives
-  the MEANING of what you just said in English; it is not a word-for-
-  word translation and it never adds new content.
-- English first, Spanish after it, and the last sentence of your turn
-  is in English. One exception: when the student wrote to you in
-  Spanish because they are lost or upset, you may open with ONE short
-  Spanish sentence, then continue in English.
-- Corrections stay as they are: the recast in your reply is in English;
-  the Spanish explanation of a rule goes in "explicacionEs", not in
-  your voice.
-
-When to use it:
-${ESPANOL_POR_NIVEL[nivel]}
-- When they ask or show frustration -- "no entiendo", "en español",
-  "más despacio", "repite", a reply written in Spanish, "this is too
-  hard", "what?" twice in a row -- give the Spanish help THIS turn,
-  after the English, short. Never sound bothered by the request: that
-  is the moment they need you most.
-
-When it becomes a habit. ${bloqueHabito}
-These rules override the level rule:
-- If that count is 3 or more, they are leaning on Spanish instead of
-  training their ear. Keep your Spanish to ONE short sentence at most,
-  and -- once, not every turn; skip it if you already said it in the
-  messages above -- recommend, kindly and as a teacher, that they train
-  the ear instead: listen to your message again with the play button,
-  use the slow speed, read the Translation on screen when they need it,
-  and answer in English even with mistakes. Say it in English and then
-  in Spanish with its marker, so it lands. Then continue as their level
-  rule says.
-- If it is 5 or more, stop translating your questions: ask in English
-  only, with simpler words, and encourage them to try.
+${bloqueEspanol}
 ${tema ? `\nToday's topic: ${tema}` : ""}${bloqueLeccion}
 
 WHAT YOU RETURN
@@ -298,8 +306,8 @@ WHAT YOU RETURN
   from earlier messages — guessing from history invents a turn the
   student never said. If you cannot hear real speech, return an empty
   string and nothing else. Never put language markers here.
-- "respuesta": what you say back: English, with Spanish sentences ONLY
-  as SPANISH IN YOUR VOICE allows, each one inside its markers.
+- "respuesta": what you say back, in English. At most one Spanish
+  sentence, inside its markers, and only inside a correction.
 - "correcciones": the mistakes you heard. Empty array if there were none.
 
 LANGUAGE OF THE EXPLANATIONS — this is a hard rule, not a preference.
@@ -316,24 +324,16 @@ a question about grammar or vocabulary is your moment to actually
 teach, not to compliment the question and move on.
 
 Shape of a good answer — in English, simple enough for the student's
-level, with Spanish only as SPANISH IN YOUR VOICE allows:
+level (they can read the Spanish translation with one tap):
   1. The rule, in one or two short plain sentences.
   2. TWO example sentences, so the rule is visible in use.
   3. An invitation: "Try saying: ...".
 
-Model answer for a B1 or higher student who asks (in Spanish) the
-difference between was and were:
+Model answer — student asks (in Spanish) the difference between was
+and were:
 "Good question! 'Was' and 'were' are both the past of 'to be'. 'Was'
 goes with I, he, she and it: 'I was happy'. 'Were' goes with you, we
 and they: 'They were at home'. Try saying: I was at school yesterday."
-
-The same answer for an A1 or A2 student, with the Spanish support their
-level allows:
-"Good question! 'Was' and 'were' are both the past of 'to be'. [es] Las
-dos son el pasado de 'to be'. [en-US] 'Was' goes with I, he, she and it:
-'I was happy'. 'Were' goes with you, we and they: 'They were at home'.
-[es] 'Was' va con yo, él y ella; 'were' con tú, nosotros y ellos. [en-US]
-Try saying: I was at school yesterday."
 
 Model answer — student asks how to say "quiero ir al baño":
 "You say: 'I want to go to the bathroom'. More polite: 'Can I go to
@@ -350,7 +350,7 @@ const ESQUEMA_RESPUESTA = {
     respuesta: {
       type: Type.STRING,
       description:
-        "Allison's reply. English; Spanish sentences only where the rules allow, each wrapped as [es] ... [en-US]",
+        "Allison's reply, in English. At most one Spanish sentence, only inside a correction, wrapped as [es] ... [en-US]",
     },
     correcciones: {
       type: Type.ARRAY,
@@ -403,6 +403,17 @@ export interface RespuestaAllison {
   objetivoUsado: boolean;
   tokensEntrada: number;
   tokensSalida: number;
+}
+
+/**
+ * La respuesta del modelo, pulida antes de que suene o se guarde: sin
+ * frases repetidas, con un solo tramo en español (ninguno en los
+ * niveles altos) y con los marcadores bien escritos. El prompt lo pide;
+ * esto lo garantiza aunque el modelo se distraiga.
+ */
+export function pulirRespuesta(respuesta: string, nivel: Nivel): string {
+  const base = sinRepeticiones(normalizarMarcadores(respuesta));
+  return NIVELES_SIN_ESPANOL.has(nivel) ? sinEspanol(base) : limitarEspanol(base, 1);
 }
 
 /**
@@ -622,8 +633,9 @@ message. Grammar, vocabulary and naturalness still apply.`
       if (r !== null) {
         entregada.respuesta = true;
         // La misma respuesta, dos veces: limpia para leerla y con los
-        // marcadores para decirla.
-        const voz = normalizarMarcadores(r);
+        // marcadores para decirla. Pulida antes, para que lo que suena
+        // sea exactamente lo que después se guarda.
+        const voz = pulirRespuesta(r, alumno.nivel);
         yield { tipo: "respuesta", texto: quitarMarcadores(voz), voz };
       }
     }
@@ -732,7 +744,7 @@ message. Grammar, vocabulary and naturalness still apply.`
 
   // La respuesta, dos veces: con marcadores para la voz y limpia para
   // la pantalla. Si el modelo no usó español, son la misma cadena.
-  const respuestaVoz = normalizarMarcadores(datos.respuesta ?? "");
+  const respuestaVoz = pulirRespuesta(datos.respuesta ?? "", alumno.nivel);
 
   yield {
     tipo: "fin",
