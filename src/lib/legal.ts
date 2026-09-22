@@ -24,9 +24,9 @@ export const EMPRESA = {
   marca: "Allison",
 } as const;
 
-export const VERSION_LEGAL = "2026-09-18";
+export const VERSION_LEGAL = "2026-09-22";
 
-export const ACTUALIZADO = "18 de septiembre de 2026";
+export const ACTUALIZADO = "22 de septiembre de 2026";
 
 /** Terceros a los que llegan datos. Debe coincidir con la realidad. */
 export const ENCARGADOS = [
@@ -54,5 +54,10 @@ export const ENCARGADOS = [
     nombre: "Google (inicio de sesión)",
     pais: "Estados Unidos",
     para: "Si eliges entrar con tu cuenta de Google: Google confirma quién eres y nos entrega solo tu nombre y tu correo",
+  },
+  {
+    nombre: "Praxis (API de voz)",
+    pais: "Por confirmar",
+    para: "Convertir en voz lo que Allison te dice. Solo recibe ese texto: ni tu audio ni tu cuenta",
   },
 ] as const;

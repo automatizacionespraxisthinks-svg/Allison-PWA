@@ -8,7 +8,7 @@ Especificación técnica · v1 · agosto 2026
 | Mercado | Colombia — colegios públicos/privados y público general |
 | Plataforma | Web responsive + PWA instalable, prioridad celular |
 | Conversación | Por turnos (no llamada en tiempo real) |
-| **Motor (opción B+)** | El audio va **directo a Gemini**, que devuelve (a) la transcripción literal de lo que dijo el alumno y (b) la respuesta de Allison. **Whisper NO se usa.** El VPS solo genera la voz (TTS) |
+| **Motor (opción B+)** | El audio va **directo a Gemini**, que devuelve (a) la transcripción literal de lo que dijo el alumno y (b) la respuesta de Allison. **Whisper NO se usa.** La voz la genera la **API de texto a voz de Praxis** en streaming (sep-2026); la del navegador queda de respaldo |
 | Corrección | Pronunciación y gramática corregidas dentro de la conversación. **Sin puntaje numérico** |
 | Transcripción | Visible con botón mostrar/ocultar |
 | Avatar | Foto realista de Allison (generada por IA, sin problema de derechos). **Tres bucles de video pregenerados** — reposo, escuchando, hablando. Sin sincronía labial en vivo |
@@ -79,7 +79,7 @@ errores intactos, y el CPX22 pasa de ~5 a ~30 estudiantes simultáneos.
 | Componente | COP |
 |---|---|
 | Gemini (audio entrada + texto salida) | ~7 |
-| TTS propio | 0 (ya pagas el servidor) |
+| Voz (API de Praxis, en su propia CPU) | 0 por uso. Capacidad: 2 síntesis a la vez para todos sus clientes |
 | **Margen sobre plan de $35.000** | **~90%** |
 
 > Verificar tarifas de Gemini en la página oficial antes de fijar precios definitivos.
@@ -113,7 +113,7 @@ PSE, Nequi y QR no permiten cobro recurrente automático — por eso la renovaci
                    |  Next.js (PWA)   |
                    |  PostgreSQL      |
                    |  Redis (cola)    |
-                   |  Worker TTS      |
+                   |  (voz: API TTS)  |
                    |  n8n             |
                    +--------+---------+
                             |
@@ -124,7 +124,7 @@ PSE, Nequi y QR no permiten cobro recurrente automático — por eso la renovaci
 ```
 
 **Regla de oro:** los componentes van en contenedores separados y se comunican por cola (Redis).
-El despliegue arranca en un solo servidor, pero mover el worker de TTS a otra máquina
+El despliegue arranca en un solo servidor, pero mover un componente a otra máquina
 debe ser cuestión de minutos, sin tocar código.
 
 ### Flujo de un turno
@@ -133,7 +133,7 @@ debe ser cuestión de minutos, sin tocar código.
 2. La app verifica saldo — si no hay, avisa y ofrece recargar
 3. Audio + historial + prompt del nivel se envían a **Gemini**
 4. Gemini devuelve: transcripción literal + respuesta + correcciones detectadas
-5. La respuesta entra a la **cola de TTS**; el worker genera la voz
+5. La respuesta se registra en **/api/voz** y el navegador abre el audio: la **API de voz de Praxis** lo genera en streaming (mp3) y empieza a sonar a los pocos segundos
 6. El navegador reproduce el audio y anima el avatar
 7. Se descuenta 1 mensaje (transacción en BD) y se registra el movimiento
 

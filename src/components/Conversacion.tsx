@@ -131,13 +131,17 @@ export function Conversacion({
   }, [mensajes, dichoAhora, ideaVisible]);
 
   /**
-   * La voz vive en lib/voz.ts, que tapa los fallos reales del motor
-   * del navegador (el primer audio que no sonaba solo, entre ellos).
-   * La base del nivel por la preferencia del alumno: un A1 en
-   * "rápida" oye 1,0 — más ágil que su base, nunca la de un C1.
+   * La voz vive en lib/voz.ts: la API de voz en streaming, con la del
+   * navegador de respaldo. La base del nivel por la preferencia del
+   * alumno: un A1 en "rápida" oye 1,0 — más ágil que su base, nunca la
+   * de un C1. El estado pasa a "hablando" cuando el audio de verdad
+   * empieza a sonar, no cuando se pide: entre lo uno y lo otro pasan
+   * unos segundos, y el avatar no debe fingir que habla en silencio.
    */
   function hablar(texto: string): Promise<boolean> {
-    return hablarIngles(texto, nivel, velocidad);
+    return hablarIngles(texto, nivel, velocidad, {
+      alEmpezar: () => setEstado("hablando"),
+    });
   }
 
   function manejarAudio(audio: Blob, duracionSeg: number) {
@@ -210,7 +214,7 @@ export function Conversacion({
           }
 
           if (parte.tipo === "respuesta") {
-            setEstado("hablando");
+            // Sigue "pensando" hasta que suene: hablar() cambia el estado.
             hablando = hablar(parte.texto);
           }
 

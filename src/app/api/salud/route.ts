@@ -3,6 +3,7 @@ import { correo, pistaDeCorreo, puertoGmail } from "@/lib/correo";
 import { sql } from "@/lib/db";
 import { googleConfigurado } from "@/lib/google";
 import { autorizadaPorSecreto } from "@/lib/tareas";
+import { estadoTts } from "@/lib/tts";
 
 /**
  * ¿Está sana la aplicación?
@@ -54,6 +55,20 @@ export async function GET(peticion: Request) {
         },
       },
       { headers: cabeceras }
+    );
+  }
+
+  // ¿La API de voz está lista y las voces configuradas existen? Exige
+  // el secreto: consulta con la clave y gasta cuota de la API.
+  if (parametros.has("voz")) {
+    if (!autorizadaPorSecreto(peticion)) {
+      return NextResponse.json({ error: "No autorizada" }, { status: 401, headers: cabeceras });
+    }
+    const voz = await estadoTts();
+    const ok = voz.configurado && voz.listo === true && voz.vocesValidas === true;
+    return NextResponse.json(
+      { ok, voz },
+      { status: voz.listo === false ? 503 : 200, headers: cabeceras }
     );
   }
 

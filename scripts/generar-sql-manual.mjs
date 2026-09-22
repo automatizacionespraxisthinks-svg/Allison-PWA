@@ -27,7 +27,7 @@ const SALIDA = join(DB, "manual");
 const VERIFICAR = process.argv.includes("--verificar");
 
 /** La misma versión que src/lib/legal.ts (vigilada por probar:legal). */
-const VERSION_LEGAL = "2026-09-18";
+const VERSION_LEGAL = "2026-09-22";
 
 const migraciones = readdirSync(DB)
   .filter((f) => /^\d{3}_.+\.sql$/.test(f))

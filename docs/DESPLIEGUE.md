@@ -71,6 +71,10 @@ Las variables con sus valores ya generados están en **`.env.production`**
       paso a paso. El consentimiento legal no se salta: quien crea la
       cuenta con Google marca las casillas en `/registro`.
 
+- [ ] **Voz**: la clave de la API de texto a voz de Praxis, propia para
+      Allison, en `TTS_API_KEY`. Sin ella la app no falla: habla con la
+      voz del navegador y lo deja dicho en el log.
+
 - [ ] **Salida a internet del servidor**: el build descarga la
       tipografía Geist de Google. Compruébalo antes del primer
       despliegue con `curl -I https://fonts.googleapis.com` en el VPS.
@@ -111,6 +115,7 @@ consulta, no al importar el módulo.
 | `AUTH_URL` | **falta — OBLIGATORIA**: tu dominio con https, sin barra final. De aquí salen los enlaces de los correos y el regreso desde el pago; sin ella apuntan a una dirección muerta |
 | `GEMINI_API_KEY` | **falta**: la llave nueva |
 | `GEMINI_MODEL` | listo |
+| `TTS_API_KEY` (opcionales `TTS_URL`, `TTS_VOZ`, `TTS_VOZ_ES`, `TTS_SIMULTANEAS`, `TTS_ESPERA_TURNO_MS`) | **falta**: la clave propia de la API de voz (pídesela al responsable del servicio). Sin ella Allison habla con la voz del navegador y el log lo dice |
 | `CORREO`, `GMAIL_USUARIO`, `GMAIL_APP_PASSWORD`, `GMAIL_PUERTO` | `GMAIL_PUERTO=587` (punto 1: Hetzner bloquea el 465) |
 | `PASARELA` | `bold` (candado: `simulada` revienta en producción) |
 | `BOLD_LLAVE_IDENTIDAD`, `BOLD_LLAVE_SECRETA` | **faltan** — las dos de *Botón de pagos*, las de producción. Sin la secreta la app se niega a cobrar |
@@ -238,6 +243,12 @@ secreto.
       abre: el correo es el único canal para recuperar una cuenta.
 - [ ] Un turno de voz completo **desde el celular**: pide permiso de
       micrófono, transcribe, y Allison **suena sola**.
+- [ ] **Allison habla con su voz propia**, no con la del teléfono: el
+      estado pasa a "hablando…" cuando empieza a sonar, unos segundos
+      después de llegar el texto. Con el secreto de las tareas,
+      `https://TU-DOMINIO/api/salud?voz=1` responde `listo: true` y
+      `vocesValidas: true`, y en el log del servidor no aparece "Voz no
+      disponible"; si aparece, la app está usando la voz del navegador.
 - [ ] Instalar la PWA (aparece el chip "Instalar").
 - [ ] `/admin` responde a tu administrador y rechaza a un estudiante.
 - [ ] **Google**, si lo activaste, las tres puertas: (a) en `/entrar`,
@@ -301,10 +312,15 @@ secreto.
 - **Monitoreo**: un Uptime Kuma en el mismo Dokploy apuntando a
   `/api/salud?base=1` te avisa por Telegram cuando algo se cae, antes de
   que lo haga un alumno.
-- **La voz sigue siendo la del navegador** (provisional): calidad
-  variable según el teléfono. Cuando se mejore, que sea con un motor
-  propio en este servidor — **nunca un TTS cobrado por uso**, que
-  multiplicaría el costo por intervención unas cincuenta veces.
+- **La voz es la API de texto a voz de Praxis** (tts-api.praxisia.org),
+  en streaming, con la del navegador de respaldo. Dos límites que hay
+  que tener presentes: el servicio sintetiza **dos audios a la vez para
+  todos sus clientes** (los demás esperan hasta 15 s y luego caen a la
+  voz del navegador), y genera casi en tiempo real, así que cada
+  respuesta empieza a sonar unos 4 s después de llegar el texto. Con
+  más de dos alumnos hablando a la vez, hay que pedir más capacidad al
+  responsable del servicio. La política de datos ya lo lista como
+  encargado; **falta confirmar en qué país corre** para escribirlo ahí.
 - **Las anulaciones de Bold no descuentan saldo solas**: si devuelves un
   pago desde Bold, el alumno conserva sus intervenciones (pudo haberlas
   gastado ya). El aviso queda en el log del servidor como

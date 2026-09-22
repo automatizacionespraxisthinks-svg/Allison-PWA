@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
+import { desbloquearVoz, detenerVoz, hablarEspanol } from "@/lib/voz";
 
 /**
  * La primera vez que un alumno abre Allison.
@@ -63,7 +64,7 @@ export function Bienvenida({ nombre }: { nombre: string }) {
   const [sonando, setSonando] = useState(false);
 
   function cerrar() {
-    window.speechSynthesis?.cancel();
+    detenerVoz();
     try {
       localStorage.setItem(CLAVE, "1");
     } catch {
@@ -74,27 +75,18 @@ export function Bienvenida({ nombre }: { nombre: string }) {
 
   function reproducir() {
     if (sonando) {
-      window.speechSynthesis?.cancel();
+      detenerVoz();
       setSonando(false);
       return;
     }
 
-    if (!window.speechSynthesis) return;
-
-    const voz = new SpeechSynthesisUtterance(GUION);
-    // Voz en español si el dispositivo tiene alguna; si no, la del sistema
-    const enEspanol = window.speechSynthesis
-      .getVoices()
-      .find((v) => v.lang.toLowerCase().startsWith("es"));
-    if (enEspanol) voz.voice = enEspanol;
-    voz.lang = enEspanol?.lang ?? "es-CO";
-    voz.rate = 1;
-    voz.onend = () => setSonando(false);
-    voz.onerror = () => setSonando(false);
-
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(voz);
+    // Este toque es un gesto real: deja el audio desbloqueado para el
+    // resto de la página, que es donde Allison habla sin que la toquen.
+    desbloquearVoz();
     setSonando(true);
+    // En español y con la voz de Allison (src/lib/voz.ts): la misma voz
+    // que va a oír en la conversación, presentándose en su idioma.
+    void hablarEspanol(GUION).then(() => setSonando(false));
   }
 
   if (vista) return null;
