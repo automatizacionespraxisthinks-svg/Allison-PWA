@@ -25,8 +25,16 @@ Las variables con sus valores ya generados están en **`.env.production`**
       mismo: es lo único que te protege de que un error en bucle o un
       abuso disparen la factura.
 
-- [x] **Correo**: Gmail SMTP probado y funcionando con
-      `allison.teacher00@gmail.com`. Tope ~500 correos/día.
+- [ ] **Correo**: Gmail SMTP con `allison.teacher00@gmail.com` (tope ~500
+      correos/día), **por el puerto 587**. Hetzner bloquea la salida por
+      el 25 y el 465 en las cuentas nuevas, y con 465 el envío se quedaba
+      colgado sin decir nada. `GMAIL_PUERTO=587` va por defecto.
+      Compruébalo desde el propio servidor, ya desplegado:
+      ```
+      curl -H "Authorization: Bearer EL_TAREAS_SECRETO" "https://TU-DOMINIO/api/salud?correo=1"
+      ```
+      Responde `"conecta": true`, o el motivo en palabras (`pista`).
+
 
 - [ ] **Bold** (la pasarela): cuenta **a nombre de PRAXIS - THINKS
       S.A.S.** —registro de persona jurídica, con el certificado de Cámara
@@ -36,7 +44,7 @@ Las variables con sus valores ya generados están en **`.env.production`**
       panel que no están en el código**:
       1. **Activar la Cuenta Bold.** Sin ella no aparece el QR Bre-B,
          que es el medio más barato: 2,89% sin valor fijo, contra 2,89%
-         + $900 de PSE o tarjeta. En la recarga mínima de $7.900 es la
+         + $900 de PSE o tarjeta. En la recarga mínima de $8.000 es la
          diferencia entre perder 3,4% o 17%.
       2. **Activar las llaves** de *Botón de pagos* (Integraciones →
          Llaves de integración). La API de links usa esas. Van en
@@ -62,6 +70,10 @@ Las variables con sus valores ya generados están en **`.env.production`**
       sin ellas el botón simplemente no aparece. `.env.example` trae el
       paso a paso. El consentimiento legal no se salta: quien crea la
       cuenta con Google marca las casillas en `/registro`.
+
+- [ ] **Voz**: la clave de la API de texto a voz de Praxis, propia para
+      Allison, en `TTS_API_KEY`. Sin ella la app no falla: habla con la
+      voz del navegador y lo deja dicho en el log.
 
 - [ ] **Salida a internet del servidor**: el build descarga la
       tipografía Geist de Google. Compruébalo antes del primer
@@ -103,14 +115,15 @@ consulta, no al importar el módulo.
 | `AUTH_URL` | **falta — OBLIGATORIA**: tu dominio con https, sin barra final. De aquí salen los enlaces de los correos y el regreso desde el pago; sin ella apuntan a una dirección muerta |
 | `GEMINI_API_KEY` | **falta**: la llave nueva |
 | `GEMINI_MODEL` | listo |
-| `CORREO`, `GMAIL_USUARIO`, `GMAIL_APP_PASSWORD` | listos y probados |
+| `TTS_API_KEY` (opcionales `TTS_URL`, `TTS_VOZ`, `TTS_VOZ_ES`, `TTS_SIMULTANEAS`, `TTS_ESPERA_TURNO_MS`) | **falta**: la clave propia de la API de voz (pídesela al responsable del servicio). Sin ella Allison habla con la voz del navegador y el log lo dice |
+| `CORREO`, `GMAIL_USUARIO`, `GMAIL_APP_PASSWORD`, `GMAIL_PUERTO` | `GMAIL_PUERTO=587` (punto 1: Hetzner bloquea el 465) |
 | `PASARELA` | `bold` (candado: `simulada` revienta en producción) |
 | `BOLD_LLAVE_IDENTIDAD`, `BOLD_LLAVE_SECRETA` | **faltan** — las dos de *Botón de pagos*, las de producción. Sin la secreta la app se niega a cobrar |
 | `BOLD_MEDIOS` | opcional — vacío ofrece todos los medios activos, incluido el QR |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | opcionales — las dos o ninguna. Con ellas aparece "Entrar con Google" (punto 1) |
 | `TAREAS_SECRETO` | generado, listo |
 | `PROXY_CONFIABLE` | `reverso` — Traefik reescribe `x-forwarded-for` |
-| `COP_POR_MENSAJE`, `RECARGA_MINIMA_COP`, `MENSAJES_PRUEBA_*`, `REGISTROS_GLOBALES_POR_HORA` | listos |
+| `COP_POR_MENSAJE`, `RECARGA_MINIMA_COP`, `MENSAJES_PRUEBA`, `REGISTROS_GLOBALES_POR_HORA` | **ajustar**: `RECARGA_MINIMA_COP=8000` y `MENSAJES_PRUEBA=20`; borra `MENSAJES_PRUEBA_INICIAL` y `MENSAJES_PRUEBA_VERIFICAR` si siguen ahí |
 
 ---
 
@@ -175,12 +188,12 @@ cambiada.
 node scripts/migrar.mjs
 ```
 
-**Pendiente en producción: la migración 020** (renovación mensual de
-los planes). La base de producción se creó con las 19 anteriores, y la
-app nueva la necesita: sin ella, los planes no se renuevan y el log del
-servidor lo dice ("No se pudo renovar el plan"). Córrela
-en la Terminal del contenedor **justo después de desplegar esta
-versión**; el comando de arriba solo aplica lo que falta.
+**Pendiente en producción: las migraciones 020 (renovación mensual de
+los planes), 021 (glosario) y 022 (texto de la voz)**, las que no se hayan corrido. Sin la 020
+los planes no se renuevan (el log dice "No se pudo renovar el plan");
+sin la 021, guardar una palabra responde error de servidor y `/glosario`
+no abre; sin la 022, la voz de Allison no puede mezclar español. Córrelas en la Terminal del contenedor **justo después de
+desplegar**: el comando de arriba solo aplica las que falten.
 
 Solo aplica los archivos numerados de `db/`; los de `db/manual/` son
 para correr a mano y los ignora. **Ojo**: esos dos archivos se generan
@@ -221,13 +234,21 @@ secreto.
 - [ ] `https://TU-DOMINIO/api/salud` responde `{"ok":true}`.
 - [ ] `https://TU-DOMINIO/api/salud?base=1` responde `{"ok":true,"base":true}`
       — si esta falla y la anterior no, el problema es la base, no la app.
-- [ ] Registrarse con un correo real → llega el correo → **el enlace
-      abre tu dominio** (si dice 0.0.0.0, falta `AUTH_URL`) → verificar
-      suma las +15 intervenciones.
-- [ ] Pedir "olvidé mi contraseña" y comprobar que ese enlace también
+- [ ] Registrarse con un correo real: entra directo con sus 20
+      intervenciones, sin correo que confirmar.
+- [ ] En un mensaje de Allison, seleccionar una palabra: aparece la barra
+      con **Escuchar** y **Guardar**, y la palabra queda en `/glosario`
+      (menú → Tu glosario). En `/perfil`, cambiar el nombre y volver.
+- [ ] Pedir "olvidé mi contraseña" y comprobar que el correo llega y su enlace
       abre: el correo es el único canal para recuperar una cuenta.
 - [ ] Un turno de voz completo **desde el celular**: pide permiso de
       micrófono, transcribe, y Allison **suena sola**.
+- [ ] **Allison habla con su voz propia**, no con la del teléfono: el
+      estado pasa a "hablando…" cuando empieza a sonar, unos segundos
+      después de llegar el texto. Con el secreto de las tareas,
+      `https://TU-DOMINIO/api/salud?voz=1` responde `listo: true` y
+      `vocesValidas: true`, y en el log del servidor no aparece "Voz no
+      disponible"; si aparece, la app está usando la voz del navegador.
 - [ ] Instalar la PWA (aparece el chip "Instalar").
 - [ ] `/admin` responde a tu administrador y rechaza a un estudiante.
 - [ ] **Google**, si lo activaste, las tres puertas: (a) en `/entrar`,
@@ -236,10 +257,14 @@ secreto.
       `/registro`, marcar las casillas y "Continuar con Google" crea la
       cuenta y entra con las 20 intervenciones, sin correo que confirmar;
       (c) una cuenta creada con correo y contraseña entra también con
-      Google y, si no había confirmado el correo, recibe sus +15 al
-      instante. Si Google muestra `redirect_uri_mismatch`, la URI de
+      Google. Si Google muestra `redirect_uri_mismatch`, la URI de
       redirección no coincide letra por letra con `AUTH_URL`.
-- [ ] Una recarga pequeña real ($7.900, la mínima) pagada **con QR desde el
+      Diagnóstico rápido: `https://TU-DOMINIO/api/salud?google=1` dice si el
+      servidor ve las llaves y cuál es la URI de regreso exacta, y
+      `https://TU-DOMINIO/api/auth/providers` debe listar `google`; si no lo
+      lista, el contenedor arrancó sin las llaves y hay que volver a
+      desplegar (la pantalla las lee en caliente; el proveedor, al arrancar).
+- [ ] Una recarga pequeña real ($8.000, la mínima) pagada **con QR desde el
       celular**, comprobando **las cuatro**: (a) el checkout de Bold
       ofrece el QR (si no, falta activar la Cuenta Bold); (b) pagar el
       QR desde el mismo teléfono es cómodo — si no, considera dejar
@@ -287,10 +312,15 @@ secreto.
 - **Monitoreo**: un Uptime Kuma en el mismo Dokploy apuntando a
   `/api/salud?base=1` te avisa por Telegram cuando algo se cae, antes de
   que lo haga un alumno.
-- **La voz sigue siendo la del navegador** (provisional): calidad
-  variable según el teléfono. Cuando se mejore, que sea con un motor
-  propio en este servidor — **nunca un TTS cobrado por uso**, que
-  multiplicaría el costo por intervención unas cincuenta veces.
+- **La voz es la API de texto a voz de Praxis** (tts-api.praxisia.org),
+  en streaming, con la del navegador de respaldo. Dos límites que hay
+  que tener presentes: el servicio sintetiza **dos audios a la vez para
+  todos sus clientes** (los demás esperan hasta 15 s y luego caen a la
+  voz del navegador), y genera casi en tiempo real, así que cada
+  respuesta empieza a sonar unos 4 s después de llegar el texto. Con
+  más de dos alumnos hablando a la vez, hay que pedir más capacidad al
+  responsable del servicio. La política de datos ya lo lista como
+  encargado; **falta confirmar en qué país corre** para escribirlo ahí.
 - **Las anulaciones de Bold no descuentan saldo solas**: si devuelves un
   pago desde Bold, el alumno conserva sus intervenciones (pudo haberlas
   gastado ya). El aviso queda en el log del servidor como

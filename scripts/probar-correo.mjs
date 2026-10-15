@@ -1,17 +1,19 @@
 /**
  * Prueba de envío de correo REAL.
  *
- * Para el día en que llegue la llave de Resend: un solo comando
- * confirma que la llave, el remitente y el dominio están bien — antes
- * de que un alumno de verdad dependa de ello.
+ * Un solo comando confirma que el servidor alcanza al proveedor, que
+ * las credenciales sirven y que el correo llega — antes de que un
+ * alumno de verdad dependa de ello para recuperar su cuenta.
  *
  *   npm run probar:correo -- tucorreo@gmail.com
  *
- * Manda el correo de verificación de muestra al destino. Con
- * CORREO=consola solo lo imprime; con CORREO=resend lo envía de
- * verdad por la API.
+ * Manda el correo de recuperación de muestra al destino. Con
+ * CORREO=consola solo lo imprime; con gmail o resend lo envía de
+ * verdad. Si falla, dice POR QUÉ en palabras (puerto bloqueado por
+ * Hetzner, contraseña de aplicación mala…), lo mismo que responde
+ * /api/salud?correo=1 en producción.
  */
-import { correo, correoDeVerificacion } from "../src/lib/correo.ts";
+import { correo, correoDeRecuperacion, pistaDeCorreo } from "../src/lib/correo.ts";
 
 const destino = process.argv[2];
 if (!destino || !destino.includes("@")) {
@@ -22,10 +24,22 @@ if (!destino || !destino.includes("@")) {
 const enviador = correo();
 console.log(`Enviador activo: ${enviador.nombre}${enviador.simulado ? " (no envía de verdad)" : ""}`);
 
-const plantilla = correoDeVerificacion(
+if (enviador.verificar) {
+  process.stdout.write("Conexión y credenciales... ");
+  try {
+    await enviador.verificar();
+    console.log("ok");
+  } catch (e) {
+    console.log("FALLO");
+    console.error(String(e.message ?? e));
+    console.error(`\n${pistaDeCorreo(e)}`);
+    process.exit(1);
+  }
+}
+
+const plantilla = correoDeRecuperacion(
   "Prueba",
-  "https://allison.ejemplo.co/verificar/TOKEN-DE-MUESTRA",
-  15
+  "https://allison.ejemplo.co/recuperar/TOKEN-DE-MUESTRA"
 );
 
 try {
@@ -34,9 +48,6 @@ try {
 } catch (e) {
   console.error("FALLÓ el envío:");
   console.error(String(e.message ?? e));
-  console.error(
-    "\nRevisa: RESEND_API_KEY, CORREO_REMITENTE (debe ser del dominio " +
-      "verificado en Resend) y que el dominio tenga los registros DNS aprobados."
-  );
+  console.error(`\n${pistaDeCorreo(e)}`);
   process.exit(1);
 }

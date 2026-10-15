@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { createHash, timingSafeEqual } from "node:crypto";
 import { registrarResultado } from "@/lib/cobro";
 import { sql } from "@/lib/db";
 import { pasarela } from "@/lib/pasarela";
+import { autorizadaPorSecreto } from "@/lib/tareas";
 
 /**
  * Borrado de conversaciones vencidas.
@@ -14,25 +14,6 @@ import { pasarela } from "@/lib/pasarela";
  * Se protege con un secreto compartido, no con sesión: quien la invoca
  * es una máquina, no una persona.
  */
-function autorizada(peticion: Request): boolean {
-  // Dos nombres para el mismo candado: TAREAS_SECRETO cuando la llama
-  // n8n u otra máquina propia, CRON_SECRET cuando la llama el cron de
-  // Vercel — que manda ese valor como Bearer automáticamente.
-  const secretos = [process.env.TAREAS_SECRETO, process.env.CRON_SECRET].filter(
-    (s): s is string => Boolean(s)
-  );
-  if (secretos.length === 0) return false;
-
-  const enviado = (peticion.headers.get("authorization") ?? "").replace(/^Bearer /, "");
-  if (!enviado) return false;
-
-  // Se comparan los hashes para que el tiempo de comparación no
-  // dependa de cuántos caracteres coincidieron.
-  const a = createHash("sha256").update(enviado).digest();
-  return secretos.some((s) =>
-    timingSafeEqual(a, createHash("sha256").update(s).digest())
-  );
-}
 
 export async function POST(peticion: Request) {
   return limpiar(peticion);
@@ -44,7 +25,7 @@ export async function GET(peticion: Request) {
 }
 
 async function limpiar(peticion: Request) {
-  if (!autorizada(peticion)) {
+  if (!autorizadaPorSecreto(peticion)) {
     return NextResponse.json({ error: "No autorizada" }, { status: 401 });
   }
 

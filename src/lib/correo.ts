@@ -1,10 +1,13 @@
 /**
  * Envío de correo, detrás de una interfaz.
  *
- * Igual que la pasarela: hoy corre la implementación de CONSOLA porque
- * no hay servicio de correo contratado. Todo lo demás —tokens,
- * caducidad, canje, entrega de mensajes— es el definitivo. Cuando haya
- * un proveedor se cambia CORREO en el .env.
+ * Igual que la pasarela: el enviador se elige con CORREO en el entorno
+ * (consola para desarrollo, gmail o resend para enviar de verdad), y
+ * todo lo demás —plantillas, enlaces, quién recibe qué— es el mismo.
+ *
+ * Hoy el único correo que sale es el de recuperar la contraseña. La
+ * verificación del correo se quitó (sep-2026): la prueba se entrega
+ * completa al crear la cuenta.
  */
 
 export interface Mensaje {
@@ -19,6 +22,12 @@ export interface Enviador {
   /** true si en realidad no sale ningún correo. */
   simulado: boolean;
   enviar(mensaje: Mensaje): Promise<void>;
+  /**
+   * Comprueba que el servidor puede hablar con el proveedor y que las
+   * credenciales sirven, SIN enviar nada. Lanza si algo falla. Es lo
+   * que consulta /api/salud?correo=1 desde producción.
+   */
+  verificar?(): Promise<void>;
 }
 
 const consola: Enviador = {
@@ -51,11 +60,23 @@ const resend: Enviador = {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ from: remitente, to: para, subject: asunto, text: texto, html }),
+      signal: AbortSignal.timeout(15_000),
     });
 
     if (!r.ok) {
       throw new Error(`Resend respondió ${r.status}: ${await r.text()}`);
     }
+  },
+  async verificar() {
+    const clave = process.env.RESEND_API_KEY;
+    if (!clave || !process.env.CORREO_REMITENTE) {
+      throw new Error("Faltan RESEND_API_KEY o CORREO_REMITENTE");
+    }
+    const r = await fetch("https://api.resend.com/domains", {
+      headers: { Authorization: `Bearer ${clave}` },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!r.ok) throw new Error(`Resend rechazó la llave (HTTP ${r.status})`);
   },
 };
 
@@ -70,39 +91,104 @@ const resend: Enviador = {
  *
  * La contraseña de aplicación NO es la clave de la cuenta: se genera
  * en Cuenta de Google → Seguridad → Verificación en dos pasos →
- * Contraseñas de aplicaciones, y solo sirve para esto.
+ * Contraseñas de aplicaciones, y solo sirve para esto. Google la
+ * muestra en cuatro bloques con espacios; se aceptan con o sin ellos.
+ *
+ * EL PUERTO IMPORTA. Hetzner bloquea la salida por los puertos 25 y 465
+ * en las cuentas nuevas (hasta pedir el desbloqueo con la primera
+ * factura pagada), y por eso el 465 "se quedaba pensando" y nunca
+ * enviaba. El 587 con STARTTLS está abierto y es igual de cifrado: es
+ * el que va por defecto. GMAIL_PUERTO=465 sigue valiendo si algún día
+ * se desbloquea.
+ *
+ * Los tiempos de espera son cortos a propósito: un puerto bloqueado no
+ * responde nada, y sin ellos la petición del alumno se quedaba colgada
+ * los dos minutos que nodemailer espera por defecto.
  */
 const gmail: Enviador = {
   nombre: "gmail",
   simulado: false,
-  async enviar({ para, asunto, texto, html }) {
-    const usuario = process.env.GMAIL_USUARIO;
-    const clave = process.env.GMAIL_APP_PASSWORD;
-    if (!usuario || !clave) {
-      throw new Error("Faltan GMAIL_USUARIO o GMAIL_APP_PASSWORD");
-    }
-
-    // Importación diferida: nodemailer solo se carga si este enviador
-    // se usa, y nunca termina en un bundle del navegador.
-    const { default: nodemailer } = await import("nodemailer");
-    const transporte = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-      auth: { user: usuario, pass: clave },
-    });
-
+  async enviar(mensaje) {
+    const transporte = await transporteGmail();
+    const { para, asunto, texto, html } = mensaje;
     // Gmail solo permite enviar COMO la cuenta autenticada; el nombre
     // visible sí es nuestro, y es lo que el alumno ve en la bandeja.
     await transporte.sendMail({
-      from: `Allison <${usuario}>`,
+      from: `Allison <${process.env.GMAIL_USUARIO}>`,
       to: para,
       subject: asunto,
       text: texto,
       html,
     });
   },
+  async verificar() {
+    const transporte = await transporteGmail();
+    await transporte.verify();
+  },
 };
+
+/** El puerto de salida hacia smtp.gmail.com (ver el comentario de arriba). */
+export function puertoGmail(): number {
+  const puerto = Number(process.env.GMAIL_PUERTO ?? 587);
+  return Number.isInteger(puerto) && puerto > 0 ? puerto : 587;
+}
+
+async function transporteGmail() {
+  const usuario = process.env.GMAIL_USUARIO?.trim();
+  const clave = process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, "");
+  if (!usuario || !clave) {
+    throw new Error("Faltan GMAIL_USUARIO o GMAIL_APP_PASSWORD");
+  }
+
+  const puerto = puertoGmail();
+
+  // Importación diferida: nodemailer solo se carga si este enviador
+  // se usa, y nunca termina en un bundle del navegador.
+  const { default: nodemailer } = await import("nodemailer");
+  return nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: puerto,
+    // 465 = TLS desde el primer byte; cualquier otro = STARTTLS.
+    secure: puerto === 465,
+    // Nunca en claro: si el servidor no ofreciera cifrado, se aborta.
+    requireTLS: true,
+    auth: { user: usuario, pass: clave },
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 20_000,
+  });
+}
+
+/**
+ * Qué significa un fallo del correo, en palabras. Sale en el
+ * diagnóstico de /api/salud?correo=1 y en npm run probar:correo, para
+ * no tener que descifrar un ETIMEDOUT a las once de la noche.
+ */
+export function pistaDeCorreo(error: unknown): string {
+  const e = error as { code?: string; responseCode?: number; message?: string } | null;
+  const codigo = String(e?.code ?? "");
+  const mensaje = String(e?.message ?? "");
+
+  if (/ETIMEDOUT|ECONNECTION|ESOCKET|ECONNREFUSED|EHOSTUNREACH|ENETUNREACH/.test(codigo + mensaje)) {
+    return (
+      `El servidor no alcanza smtp.gmail.com por el puerto ${puertoGmail()}. ` +
+      "Hetzner bloquea la salida por los puertos 25 y 465 en las cuentas nuevas: " +
+      "usa GMAIL_PUERTO=587 (STARTTLS), o pide el desbloqueo en el panel de Hetzner " +
+      "(Limits) después de pagar la primera factura."
+    );
+  }
+  if (codigo === "EAUTH" || e?.responseCode === 535 || /Invalid login|BadCredentials/i.test(mensaje)) {
+    return (
+      "Gmail rechazó el usuario o la contraseña. GMAIL_USUARIO es la dirección completa " +
+      "y GMAIL_APP_PASSWORD es la contraseña de APLICACIÓN de 16 letras (no la de la " +
+      "cuenta), que solo existe con la verificación en dos pasos activa."
+    );
+  }
+  if (/Faltan /.test(mensaje)) {
+    return "Faltan variables de entorno del correo. Revisa CORREO, GMAIL_USUARIO y GMAIL_APP_PASSWORD.";
+  }
+  return "Revisa el log del servidor: el error completo está ahí.";
+}
 
 const ENVIADORES: Record<string, Enviador> = { consola, resend, gmail };
 
@@ -119,7 +205,7 @@ export function correo(): Enviador {
   if (process.env.NODE_ENV === "production" && enviador.simulado) {
     throw new Error(
       "El correo de consola no puede correr en producción. " +
-        "Define CORREO=resend con RESEND_API_KEY y CORREO_REMITENTE."
+        "Define CORREO=gmail (GMAIL_USUARIO y GMAIL_APP_PASSWORD) o CORREO=resend."
     );
   }
 
@@ -184,33 +270,7 @@ function plantillaHtml(opciones: {
 </html>`;
 }
 
-/** El correo de confirmación, en un solo sitio. */
-export function correoDeVerificacion(nombre: string, enlace: string, mensajes: number): Mensaje {
-  const texto = `Hola ${nombre},
-
-Confirma tu correo y te damos ${mensajes} intervenciones más para hablar con Allison:
-
-${enlace}
-
-El enlace vence en 48 horas. Si no creaste esta cuenta, ignora este mensaje.`;
-
-  return {
-    para: "",
-    asunto: `Confirma tu correo y recibe ${mensajes} intervenciones más`,
-    texto,
-    html: plantillaHtml({
-      titulo: `Hola ${nombre}, confirma tu correo`,
-      parrafos: [
-        `Confirma tu correo y te damos <strong>${mensajes} intervenciones más</strong> para hablar con Allison.`,
-      ],
-      boton: { texto: "Confirmar mi correo", enlace },
-      notaFinal:
-        "El enlace vence en 48 horas. Si no creaste esta cuenta, ignora este mensaje.",
-    }),
-  };
-}
-
-/** El correo de recuperación de contraseña, junto al de verificación. */
+/** El correo de recuperación de contraseña. */
 export function correoDeRecuperacion(nombre: string, enlace: string): Mensaje {
   const texto = `Hola ${nombre},
 

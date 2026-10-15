@@ -47,6 +47,12 @@ export interface Mensaje {
   rol: "alumno" | "allison";
   /** Literal, SIN corregir. Los errores del alumno se conservan tal cual. */
   texto: string;
+  /**
+   * Solo en mensajes de Allison que mezclan idiomas: el mismo texto con
+   * los marcadores [es] / [en-US] que su voz necesita para cambiar de
+   * idioma. La pantalla muestra `texto`; el audio se pide con esto.
+   */
+  textoVoz?: string;
   audioUrl?: string;
   duracionSeg?: number;
   correcciones: Correccion[];

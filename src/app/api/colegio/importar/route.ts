@@ -6,7 +6,7 @@ import { sql } from "@/lib/db";
 import { leerCsv } from "@/lib/importar";
 import { limitar } from "@/lib/limite";
 import { alumnoActual } from "@/lib/sesion";
-import { PRUEBA_TOTAL } from "@/lib/verificacion";
+import { MENSAJES_PRUEBA } from "@/lib/prueba";
 
 const MAX_ALUMNOS = 1000;
 
@@ -129,14 +129,14 @@ export async function POST(peticion: Request) {
         returning id
       `;
       await tx`
-        insert into saldos (user_id, mensajes_recarga) values (${u.id}, ${PRUEBA_TOTAL})
+        insert into saldos (user_id, mensajes_recarga) values (${u.id}, ${MENSAJES_PRUEBA})
       `;
       await tx`
         insert into movimientos_credito
           (user_id, tipo, bolsa, cantidad, saldo_plan_despues,
            saldo_recarga_despues, nota)
         values
-          (${u.id}, 'bono', 'recarga', ${PRUEBA_TOTAL}, 0, ${PRUEBA_TOTAL},
+          (${u.id}, 'bono', 'recarga', ${MENSAJES_PRUEBA}, 0, ${MENSAJES_PRUEBA},
            'Prueba al cargar el alumno desde el colegio')
       `;
     }

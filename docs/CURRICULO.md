@@ -23,12 +23,20 @@ prioriza al **hablar**, no qué omite del panel de correcciones.*
 
 | Nivel | Velocidad | Largo de su respuesta | Español | Prioriza al hablar | Deja para el panel |
 |---|---|---|---|---|---|
-| **A1** | Muy lenta, pausada | 5–8 palabras | Permitido cuando el alumno se bloquea o lo pide | Solo lo que impide entender | Artículos, preposiciones, plurales |
-| **A2** | Lenta | 8–12 palabras | Solo si el alumno lo pide | Tiempos verbales básicos, orden de palabras | Matices, colocaciones |
-| **B1** | Natural pero pausada | 12–20 palabras | Casi nunca | Tiempos verbales, preposiciones frecuentes, sonidos problemáticos | Idiomatismos, registro |
-| **B2** | Natural | 20–30 palabras | No | Naturalidad, colocaciones, phrasal verbs | Sutilezas de registro |
-| **C1** | Natural completa | 30–45 palabras | No | Registro, matiz, idiomatismos | Casi nada |
-| **C2** | De nativa | Sin límite | No | Precisión léxica, subtexto | — |
+| **A1** | Muy lenta, pausada | 5–8 palabras | Solo al corregir: una frase en español tras la corrección en inglés, para el error más importante | Solo lo que impide entender | Artículos, preposiciones, plurales |
+| **A2** | Lenta | 8–12 palabras | Solo al corregir: una frase en español tras la corrección en inglés, para el error más importante | Tiempos verbales básicos, orden de palabras | Matices, colocaciones |
+| **B1** | Natural pero pausada | 12–20 palabras | Solo al corregir, y solo si la regla es nueva o sutil; una frase | Tiempos verbales, preposiciones frecuentes, sonidos problemáticos | Idiomatismos, registro |
+| **B2** | Natural | 20–30 palabras | No, ni al corregir | Naturalidad, colocaciones, phrasal verbs | Sutilezas de registro |
+| **C1** | Natural completa | 30–45 palabras | No, ni al corregir | Registro, matiz, idiomatismos | Casi nada |
+| **C2** | De nativa | Sin límite | No, ni al corregir | Precisión léxica, subtexto | — |
+
+*El español lo dice la misma voz de Allison, con marcadores `[es] … [en-US]` que la pantalla
+no muestra, y tiene un solo trabajo: que la corrección se entienda. Nunca traduce la
+respuesta ni la pregunta (eso sonaba a mensaje repetido). Si el alumno pide español o dice
+que no entendió, Allison lo repite en inglés más simple y le recuerda el botón de traducción
+y la velocidad lenta; a la tercera vez le recomienda entrenar el oído. El código garantiza
+como máximo un tramo en español por turno, ninguno de B2 en adelante y ninguna frase
+repetida (`src/lib/habla.ts`). Política completa en `src/lib/allison.ts`.*
 
 ### Regla de la corrección hablada
 

@@ -151,11 +151,14 @@ for (const caso of CASOS) {
     const sinEcoDelHistorial = caso.noEnTranscripcion
       ? !caso.noEnTranscripcion.test(r.transcripcion)
       : true;
-    // La respuesta va SIEMPRE en inglés: la voz es inglesa y una sola
-    // palabra en español sale destrozada por ella. El español del
-    // alumno vive en la transcripción y en el botón de traducción.
+    // El español en la voz solo vale DENTRO de sus marcadores: fuera de
+    // [es] … [en-US] la voz lo leería con fonética inglesa. Se mira la
+    // versión con marcadores (respuestaVoz) y se le quitan los tramos
+    // en español; lo que quede no puede tener rastros de español.
     const respondeConSustancia = r.respuesta.length > 60;
-    const sinEspanolEnLaVoz = !/[áéíóúñ¿¡]/i.test(r.respuesta);
+    const sinEspanolEnLaVoz = !/[áéíóúñ¿¡]/i.test(
+      (r.respuestaVoz ?? r.respuesta).replace(/\[es\][^[]*(\[en-US\]|$)/g, " ")
+    );
     const traeEjemplo = caso.contiene ? caso.contiene.test(r.respuesta) : true;
     ok =
       r.correcciones.length === 0 &&
@@ -165,7 +168,7 @@ for (const caso of CASOS) {
       sinEspanolEnLaVoz &&
       traeEjemplo;
     detalle = ok
-      ? "transcripción en español, respuesta en inglés puro, con ejemplos"
+      ? "transcripción en español, respuesta con el español solo en sus marcadores, con ejemplos"
       : `transcripcion="${r.transcripcion.slice(0, 40)}" correcciones=${r.correcciones.length} respuesta="${r.respuesta.slice(0, 60)}"`;
   } else if (caso.espera === null) {
     ok = r.correcciones.length === 0;

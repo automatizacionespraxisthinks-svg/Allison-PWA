@@ -1,4 +1,5 @@
 import { googleConfigurado } from "@/lib/google";
+import { MENSAJES_PRUEBA } from "@/lib/prueba";
 import { FormularioRegistro } from "./FormularioRegistro";
 
 /** Por lo mismo que /entrar: las llaves de Google se leen en caliente. */
@@ -26,6 +27,10 @@ export default async function PaginaRegistro({
 }) {
   const { google } = await searchParams;
   return (
-    <FormularioRegistro hayGoogle={googleConfigurado()} avisoGoogle={avisoDe(google)} />
+    <FormularioRegistro
+      hayGoogle={googleConfigurado()}
+      avisoGoogle={avisoDe(google)}
+      mensajesPrueba={MENSAJES_PRUEBA}
+    />
   );
 }

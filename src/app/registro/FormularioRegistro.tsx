@@ -15,10 +15,13 @@ const campo =
 export function FormularioRegistro({
   hayGoogle,
   avisoGoogle,
+  mensajesPrueba,
 }: {
   hayGoogle: boolean;
   /** El mensaje con el que devuelve Google a quien no tenía cuenta. */
   avisoGoogle: string | null;
+  /** Viene del servidor: es la misma cifra que se acredita al crear la cuenta. */
+  mensajesPrueba: number;
 }) {
   const router = useRouter();
   const [nombre, setNombre] = useState("");
@@ -30,6 +33,10 @@ export function FormularioRegistro({
   const [declaraEdad, setDeclaraEdad] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  // El botón de Google tiene su propio aviso, justo debajo de él: el
+  // del formulario queda al final, fuera de la pantalla en el celular,
+  // y ahí un "marca las casillas" parecía que el botón no hacía nada.
+  const [errorGoogle, setErrorGoogle] = useState<string | null>(null);
   const [conGoogle, setConGoogle] = useState(false);
 
   async function crearCuenta(e: React.FormEvent) {
@@ -75,10 +82,12 @@ export function FormularioRegistro({
    */
   async function continuarConGoogle() {
     if (!aceptaLegal || !declaraEdad) {
-      setError("Marca las dos casillas de abajo antes de continuar con Google.");
+      setErrorGoogle(
+        "Para crear la cuenta con Google, marca primero las dos casillas del final del formulario."
+      );
       return;
     }
-    setError(null);
+    setErrorGoogle(null);
     setConGoogle(true);
 
     const r = await pedir("/api/registro/google", {
@@ -88,14 +97,20 @@ export function FormularioRegistro({
     });
     const d = r ? await r.json().catch(() => ({})) : {};
     if (!r?.ok) {
-      setError(d.error ?? "No pudimos preparar la entrada con Google. Intenta de nuevo.");
+      setErrorGoogle(d.error ?? "No pudimos preparar la entrada con Google. Intenta de nuevo.");
       setConGoogle(false);
       return;
     }
 
-    // Se va a Google y vuelve a /practicar con la cuenta creada.
-    await signIn("google", { redirectTo: "/practicar" });
-    setConGoogle(false);
+    // Se va a Google y vuelve a /practicar con la cuenta creada. Si no
+    // se pudo ni salir (sin red, o el servidor no respondió), se dice.
+    try {
+      await signIn("google", { redirectTo: "/practicar" });
+    } catch (e) {
+      console.error("No se pudo abrir Google:", e);
+      setErrorGoogle("No pudimos abrir Google. Revisa tu conexión e intenta de nuevo.");
+      setConGoogle(false);
+    }
   }
 
   return (
@@ -107,7 +122,7 @@ export function FormularioRegistro({
         <div>
           <h1 className="text-2xl font-semibold">Crea tu cuenta</h1>
           <p className="mt-1 text-sm text-texto-suave">
-            Te regalamos 20 mensajes para que pruebes. Sin tarjeta.
+            Te regalamos {mensajesPrueba} intervenciones para que pruebes. Sin tarjeta.
           </p>
         </div>
       </div>
@@ -120,20 +135,28 @@ export function FormularioRegistro({
 
       {hayGoogle && (
         <>
-          <button
-            type="button"
-            onClick={continuarConGoogle}
-            disabled={conGoogle}
-            className="flex items-center justify-center gap-3 rounded-xl border border-borde bg-superficie px-4 py-3 font-medium transition hover:bg-superficie-2 disabled:opacity-50"
-          >
-            <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
-              <path fill="#4285F4" d="M22.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h6a5 5 0 0 1-2.2 3.3v2.7h3.6c2.1-1.9 3.2-4.8 3.2-7.9Z" />
-              <path fill="#34A853" d="M12 23c2.9 0 5.4-1 7.2-2.6l-3.6-2.7c-1 .7-2.2 1-3.6 1-2.8 0-5.2-1.9-6-4.4H2.3v2.8A11 11 0 0 0 12 23Z" />
-              <path fill="#FBBC05" d="M6 14.3a6.6 6.6 0 0 1 0-4.2V7.3H2.3a11 11 0 0 0 0 9.8L6 14.3Z" />
-              <path fill="#EA4335" d="M12 4.8c1.6 0 3 .5 4.1 1.6l3.1-3.1A11 11 0 0 0 2.3 7.3L6 10.1c.8-2.5 3.2-4.4 6-4.4Z" />
-            </svg>
-            {conGoogle ? "Abriendo Google…" : "Continuar con Google"}
-          </button>
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={continuarConGoogle}
+              disabled={conGoogle}
+              className="flex items-center justify-center gap-3 rounded-xl border border-borde bg-superficie px-4 py-3 font-medium transition hover:bg-superficie-2 disabled:opacity-50"
+            >
+              <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
+                <path fill="#4285F4" d="M22.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h6a5 5 0 0 1-2.2 3.3v2.7h3.6c2.1-1.9 3.2-4.8 3.2-7.9Z" />
+                <path fill="#34A853" d="M12 23c2.9 0 5.4-1 7.2-2.6l-3.6-2.7c-1 .7-2.2 1-3.6 1-2.8 0-5.2-1.9-6-4.4H2.3v2.8A11 11 0 0 0 12 23Z" />
+                <path fill="#FBBC05" d="M6 14.3a6.6 6.6 0 0 1 0-4.2V7.3H2.3a11 11 0 0 0 0 9.8L6 14.3Z" />
+                <path fill="#EA4335" d="M12 4.8c1.6 0 3 .5 4.1 1.6l3.1-3.1A11 11 0 0 0 2.3 7.3L6 10.1c.8-2.5 3.2-4.4 6-4.4Z" />
+              </svg>
+              {conGoogle ? "Abriendo Google…" : "Continuar con Google"}
+            </button>
+
+            {errorGoogle && (
+              <p role="alert" className="rounded-lg bg-error/10 p-3 text-sm text-error">
+                {errorGoogle}
+              </p>
+            )}
+          </div>
 
           <div className="flex items-center gap-3 text-sm text-texto-suave">
             <span className="h-px flex-1 bg-borde" />o crea tu cuenta<span className="h-px flex-1 bg-borde" />
@@ -234,7 +257,10 @@ export function FormularioRegistro({
             <input
               type="checkbox"
               checked={aceptaLegal}
-              onChange={(e) => setAceptaLegal(e.target.checked)}
+              onChange={(e) => {
+                setAceptaLegal(e.target.checked);
+                setErrorGoogle(null);
+              }}
               className="mt-0.5 size-4 shrink-0 accent-[var(--primario)]"
             />
             <span className="leading-snug">
@@ -255,7 +281,10 @@ export function FormularioRegistro({
             <input
               type="checkbox"
               checked={declaraEdad}
-              onChange={(e) => setDeclaraEdad(e.target.checked)}
+              onChange={(e) => {
+                setDeclaraEdad(e.target.checked);
+                setErrorGoogle(null);
+              }}
               className="mt-0.5 size-4 shrink-0 accent-[var(--primario)]"
             />
             <span className="leading-snug">

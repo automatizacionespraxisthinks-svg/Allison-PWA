@@ -7,7 +7,6 @@ import { signOut } from "next-auth/react";
 import { AvatarAllison } from "@/components/AvatarAllison";
 import { BotonGrabar } from "@/components/BotonGrabar";
 import { Bienvenida } from "@/components/Bienvenida";
-import { AvisoVerificar } from "@/components/AvisoVerificar";
 import { BotonInstalar } from "@/components/InstalarApp";
 import { SelectorNivel } from "@/components/SelectorNivel";
 import { FinDePrueba, type LogroPrueba } from "@/components/FinDePrueba";
@@ -29,11 +28,8 @@ interface Props {
   conversacionId: string;
   historial: Mensaje[];
   enPrueba: boolean;
-  faltaVerificar: boolean;
   /** Viene del servidor: las variables sin NEXT_PUBLIC_ no existen aquí,
    *  y un número escrito a mano quedaría mintiendo si cambia el .env. */
-  mensajesPorVerificar: number;
-  /** La recarga mínima, por la misma razón. */
   recargaMinima: number;
   esCoordinador: boolean;
   esAdmin: boolean;
@@ -77,8 +73,6 @@ export function Conversacion({
   conversacionId: idInicial,
   historial,
   enPrueba,
-  faltaVerificar,
-  mensajesPorVerificar,
   recargaMinima,
   esCoordinador,
   esAdmin,
@@ -137,13 +131,17 @@ export function Conversacion({
   }, [mensajes, dichoAhora, ideaVisible]);
 
   /**
-   * La voz vive en lib/voz.ts, que tapa los fallos reales del motor
-   * del navegador (el primer audio que no sonaba solo, entre ellos).
-   * La base del nivel por la preferencia del alumno: un A1 en
-   * "rápida" oye 1,0 — más ágil que su base, nunca la de un C1.
+   * La voz vive en lib/voz.ts: la API de voz en streaming, con la del
+   * navegador de respaldo. La base del nivel por la preferencia del
+   * alumno: un A1 en "rápida" oye 1,0 — más ágil que su base, nunca la
+   * de un C1. El estado pasa a "hablando" cuando el audio de verdad
+   * empieza a sonar, no cuando se pide: entre lo uno y lo otro pasan
+   * unos segundos, y el avatar no debe fingir que habla en silencio.
    */
   function hablar(texto: string): Promise<boolean> {
-    return hablarIngles(texto, nivel, velocidad);
+    return hablarIngles(texto, nivel, velocidad, {
+      alEmpezar: () => setEstado("hablando"),
+    });
   }
 
   function manejarAudio(audio: Blob, duracionSeg: number) {
@@ -216,8 +214,10 @@ export function Conversacion({
           }
 
           if (parte.tipo === "respuesta") {
-            setEstado("hablando");
-            hablando = hablar(parte.texto);
+            // Sigue "pensando" hasta que suene: hablar() cambia el estado.
+            // Se dice la versión con marcadores de idioma (voz), no la
+            // que se muestra (texto): así el español suena en español.
+            hablando = hablar(parte.voz ?? parte.texto);
           }
 
           if (parte.tipo === "error") {
@@ -358,6 +358,14 @@ export function Conversacion({
                 <Link href="/conversaciones" className={enlaceMenu}>
                   <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                   Tus conversaciones
+                </Link>
+                <Link href="/glosario" className={enlaceMenu}>
+                  <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z" /></svg>
+                  Tu glosario
+                </Link>
+                <Link href="/perfil" className={enlaceMenu}>
+                  <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
+                  Tu perfil
                 </Link>
                 {esCoordinador && (
                   <Link href="/colegio" className={enlaceMenu}>
@@ -524,8 +532,6 @@ export function Conversacion({
           </span>
         </div>
       )}
-
-      {faltaVerificar && <AvisoVerificar mensajes={mensajesPorVerificar} />}
 
       {/* ---- El chat ---- */}
       <div className="min-h-0 flex-1 overflow-y-auto py-3">

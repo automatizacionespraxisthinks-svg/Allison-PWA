@@ -28,6 +28,8 @@ export interface MensajeConversacion {
   id: string;
   rol: "alumno" | "allison";
   texto: string;
+  /** Con marcadores de idioma, solo en mensajes de Allison con español. */
+  textoVoz?: string;
   correcciones: Correccion[];
   creadoEn: string;
 }
@@ -83,7 +85,7 @@ export async function conversacionDe(
   if (!c) return null;
 
   const filas = await sql`
-    select id, rol, texto, correcciones, creado_en
+    select id, rol, texto, texto_voz, correcciones, creado_en
       from mensajes
      where conversacion_id = ${conversacionId}
      order by creado_en asc
@@ -93,6 +95,7 @@ export async function conversacionDe(
     id: f.id,
     rol: f.rol,
     texto: f.texto ?? "",
+    textoVoz: f.texto_voz ?? undefined,
     correcciones: Array.isArray(f.correcciones) ? f.correcciones : [],
     creadoEn: (f.creado_en as Date).toISOString(),
   }));
@@ -253,7 +256,7 @@ export async function ultimosMensajes(
   cuantos = 30
 ): Promise<MensajeConversacion[]> {
   const filas = await sql`
-    select id, rol, texto, correcciones, creado_en
+    select id, rol, texto, texto_voz, correcciones, creado_en
       from mensajes
      where conversacion_id = ${conversacionId}
      order by creado_en desc
@@ -264,6 +267,7 @@ export async function ultimosMensajes(
     id: f.id,
     rol: f.rol,
     texto: f.texto ?? "",
+    textoVoz: f.texto_voz ?? undefined,
     correcciones: Array.isArray(f.correcciones) ? f.correcciones : [],
     creadoEn: (f.creado_en as Date).toISOString(),
   }));

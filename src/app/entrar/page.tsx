@@ -13,22 +13,36 @@ import { FormularioEntrar } from "./FormularioEntrar";
 export const dynamic = "force-dynamic";
 
 /**
- * Los motivos por los que se vuelve aquí con ?error=. Los dos primeros
- * los pone la aplicación (src/lib/entrada-google.ts); el resto son los
- * códigos de Auth.js (AccessDenied, OAuthCallbackError, Configuration…)
- * y todos significan lo mismo para quien está al frente: no se pudo, y
- * el camino que siempre sirve es el correo con la contraseña.
+ * Los motivos por los que se vuelve aquí con parámetros.
+ *
+ * Con ?error=: los dos primeros los pone la aplicación
+ * (src/lib/entrada-google.ts); el resto son los códigos de Auth.js
+ * (AccessDenied, OAuthCallbackError, Configuration…) y todos significan
+ * lo mismo para quien está al frente: no se pudo, y el camino que
+ * siempre sirve es el correo con la contraseña.
+ *
+ * Con ?callbackUrl= y sin error: Auth.js devolvió a esta página porque
+ * el proveedor de Google NO está registrado en el servidor. Pasa cuando
+ * las llaves se ponen en el panel con el contenedor ya arrancado: la
+ * pantalla las ve (se leen en caliente) pero el proveedor se registró al
+ * arrancar, sin ellas. Sin este aviso, tocar el botón parecía no hacer
+ * nada: la página se recargaba a sí misma.
  */
-function avisoDe(error: string | undefined): string | null {
-  if (!error) return null;
-  switch (error) {
-    case "google-sin-verificar":
-      return "Tu cuenta de Google no tiene el correo verificado, así que no podemos usarla para entrar. Entra con tu correo y contraseña.";
-    case "cuenta-inactiva":
-      return "Esa cuenta está desactivada. Si crees que es un error, escríbenos.";
-    default:
-      return "No pudimos completar la entrada. Intenta de nuevo, o entra con tu correo y contraseña.";
+function avisoDe(error: string | undefined, callbackUrl: string | undefined): string | null {
+  if (error) {
+    switch (error) {
+      case "google-sin-verificar":
+        return "Tu cuenta de Google no tiene el correo verificado, así que no podemos usarla para entrar. Entra con tu correo y contraseña.";
+      case "cuenta-inactiva":
+        return "Esa cuenta está desactivada. Si crees que es un error, escríbenos.";
+      default:
+        return "No pudimos completar la entrada. Intenta de nuevo, o entra con tu correo y contraseña.";
+    }
   }
+  if (callbackUrl) {
+    return "No pudimos abrir Google: el servidor no tiene activo ese inicio de sesión. Si lo acabas de configurar, hay que reiniciar la aplicación para que lea las llaves. Mientras tanto, entra con tu correo y contraseña.";
+  }
+  return null;
 }
 
 /**
@@ -43,8 +57,10 @@ function avisoDe(error: string | undefined): string | null {
 export default async function PaginaEntrar({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; callbackUrl?: string }>;
 }) {
-  const { error } = await searchParams;
-  return <FormularioEntrar hayGoogle={googleConfigurado()} aviso={avisoDe(error)} />;
+  const { error, callbackUrl } = await searchParams;
+  return (
+    <FormularioEntrar hayGoogle={googleConfigurado()} aviso={avisoDe(error, callbackUrl)} />
+  );
 }

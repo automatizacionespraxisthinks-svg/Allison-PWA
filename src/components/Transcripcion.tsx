@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { SelectorDeFrase } from "@/components/SelectorDeFrase";
 import type { Mensaje, Nivel, TipoCorreccion } from "@/lib/tipos";
 import { fijarVelocidad, useVelocidad, VELOCIDADES } from "@/lib/velocidad";
 import { desbloquearVoz, detenerVoz, hablarIngles } from "@/lib/voz";
@@ -24,6 +25,11 @@ const ONDA = [7, 12, 9, 15, 11, 16, 8, 13, 10];
  * a ver. Cada mensaje de Allison lleva UNA fila de controles: audio,
  * onda, velocidad y traducción. Nada de tres pisos de botones por
  * mensaje: el lujo es la contención.
+ *
+ * Todo texto de mensaje lleva data-frase: es lo que permite seleccionar
+ * una palabra o una frase y que aparezca la barra de escuchar y guardar
+ * (SelectorDeFrase). El atributo trae la frase completa, que se guarda
+ * como contexto en el glosario.
  */
 export function Transcripcion({
   mensajes,
@@ -37,6 +43,7 @@ export function Transcripcion({
   const [traducciones, setTraducciones] = useState<Record<string, string>>({});
   const [abiertas, setAbiertas] = useState<Record<string, boolean>>({});
   const [traduciendo, setTraduciendo] = useState<string | null>(null);
+  const zonaRef = useRef<HTMLDivElement>(null);
 
   // Si el alumno se va de la pantalla, la voz no sigue hablando sola
   useEffect(() => {
@@ -56,7 +63,9 @@ export function Transcripcion({
     // Al terminar (o si otro mensaje lo interrumpió), se apaga SOLO si
     // este sigue siendo el que suena: la comprobación funcional evita
     // pisar al que lo reemplazó.
-    void hablarIngles(m.texto, nivel, velocidad).then(() => {
+    // La versión con marcadores, si la hay: es la que sabe decir el
+    // español en español. La pantalla sigue mostrando `texto`.
+    void hablarIngles(m.textoVoz ?? m.texto, nivel, velocidad).then(() => {
       setSonando((s) => (s === m.id ? null : s));
     });
   }
@@ -95,12 +104,14 @@ export function Transcripcion({
   }
 
   return (
-    <div className="w-full space-y-3">
+    <div ref={zonaRef} className="w-full space-y-3">
       {mensajes.map((m) =>
         m.rol === "allison" ? (
           <div key={m.id} className="flex justify-start">
             <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-borde bg-superficie px-4 py-3">
-              <p className="text-[15px] leading-relaxed">{m.texto}</p>
+              <p data-frase={m.texto} className="select-text text-[15px] leading-relaxed">
+                {m.texto}
+              </p>
 
               {/* Una sola fila: audio · onda · velocidad · traducción */}
               <div className="mt-2.5 flex items-center gap-2.5">
@@ -175,12 +186,14 @@ export function Transcripcion({
         ) : (
           <div key={m.id} className="flex justify-end">
             <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primario-suave px-4 py-3 text-texto">
-              <p className="text-[15px] leading-relaxed">{m.texto}</p>
+              <p data-frase={m.texto} className="select-text text-[15px] leading-relaxed">
+                {m.texto}
+              </p>
 
               {m.correcciones.length > 0 && (
                 <ul className="mt-3 space-y-2.5 border-t border-primario/15 pt-3">
                   {m.correcciones.map((c, i) => (
-                    <li key={i} className="text-sm">
+                    <li key={i} data-frase={c.correccion} className="select-text text-sm">
                       <span className="mb-0.5 block text-xs font-semibold uppercase tracking-wide text-texto-suave">
                         {ETIQUETA[c.tipo]}
                       </span>
@@ -201,6 +214,8 @@ export function Transcripcion({
           </div>
         )
       )}
+
+      <SelectorDeFrase zona={zonaRef} nivel={nivel} />
     </div>
   );
 }

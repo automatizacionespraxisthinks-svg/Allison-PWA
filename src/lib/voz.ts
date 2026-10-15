@@ -1,174 +1,232 @@
 "use client";
 
+import type { IdiomaVoz } from "./habla";
+import { pedir } from "./pedir";
 import type { Nivel } from "./tipos";
+import {
+  desbloquearVozNavegador,
+  detenerVozNavegador,
+  hablarConNavegador,
+} from "./voz-navegador";
 
 /**
- * La voz de Allison — PROVISIONAL sobre la voz del navegador, hasta
- * que el TTS del VPS esté conectado.
+ * La voz de Allison, en el navegador.
  *
- * Este módulo existe porque hablar con speechSynthesis "a secas" falla
- * de maneras distintas según el navegador, y cada fallo es un alumno
- * convencido de que la app está rota. Los cuatro fallos reales que
- * este módulo tapa:
+ * Desde septiembre de 2026 la voz la genera la API de texto a voz de
+ * Praxis, a través del servidor (src/lib/tts.ts): el navegador registra
+ * el texto en /api/voz y reproduce la dirección que recibe en un
+ * <audio>. El mp3 llega por partes mientras se genera, así que empieza
+ * a sonar a los pocos segundos aunque la frase sea larga.
  *
- * 1. cancel() seguido de speak() en la misma vuelta: Chrome a veces
- *    descarta el speak nuevo. Aquí solo se cancela si algo suena, y el
- *    speak espera unos milisegundos.
- * 2. El motor exige un speak() DURANTE un gesto del usuario para
- *    "desbloquearse" (iOS y algunos Android). La respuesta de Allison
- *    llega segundos después del gesto, así que desbloquearVoz() habla
- *    en silencio en el momento del toque.
- * 3. En el primer uso getVoices() está vacío y el navegador puede caer
- *    en la voz del sistema — en un teléfono colombiano, una voz en
- *    ESPAÑOL leyendo inglés. Se esperan las voces (con tope) y se
- *    elige una en-US de verdad.
- * 4. Chrome a veces deja el motor en pausa y el speak queda mudo:
- *    resume() al arrancar y un latido que insiste mientras suena.
+ * Tres decisiones que no se ven pero se oyen:
  *
- * Y si aun así el navegador falla, se reintenta UNA vez: la mayoría de
- * los fallos de arranque son transitorios.
+ *   · UN solo <audio> para toda la página, "bendecido" durante un gesto
+ *     real del alumno (tocar grabar, enviar texto) reproduciendo un
+ *     silencio. iOS y algunos Android solo dejan reproducir sin gesto a
+ *     un elemento que ya sonó con gesto; la respuesta de Allison llega
+ *     segundos después del toque, y sin esto saldría muda.
+ *   · La velocidad se aplica AQUÍ (playbackRate, conservando el tono),
+ *     no en la API: repetir una frase más despacio es instantáneo, y el
+ *     mismo audio sirve para todas las velocidades.
+ *   · Si la API no está (sin clave, caída, ocupada), se cae a la voz
+ *     del navegador y se dice en la consola. Oír a Allison peor es
+ *     mejor que no oírla.
  */
-
-const hayVoz = () =>
-  typeof window !== "undefined" && "speechSynthesis" in window;
-
-let desbloqueada = false;
-let latidoActivo: number | null = null;
-
-/**
- * Llamar en un gesto REAL del usuario (tocar grabar, enviar texto).
- * Habla un espacio a volumen cero: inaudible, pero cuenta como el
- * speak-con-gesto que iOS y Android exigen para permitir los
- * siguientes sin gesto. Una vez por página basta.
- */
-export function desbloquearVoz(): void {
-  if (desbloqueada || !hayVoz()) return;
-  desbloqueada = true;
-  try {
-    const u = new SpeechSynthesisUtterance(" ");
-    u.volume = 0;
-    window.speechSynthesis.speak(u);
-    // Algunos navegadores solo empiezan a cargar las voces al pedirlas
-    window.speechSynthesis.getVoices();
-  } catch {
-    desbloqueada = false;
-  }
-}
 
 /** La base por nivel: un A1 oye más lento que un C1. */
 export function velocidadBase(nivel: Nivel): number {
   return nivel === "A1" ? 0.8 : nivel === "A2" ? 0.9 : 1;
 }
 
-/** Android reporta "en_US" con guion bajo; se normaliza antes de comparar. */
-const lengua = (v: SpeechSynthesisVoice) =>
-  v.lang.toLowerCase().replace("_", "-");
-
-function mejorVozIngles(): SpeechSynthesisVoice | null {
-  const todas = window.speechSynthesis.getVoices();
-  const enUS = todas.filter((v) => lengua(v).startsWith("en-us"));
-  const en = todas.filter((v) => lengua(v).startsWith("en"));
-
-  return (
-    // La de Google es la buena en Chrome; la default del sistema después
-    enUS.find((v) => v.name.includes("Google")) ??
-    enUS.find((v) => v.default) ??
-    enUS[0] ??
-    en[0] ??
-    null
-  );
+export interface OpcionesHabla {
+  /** Se llama cuando el audio de verdad empieza a sonar. */
+  alEmpezar?: () => void;
 }
 
-/** Espera a que el navegador cargue las voces, con tope: hablar tarde
- *  es mejor que no hablar. */
-function conVoces(maxMs = 1200): Promise<void> {
-  const s = window.speechSynthesis;
-  if (s.getVoices().length > 0) return Promise.resolve();
+let elemento: HTMLAudioElement | null = null;
+let desbloqueada = false;
+/** Número de la última petición: una nueva invalida a la anterior. */
+let turno = 0;
+/** Cómo terminar la reproducción en curso desde fuera (detenerVoz). */
+let cortarEnCurso: (() => void) | null = null;
 
-  return new Promise((resolver) => {
-    const listo = () => {
-      s.removeEventListener("voiceschanged", listo);
-      clearTimeout(tope);
-      resolver();
-    };
-    const tope = setTimeout(listo, maxMs);
-    s.addEventListener("voiceschanged", listo);
-    s.getVoices();
-  });
-}
-
-/** Corta lo que esté sonando (y su latido). */
-export function detenerVoz(): void {
-  if (!hayVoz()) return;
-  if (latidoActivo !== null) {
-    clearInterval(latidoActivo);
-    latidoActivo = null;
+function reproductor(): HTMLAudioElement {
+  if (!elemento) {
+    elemento = new Audio();
+    elemento.preload = "auto";
+    // Sin esto, iOS abre el reproductor a pantalla completa.
+    elemento.setAttribute("playsinline", "");
   }
-  window.speechSynthesis.cancel();
+  return elemento;
+}
+
+/** Un WAV de un décimo de segundo en silencio, para bendecir el <audio>. */
+function silencio(): string {
+  const muestras = 800; // 0,1 s a 8 kHz, 8 bits, mono
+  const bytes = new Uint8Array(44 + muestras);
+  const vista = new DataView(bytes.buffer);
+  const texto = (pos: number, s: string) => {
+    for (let i = 0; i < s.length; i++) bytes[pos + i] = s.charCodeAt(i);
+  };
+  texto(0, "RIFF");
+  vista.setUint32(4, 36 + muestras, true);
+  texto(8, "WAVE");
+  texto(12, "fmt ");
+  vista.setUint32(16, 16, true);
+  vista.setUint16(20, 1, true);
+  vista.setUint16(22, 1, true);
+  vista.setUint32(24, 8000, true);
+  vista.setUint32(28, 8000, true);
+  vista.setUint16(32, 1, true);
+  vista.setUint16(34, 8, true);
+  texto(36, "data");
+  vista.setUint32(40, muestras, true);
+  bytes.fill(128, 44); // 128 = silencio en PCM de 8 bits
+  return URL.createObjectURL(new Blob([bytes], { type: "audio/wav" }));
 }
 
 /**
- * Dice un texto en inglés. Resuelve cuando termina de sonar; false si
- * el navegador no lo dejó sonar (el alumno siempre tiene el botón ▶
- * en el mensaje para oírlo con su propio gesto).
+ * Llamar en un gesto REAL del usuario. Una vez por página basta.
+ * Desbloquea también la voz del navegador, por si hay que caer a ella.
+ */
+export function desbloquearVoz(): void {
+  if (typeof window === "undefined" || desbloqueada) return;
+  desbloqueada = true;
+  desbloquearVozNavegador();
+  try {
+    const a = reproductor();
+    a.muted = true;
+    a.src = silencio();
+    const promesa = a.play();
+    if (promesa) {
+      promesa
+        .then(() => {
+          a.pause();
+          a.muted = false;
+        })
+        .catch(() => {
+          a.muted = false;
+          desbloqueada = false;
+        });
+    }
+  } catch {
+    desbloqueada = false;
+  }
+}
+
+/** Corta lo que esté sonando, venga de la API o del navegador. */
+export function detenerVoz(): void {
+  detenerVozNavegador();
+  const cortar = cortarEnCurso;
+  cortarEnCurso = null;
+  if (elemento) {
+    try {
+      elemento.pause();
+      elemento.removeAttribute("src");
+      elemento.load();
+    } catch {
+      // Un reproductor que no se deja limpiar no es motivo para fallar.
+    }
+  }
+  cortar?.();
+}
+
+/**
+ * Dice un texto en inglés con la voz de Allison. Resuelve cuando
+ * termina de sonar; false si no sonó (el alumno siempre tiene el botón
+ * ▶ en el mensaje para oírlo con su propio gesto).
  */
 export function hablarIngles(
   texto: string,
   nivel: Nivel,
-  velocidad = 1
+  velocidad = 1,
+  opciones?: OpcionesHabla
 ): Promise<boolean> {
-  if (!hayVoz() || !texto.trim()) return Promise.resolve(false);
-  const s = window.speechSynthesis;
+  return hablar(texto, "auto", velocidadBase(nivel) * velocidad, opciones);
+}
 
-  return new Promise((resolver) => {
-    const decir = (esReintento: boolean) => {
-      const voz = new SpeechSynthesisUtterance(texto);
-      voz.lang = "en-US";
-      const elegida = mejorVozIngles();
-      if (elegida) {
-        voz.voice = elegida;
-        voz.lang = elegida.lang;
+/** Lo mismo en español: la bienvenida. */
+export function hablarEspanol(texto: string, opciones?: OpcionesHabla): Promise<boolean> {
+  return hablar(texto, "es", 1, opciones);
+}
+
+async function hablar(
+  texto: string,
+  idioma: IdiomaVoz | "auto",
+  ritmo: number,
+  opciones?: OpcionesHabla
+): Promise<boolean> {
+  if (typeof window === "undefined" || !texto.trim()) return false;
+
+  detenerVoz();
+  const mio = ++turno;
+  const idiomaNavegador: IdiomaVoz = idioma === "es" ? "es" : "en";
+
+  const respuesta = await pedir("/api/voz", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ texto, idioma }),
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (mio !== turno) return false; // se pidió otra cosa mientras tanto
+
+  if (!respuesta?.ok) {
+    const datos = respuesta ? await respuesta.json().catch(() => ({})) : {};
+    console.warn(
+      `La voz de Allison no está disponible (${respuesta?.status ?? "sin red"}` +
+        `${datos?.error ? `: ${datos.error}` : ""}). Se usa la voz del navegador.`
+    );
+    return hablarConNavegador(texto, idiomaNavegador, ritmo, opciones?.alEmpezar);
+  }
+
+  const { url } = (await respuesta.json().catch(() => ({}))) as { url?: string };
+  if (!url || mio !== turno) return false;
+
+  const a = reproductor();
+  return new Promise<boolean>((resolver) => {
+    let empezo = false;
+    let cerrado = false;
+    const cerrar = (resultado: boolean | Promise<boolean>) => {
+      if (cerrado) return;
+      cerrado = true;
+      a.onplaying = a.onended = a.onerror = null;
+      if (cortarEnCurso === cortar) cortarEnCurso = null;
+      resolver(resultado);
+    };
+    const cortar = () => cerrar(false);
+    cortarEnCurso = cortar;
+
+    a.onplaying = () => {
+      if (!empezo) {
+        empezo = true;
+        opciones?.alEmpezar?.();
       }
-      voz.rate = velocidadBase(nivel) * velocidad;
-
-      // Cada intento lleva SU latido y limpia solo el suyo: si uno
-      // viejo limpiara el del nuevo, el nuevo quedaría sin seguro
-      // contra la pausa fantasma de Chrome.
-      const latido = window.setInterval(() => s.resume(), 5000);
-      latidoActivo = latido;
-      const soltar = () => {
-        window.clearInterval(latido);
-        if (latidoActivo === latido) latidoActivo = null;
-      };
-
-      voz.onend = () => {
-        soltar();
-        resolver(true);
-      };
-      voz.onerror = (e) => {
-        soltar();
-        const cortada = e.error === "canceled" || e.error === "interrupted";
-        if (esReintento || cortada) {
-          resolver(false);
-          return;
-        }
-        // Fallo transitorio de arranque: limpiar y probar UNA vez más
-        s.cancel();
-        setTimeout(() => decir(true), 250);
-      };
-
-      s.speak(voz);
-      s.resume();
+    };
+    a.onended = () => cerrar(true);
+    a.onerror = () => {
+      // La API falló (la ruta respondió un error) o el flujo se cortó.
+      // Si todavía no había sonado nada, el navegador lo dice en su
+      // voz; si se cortó a la mitad, mejor callar que repetir.
+      if (mio !== turno || empezo) {
+        cerrar(false);
+        return;
+      }
+      console.warn("El audio de la API de voz no se pudo reproducir; se usa la voz del navegador.");
+      cerrar(hablarConNavegador(texto, idiomaNavegador, ritmo, opciones?.alEmpezar));
     };
 
-    void conVoces().then(() => {
-      if (s.speaking || s.pending) {
-        // Nunca speak() pegado al cancel(): Chrome se traga el nuevo
-        s.cancel();
-        setTimeout(() => decir(false), 80);
-      } else {
-        decir(false);
-      }
-    });
+    a.playbackRate = ritmo;
+    try {
+      (a as HTMLAudioElement & { preservesPitch?: boolean }).preservesPitch = true;
+    } catch {
+      // Navegadores viejos: cambia el tono con la velocidad. Se oye igual de claro.
+    }
+    a.src = url;
+    const promesa = a.play();
+    if (promesa) {
+      // NotAllowedError: el navegador exige un gesto y no lo hubo. La
+      // voz del navegador tampoco sonaría, así que no se insiste.
+      promesa.catch(() => cerrar(false));
+    }
   });
 }

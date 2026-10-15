@@ -54,6 +54,10 @@ export default function PaginaPrivacidad() {
               frecuentes y temas.
             </li>
             <li>
+              <strong>Tu glosario:</strong> las palabras y frases que decides
+              guardar, con la oración de donde salieron.
+            </li>
+            <li>
               <strong>Tus pagos:</strong> monto, fecha y estado.{" "}
               <strong>No vemos ni guardamos los datos de tu tarjeta</strong> — eso lo
               maneja la pasarela de pago.
@@ -140,7 +144,7 @@ export default function PaginaPrivacidad() {
               solos. También puedes borrarlos tú cuando quieras, desde la aplicación.
             </li>
             <li>
-              <strong>Tu progreso y tu cuenta:</strong> mientras tengas cuenta abierta.
+              <strong>Tu progreso, tu glosario y tu cuenta:</strong> mientras tengas cuenta abierta.
             </li>
             <li>
               <strong>Los registros de pagos:</strong> el tiempo que exige la ley
@@ -180,7 +184,7 @@ export default function PaginaPrivacidad() {
           <p className="mt-2">Como titular de tus datos puedes:</p>
           <ul className="mt-2 flex list-disc flex-col gap-1.5 pl-5">
             <li><strong>Conocer</strong> qué datos tenemos sobre ti.</li>
-            <li><strong>Actualizar</strong> o <strong>rectificar</strong> los que estén mal.</li>
+            <li><strong>Actualizar</strong> o <strong>rectificar</strong> los que estén mal, desde tu perfil en la aplicación o escribiéndonos.</li>
             <li>
               <strong>Suprimirlos</strong>, salvo los que la ley nos obligue a conservar.
             </li>

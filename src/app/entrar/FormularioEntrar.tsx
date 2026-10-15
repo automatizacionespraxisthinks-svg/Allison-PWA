@@ -21,6 +21,7 @@ export function FormularioEntrar({
   const [modo, setModo] = useState<Modo>("correo");
   const [error, setError] = useState<string | null>(aviso ?? null);
   const [enviando, setEnviando] = useState(false);
+  const [abriendoGoogle, setAbriendoGoogle] = useState(false);
 
   const [identificador, setIdentificador] = useState("");
   const [password, setPassword] = useState("");
@@ -57,6 +58,27 @@ export function FormularioEntrar({
     router.refresh();
   }
 
+  /**
+   * El botón de Google se va a Google: lo que hace signIn es pedir la
+   * dirección al servidor y navegar. Si eso falla (sin red, o el
+   * servidor no responde JSON), la promesa reventaba en silencio y el
+   * botón parecía muerto. Ahora se dice, y el botón muestra que está
+   * trabajando mientras tanto.
+   */
+  async function entrarConGoogle() {
+    setError(null);
+    setAbriendoGoogle(true);
+    try {
+      await signIn("google", { redirectTo: "/practicar" });
+    } catch (e) {
+      console.error("No se pudo abrir Google:", e);
+      setError(
+        "No pudimos abrir Google. Revisa tu conexión e intenta de nuevo, o entra con tu correo y contraseña."
+      );
+      setAbriendoGoogle(false);
+    }
+  }
+
   const campo =
     "rounded-xl border border-borde bg-superficie px-4 py-3 outline-none focus:border-primario";
 
@@ -89,11 +111,21 @@ export function FormularioEntrar({
         ))}
       </div>
 
+      {/* El aviso va arriba, junto al botón de Google: es de lo que
+          suele hablar, y en el celular el final del formulario queda
+          fuera de la pantalla. */}
+      {error && (
+        <p role="alert" className="rounded-lg bg-error/10 p-3 text-sm text-error">
+          {error}
+        </p>
+      )}
+
       {modo === "correo" && hayGoogle && (
         <button
           type="button"
-          onClick={() => signIn("google", { redirectTo: "/practicar" })}
-          className="flex items-center justify-center gap-3 rounded-xl border border-borde bg-superficie px-4 py-3 font-medium transition hover:bg-superficie-2"
+          onClick={entrarConGoogle}
+          disabled={abriendoGoogle}
+          className="flex items-center justify-center gap-3 rounded-xl border border-borde bg-superficie px-4 py-3 font-medium transition hover:bg-superficie-2 disabled:opacity-50"
         >
           <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
             <path fill="#4285F4" d="M22.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h6a5 5 0 0 1-2.2 3.3v2.7h3.6c2.1-1.9 3.2-4.8 3.2-7.9Z" />
@@ -101,7 +133,7 @@ export function FormularioEntrar({
             <path fill="#FBBC05" d="M6 14.3a6.6 6.6 0 0 1 0-4.2V7.3H2.3a11 11 0 0 0 0 9.8L6 14.3Z" />
             <path fill="#EA4335" d="M12 4.8c1.6 0 3 .5 4.1 1.6l3.1-3.1A11 11 0 0 0 2.3 7.3L6 10.1c.8-2.5 3.2-4.4 6-4.4Z" />
           </svg>
-          Entrar con Google
+          {abriendoGoogle ? "Abriendo Google…" : "Entrar con Google"}
         </button>
       )}
 
@@ -153,12 +185,6 @@ export function FormularioEntrar({
               </span>
             </label>
           </>
-        )}
-
-        {error && (
-          <p role="alert" className="rounded-lg bg-error/10 p-3 text-sm text-error">
-            {error}
-          </p>
         )}
 
         <button
