@@ -54,7 +54,7 @@ export function FormularioEntrar({
       return;
     }
 
-    router.push("/practicar");
+    router.push("/ruta");
     router.refresh();
   }
 
@@ -69,7 +69,7 @@ export function FormularioEntrar({
     setError(null);
     setAbriendoGoogle(true);
     try {
-      await signIn("google", { redirectTo: "/practicar" });
+      await signIn("google", { redirectTo: "/ruta" });
     } catch (e) {
       console.error("No se pudo abrir Google:", e);
       setError(

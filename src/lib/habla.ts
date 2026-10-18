@@ -93,7 +93,9 @@ export function sinRepeticiones(texto: string): string {
       continue;
     }
     const k = clave(t);
-    if (k.length > 0 && vistas.has(k)) continue;
+    // Una o dos palabras se repiten a propósito: "School. Say it with
+    // me: school." Solo se quitan las frases repetidas más largas.
+    if (k.split(" ").length > 2 && vistas.has(k)) continue;
     vistas.add(k);
     salida.push(t);
   }

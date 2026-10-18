@@ -64,7 +64,8 @@ const Actualizacion = z.object({
   notas: z.string().trim().max(1000).optional(),
   /** Registro del pago en efectivo, que ocurre fuera de la plataforma. */
   pagoCop: z.coerce.number().int().min(0).max(500_000_000).optional(),
-  pagadoHasta: z.string().trim().optional(),
+  /** Fecha AAAA-MM-DD: otra cosa haría fallar la consulta. */
+  pagadoHasta: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
 export async function PATCH(peticion: Request) {

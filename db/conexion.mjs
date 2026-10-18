@@ -63,7 +63,7 @@ export function esHostInterno(host) {
  * @param {string} url
  * @returns {string | null}
  */
-export function hostDe(url) {
+function hostDe(url) {
   try {
     const u = new URL(url.replace(/^postgres(ql)?:/i, "http:"));
     return u.hostname || null;

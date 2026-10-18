@@ -222,6 +222,15 @@ export function correo(): Enviador {
  * botones y gente que desconfía de ellos, y el correo tiene que servir
  * igual.
  */
+/** Lo que viene de afuera (el nombre que escribió la persona) va como texto, nunca como HTML. */
+function escaparHtml(t: string): string {
+  return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+/**
+ * El título, el botón, el enlace y la nota se escapan aquí; los párrafos
+ * son texto fijo del código y pueden traer <b>.
+ */
 function plantillaHtml(opciones: {
   titulo: string;
   parrafos: string[];
@@ -238,7 +247,7 @@ function plantillaHtml(opciones: {
       <p style="margin:0 0 4px;font-size:22px;font-weight:bold;color:#1d4ed8;">Allison</p>
       <p style="margin:0 0 20px;font-size:13px;color:#5a6b85;">Aprende ingl&eacute;s hablando</p>
 
-      <h1 style="margin:0 0 16px;font-size:19px;color:#0e1a2f;">${titulo}</h1>
+      <h1 style="margin:0 0 16px;font-size:19px;color:#0e1a2f;">${escaparHtml(titulo)}</h1>
 
       ${parrafos
         .map(
@@ -248,18 +257,18 @@ function plantillaHtml(opciones: {
         .join("\n      ")}
 
       <div style="margin:24px 0;">
-        <a href="${boton.enlace}"
+        <a href="${escaparHtml(boton.enlace)}"
            style="display:inline-block;background-color:#1d4ed8;color:#ffffff;text-decoration:none;font-size:16px;font-weight:bold;padding:14px 28px;border-radius:12px;">
-          ${boton.texto}
+          ${escaparHtml(boton.texto)}
         </a>
       </div>
 
       <p style="margin:0 0 6px;font-size:12px;color:#5a6b85;">
         Si el bot&oacute;n no funciona, copia este enlace en tu navegador:
       </p>
-      <p style="margin:0 0 18px;font-size:12px;color:#1d4ed8;word-break:break-all;">${boton.enlace}</p>
+      <p style="margin:0 0 18px;font-size:12px;color:#1d4ed8;word-break:break-all;">${escaparHtml(boton.enlace)}</p>
 
-      <p style="margin:0;font-size:12px;color:#5a6b85;line-height:1.5;">${notaFinal}</p>
+      <p style="margin:0;font-size:12px;color:#5a6b85;line-height:1.5;">${escaparHtml(notaFinal)}</p>
     </div>
 
     <p style="margin:16px 0 0;text-align:center;font-size:11px;color:#5a6b85;">
@@ -294,6 +303,37 @@ Si no fuiste tú, ignora este mensaje: tu contraseña sigue igual.`;
       boton: { texto: "Crear contraseña nueva", enlace },
       notaFinal:
         "El enlace vence en una hora y solo sirve una vez. Si no fuiste tú, ignora este mensaje: tu contraseña sigue igual.",
+    }),
+  };
+}
+
+/**
+ * El recordatorio de la racha (plan, sección 10): sale a la hora que
+ * eligió el alumno, el último día antes de perderla. Se apaga en
+ * Perfil · Ajustes.
+ */
+export function correoDeRacha(nombre: string, racha: number, enlace: string): Mensaje {
+  const dias = racha === 1 ? "1 día" : `${racha} días`;
+  const texto = `Hola ${nombre},
+
+Llevas ${dias} de racha y hoy es el último día para no perderla. Con unos minutos en tu ruta basta: una actividad gratis cuenta.
+
+${enlace}
+
+Si no quieres estos correos, apágalos en tu perfil, en Ajustes.`;
+
+  return {
+    para: "",
+    asunto: `Tu racha de ${dias} te espera`,
+    texto,
+    html: plantillaHtml({
+      titulo: `Hola ${nombre}, ¡no pierdas tu racha!`,
+      parrafos: [
+        `Llevas <b>${dias}</b> de racha y hoy es el último día para no perderla.`,
+        "Con unos minutos en tu ruta basta: una actividad gratis también cuenta.",
+      ],
+      boton: { texto: "Seguir mi ruta", enlace },
+      notaFinal: "Si no quieres estos correos, apágalos en tu perfil, en Ajustes.",
     }),
   };
 }

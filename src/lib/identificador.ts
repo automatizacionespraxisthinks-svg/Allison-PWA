@@ -65,8 +65,3 @@ export function interpretar(entrada: string): Identificador {
   }
   return { tipo: "username", valor: username };
 }
-
-/** Cómo se le muestra al alumno lo que escribió. */
-export function describir(tipo: TipoIdentificador): string {
-  return tipo === "email" ? "correo" : tipo === "telefono" ? "celular" : "usuario";
-}

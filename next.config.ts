@@ -27,12 +27,25 @@ const nextConfig: NextConfig = {
 
   async headers() {
     return [
+      /**
+       * Las ilustraciones de la ruta no cambian: 30 días en el navegador.
+       * Los alumnos usan datos móviles y cada lección muestra varias. Si
+       * una ilustración se rehace, se le cambia el nombre al archivo.
+       */
+      {
+        source: "/ilustraciones/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=86400" }],
+      },
       {
         source: "/:path*",
         headers: [
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // Una vez por HTTPS, el navegador no vuelve a intentar HTTP en un año
+          // (sin HTTPS no hay micrófono, así que Allison nunca va por HTTP).
+          // Sin includeSubDomains: el dominio puede tener otros servicios.
+          { key: "Strict-Transport-Security", value: "max-age=31536000" },
           {
             key: "Permissions-Policy",
             value: "microphone=(self), camera=(), geolocation=(), payment=()",

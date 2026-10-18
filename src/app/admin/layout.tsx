@@ -2,11 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { exigirAdmin } from "@/lib/admin";
 
+// Todo el panel son datos del momento: nunca se arma al compilar.
+export const dynamic = "force-dynamic";
+
 /**
- * Todo lo que cuelgue de /admin pasa por aquí.
- *
- * La comprobación de rol vive en el layout y no en cada página: así una
- * pantalla nueva queda protegida aunque a quien la escriba se le olvide.
+ * El marco del panel. Este redirect solo es para la navegación normal:
+ * en Next 16 una página se puede pedir sin volver a pasar por su layout,
+ * así que la protección de verdad es `paginaDeAdmin()` en la primera
+ * línea de cada página (`npm run probar:admin` lo revisa).
  */
 export default async function LayoutAdmin({
   children,
@@ -16,21 +19,26 @@ export default async function LayoutAdmin({
   const admin = await exigirAdmin();
   if (!admin) redirect("/practicar");
 
+  // Las ocho secciones del panel (plan, sección 21).
   const enlaces = [
     { href: "/admin", texto: "Resumen" },
     { href: "/admin/uso", texto: "Uso e IA" },
+    { href: "/admin/usuarios", texto: "Alumnos" },
     { href: "/admin/colegios", texto: "Colegios" },
-    { href: "/admin/usuarios", texto: "Usuarios" },
+    { href: "/admin/reportes", texto: "Reportes" },
+    { href: "/admin/ruta", texto: "Ruta" },
+    { href: "/admin/recargas", texto: "Recargas" },
+    { href: "/admin/ajustes", texto: "Ajustes" },
   ];
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-5">
+    <div className="mx-auto max-w-6xl px-4 py-5">
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-borde pb-4">
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-texto px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-fondo">
             Admin
           </span>
-          <nav className="flex gap-1">
+          <nav className="flex flex-wrap gap-1">
             {enlaces.map((e) => (
               <Link
                 key={e.href}

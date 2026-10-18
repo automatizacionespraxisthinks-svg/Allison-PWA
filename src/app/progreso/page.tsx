@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ConNavegacion } from "@/components/Navegacion";
 import { MapaDominio } from "@/components/MapaDominio";
 import { SemanaPractica } from "@/components/SemanaPractica";
 import { progresoDe } from "@/lib/progreso";
@@ -46,6 +47,7 @@ export default async function PaginaProgreso() {
   const circunferencia = 2 * Math.PI * 52;
 
   return (
+    <ConNavegacion racha={alumno.rachaDias}>
     <main className="mx-auto flex min-h-dvh max-w-lg flex-col gap-5 px-4 py-5">
       <header className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Hola, {nombreCorto}</h1>
@@ -172,5 +174,6 @@ export default async function PaginaProgreso() {
         <MapaDominio temas={p.temas} />
       </div>
     </main>
+    </ConNavegacion>
   );
 }

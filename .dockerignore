@@ -33,9 +33,16 @@ scripts/evaluar-*.mjs
 scripts/medir-*.mjs
 scripts/limpiar-*.mjs
 scripts/sembrar-*.mjs
+scripts/listar-*.mjs
+scripts/preparar-*.mjs
+scripts/generar-*.mjs
+scripts/bold-*.mjs
 
 # Documentación y editores
 README.md
 docs
 .vscode
 .idea
+
+# Las ilustraciones originales (unos 50 MB): la app solo usa las de public/ilustraciones
+ilustraciones-*

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ConNavegacion } from "@/components/Navegacion";
 import { FormularioRecarga } from "@/components/FormularioRecarga";
 import { pasarela } from "@/lib/pasarela";
 import { configPrecios } from "@/lib/precios";
@@ -12,6 +13,7 @@ export default async function PaginaRecargar() {
   const saldo = alumno.mensajesPlan + alumno.mensajesRecarga;
 
   return (
+    <ConNavegacion racha={alumno.rachaDias}>
     <main className="mx-auto flex min-h-dvh max-w-lg flex-col gap-6 px-4 py-5">
       <header className="flex items-center justify-between">
         <Link href="/practicar" className="text-sm text-texto-suave">
@@ -45,5 +47,6 @@ export default async function PaginaRecargar() {
         ¿Practicas todos los días? <strong className="text-primario">Mira los planes</strong>
       </Link>
     </main>
+    </ConNavegacion>
   );
 }

@@ -23,11 +23,15 @@ export function SelectorPeriodo({
   activo,
   desde,
   hasta,
+  conservar = "",
 }: {
   activo: string;
   desde: string;
   hasta: string;
+  /** Los demás filtros de la dirección ("colegio=…&q=…"), que no se pierden al cambiar el periodo. */
+  conservar?: string;
 }) {
+  const resto = conservar ? `&${conservar}` : "";
   const router = useRouter();
   const [d, setD] = useState(desde);
   const [h, setH] = useState(hasta);
@@ -36,7 +40,7 @@ export function SelectorPeriodo({
   function aplicar(e: React.FormEvent) {
     e.preventDefault();
     if (!d || !h || d > h) return;
-    empezar(() => router.push(`/admin/uso?periodo=rango&desde=${d}&hasta=${h}`));
+    empezar(() => router.push(`/admin/uso?periodo=rango&desde=${d}&hasta=${h}${resto}`));
   }
 
   const chip =
@@ -48,7 +52,7 @@ export function SelectorPeriodo({
         {ATAJOS.map((a) => (
           <Link
             key={a.clave}
-            href={`/admin/uso?periodo=${a.clave}`}
+            href={`/admin/uso?periodo=${a.clave}${resto}`}
             className={`${chip} ${
               activo === a.clave
                 ? "border-primario bg-primario text-white"

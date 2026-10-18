@@ -1,14 +1,7 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { randomInt } from "node:crypto";
-import { COSTO_HASH_PIN } from "@/lib/colegio";
-import { sql } from "@/lib/db";
-import { leerCsv } from "@/lib/importar";
-import { limitar } from "@/lib/limite";
+import { cargarAlumnos } from "@/lib/cargaAlumnos";
+import { CUERPO_MUY_GRANDE, cuerpoExcede, limitar } from "@/lib/limite";
 import { alumnoActual } from "@/lib/sesion";
-import { MENSAJES_PRUEBA } from "@/lib/prueba";
-
-const MAX_ALUMNOS = 1000;
 
 /**
  * Carga masiva de alumnos.
@@ -35,119 +28,27 @@ export async function POST(peticion: Request) {
     );
   }
 
-  const { csv, confirmar } = (await peticion.json()) as {
+  // Un curso entero en CSV pesa unos pocos KB; 1 MB alcanza para un colegio grande.
+  if (cuerpoExcede(peticion, 1024 * 1024)) return NextResponse.json(CUERPO_MUY_GRANDE, { status: 413 });
+  const { csv, confirmar, curso } = (await peticion.json().catch(() => ({}))) as {
     csv?: string;
     confirmar?: boolean;
+    curso?: string;
   };
 
   if (typeof csv !== "string" || !csv.trim()) {
     return NextResponse.json({ error: "El archivo llegó vacío" }, { status: 400 });
   }
+  if (csv.length > 1024 * 1024) return NextResponse.json(CUERPO_MUY_GRANDE, { status: 413 });
 
-  const lectura = leerCsv(csv);
-
-  if (lectura.filas.length > MAX_ALUMNOS) {
-    return NextResponse.json(
-      { error: `Máximo ${MAX_ALUMNOS} alumnos por archivo` },
-      { status: 400 }
-    );
-  }
-
-  // Usuarios que ya existen en ESTE colegio
-  const existentes = new Set(
-    (
-      await sql`
-        select lower(username) as username from users
-         where institucion_id = ${usuario.institucionId} and username is not null
-      `
-    ).map((f) => f.username as string)
-  );
-
-  const nuevos = lectura.filas.filter((f) => !existentes.has(f.username));
-  const repetidos = lectura.filas.filter((f) => existentes.has(f.username));
-
-  // Cupo contratado por el colegio
-  const [colegio] = await sql`
-    select cupo_alumnos,
-           (select count(*)::int from users u
-             where u.institucion_id = ${usuario.institucionId}
-               and u.rol = 'estudiante' and u.activo) as actuales
-      from instituciones where id = ${usuario.institucionId}
-  `;
-
-  const cupoLibre =
-    colegio.cupo_alumnos === null
-      ? Number.POSITIVE_INFINITY
-      : colegio.cupo_alumnos - colegio.actuales;
-
-  const resumen = {
-    separador: lectura.separador === ";" ? "punto y coma" : "coma",
-    aCrear: nuevos.length,
-    yaExisten: repetidos.length,
-    rechazadas: lectura.rechazadas,
-    cupoLibre: Number.isFinite(cupoLibre) ? cupoLibre : null,
-    muestra: nuevos.slice(0, 5).map((f) => ({
-      nombre: f.nombre,
-      username: f.username,
-      nivel: f.nivel,
-    })),
-  };
-
-  if (nuevos.length > cupoLibre) {
-    return NextResponse.json(
-      {
-        ...resumen,
-        error: `El colegio tiene cupo para ${cupoLibre} alumnos más y estás cargando ${nuevos.length}.`,
-      },
-      { status: 409 }
-    );
-  }
-
-  if (!confirmar) {
-    return NextResponse.json({ ...resumen, modo: "validacion" });
-  }
-
-  // --- Creación real ---
-  // Los PIN se cifran ANTES de abrir la transacción. Adentro, cada hash
-  // —cientos de milisegundos de CPU— retenía una conexión de la base y
-  // una transacción abierta durante toda la carga: con mil alumnos,
-  // minutos.
-  const preparados: { fila: (typeof nuevos)[number]; pin: string; hash: string }[] = [];
-  for (const fila of nuevos) {
-    const pin = String(randomInt(0, 10_000)).padStart(4, "0");
-    preparados.push({ fila, pin, hash: await bcrypt.hash(pin, COSTO_HASH_PIN) });
-  }
-
-  await sql.begin(async (tx) => {
-    for (const { fila: f, hash } of preparados) {
-      const [u] = await tx`
-        insert into users
-          (tipo_acceso, institucion_id, username, pin_hash, nombre, nivel, rol)
-        values
-          ('institucional', ${usuario.institucionId}, ${f.username},
-           ${hash}, ${f.nombre}, ${f.nivel}, 'estudiante')
-        returning id
-      `;
-      await tx`
-        insert into saldos (user_id, mensajes_recarga) values (${u.id}, ${MENSAJES_PRUEBA})
-      `;
-      await tx`
-        insert into movimientos_credito
-          (user_id, tipo, bolsa, cantidad, saldo_plan_despues,
-           saldo_recarga_despues, nota)
-        values
-          (${u.id}, 'bono', 'recarga', ${MENSAJES_PRUEBA}, 0, ${MENSAJES_PRUEBA},
-           'Prueba al cargar el alumno desde el colegio')
-      `;
-    }
+  // El coordinador carga y actualiza cursos; el saldo lo asigna solo el
+  // administrador (plan, sección 21).
+  const { status, ...r } = await cargarAlumnos({
+    institucionId: usuario.institucionId,
+    csv,
+    confirmar: !!confirmar,
+    cursoParaTodos: typeof curso === "string" ? curso : null,
+    quien: usuario.nombre,
   });
-
-  const credenciales = preparados.map(({ fila, pin }) => ({
-    nombre: fila.nombre,
-    username: fila.username,
-    pin,
-  }));
-
-  // Los PINes viajan UNA vez. En la base solo queda el hash.
-  return NextResponse.json({ ...resumen, modo: "creado", credenciales });
+  return NextResponse.json(r, { status });
 }

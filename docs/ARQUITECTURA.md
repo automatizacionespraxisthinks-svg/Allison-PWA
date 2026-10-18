@@ -67,9 +67,9 @@ errores intactos, y el CPX22 pasa de ~5 a ~30 estudiantes simultáneos.
 - **Los mensajes del plan caducan** al terminar el mes. Al agotarse se le **pregunta** al alumno si quiere renovar (no hay débito automático forzado)
 - **Planes de varios meses:** entregan los mensajes **cada mes**, contados desde el día de compra (un plan del 31 no se corre al 28). Lo pone al día `renovar_suscripcion` (db/020): al cargar el saldo del alumno y en la tarea de cada hora. Los meses en que nadie la pone al día no se entregan de golpe: habrían vencido igual
 - **Orden de consumo:** primero los del plan, después los de recarga
-- **Prueba gratis: 20 mensajes, entregados completos al crear la cuenta** (`MENSAJES_PRUEBA`)
+- **Prueba gratis: 5 intervenciones, entregadas completas al crear la cuenta** (`MENSAJES_PRUEBA`). Eran 20 hasta oct-2026; el plan de mejoras la bajó a 5 porque lo que no usa IA ya es gratis
   - Antes venían partidos (5 al registrarse y 15 al confirmar el correo) para no pagarle a Google 20 mensajes por cada correo inventado. Se quitó en sep-2026: el aviso de "+15 al confirmar" estorbaba y el correo era un paso más donde se perdía gente. El freno contra el abuso es el tope global de cuentas nuevas por hora
-  - Con **Google** son los mismos 20, y el correo queda verificado por Google
+  - Con **Google** son las mismas 5, y el correo queda verificado por Google
   - *Cómo se recoge el consentimiento con Google:* las casillas se marcan en `/registro` y viajan en una cookie firmada de 10 minutos hasta el regreso de Google; sin ella la cuenta no se crea, ni siquiera el nombre y el correo (`src/lib/entrada-google.ts`). Quien toca "Entrar con Google" en `/entrar` sin tener cuenta rebota a `/registro` con el aviso
   - Los **alumnos de colegio reciben los 20 completos** al cargarlos desde el colegio
 - **Sin factura electrónica** por ahora
@@ -201,6 +201,72 @@ No puede: ver conversaciones individuales, cambiar créditos, ni tocar la config
 - **temas** — nivel, titulo, objetivo, vocabulario_clave, estructura_gramatical, prompt_sistema
 - **glosario** — user_id, texto, contexto, creado_en. Las palabras y frases que el alumno guarda desde un mensaje (selecciona el texto → **Guardar**) o escribe a mano en `/glosario`. Única por alumno sin distinguir mayúsculas. **No se borra** con las conversaciones: el contexto se copia porque el mensaje se va a los 20 días y el glosario se queda
 
+### Mi ruta (etapa 5, `db/024_ruta.sql`)
+
+El contenido de cada nivel vive en el código (`src/lib/ruta/`); la base guarda solo el avance. Cada parada tiene una clave estable con el nivel adelante (`a1-p03`, `a1-r1`, `a1-rf`), así que el avance de cada nivel queda aparte y se conserva al bajar y volver.
+
+- **ruta_lecciones** — user_id, parada, leccion, paso (actividades hechas del intento en curso), aciertos y calificadas del intento, **estrellas** (la mejor, nunca baja), completada_en
+- **ruta_paradas** — user_id, parada, estrellas del escenario, **sello_en** (estampilla), saltada_en, anterior_en (alumnos actuales), intento_salto_en (un intento de saltar por día)
+- **ruta_fallos** — lo que el alumno no logró ni con las pistas, para el repaso sorpresa (etapa 7)
+- **users** — meta_diaria_min, recordatorio_hora, recordatorio_enviado_en, primera_sesion_en, ruta_presentada_en, **nivel_maximo** (regla del nivel: solo baja; sube hasta donde ya estuvo o completando el nivel; el administrador sube y baja a voluntad)
+- **progreso_diario.segundos_practica** — minutos de la meta de hoy. **marcar_dia_de_racha** cuenta el día si conversó o si sumó 3 minutos en la ruta, con dos días de descanso
+- **conversaciones.modo = 'ruta'** y **conversaciones.ruta (jsonb)** — los escenarios y las entrevistas: cada intento es una conversación aparte que no se vuelve el hilo de Hablar
+- **uso_diario.turnos_por_parte** — intervenciones por parte de la app (ruta, escenario, hablar), para el panel
+
+Las reglas de qué está abierto, qué sigue, saltar y estrellas están en `src/lib/ruta/estado.ts` (puras, probadas con `npm run probar:ruta`). La evaluación corta está en `/api/ruta/evaluar` (el servidor busca lo esperado en el contenido) y los escenarios y la entrevista en `/api/ruta/escena` (prompt en `src/lib/ruta/escena.ts`, probado con flash-lite en `npm run probar:escena`).
+
+**Personas u objetos dentro de una foto** (`Zona` en `src/lib/ruta/tipos.ts`, en porcentaje del ancho y del alto): en Escucha y elige y en Adivina, cada opción con `zona` muestra ampliada su parte de la ilustración (`encuadreZona` en `src/lib/ruta/ilustracion.ts`; `ancho` dice cuánto se ve, 42 % si no se dice), así que ya no hace falta la descripción que delataba la respuesta; en ¿Qué es esto?, `flecha` es la punta de una flecha que baja sobre la foto (`IlustracionCompleta` la dibuja con las coordenadas del dibujo, alineada con object-contain). Los puntos se marcan mirando la ilustración aprobada.
+
+**A2 (Reino Unido)** está entero en `src/lib/ruta/a2/` (diez paradas y dos repasos); mientras no pase la revisión de la docente, `rutaDe("A2")` solo lo devuelve con `RUTA_A2=1` (desarrollo) y los alumnos de A2 siguen en la ruta provisional (sus estampillas ya se guardan con las claves `a2-pNN`, así que se conservan). Lo que se escribió al pasarlo a datos está en `docs/CONTENIDO-A2-POR-REVISAR.md` (`node scripts/listar-por-revisar.mjs a2`). Reglas de A2 en las actividades de siempre: la traducción de Escucha y elige queda a un toque, las palabras de apoyo de Dilo y de la Entrevista aparecen tras el primer fallo, la ayuda del escenario da el comienzo de la frase (`escenario.ayudas`) y en el Repaso final aparece solo desde el segundo fallo (`ayudaDesdeSegundoFallo`). Sus ilustraciones viven en `public/ilustraciones/a2`; las de A1 que reutiliza llevan `a1/` delante (`srcIlustracion`, `src/lib/ruta/ilustracion.ts`). A2 suma dos actividades:
+
+- **Adivina** — preguntas de sí o no hasta descubrir en qué piensa Allison, entre seis tarjetas y dos rondas. Corre en `/api/ruta/escena` con `actividad = adivina`: el modelo solo reconoce qué preguntó (`clasificarAdivina`) y la respuesta sale de la tabla aprobada (`src/lib/ruta/adivina.ts`, puro). Lo que piensa Allison queda en `conversaciones.ruta` y nunca sale al navegador (`estadoPublico`).
+- **Cuéntame** — hasta 30 segundos sobre un tema. `/api/ruta/evaluar` lo transcribe a ciegas y después `comentarRelato` (`src/lib/evaluacion.ts`) cuenta las frases y elige una cosa bien y una por mejorar; el código verifica que lo citado esté en lo que dijo. Una intervención por intento, también escrito.
+
+**B1 (Canadá)** está entero en `src/lib/ruta/b1/` (diez paradas y dos repasos, del documento "Contenido B1" aprobado el 17 y el 18 de octubre de 2026). Como A2, `rutaDe("B1")` solo lo devuelve con `RUTA_B1=1` mientras no pase la revisión de la docente (con un nativo de Estados Unidos para el Repaso final) y la prueba; lo escrito al pasarlo a datos está en `docs/CONTENIDO-B1-POR-REVISAR.md` (`node scripts/listar-por-revisar.mjs b1`) y las ilustraciones se pasan con `npm run ilustraciones:b1`. Desde B1 Allison deja de llevar al alumno de la mano (`desdeB1`, `src/lib/tipos.ts`):
+
+- **Lo que explica va en inglés sencillo**, y un toque en «En español» lo muestra traducido, una cosa o la otra (`Explicado` en `src/components/ruta/leccion/comun.tsx`; los datos traen `explicacion` en inglés y `es`). Vale para Dilo, ¿Qué es esto?, Repite (`consejoEs`), Narra y los comentarios de Cuéntame (`comentarRelato` devuelve el "porqué" en inglés y en español). En la Entrevista, Allison da su pista en inglés (`entrevista.pistas`) en vez de preguntar en español, y en el escenario, si el alumno habla en español, dice "Sorry, in English, please!" sin salir del inglés.
+- **Escucha y elige** es una historia sin traducción ni texto a la vista; se oye otra vez y, una sola vez, más despacio. **¿Qué es esto?** trae una sola pista. **Dilo** no tiene palabras de apoyo: la frase tiene dos partes (`dilo.partes`) y al primer fallo Allison da la primera palabra de la que falló (`primeraDeLaParte`). **Responde rápido** es de 20 segundos y **Cuéntame** de un minuto (acierto desde 40 segundos con 5 frases).
+- **Narra la secuencia** (`Narra.tsx`): cuatro dibujos en orden, las palabras para ordenar y un minuto. `/api/ruta/evaluar` lo transcribe a ciegas y `comentarNarracion` dice qué dibujos contó; el código cuenta cuántos van en orden (`dibujosEnOrden`, acierto con 3 de 4) y cuál faltó. La ayuda muestra el verbo de cada dibujo y apaga una estrella.
+- **Enséñale a Allison** (`Ensenale.tsx`): la Entrevista al revés. Corre en `/api/ruta/escena` con `actividad = ensenale`; el modelo solo reconoce si respondió, si fue muy corto o si le preguntó algo (`clasificarEnsenale`), y lo que dice Allison sale de la actividad aprobada (`respuestaDeEnsenale`): reacción y pregunta siguiente, "Tell me more!", la pregunta más simple, o su respuesta de la ficha (`respuestasDeAllison`). Termina después de las cuatro preguntas.
+- **El escenario trae un imprevisto** (`escenario.imprevisto`): la tarea que lo resuelve no se ve (ni en pantalla ni para el modelo, `tareasVisibles`) hasta cumplir la tarea después de la cual pasa; en ese turno Allison dice la línea aprobada del diálogo de ejemplo (`imprevisto.linea`), así llega siempre igual. Para no dar tareas por cumplidas antes de tiempo, el modelo ve junto a cada tarea lo que dice el alumno en el ejemplo (probado con flash-lite contra los diálogos de ejemplo de Toronto, Banff y el Repaso final). La ayuda da la idea en inglés (`escenario.ayudas`) y el mínimo es de 12 intervenciones.
+
+El mapa de Canadá (`MapaViaje`), las estampillas de las diez ciudades y la de "B1 completo" (`Estampilla`, `selloDe`) y los ajustes aprobados del mapa (`src/lib/ruta/mapas.ts`) ya están. `npm run probar:contenido` revisa B1 con sus reglas.
+
+### Viajes, Escenarios y repasos sorpresa (etapa 7, `db/025_viajes_escenarios_repasos.sql`)
+
+Los tres usan piezas de la ruta. Los viajes y los escenarios corren con el mismo motor del escenario de cierre (`src/lib/ruta/escena.ts`, `/api/ruta/escena` con `actividad` = `viaje` o `catalogo`) y la misma pantalla de conversación (`EscenaChat`, pantalla 8): portada, Allison en su papel, la misión con 3 tareas, burbujas con audio y traducción, y la idea, el micrófono y el teclado.
+
+- **Viajes** — el contenido está en `src/lib/ruta/viajes.ts` (fichas culturales verificadas); `reglasDeViaje` le pasa al prompt solo esos datos, las preguntas para comparar con Colombia (preguntando, nunca afirmando) y lo que se evita. Cada viaje se abre al ganar el anterior y respeta su nivel mínimo. **viajes_avance**: estrellas (la mejor), sello_en, veces.
+- **Escenarios** — el catálogo está en `src/lib/escenarios/datos.ts` (sin base, lo leen las pruebas) y los propios en **escenarios_propios** (`/api/escenarios/propio`: flash-lite arma título, lugar, papel, contexto, 3 tareas y la primera línea; usa 1 intervención y se devuelve si la IA falla o el pedido no sirve). **escenarios_avance**: estrellas y veces, también de los propios (`propio:<id>`).
+- **La idea** — `pedirAyuda` cuenta la ayuda (deja el máximo en 2 estrellas, como en los escenarios de cierre). Si la escena no trae una frase de ejemplo (viajes y propios), la sugiere `/api/ayuda` con la tarea actual; es gratis.
+- **Repaso sorpresa** (`src/lib/ruta/repaso.ts`, `/ruta/repaso`, pantalla 9) — toma de **ruta_fallos** lo que lleva más de 2 días sin repasar (`repasado_en` nulo), máximo 5 preguntas y 2 repasos por día, mínimo 3 fallos. ¿Qué es esto?, Dilo y Repite vuelven tal cual; la frase que Allison dio en Describe y la mejora de un escenario (lección 0) se repiten; la pregunta de Responde rápido vuelve sola. **repasos_sorpresa** guarda las preguntas: `/api/ruta/evaluar` recibe `repaso` y `n` y busca lo esperado ahí, no en lo que mande el navegador. Al terminar (`/api/ruta/repaso`) da 1 estrella; lo que salió bien sale de la lista y lo que se volvió a fallar regresa más adelante (una Repite escrita no cuenta ni para bien ni para mal).
+- **Practicarla** — en el resumen de una escena, la frase mejor se repite con Repite; `/api/ruta/evaluar` con `escena` toma la frase de la conversación del alumno.
+- **estrellasTotales** suma lecciones, escenarios de cierre, viajes, escenarios y repasos.
+
+### Panel de administración (etapa 8, `db/026_panel.sql`)
+
+Ocho secciones (plan, secciones 12, 16 y 21): Resumen, Uso e IA, Alumnos, Colegios, Reportes, Ruta, Recargas y Ajustes. Las consultas viven en `src/lib/panel/`; todo el panel se arma por petición (`dynamic = "force-dynamic"` en su layout).
+
+**Cada página del panel se protege sola** con `await paginaDeAdmin()` en su primera línea (`src/lib/admin.ts`; `npm run probar:admin` lo revisa). El chequeo del layout no basta: en Next 16 una página se puede pedir sin volver a correr su layout (navegación del cliente con el encabezado del árbol de rutas), y sus datos viajarían igual. Las rutas de `/api/admin/*` llaman a `exigirAdmin()`.
+
+Otras reglas de seguridad que no se ven en pantalla: las rutas que reciben audio, CSV o avisos de pago rechazan un cuerpo grande antes de leerlo (`cuerpoExcede`, `src/lib/limite.ts`); los avisos al celular solo van a los servicios de los navegadores (`esServicioDeAvisos`, `src/lib/avisos.ts`); los CSV del panel neutralizan las fórmulas (`celdaCsv`); en Adivina, en qué piensa Allison no sale del servidor (`adivinaParaElNavegador`); el tiempo de práctica que se acredita no pasa de lo que de verdad transcurrió entre actividades (`sumarTiempo`); y una cuenta creada con un correo sin verificar pierde esa contraseña cuando su dueño entra con Google (`vincular`, `src/lib/entrada-google.ts`).
+
+- **ajustes** (clave → valor jsonb, con quién y cuándo) — el dólar del costo de IA, los días de descanso de la racha (`dias_descanso()` en SQL: lo usan `marcar_dia_de_racha`, la sesión, el colegio y el recordatorio), los umbrales de "Para atender hoy", el recordatorio por correo y la fecha de la versión nueva (parte la retención en antes y después). `src/lib/ajustes.ts` los lee una vez por petición.
+- **users.curso** y **users.racha_maxima** — el curso sale de la carga masiva (`src/lib/cargaAlumnos.ts`, la usan el coordinador y el administrador; con encabezado lee nombre, usuario, curso y nivel en cualquier orden) o se cambia en la ficha.
+- **asignaciones_saldo** — asignar saldo a un colegio o a sus cursos: cada alumno activo recibe por `ajustar_saldo` (bolsa de recarga, con motivo y autor en la nota) y queda una fila de la asignación. Todo o nada, en una transacción.
+- **ruta_consumo** — intervenciones por parada y las que se fueron en errores (no se oyó voz); lo anotan `/api/ruta/evaluar` y `/api/ruta/escena`.
+- **ruta_actividades** — cada actividad terminada con sus calificadas y aciertos (acierto al primer intento en la sección Ruta).
+- **escenas_intentos** — cada escenario, entrevista, viaje y escenario del catálogo con sus intervenciones y si terminó; sin llave a conversaciones, para que la cifra sobreviva al borrado a los 20 días.
+- **Recargas manuales** — `/api/admin/efectivo` crea una transacción con `pasarela` = efectivo o transferencia (recibo, valor recibido y quién en el payload) y la acredita por `acreditar_transaccion`, como los pagos en línea; también activa el plan mensual. El cuadre del día y la tabla de consumo se descargan en CSV (separador punto y coma, para Excel en español).
+
+### Avisos en el celular y competencia por salón (etapa 9, `db/027_avisos_competencia.sql`)
+
+Documento "Competencia por salón y recordatorios en el celular", aprobado el 17 de octubre de 2026.
+
+- **suscripciones_push** — cada aparato que aceptó los avisos (Web Push, sin tienda de apps ni servicio pagado). `src/lib/avisos.ts` cifra y envía con las llaves `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY`; sin ellas los avisos quedan apagados y todo sigue por correo. Un aparato que el servicio da por muerto (404 o 410) se borra. Del lado del navegador, `src/lib/avisosCliente.ts` (`useAvisos`) pide permiso y suscribe; se activa en Perfil → Ajustes o en la tarjeta única de Mi ruta (racha de 3 días). En iPhone solo con la app en la pantalla de inicio (iOS 16.4+).
+- **El recordatorio de la racha** (`recordarRachas` en `/api/tareas/limpiar`) — la regla del correo: el último día antes de perder la racha, a la hora elegida, uno al día. Va al celular si el alumno tiene un aparato y el interruptor `ajustes.recordatorio_celular` está encendido; si no, por correo. Nunca los dos. Para los alumnos de colegio es el único posible: no tienen correo.
+- **La competencia** — no guarda nada propio: sale de `progreso_diario.segundos_practica` (tope de 30 minutos por alumno al día) y de `users.curso`. Promedio entre todos los alumnos activos del salón, mínimo 5 alumnos por salón y dos salones para competir, semana de lunes a domingo en hora de Colombia. Reglas puras en `src/lib/competencia/tabla.ts` (`npm run probar:competencia`), consultas en `src/lib/competencia/index.ts`. El alumno ve su puesto y los tres primeros en Mi ruta y, si su salón ganó, una celebración la primera vez que entra en la semana siguiente; el coordinador ve las dos semanas en `/colegio` y la apaga con `instituciones.competencia_activa`. Solo reconocimiento: sin intervenciones de regalo.
+
 ## 5. Papel de n8n
 
 | n8n SÍ | n8n NUNCA |
@@ -221,7 +287,7 @@ datos con control de duplicados. n8n se entera después, solo para notificar.
 |---|---|
 | **0 — Fundaciones** | Servidor, Dokploy, dominio, Cloudflare, Next.js + Postgres + Redis, esquema de BD, registro con email y Google |
 | **1 — La conversación** | Grabación en navegador (móvil), integración Gemini con audio, cola + worker TTS, reproducción, avatar animado, transcripción con botón, descuento de créditos |
-| **2 — Cobro** | Pasarela, recarga de monto libre, planes, webhook idempotente, cupones, prueba de 20 mensajes |
+| **2 — Cobro** | Pasarela, recarga de monto libre, planes, webhook idempotente, cupones, prueba de 5 intervenciones |
 | **3 — Progreso y currículo** | Niveles, temas por nivel, modo libre, panel de progreso, errores frecuentes |
 | **4 — Admin e instituciones** | Panel de administración, alta de colegios, códigos por volumen, reportes |
 | **5 — n8n y pulido** | Correos y avisos automáticos, borrado a 15 días, reportes semanales, PWA instalable |

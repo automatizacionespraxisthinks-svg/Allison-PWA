@@ -1,4 +1,3 @@
-import { evaluarAscenso, siguienteNivel } from "./ascenso";
 import { unidadesDe } from "./curriculo";
 import { sql } from "./db";
 import type { Nivel } from "./tipos";
@@ -53,7 +52,9 @@ const TURNOS_PARA_MEJORANDO = 4;
 
 export async function progresoDe(userId: string): Promise<Progreso> {
   const [usuario] = await sql`
-    select racha_dias, ultima_practica_en::date = current_date as practico_hoy
+    select case when ultima_practica_en::date >= current_date - (dias_descanso() + 1)
+                then racha_dias else 0 end as racha_dias,
+           ultima_practica_en::date = current_date as practico_hoy
       from users where id = ${userId}
   `;
 
@@ -192,6 +193,43 @@ export async function temasDe(
   return { abiertos: abiertos.slice(0, 4), dominados: dominados.slice(0, 4) };
 }
 
+/**
+ * Lo que Allison necesita saber del historial del alumno para aplicar
+ * dos reglas del plan (sección 2):
+ *   · errores repetidos: los que ya cometió dos veces o más. Si los
+ *     vuelve a cometer, Allison no los explica otra vez (caso 5).
+ *   · temas recorridos: las unidades de su nivel que ya completó, más
+ *     la que va. Allison solo pregunta por esos temas.
+ */
+export async function contextoDeEnsenanza(
+  userId: string,
+  nivel: Nivel
+): Promise<{ erroresRepetidos: string[]; temasRecorridos: string[] }> {
+  const [errores, lecciones] = await Promise.all([
+    sql`
+      select texto_error from errores_frecuentes
+       where user_id = ${userId} and veces >= 2
+       order by ultima_vez_en desc
+       limit 8`,
+    sql`
+      select leccion from progreso_lecciones
+       where user_id = ${userId} and completada_en is not null`,
+  ]);
+
+  const hechas = new Set(lecciones.map((l) => l.leccion as string));
+  const unidades = unidadesDe(nivel);
+  const recorridas = unidades.filter((u) => hechas.has(u.clave));
+  const siguiente = unidades.find((u) => !hechas.has(u.clave));
+  const temas = [...recorridas, ...(siguiente ? [siguiente] : [])].map(
+    (u) => `${u.titulo} (${u.gramatica})`
+  );
+
+  return {
+    erroresRepetidos: errores.map((e) => e.texto_error as string),
+    temasRecorridos: temas,
+  };
+}
+
 /** El avance del alumno en cada lección: clave -> {logros, completada}. */
 export async function progresoLecciones(
   userId: string
@@ -210,56 +248,4 @@ export async function progresoLecciones(
     };
   }
   return avance;
-}
-
-/**
- * ¿Vale la pena sugerirle el siguiente nivel? Null si no (o si ya es
- * C2). Junta las dos señales — temario completado y desempeño reciente
- * en su nivel — y deja la decisión a la lógica pura de ascenso.ts.
- */
-export async function sugerenciaDeNivel(
-  userId: string,
-  nivel: Nivel
-): Promise<{ siguiente: Nivel; razon: string } | null> {
-  const siguiente = siguienteNivel(nivel);
-  if (!siguiente) return null;
-
-  const claves = unidadesDe(nivel).map((u) => u.clave);
-
-  const [[completadas], [reciente]] = await Promise.all([
-    sql`
-      select count(*)::int as n
-        from progreso_lecciones
-       where user_id = ${userId}
-         and completada_en is not null
-         and leccion = any(${claves})
-    `,
-    // Solo turnos hablados EN el nivel actual: los de un nivel viejo
-    // no dicen nada de cómo le va en este.
-    sql`
-      select count(*)::int as turnos,
-             coalesce(sum(
-               case when jsonb_typeof(t.correcciones) = 'array'
-                    then jsonb_array_length(t.correcciones) else 0 end
-             ), 0)::int as correcciones
-        from (
-          select m.correcciones
-            from mensajes m
-            join conversaciones c on c.id = m.conversacion_id
-           where m.user_id = ${userId}
-             and m.rol = 'alumno'
-             and c.nivel_al_iniciar = ${nivel}
-           order by m.creado_en desc
-           limit 30
-        ) t
-    `,
-  ]);
-
-  const razon = evaluarAscenso({
-    unidadesCompletadas: completadas.n,
-    turnosRecientes: reciente.turnos,
-    correccionesRecientes: reciente.correcciones,
-  });
-
-  return razon ? { siguiente, razon } : null;
 }

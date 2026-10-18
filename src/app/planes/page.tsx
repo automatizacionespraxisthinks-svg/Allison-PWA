@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ConNavegacion } from "@/components/Navegacion";
 import { BotonPlan } from "@/components/BotonPlan";
 import { sql } from "@/lib/db";
 import { configPrecios, pesos, tiempoEquivalente } from "@/lib/precios";
@@ -37,6 +38,7 @@ export default async function PaginaPlanes() {
   );
 
   return (
+    <ConNavegacion racha={alumno.rachaDias}>
     <main className="mx-auto flex min-h-dvh max-w-lg flex-col gap-5 px-4 py-5">
       <header>
         <Link href="/practicar" className="text-sm text-texto-suave">
@@ -129,5 +131,6 @@ export default async function PaginaPlanes() {
         </strong>
       </Link>
     </main>
+    </ConNavegacion>
   );
 }

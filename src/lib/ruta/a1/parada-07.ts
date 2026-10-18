@@ -1,0 +1,345 @@
+import type { Parada } from "../tipos.ts";
+
+/** Parada 7 · Nueva Orleans. Documento "Contenido A1", aprobada el 14 de octubre de 2026. */
+export const PARADA_07: Parada = {
+  numero: 7,
+  ciudad: "Nueva Orleans",
+  titulo: "Pide comida y bebida",
+  gramatica: "Like y would like, y sustantivos contables e incontables (a, an, some)",
+  objetivo:
+    "Al terminar, el alumno dice qué le gusta y pide en un restaurante. Gramática: like y would like, y sustantivos contables e incontables (a, an, some). Usa todo lo de las paradas 1 a 6.",
+  fraseMeta: "I'd like a burger and some water, please.",
+  portada: "nueva-orleans",
+  vocabulario: [
+    {
+      grupo: "Comida",
+      ingles: "burger, fries, pizza, salad, soup, chicken, rice, beans, bread, apple, cake, ice cream",
+      nota: 'Inglés de Estados Unidos: "fries", nunca "chips" para las papas a la francesa',
+    },
+    { grupo: "Bebidas", ingles: "water, juice, soda, milk, coffee, lemonade", nota: '"Soda" para la gaseosa' },
+    { grupo: "Comida de Nueva Orleans", ingles: "gumbo, beignets", nota: "Solo para reconocer en el menú del escenario" },
+    {
+      grupo: "Like y would like",
+      ingles:
+        "I like pizza. (me gusta, siempre) I'd like a pizza. (quiero pedir, ahora) Would you like…? Yes, please. No, thank you.",
+      nota: "Es la gramática central de la parada",
+    },
+    {
+      grupo: "A, an, some",
+      ingles: "a burger, an apple, some water, some rice, some fries",
+      nota: '"A" y "an" con lo que se cuenta; "some" con lo que no se cuenta o con plurales. "Any" queda para A2',
+    },
+    {
+      grupo: "En el restaurante",
+      ingles: "What would you like? A table for two, please. How much is it? Can I have the check, please?",
+      nota: 'Inglés de Estados Unidos: "check" para la cuenta, nunca "bill"',
+    },
+  ],
+  lecciones: [
+    {
+      numero: 1,
+      titulo: "Comida y bebida",
+      objetivo: "Reconocer y nombrar comidas y bebidas.",
+      actividades: [
+        {
+          paso: 1,
+          tipo: "escucha-elige",
+          queAparece:
+            'Allison cuenta: A boy says: "I\'d like a pizza, please." (no está escrito). Elige entre tres imágenes: una pizza, una hamburguesa y una ensalada. Al acertar aparece la frase con su traducción.',
+          siRespondeMal: "Se repite la frase despacio y elige otra vez.",
+          quienHabla: "Allison",
+          audio: ['A boy says: "I\'d like a pizza, please."'],
+          traduccion: ['Un muchacho dice: "Me gustaría una pizza, por favor."'],
+          opciones: [
+            { imagen: "f-pizza", descripcion: "Una pizza" },
+            { imagen: "f-hamburguesa", descripcion: "Una hamburguesa" },
+            { imagen: "f-ensalada", descripcion: "Una ensalada" },
+          ],
+          correcta: 0,
+          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", "quienHabla: el documento no dice quién habla"],
+        },
+        {
+          paso: 2,
+          tipo: "que-es-esto",
+          queAparece: 'Un plato de papas a la francesa. Allison pregunta: "What is this?"',
+          siRespondeMal:
+            'Pistas en inglés, una a la vez: "You eat them with a burger." → "They are yellow." → "It starts with f." Si dice "chips": En Estados Unidos se dice fries. Sin pistas, Allison dice "fries" y el alumno la repite.',
+          imagen: "f-papas",
+          pregunta: "What is this?",
+          respuesta: "fries",
+          aceptadas: ["French fries", "some fries"],
+          pistas: ["You eat them with a burger.", "They are yellow.", "It starts with f."],
+        },
+        {
+          paso: 3,
+          tipo: "repite",
+          queAparece: 'Audio de Allison: "I\'d like a burger and fries, please."',
+          siRespondeMal:
+            'Si no se oye la d de "I\'d": Escucha: I\'d like. Es la forma corta de I would. Luego la frase completa.',
+          frase: "I'd like a burger and fries, please.",
+          palabraDificil: "I'd",
+          consejo: "Es la forma corta de I would.",
+        },
+      ],
+    },
+    {
+      numero: 2,
+      titulo: "Me gusta y quiero pedir",
+      objetivo: "Diferenciar I like (gusto) de I'd like (pedir).",
+      actividades: [
+        {
+          paso: 1,
+          tipo: "escucha-elige",
+          queAparece:
+            'Allison cuenta: Sarah says: "I like pizza, but today I\'d like a salad." Pregunta: ¿qué pide Sarah hoy? Elige entre pizza, hamburguesa y ensalada. Al acertar aparece la frase con su traducción.',
+          siRespondeMal: "Se repite la frase despacio y elige otra vez.",
+          quienHabla: "Allison",
+          audio: ['Sarah says: "I like pizza, but today I\'d like a salad."'],
+          traduccion: ['Sarah dice: "Me gusta la pizza, pero hoy quiero una ensalada."'],
+          pregunta: "¿Qué pide Sarah hoy?",
+          opciones: [
+            { imagen: "f-pizza", descripcion: "Pizza" },
+            { imagen: "f-hamburguesa", descripcion: "Hamburguesa" },
+            { imagen: "f-ensalada", descripcion: "Ensalada" },
+          ],
+          correcta: 2,
+          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
+        },
+        {
+          paso: 2,
+          tipo: "tu-turno",
+          queAparece:
+            'La mesera: "Hi! What would you like to drink?" En pantalla: "I\'d like ___, please." y las palabras some water, a juice, a soda. Luego: "Would you like some ice?"',
+          siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
+          dialogo: [{ quien: "La mesera", dice: "Hi! What would you like to drink?" }],
+          plantilla: "I'd like ___, please.",
+          modelo: "I'd like some water, please. Yes, please.",
+          aceptadas: ["I'd like a soda. No, thank you."],
+          palabras: ["some water", "a juice", "a soda"],
+          porRevisar: [
+            'dialogo: después de la línea del alumno la mesera pregunta "Would you like some ice?" y el alumno responde "Yes, please." / "No, thank you."; el tipo solo guarda las líneas antes de la del alumno',
+          ],
+        },
+        {
+          paso: 3,
+          tipo: "dilo",
+          queAparece: 'Frase en español: "Me gustaría un vaso de agua, por favor."',
+          siRespondeMal:
+            'Si dice "I like a glass of water": Para pedir se usa I\'d like. Al segundo fallo Allison dice la frase y el alumno la repite.',
+          espanol: "Me gustaría un vaso de agua, por favor.",
+          respuesta: "I'd like a glass of water, please.",
+          aceptadas: ["I would like a glass of water, please."],
+          palabras: ["I'd", "like", "a", "glass", "of", "water,", "please."],
+          explicaciones: [{ siDice: "I like a glass of water", explicacion: "Para pedir se usa I'd like." }],
+        },
+      ],
+    },
+    {
+      numero: 3,
+      titulo: "A, an o some",
+      objetivo: "Usar a, an y some al pedir.",
+      actividades: [
+        {
+          paso: 1,
+          tipo: "escucha-elige",
+          queAparece:
+            'Allison cuenta: The waitress asks: "Would you like some fries?" Tom says: "No, thank you. I\'d like some soup." Pregunta: ¿qué pide Tom? Elige entre sopa, papas y ensalada.',
+          siRespondeMal: "Se repite el diálogo y elige otra vez.",
+          quienHabla: "Allison",
+          audio: ['The waitress asks: "Would you like some fries?"', 'Tom says: "No, thank you. I\'d like some soup."'],
+          traduccion: ['La mesera pregunta: "¿Quieres unas papas a la francesa?"', 'Tom dice: "No, gracias. Me gustaría una sopa."'],
+          pregunta: "¿Qué pide Tom?",
+          opciones: [
+            { imagen: "f-sopa", descripcion: "Sopa" },
+            { imagen: "f-papas", descripcion: "Papas" },
+            { imagen: "f-ensalada", descripcion: "Ensalada" },
+          ],
+          correcta: 0,
+          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", "quienHabla: el documento no dice quiénes hablan"],
+        },
+        {
+          paso: 2,
+          tipo: "describe",
+          queAparece:
+            'Una mesa con una hamburguesa, unas papas, un vaso de jugo y una manzana. Allison: "Tell me 3 things." Debajo: "I see a / an / some ___." y las palabras burger, apple, juice, fries.',
+          siRespondeMal:
+            'Si dice "a apple": Antes de vocal se dice an: an apple. Si nombra menos de 3, Allison señala la manzana y pregunta "What is this?".',
+          imagen: "f-mesa-comida",
+          pregunta: "Tell me 3 things.",
+          plantillas: ["I see a / an / some ___."],
+          palabrasAyuda: ["burger", "apple", "juice", "fries"],
+          modelo: ["I see a burger.", "I see an apple.", "I see some juice."],
+          aceptadas: ["I see some fries."],
+          cosas: ["burger", "apple", "juice", "fries"],
+          minimo: 3,
+        },
+        {
+          paso: 3,
+          tipo: "responde",
+          queAparece:
+            "What's your favorite food? Do you like pizza? What would you like to drink? Would you like some cake? Can you cook?",
+          siRespondeMal: "Se muestra una respuesta modelo y la pregunta vuelve al final.",
+          preguntas: [
+            { pregunta: "What's your favorite food?", modelo: "My favorite food is rice and chicken." },
+            { pregunta: "Do you like pizza?", modelo: "Yes, I do." },
+            { pregunta: "What would you like to drink?", modelo: "I'd like some juice." },
+            { pregunta: "Would you like some cake?", modelo: "Yes, please." },
+            { pregunta: "Can you cook?", modelo: "A little." },
+          ],
+          aceptadas: ["Pizza.", "Yes.", "Juice."],
+          tambienSeAcepta: 'Respuestas cortas: "Pizza." "Yes." "Juice."',
+          segundos: 10,
+        },
+      ],
+    },
+    {
+      numero: 4,
+      titulo: "La comida favorita de Allison",
+      objetivo: "Preguntar por gustos y ofrecer comida.",
+      actividades: [
+        {
+          paso: 1,
+          tipo: "escucha-elige",
+          queAparece:
+            'Allison: "In New Orleans, I always have beignets and a coffee!" Pregunta: ¿qué come Allison? Elige entre los beignets, el helado y la pizza.',
+          siRespondeMal: "Se repite la frase despacio y elige otra vez.",
+          quienHabla: "Allison",
+          audio: ["In New Orleans, I always have beignets and a coffee!"],
+          traduccion: ["¡En Nueva Orleans siempre como beignets y me tomo un café!"],
+          pregunta: "¿Qué come Allison?",
+          opciones: [
+            { imagen: "f-beignets", descripcion: "Los beignets" },
+            { imagen: "f-helado", descripcion: "El helado" },
+            { imagen: "f-pizza", descripcion: "La pizza" },
+          ],
+          correcta: 0,
+          porRevisar: ["traduccion"],
+        },
+        {
+          paso: 2,
+          tipo: "que-es-esto",
+          queAparece: 'Un helado. Allison pregunta: "What dessert is this?"',
+          siRespondeMal:
+            'Pistas en inglés, una a la vez: "It\'s cold." → "It\'s sweet." → "It starts with i." Sin pistas, Allison dice "ice cream" y el alumno la repite.',
+          imagen: "f-helado",
+          pregunta: "What dessert is this?",
+          respuesta: "ice cream",
+          aceptadas: ["it's ice cream", "some ice cream"],
+          pistas: ["It's cold.", "It's sweet.", "It starts with i."],
+        },
+        {
+          paso: 3,
+          tipo: "entrevista",
+          queAparece:
+            'Ficha de Allison con cinco datos por descubrir: si le gusta la pizza, su bebida favorita, qué quiere cenar hoy, si quiere probar arepas y si le gusta el helado. Arma cada pregunta con palabras de ayuda. Al acertar, el dato se llena, Allison responde y le devuelve la pregunta ("And you?"). Mínimo 10 intervenciones.',
+          siRespondeMal:
+            "Allison: ¿Qué quieres saber? ¿Si me gusta la pizza? Say: Do you like pizza? Hay un botón de ayuda con la pregunta escrita.",
+          ficha: "los gustos de Allison",
+          datos: [
+            { dato: "Si le gusta la pizza", pregunta: "Do you like pizza?", respuesta: "Yes, I do! I like pizza a lot." },
+            {
+              dato: "Su bebida favorita",
+              pregunta: "What's your favorite drink?",
+              respuesta: "Coffee! I always drink coffee in the morning.",
+            },
+            {
+              dato: "Qué quiere cenar hoy",
+              pregunta: "What would you like for dinner today?",
+              respuesta: "I'd like some gumbo. It's a New Orleans soup.",
+            },
+            { dato: "Si quiere probar arepas", pregunta: "Would you like some arepas?", respuesta: "Yes, please! I love arepas." },
+            { dato: "Si le gusta el helado", pregunta: "Do you like ice cream?", respuesta: "Yes, I do. Chocolate is my favorite." },
+          ],
+          aceptadas: ["Pizza, you like?"],
+          tambienSeAcepta: 'Cualquier pregunta que se entienda: "Pizza, you like?"',
+          ayuda: "¿Qué quieres saber? ¿Si me gusta la pizza? Say: Do you like pizza?",
+          minimoIntervenciones: 10,
+        },
+      ],
+    },
+  ],
+  escenario: {
+    titulo: "Cena en Nueva Orleans",
+    imagen: "e-nueva-orleans-restaurante",
+    contexto:
+      "Entras con un amigo a un restaurante de Nueva Orleans. Grace, la mesera (Allison en su papel), los atiende. La app muestra un menú con dibujos y precios en dólares.",
+    personaje: "Grace, la mesera del restaurante de Nueva Orleans",
+    objetivo: "Pedir comida y bebida, responder ofrecimientos y pedir la cuenta",
+    tareas: [
+      "Saluda y pide una mesa para dos.",
+      "Pide algo de comer (I'd like…).",
+      "Pide algo de tomar.",
+      "Responde si quieres postre (Yes, please / No, thank you).",
+      "Pregunta cuánto es o pide la cuenta.",
+      "Da las gracias y despídete.",
+    ],
+    dialogo: [
+      { quien: "personaje", dice: "Good evening! Welcome!" },
+      { quien: "alumno", dice: "Good evening! A table for two, please.", tarea: 1 },
+      { quien: "personaje", dice: "Sure, this way. Here's the menu. What would you like?" },
+      { quien: "alumno", dice: "I'd like a burger and some fries, please.", tarea: 2 },
+      { quien: "personaje", dice: "Good choice! And for your friend?" },
+      { quien: "alumno", dice: "Some chicken and rice, please." },
+      { quien: "personaje", dice: "Great. What would you like to drink?" },
+      { quien: "alumno", dice: "I'd like a lemonade, please.", tarea: 3 },
+      { quien: "personaje", dice: "And your friend?" },
+      { quien: "alumno", dice: "Some water, please." },
+      { quien: "personaje", dice: "Here you go! Would you like some dessert? We have beignets and ice cream." },
+      { quien: "alumno", dice: "Yes, please. I'd like some ice cream.", tarea: 4 },
+      { quien: "personaje", dice: "Chocolate or vanilla?" },
+      { quien: "alumno", dice: "Chocolate! I like chocolate." },
+      { quien: "personaje", dice: "Here you go. Do you like New Orleans?" },
+      { quien: "alumno", dice: "Yes, I do! I like the music." },
+      { quien: "personaje", dice: "Me too!" },
+      { quien: "alumno", dice: "Can I have the check, please? How much is it?", tarea: 5 },
+      { quien: "personaje", dice: "It's thirty-two dollars." },
+      { quien: "alumno", dice: "Thank you, Grace! Good night!", tarea: 6 },
+    ],
+    resumen: "¡Lo lograste! Pediste una cena completa en inglés.",
+    recompensa: "Tres estrellas si no usó la ayuda, y la estampilla de Nueva Orleans en el pasaporte.",
+    siSeAtasca: [
+      {
+        situacion: "Responde algo que no cumple la tarea",
+        accion: "Sigue en personaje y ofrece opciones",
+        ejemplo: '"Yes" → A burger or a pizza?',
+      },
+      {
+        situacion: "Falla la misma tarea por segunda vez",
+        accion: "Se ilumina el botón de ayuda con la frase sugerida",
+        ejemplo: 'Ayuda: "I\'d like ___, please."',
+      },
+      {
+        situacion: "Responde en español",
+        accion: "Sale un momento del personaje, da la frase y vuelve a la escena",
+        ejemplo: '"La cuenta, por favor" → En inglés: Can I have the check, please? Try it!',
+      },
+      {
+        situacion: "No se entiende el audio",
+        accion: "Pide repetir; no cuenta como intento",
+        ejemplo: "Sorry, can you repeat that?",
+      },
+      {
+        situacion: "Comete un error que no impide entender",
+        accion: "No corrige en la escena; lo menciona en el resumen, máximo un punto",
+        ejemplo: '"I like a burger" para pedir → la escena sigue; en el resumen: Para pedir se dice I\'d like.',
+      },
+      {
+        situacion: "Pasa de 18 intervenciones sin cumplir las tareas",
+        accion: "Allison cierra la escena con amabilidad y propone repasar la lección que faltó",
+        ejemplo: "Have a nice night! Vamos a repasar cómo pedir y lo intentas de nuevo.",
+      },
+    ],
+    minimoIntervenciones: 10,
+    maximoIntervenciones: 18,
+  },
+  ilustraciones: [
+    { archivos: ["f-pizza"], muestra: "Una pizza", uso: "Lecciones 1, 2 y 4 (paso 1)" },
+    { archivos: ["f-hamburguesa"], muestra: "Una hamburguesa", uso: "Lecciones 1 y 2 (paso 1)" },
+    { archivos: ["f-ensalada"], muestra: "Una ensalada", uso: "Lecciones 1, 2 y 3 (paso 1)" },
+    { archivos: ["f-papas"], muestra: "Papas a la francesa", uso: "Lección 1 (paso 2) y lección 3 (paso 1)" },
+    { archivos: ["f-sopa"], muestra: "Un plato de sopa", uso: "Lección 3 (paso 1)" },
+    { archivos: ["f-mesa-comida"], muestra: "Una mesa con hamburguesa, papas, jugo y manzana", uso: "Lección 3 (paso 2)" },
+    { archivos: ["f-beignets"], muestra: "Beignets con azúcar y una taza de café", uso: "Lección 4 (paso 1)" },
+    { archivos: ["f-helado"], muestra: "Un helado de chocolate", uso: "Lección 4 (pasos 1 y 2)" },
+  ],
+};

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { UsuarioAdmin } from "@/lib/admin";
@@ -97,7 +98,7 @@ export function BuscadorUsuarios({
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold">Usuarios</h1>
+      <h1 className="text-xl font-bold">Alumnos</h1>
 
       <form
         onSubmit={(e) => {
@@ -141,7 +142,9 @@ export function BuscadorUsuarios({
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <h2 className="font-semibold">
-                  {u.nombre}
+                  <Link href={`/admin/usuarios/${u.id}`} className="hover:underline">
+                    {u.nombre}
+                  </Link>
                   {u.rol !== "estudiante" && (
                     <span className="ml-2 rounded-full bg-texto px-2 py-0.5 text-[11px] font-bold uppercase text-fondo">
                       {u.rol}
@@ -158,7 +161,8 @@ export function BuscadorUsuarios({
                   {u.colegio && ` · ${u.colegio}`}
                 </p>
                 <p className="mt-1.5 text-sm">
-                  Nivel {u.nivel} · <strong>{u.saldo}</strong> mensajes de saldo ·{" "}
+                  <NivelAdmin userId={u.id} nivel={u.nivel} onCambio={() => router.refresh()} /> ·{" "}
+                  <strong>{u.saldo}</strong> mensajes de saldo ·{" "}
                   {u.mensajes} hablados · practicó {cuando(u.ultimaPractica)}
                 </p>
                 {u.pagado > 0 && (
@@ -299,5 +303,39 @@ export function BuscadorUsuarios({
         ))}
       </ul>
     </div>
+  );
+}
+
+/** El administrador sube o baja el nivel de un alumno a voluntad. */
+function NivelAdmin({ userId, nivel, onCambio }: { userId: string; nivel: string; onCambio: () => void }) {
+  const [ocupado, setOcupado] = useState(false);
+  async function cambiar(nuevo: string) {
+    if (nuevo === nivel) return;
+    setOcupado(true);
+    const r = await pedir("/api/admin/nivel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, nivel: nuevo }),
+    });
+    setOcupado(false);
+    if (r?.ok) onCambio();
+  }
+  return (
+    <label className="inline-flex items-center gap-1">
+      Nivel
+      <select
+        value={nivel}
+        disabled={ocupado}
+        onChange={(e) => cambiar(e.target.value)}
+        aria-label="Nivel del alumno"
+        className="rounded-lg border border-borde bg-superficie px-1.5 py-0.5 font-semibold"
+      >
+        {["A1", "A2", "B1", "B2", "C1", "C2"].map((n) => (
+          <option key={n} value={n}>
+            {n}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ConNavegacion } from "@/components/Navegacion";
 import { ListaConversaciones } from "@/components/ListaConversaciones";
 import { conversacionesDe } from "@/lib/conversaciones";
 import { alumnoActual } from "@/lib/sesion";
@@ -11,6 +12,7 @@ export default async function PaginaConversaciones() {
   const conversaciones = await conversacionesDe(alumno.id);
 
   return (
+    <ConNavegacion racha={alumno.rachaDias}>
     <main className="mx-auto flex min-h-dvh max-w-lg flex-col gap-5 px-4 py-5">
       <header className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Tus conversaciones</h1>
@@ -36,5 +38,6 @@ export default async function PaginaConversaciones() {
         <ListaConversaciones conversaciones={conversaciones} />
       )}
     </main>
+    </ConNavegacion>
   );
 }

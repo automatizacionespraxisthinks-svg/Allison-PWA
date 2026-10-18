@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { CompetenciaSalones } from "@/components/CompetenciaSalones";
 import { TablaAlumnos } from "@/components/TablaAlumnos";
 import { resumenDe } from "@/lib/colegio";
+import { competenciaDelColegio } from "@/lib/competencia";
 import { alumnoActual } from "@/lib/sesion";
 
 export default async function PaginaColegio() {
@@ -15,7 +17,10 @@ export default async function PaginaColegio() {
   }
   if (!usuario.institucionId) redirect("/practicar");
 
-  const r = await resumenDe(usuario.institucionId);
+  const [r, competencia] = await Promise.all([
+    resumenDe(usuario.institucionId),
+    competenciaDelColegio(usuario.institucionId),
+  ]);
   if (!r) redirect("/practicar");
 
   const sinPracticar = r.totalAlumnos - r.practicaronSemana;
@@ -98,6 +103,8 @@ export default async function PaginaColegio() {
           </div>
         ))}
       </section>
+
+      {competencia && <CompetenciaSalones c={competencia} />}
 
       <TablaAlumnos alumnos={r.alumnos} />
 

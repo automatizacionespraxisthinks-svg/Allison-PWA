@@ -13,20 +13,22 @@ import { sql } from "./db";
  * arranca a las siete de la tarde.
  */
 
-/** Tarifas de gemini-2.5-flash-lite, en dólares por millón de tokens. */
+/**
+ * Tarifas de gemini-2.5-flash-lite, en dólares por millón de tokens. El
+ * dólar de aquí es el de siempre; el que vale es el de Ajustes del panel
+ * (src/lib/ajustes.ts), que se pasa a costoCop.
+ */
 export const TARIFAS = {
   entrada: 0.1,
   salida: 0.4,
   usdACop: 4000,
 } as const;
 
-export function costoCop(entrada: number, salida: number): number {
+export function costoCop(entrada: number, salida: number, usdACop: number = TARIFAS.usdACop): number {
   const usd =
     (entrada / 1e6) * TARIFAS.entrada + (salida / 1e6) * TARIFAS.salida;
-  return Math.round(usd * TARIFAS.usdACop);
+  return Math.round(usd * usdACop);
 }
-
-export type Periodo = "hoy" | "semana" | "mes" | "anio" | "rango";
 
 export interface Rango {
   desde: string; // YYYY-MM-DD
@@ -149,7 +151,7 @@ export interface InformeUso {
 
 const n = (v: unknown) => Number(v ?? 0);
 
-export async function informeDeUso(rango: Rango): Promise<InformeUso> {
+export async function informeDeUso(rango: Rango, usdACop: number = TARIFAS.usdACop): Promise<InformeUso> {
   const { desde, hasta, granularidad } = rango;
 
   // Las tres consultas no dependen entre sí: van juntas. Cada viaje a
@@ -228,14 +230,14 @@ export async function informeDeUso(rango: Rango): Promise<InformeUso> {
       conversaciones: n(f.conversaciones),
       tokensEntrada: n(f.entrada),
       tokensSalida: n(f.salida),
-      costoCop: costoCop(n(f.entrada), n(f.salida)),
+      costoCop: costoCop(n(f.entrada), n(f.salida), usdACop),
     })),
     usuarios: usuarios.map((u) => ({
       nombre: u.nombre as string,
       identificador: u.identificador as string,
       turnos: n(u.turnos),
       tokens: n(u.entrada) + n(u.salida),
-      costoCop: costoCop(n(u.entrada), n(u.salida)),
+      costoCop: costoCop(n(u.entrada), n(u.salida), usdACop),
     })),
   };
 }

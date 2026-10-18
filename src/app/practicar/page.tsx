@@ -1,25 +1,28 @@
 import { redirect } from "next/navigation";
 import { Conversacion } from "@/components/Conversacion";
+import { Navegacion } from "@/components/Navegacion";
 import {
   conversacionActiva,
   conversacionDeLeccion,
   conversacionLibre,
+  nuevaConversacion,
   ultimosMensajes,
 } from "@/lib/conversaciones";
 import { META_LOGROS, unidad } from "@/lib/curriculo";
-import { progresoDe, progresoLecciones, sugerenciaDeNivel } from "@/lib/progreso";
+import { progresoDe, progresoLecciones } from "@/lib/progreso";
 import { configPrecios } from "@/lib/precios";
+import { avisosPendientes, correccionesReportadas } from "@/lib/reportes";
 import { alumnoActual } from "@/lib/sesion";
 
 export default async function PaginaPracticar({
   searchParams,
 }: {
-  searchParams: Promise<{ leccion?: string; libre?: string }>;
+  searchParams: Promise<{ leccion?: string; libre?: string; nueva?: string }>;
 }) {
   const alumno = await alumnoActual();
   if (!alumno) redirect("/entrar");
 
-  const { leccion: clavePedida, libre } = await searchParams;
+  const { leccion: clavePedida, libre, nueva } = await searchParams;
 
   // Los logros solo hacen falta para la pantalla de fin de prueba: es
   // lo que le demuestra al alumno que el producto le sirvió.
@@ -39,6 +42,9 @@ export default async function PaginaPracticar({
       unidadPedida.clave
     );
     claveLeccion = unidadPedida.clave;
+  } else if (nueva) {
+    // "Nueva conversación" del menú: un hilo libre en blanco.
+    conversacionId = await nuevaConversacion(alumno.id, alumno.nivel);
   } else if (libre) {
     conversacionId = await conversacionLibre(alumno.id, alumno.nivel);
   } else {
@@ -51,16 +57,16 @@ export default async function PaginaPracticar({
   const avance = laLeccion ? await progresoLecciones(alumno.id) : {};
   const deEsta = laLeccion ? avance[laLeccion.clave] : undefined;
 
-  // La sugerencia de nivel no aplica en prueba: con 15 mensajes no hay
-  // evidencia, y el momento de esa pantalla es convencer, no ascender.
-  const [historial, sugerencia] = await Promise.all([
-    ultimosMensajes(conversacionId, 20),
-    alumno.enPrueba
-      ? Promise.resolve(null)
-      : sugerenciaDeNivel(alumno.id, alumno.nivel),
-  ]);
+  const [historial, avisos] = await Promise.all([ultimosMensajes(conversacionId, 20), avisosPendientes(alumno.id)]);
+  const reportadas = await correccionesReportadas(
+    alumno.id,
+    historial.filter((m) => m.rol === "alumno" && m.correcciones.length > 0).map((m) => m.id)
+  );
 
   return (
+    <>
+    <Navegacion racha={alumno.rachaDias} />
+    <div className="lg:pl-56">
     <Conversacion
       nombre={alumno.nombre}
       nivel={alumno.nivel}
@@ -72,7 +78,8 @@ export default async function PaginaPracticar({
       esCoordinador={alumno.rol === "coordinador" || alumno.rol === "admin"}
       esAdmin={alumno.rol === "admin"}
       racha={alumno.rachaDias}
-      sugerenciaNivel={sugerencia ?? undefined}
+      reportadas={reportadas}
+      avisosReporte={avisos}
       leccion={
         laLeccion
           ? {
@@ -96,5 +103,7 @@ export default async function PaginaPracticar({
           : undefined
       }
     />
+    </div>
+    </>
   );
 }

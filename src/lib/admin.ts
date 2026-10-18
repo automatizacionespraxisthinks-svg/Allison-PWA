@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { sql } from "./db";
 import { alumnoActual } from "./sesion";
 
@@ -13,97 +14,16 @@ export async function exigirAdmin() {
   return usuario;
 }
 
-export interface Resumen {
-  usuarios: number;
-  activosSemana: number;
-  enPrueba: number;
-  pagaron: number;
-  colegios: number;
-  alumnosDeColegio: number;
-  mensajesSemana: number;
-  ingresosMes: number;
-  ingresosTotal: number;
-  /** Lo que llevamos gastado en Gemini, estimado con los tokens reales. */
-  costoIaMes: number;
-}
-
-/** Tarifas de gemini-2.5-flash-lite, en USD por millón de tokens. */
-const USD_ENTRADA = 0.3;
-const USD_SALIDA = 0.4;
-const USD_A_COP = 4000;
-
-export async function resumenGeneral(): Promise<Resumen> {
-  /**
-   * Las cinco consultas van JUNTAS, no en fila india.
-   *
-   * Ninguna depende de otra, y en fila india sus tiempos se suman:
-   * contra una base remota llegaron a casi dos segundos de pantalla
-   * vacía. Juntas, el costo es el de la más lenta. Es el mismo
-   * criterio que ya se aplica en la ruta de conversar.
-   */
-  const [[u], [c], [m], [i], [t]] = await Promise.all([
-    sql`
-    select count(*)::int as total,
-           count(*) filter (
-             where ultima_practica_en > now() - interval '7 days'
-           )::int as activos,
-           count(*) filter (
-             where rol = 'estudiante' and institucion_id is null
-               and not exists (
-                 select 1 from transacciones t
-                  where t.user_id = users.id and t.estado = 'aprobada'
-               )
-           )::int as en_prueba,
-           count(*) filter (
-             where exists (
-               select 1 from transacciones t
-                where t.user_id = users.id and t.estado = 'aprobada'
-             )
-           )::int as pagaron,
-           count(*) filter (where institucion_id is not null)::int as de_colegio
-      from users where activo
-  `,
-
-    sql`select count(*)::int as n from instituciones where estado = 'activa'`,
-
-    sql`
-    select coalesce(sum(mensajes), 0)::int as n
-      from progreso_diario where fecha > current_date - 7
-  `,
-
-    sql`
-    select coalesce(sum(monto_cop) filter (
-             where confirmado_en > date_trunc('month', now())
-           ), 0)::int as mes,
-           coalesce(sum(monto_cop), 0)::int as total
-      from transacciones where estado = 'aprobada'
-  `,
-
-    sql`
-    select coalesce(sum(tokens_entrada), 0)::bigint as entrada,
-           coalesce(sum(tokens_salida), 0)::bigint  as salida
-      from mensajes where creado_en > date_trunc('month', now())
-  `,
-  ]);
-
-  const costoIaMes = Math.round(
-    ((Number(t.entrada) / 1e6) * USD_ENTRADA +
-      (Number(t.salida) / 1e6) * USD_SALIDA) *
-      USD_A_COP
-  );
-
-  return {
-    usuarios: u.total,
-    activosSemana: u.activos,
-    enPrueba: u.en_prueba,
-    pagaron: u.pagaron,
-    colegios: c.n,
-    alumnosDeColegio: u.de_colegio,
-    mensajesSemana: m.n,
-    ingresosMes: i.mes,
-    ingresosTotal: i.total,
-    costoIaMes,
-  };
+/**
+ * La primera línea de cada página del panel. El layout de /admin no
+ * basta: en Next 16 una página se puede pedir sola (sin volver a correr
+ * su layout) y sus datos viajarían igual. Quien no es admin ve "no
+ * encontrado", sin pistas de que el panel existe.
+ */
+export async function paginaDeAdmin() {
+  const admin = await exigirAdmin();
+  if (!admin) notFound();
+  return admin;
 }
 
 export interface ColegioAdmin {

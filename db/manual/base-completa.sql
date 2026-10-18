@@ -2,7 +2,7 @@
 --  Allison — BASE COMPLETA para una base de datos VACÍA
 --
 --  Un solo archivo que deja la base lista para producción:
---    1. todo el esquema (22 migraciones, en orden)
+--    1. todo el esquema (27 migraciones, en orden)
 --    2. el registro de que ya se aplicaron
 --    3. el administrador con el que entras por primera vez
 --
@@ -1736,11 +1736,814 @@ comment on column mensajes.texto_voz is
 
 
 -- =====================================================================
+--  023_reportes_correccion.sql
+-- =====================================================================
+
+-- =====================================================================
+--  Reportes de correcciones ("esta corrección está mal")
+--
+--  El alumno marca una corrección de Allison que cree equivocada. El
+--  administrador la revisa en el panel y decide:
+--
+--    · allison_se_equivoco: se le devuelve 1 intervención (bolsa de
+--      recarga, que no caduca), queda en su historial como "Devolución
+--      por corrección equivocada" y el alumno ve un aviso.
+--    · correccion_buena: no se devuelve nada y el alumno ve la
+--      explicación.
+--
+--  La corrección se COPIA aquí (texto del alumno, respuesta de Allison
+--  y la corrección): el mensaje se borra a los 20 días y el reporte
+--  tiene que seguir siendo revisable. mensaje_id queda en null cuando
+--  el mensaje se borra.
+--
+--  Decisión del plan de mejoras, punto 16 (14 de octubre de 2026).
+-- =====================================================================
+
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'estado_reporte') then
+    create type estado_reporte as enum ('abierto', 'allison_se_equivoco', 'correccion_buena');
+  end if;
+end$$;
+
+create table if not exists reportes_correccion (
+  id                 uuid primary key default gen_random_uuid(),
+  user_id            uuid not null references users(id) on delete cascade,
+  mensaje_id         uuid references mensajes(id) on delete set null,
+  indice             integer not null check (indice >= 0),
+
+  -- Copia de lo reportado
+  tipo               text not null,
+  original           text not null,
+  correccion         text not null,
+  explicacion        text,
+  texto_alumno       text not null,
+  respuesta_allison  text,
+  comentario         text check (comentario is null or length(comentario) <= 300),
+  nivel              nivel_mcer,
+
+  estado             estado_reporte not null default 'abierto',
+  revisado_por       uuid references users(id) on delete set null,
+  revisado_en        timestamptz,
+  devolvio           boolean not null default false,
+  -- El alumno ya vio el aviso de la decisión
+  aviso_visto_en     timestamptz,
+
+  creado_en          timestamptz not null default now()
+);
+
+-- Una corrección se reporta una sola vez
+create unique index if not exists reportes_unico
+  on reportes_correccion (mensaje_id, indice)
+  where mensaje_id is not null;
+
+create index if not exists reportes_abiertos
+  on reportes_correccion (creado_en)
+  where estado = 'abierto';
+
+create index if not exists reportes_por_alumno
+  on reportes_correccion (user_id, creado_en desc);
+
+-- ---------------------------------------------------------------------
+--  resolver_reporte: la decisión del administrador.
+--
+--  Atómica e idempotente: un reporte ya resuelto no se vuelve a
+--  resolver (devuelve false), así dos clics no devuelven dos veces.
+-- ---------------------------------------------------------------------
+create or replace function resolver_reporte(
+  p_reporte_id uuid,
+  p_admin_id   uuid,
+  p_decision   estado_reporte
+)
+returns boolean
+language plpgsql
+as $$
+declare
+  v_user    uuid;
+  v_plan    integer;
+  v_recarga integer;
+begin
+  if p_decision = 'abierto' then
+    raise exception 'La decisión no puede ser abierto';
+  end if;
+
+  update reportes_correccion
+     set estado = p_decision,
+         revisado_por = p_admin_id,
+         revisado_en = now(),
+         devolvio = (p_decision = 'allison_se_equivoco')
+   where id = p_reporte_id
+     and estado = 'abierto'
+  returning user_id into v_user;
+
+  if not found then
+    return false;
+  end if;
+
+  if p_decision = 'allison_se_equivoco' then
+    insert into saldos (user_id) values (v_user)
+      on conflict (user_id) do nothing;
+
+    update saldos
+       set mensajes_recarga = mensajes_recarga + 1,
+           actualizado_en = now()
+     where user_id = v_user
+    returning mensajes_plan, mensajes_recarga into v_plan, v_recarga;
+
+    insert into movimientos_credito
+      (user_id, tipo, bolsa, cantidad,
+       saldo_plan_despues, saldo_recarga_despues, nota)
+    values
+      (v_user, 'reverso', 'recarga', 1, v_plan, v_recarga,
+       'Devolución por corrección equivocada');
+  end if;
+
+  return true;
+end;
+$$;
+
+
+-- =====================================================================
+--  024_ruta.sql
+-- =====================================================================
+
+-- =====================================================================
+--  Mi ruta: el avance del alumno por las paradas de cada nivel
+--
+--  El CONTENIDO de las paradas vive en el código (src/lib/ruta), igual
+--  que el currículo: aquí solo lo que es del alumno y muta. Cada parada
+--  se identifica con una clave estable que lleva el nivel adelante
+--  ("a1-p03", "a1-r1", "a1-rf"), así que el avance de cada nivel queda
+--  aparte sin una columna más: si el alumno baja de nivel y vuelve,
+--  sigue donde iba (plan de mejoras, sección 22).
+--
+--  Nada de esto se borra con las conversaciones a los 20 días:
+--  estrellas, estampillas y racha no se pierden nunca.
+-- =====================================================================
+
+-- Una lección de una parada: la mejor nota y por dónde va.
+create table if not exists ruta_lecciones (
+  user_id        uuid not null references users(id) on delete cascade,
+  parada         text not null,
+  leccion        smallint not null check (leccion >= 1),
+  -- Actividades terminadas en el intento en curso (0 a 3): es lo que
+  -- dice "Lección 2 · Tu turno" en el mapa.
+  paso           smallint not null default 0 check (paso >= 0),
+  -- Las respuestas calificadas del intento en curso y cuántas salieron
+  -- bien al primer intento: de ahí salen las estrellas al terminar.
+  aciertos       smallint not null default 0 check (aciertos >= 0),
+  calificadas    smallint not null default 0 check (calificadas >= 0),
+  -- La mejor nota. Repetir la lección puede subirla, nunca bajarla.
+  estrellas      smallint not null default 0 check (estrellas between 0 and 3),
+  completada_en  timestamptz,
+  actualizado_en timestamptz not null default now(),
+  primary key (user_id, parada, leccion)
+);
+
+-- Una parada completa: su escenario y su estampilla.
+create table if not exists ruta_paradas (
+  user_id          uuid not null references users(id) on delete cascade,
+  parada           text not null,
+  -- La mejor nota del escenario de cierre.
+  estrellas        smallint not null default 0 check (estrellas between 0 and 3),
+  -- La estampilla: se gana pasando el escenario con 1 estrella o más.
+  sello_en         timestamptz,
+  -- El alumno la pasó sin hacer sus lecciones (saltó hasta una parada
+  -- más adelante). Sus lecciones quedan abiertas y hacen falta para
+  -- subir de nivel.
+  saltada_en       timestamptz,
+  -- Alumnos actuales: la unidad equivalente ya estaba completa en la
+  -- versión anterior. Se ve como saltada, sin estampilla.
+  anterior_en      timestamptz,
+  -- El último intento de saltar hasta aquí: uno por día.
+  intento_salto_en timestamptz,
+  actualizado_en   timestamptz not null default now(),
+  primary key (user_id, parada)
+);
+
+-- Lo que el alumno no logró ni con las pistas: vuelve al final de la
+-- lección y, días después, en el repaso sorpresa.
+create table if not exists ruta_fallos (
+  user_id   uuid not null references users(id) on delete cascade,
+  parada    text not null,
+  leccion   smallint not null,
+  paso      smallint not null,
+  -- Qué se falló dentro de la actividad: la palabra, la frase o la
+  -- pregunta, tal como está en el contenido.
+  item      text not null,
+  veces     integer not null default 1,
+  ultimo_en timestamptz not null default now(),
+  primary key (user_id, parada, leccion, paso, item)
+);
+
+-- La primera sesión guiada y los ajustes de la racha.
+alter table users
+  add column if not exists meta_diaria_min smallint not null default 10,
+  add column if not exists recordatorio_hora time,
+  add column if not exists primera_sesion_en timestamptz,
+  -- Alumnos actuales: ya vio la pantalla que le cuenta la ruta nueva.
+  add column if not exists ruta_presentada_en timestamptz;
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'users_meta_diaria_min_check') then
+    alter table users add constraint users_meta_diaria_min_check
+      check (meta_diaria_min in (5, 10, 15));
+  end if;
+end$$;
+
+-- Minutos de práctica del día, para la meta de hoy y la racha: el
+-- tiempo en las actividades de la ruta y en las conversaciones.
+alter table progreso_diario
+  add column if not exists segundos_practica integer not null default 0;
+
+-- Las conversaciones de la ruta (escenarios y entrevistas) son intentos
+-- aparte: no pueden volverse "el hilo activo" de Hablar.
+alter type modo_conversacion add value if not exists 'ruta';
+
+-- Lo que la ruta necesita saber de una conversación suya: de qué
+-- parada es, qué tareas ya se cumplieron, cuántas intervenciones lleva.
+alter table conversaciones add column if not exists ruta jsonb;
+
+-- ---------------------------------------------------------------------
+--  La racha
+--
+--  Un día cuenta si el alumno conversó o si sumó unos 3 minutos en las
+--  actividades gratis de la ruta: así un alumno sin saldo no la pierde.
+--  Y tiene dos días de descanso: saltarse uno o dos días no la reinicia
+--  (tampoco la sube); el tercer día sin practicar sí.
+-- ---------------------------------------------------------------------
+create or replace function marcar_dia_de_racha(p_user_id uuid)
+returns integer
+language plpgsql
+as $$
+declare
+  v_ultima date;
+  v_racha  integer;
+begin
+  select ultima_practica_en::date, racha_dias
+    into v_ultima, v_racha
+    from users where id = p_user_id for update;
+
+  if not found then
+    return 0;
+  end if;
+
+  if v_ultima is null then
+    v_racha := 1;
+  elsif v_ultima = current_date then
+    v_racha := greatest(v_racha, 1);
+  elsif v_ultima >= current_date - 3 then
+    v_racha := v_racha + 1;
+  else
+    v_racha := 1;
+  end if;
+
+  update users
+     set racha_dias = v_racha, ultima_practica_en = now()
+   where id = p_user_id;
+
+  return v_racha;
+end;
+$$;
+
+-- Cada turno de conversación: la misma de 011, con la racha nueva y el
+-- tiempo de práctica (lo hablado más lo que tarda oír y leer la
+-- respuesta: unos 20 segundos por turno).
+create or replace function registrar_practica(
+  p_user_id            uuid,
+  p_segundos           integer,
+  p_errores_corregidos integer
+) returns integer
+language plpgsql
+as $$
+declare
+  v_racha integer;
+begin
+  v_racha := marcar_dia_de_racha(p_user_id);
+
+  insert into progreso_diario
+    (user_id, fecha, mensajes, segundos_hablados, errores_corregidos, segundos_practica)
+  values
+    (p_user_id, current_date, 1, p_segundos, p_errores_corregidos, p_segundos + 20)
+  on conflict (user_id, fecha) do update
+     set mensajes           = progreso_diario.mensajes + 1,
+         segundos_hablados  = progreso_diario.segundos_hablados + excluded.segundos_hablados,
+         errores_corregidos = progreso_diario.errores_corregidos + excluded.errores_corregidos,
+         segundos_practica  = progreso_diario.segundos_practica + excluded.segundos_practica;
+
+  update errores_frecuentes
+     set turnos_limpios = turnos_limpios + 1
+   where user_id = p_user_id;
+
+  return v_racha;
+end;
+$$;
+
+-- El tiempo en una actividad de la ruta. Cuando el día llega a 3
+-- minutos, el día cuenta para la racha. Devuelve la racha y los
+-- segundos del día.
+create or replace function registrar_tiempo_ruta(p_user_id uuid, p_segundos integer)
+returns jsonb
+language plpgsql
+as $$
+declare
+  v_total integer;
+  v_racha integer;
+begin
+  insert into progreso_diario (user_id, fecha, segundos_practica)
+  values (p_user_id, current_date, greatest(p_segundos, 0))
+  on conflict (user_id, fecha) do update
+     set segundos_practica = progreso_diario.segundos_practica + excluded.segundos_practica
+  returning segundos_practica into v_total;
+
+  if v_total >= 180 then
+    v_racha := marcar_dia_de_racha(p_user_id);
+  else
+    -- La racha viva: si ya pasaron los dos días de descanso, es 0 (la
+    -- pantalla de fin de lección no puede mostrar una racha vencida).
+    select case when ultima_practica_en::date >= current_date - 3 then racha_dias else 0 end
+      into v_racha from users where id = p_user_id;
+  end if;
+
+  return jsonb_build_object('racha', coalesce(v_racha, 0), 'segundos', v_total);
+end;
+$$;
+
+-- ---------------------------------------------------------------------
+--  El consumo por parte de la app (plan, secciones 16 y 21): cuántas
+--  intervenciones se fueron en las lecciones de la ruta, en los
+--  escenarios de cierre, en Hablar, en Viajes y en Escenarios. Se
+--  guarda desde ahora para que el panel pueda mostrarlo hacia atrás.
+-- ---------------------------------------------------------------------
+alter table uso_diario
+  add column if not exists turnos_por_parte jsonb not null default '{}'::jsonb;
+
+create or replace function registrar_parte(p_user_id uuid, p_parte text)
+returns void
+language plpgsql as $$
+declare
+  v_fecha date := (now() at time zone 'America/Bogota')::date;
+begin
+  insert into uso_diario (fecha, user_id, turnos_por_parte)
+  values (v_fecha, p_user_id, jsonb_build_object(p_parte, 1))
+  on conflict (fecha, user_id) do update
+     set turnos_por_parte = jsonb_set(
+           uso_diario.turnos_por_parte, array[p_parte],
+           to_jsonb(coalesce((uso_diario.turnos_por_parte->>p_parte)::int, 0) + 1)
+         ),
+         actualizado_en = now();
+end $$;
+
+-- ---------------------------------------------------------------------
+--  El nivel: el alumno elige el inicial; después solo baja. Puede volver
+--  a subir hasta el nivel más alto en el que ya estuvo, y para pasar de
+--  ahí tiene que completar todas las actividades de ese nivel. Solo el
+--  administrador sube y baja a voluntad (plan, sección 22).
+-- ---------------------------------------------------------------------
+alter table users add column if not exists nivel_maximo nivel_mcer;
+update users set nivel_maximo = nivel where nivel_maximo is null;
+
+-- Las cuentas nuevas (registro, Google, carga del colegio) nacen con su
+-- tope igual a su nivel: si bajan antes de la primera sesión, pueden
+-- volver a subir hasta donde estaban.
+create or replace function poner_nivel_maximo() returns trigger
+language plpgsql as $$
+begin
+  new.nivel_maximo := coalesce(new.nivel_maximo, new.nivel);
+  return new;
+end $$;
+
+drop trigger if exists users_nivel_maximo on users;
+create trigger users_nivel_maximo before insert on users
+  for each row execute function poner_nivel_maximo();
+
+-- ---------------------------------------------------------------------
+--  Alumnos actuales (plan, sección 22): las 10 unidades de A1 de hoy
+--  corresponden una a una con las 10 paradas. Cada unidad completada
+--  deja su parada como hecha en la versión anterior (se ve saltada, sin
+--  estampilla), y quien ya practicaba no repite la primera sesión: ve
+--  una vez la pantalla que le cuenta la ruta nueva.
+-- ---------------------------------------------------------------------
+insert into ruta_paradas (user_id, parada, anterior_en)
+select p.user_id, u.parada, p.completada_en
+  from progreso_lecciones p
+  join (values
+    ('a1-saludos', 'a1-p01'), ('a1-familia', 'a1-p02'), ('a1-preguntas', 'a1-p03'),
+    ('a1-numeros', 'a1-p04'), ('a1-rutina', 'a1-p05'), ('a1-habilidades', 'a1-p06'),
+    ('a1-comida', 'a1-p07'), ('a1-casa', 'a1-p08'), ('a1-ahora', 'a1-p09'),
+    ('a1-ciudad', 'a1-p10')
+  ) as u(unidad, parada) on u.unidad = p.leccion
+ where p.completada_en is not null
+on conflict (user_id, parada) do nothing;
+
+-- El Repaso 1 no tiene unidad propia: queda hecho en la versión anterior
+-- si el alumno ya tenía completas las unidades 1 a 5 (así sigue en la
+-- primera parada cuya unidad no completó, como pide el plan).
+insert into ruta_paradas (user_id, parada, anterior_en)
+select p.user_id, 'a1-r1', max(p.completada_en)
+  from progreso_lecciones p
+ where p.leccion in ('a1-saludos', 'a1-familia', 'a1-preguntas', 'a1-numeros', 'a1-rutina')
+   and p.completada_en is not null
+ group by p.user_id
+having count(*) = 5
+on conflict (user_id, parada) do nothing;
+
+update users u
+   set primera_sesion_en = coalesce(u.primera_sesion_en, now())
+ where exists (select 1 from progreso_diario d where d.user_id = u.id)
+    or exists (select 1 from conversaciones c where c.user_id = u.id);
+
+-- El recordatorio por correo de la racha: uno por día como mucho.
+alter table users add column if not exists recordatorio_enviado_en date;
+
+
+-- =====================================================================
+--  025_viajes_escenarios_repasos.sql
+-- =====================================================================
+
+-- =====================================================================
+--  Etapa 7: Viajes, Escenarios, repasos sorpresa y frase del día
+--
+--  Igual que la ruta: el contenido vive en el código (src/lib/ruta/
+--  viajes.ts y src/lib/escenarios/), aquí solo lo que es del alumno. Las
+--  conversaciones de cada viaje o escenario son intentos aparte (modo
+--  'ruta', como los escenarios de cierre), así que no ensucian Hablar.
+-- =====================================================================
+
+-- Los viajes (pantallas 3 y 8): la mejor nota y la estampilla del país.
+create table if not exists viajes_avance (
+  user_id        uuid not null references users(id) on delete cascade,
+  viaje          smallint not null check (viaje between 1 and 50),
+  estrellas      smallint not null default 0 check (estrellas between 0 and 3),
+  sello_en       timestamptz,
+  veces          integer not null default 0,
+  actualizado_en timestamptz not null default now(),
+  primary key (user_id, viaje)
+);
+
+-- Los escenarios de la sección Escenarios (pantalla 5): del catálogo
+-- ("cat:libreria") o propios ("propio:<uuid>"). Se pueden repetir para
+-- subir estrellas.
+create table if not exists escenarios_avance (
+  user_id        uuid not null references users(id) on delete cascade,
+  escenario      text not null,
+  estrellas      smallint not null default 0 check (estrellas between 0 and 3),
+  veces          integer not null default 0,
+  ultimo_en      timestamptz not null default now(),
+  primary key (user_id, escenario)
+);
+
+-- "Crea tu propio escenario": Allison arma la escena a su nivel, con su
+-- papel y 3 tareas, y queda en la categoría "Míos" para repetirla.
+create table if not exists escenarios_propios (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references users(id) on delete cascade,
+  -- Lo que pidió el alumno, tal cual.
+  pedido      text not null,
+  titulo      text not null,
+  lugar       text not null,
+  papel       text not null,
+  contexto    text not null,
+  tareas      jsonb not null,
+  apertura    text not null,
+  nivel       nivel_mcer not null,
+  creado_en   timestamptz not null default now()
+);
+create index if not exists escenarios_propios_user on escenarios_propios (user_id, creado_en desc);
+
+-- Repaso sorpresa (pantalla 9): días después de una parada, un repaso
+-- corto con lo que el alumno falló. Máximo dos por día.
+create table if not exists repasos_sorpresa (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid not null references users(id) on delete cascade,
+  fecha         date not null default current_date,
+  -- Las preguntas, en orden: { parada, leccion, paso, item }.
+  items         jsonb not null,
+  estrellas     smallint not null default 0 check (estrellas between 0 and 3),
+  completado_en timestamptz,
+  creado_en     timestamptz not null default now()
+);
+create index if not exists repasos_sorpresa_user on repasos_sorpresa (user_id, fecha);
+
+-- Lo que ya se repasó bien sale de la lista de pendientes.
+alter table ruta_fallos add column if not exists repasado_en timestamptz;
+
+-- ---------------------------------------------------------------------
+--  La ruta provisional (plan, sección 22): en los niveles sin lecciones
+--  escritas, cada parada es el tema que ya existe en la app y al
+--  completarlo se gana la estampilla de la ciudad. La estampilla se
+--  GUARDA en ruta_paradas (la misma clave que tendrá la parada cuando se
+--  escriban sus lecciones), para que nunca se pierda. Aquí se ponen al
+--  día los temas que ya estaban completos.
+-- ---------------------------------------------------------------------
+insert into ruta_paradas (user_id, parada, estrellas, sello_en)
+select p.user_id, u.parada, 3, p.completada_en
+  from progreso_lecciones p
+  join (values
+    ('a2-ocupacion', 'a2-p01'), ('a2-finde', 'a2-p02'), ('a2-historia', 'a2-p03'), ('a2-experiencias', 'a2-p04'),
+    ('a2-planes', 'a2-p05'), ('a2-viajes', 'a2-p06'), ('a2-invitaciones', 'a2-p07'), ('a2-salud', 'a2-p08'),
+    ('a2-compras', 'a2-p09'), ('a2-comparar', 'a2-p10'), ('b1-experiencia', 'b1-p01'), ('b1-ninez', 'b1-p02'),
+    ('b1-secuencia', 'b1-p03'), ('b1-opinar', 'b1-p04'), ('b1-entrevista', 'b1-p05'), ('b1-tecnologia', 'b1-p06'),
+    ('b1-cultura', 'b1-p07'), ('b1-ambiente', 'b1-p08'), ('b1-problemas', 'b1-p09'), ('b1-irreal', 'b1-p10'),
+    ('b2-debate', 'b2-p01'), ('b2-noticias', 'b2-p02'), ('b2-negociar', 'b2-p03'), ('b2-educacion', 'b2-p04'),
+    ('b2-choque', 'b2-p05'), ('b2-presentacion', 'b2-p06'), ('b2-hipotesis', 'b2-p07'), ('b2-servicios', 'b2-p08'),
+    ('b2-matices', 'b2-p09'), ('b2-humor', 'b2-p10'), ('c1-argumento', 'c1-p01'), ('c1-academico', 'c1-p02'),
+    ('c1-registro', 'c1-p03'), ('c1-idiomatismos', 'c1-p04'), ('c1-matizar', 'c1-p05'), ('c1-enfasis', 'c1-p06'),
+    ('c1-pudo-ser', 'c1-p07'), ('c1-historias', 'c1-p08'), ('c1-abstracto', 'c1-p09'), ('c1-alta-presion', 'c1-p10'),
+    ('c2-precision', 'c2-p01'), ('c2-persuasion', 'c2-p02'), ('c2-subtexto', 'c2-p03'), ('c2-variedades', 'c2-p04'),
+    ('c2-mediar', 'c2-p05'), ('c2-profesion', 'c2-p06'), ('c2-debate-nativo', 'c2-p07'), ('c2-oralidad', 'c2-p08'),
+    ('c2-referencias', 'c2-p09'), ('c2-libre-total', 'c2-p10')
+  ) as u(unidad, parada) on u.unidad = p.leccion
+ where p.completada_en is not null
+on conflict (user_id, parada) do nothing;
+
+
+-- =====================================================================
+--  026_panel.sql
+-- =====================================================================
+
+-- =====================================================================
+--  Etapa 8: saldo masivo para colegios y el panel de administración
+--  (plan, secciones 12, 16 y 21)
+--
+--  - ajustes: los valores que estaban fijos en el código (dólar, días de
+--    descanso de la racha, umbrales de las alertas, recordatorio).
+--  - users.curso: cada alumno con su curso, para cargar, asignar saldo
+--    y filtrar.
+--  - asignaciones_saldo: cada asignación a un colegio o a sus cursos.
+--  - ruta_consumo: intervenciones por parada, y cuántas se fueron en
+--    errores (no se oyó voz).
+--  - ruta_actividades: cada actividad terminada, para el acierto al
+--    primer intento y dónde se van los alumnos.
+--  - escenas_intentos: cada escenario, entrevista, viaje o escenario del
+--    catálogo con sus intervenciones. Sobrevive al borrado de las
+--    conversaciones a los 20 días (solo guarda cifras, no lo dicho).
+-- =====================================================================
+
+-- ---------------------------------------------------------------------
+--  Ajustes
+-- ---------------------------------------------------------------------
+create table if not exists ajustes (
+  clave           text primary key,
+  valor           jsonb not null,
+  actualizado_en  timestamptz not null default now(),
+  actualizado_por text
+);
+
+insert into ajustes (clave, valor) values
+  ('dolar_cop', '4000'),
+  ('dias_descanso_racha', '2'),
+  ('alerta_inactivo_dias', '7'),
+  ('alerta_saldo_colegio_pct', '10'),
+  ('alerta_reporte_dias', '3'),
+  ('alerta_parada_intervenciones', '50'),
+  ('recordatorio_correo', 'true'),
+  -- Desde cuándo está la versión nueva (Mi ruta) en producción: parte
+  -- la retención en "antes" y "después de los cambios".
+  ('fecha_version_nueva', 'null')
+on conflict (clave) do nothing;
+
+create or replace function ajuste_entero(p_clave text, p_defecto integer)
+returns integer
+language sql stable
+as $$
+  select coalesce(
+    (select case when jsonb_typeof(valor) = 'number' then (valor #>> '{}')::numeric::integer end
+       from ajustes where clave = p_clave),
+    p_defecto
+  )
+$$;
+
+-- Los días que la racha aguanta sin practicar (entre 0 y 7).
+create or replace function dias_descanso()
+returns integer
+language sql stable
+as $$ select greatest(0, least(7, ajuste_entero('dias_descanso_racha', 2))) $$;
+
+-- La racha más larga, para la ficha del alumno.
+alter table users add column if not exists racha_maxima integer not null default 0;
+update users set racha_maxima = racha_dias where racha_maxima < racha_dias;
+
+-- La racha con los días de descanso de los ajustes (antes, fijos en 2).
+create or replace function marcar_dia_de_racha(p_user_id uuid)
+returns integer
+language plpgsql
+as $$
+declare
+  v_ultima date;
+  v_racha  integer;
+begin
+  select ultima_practica_en::date, racha_dias
+    into v_ultima, v_racha
+    from users where id = p_user_id for update;
+
+  if not found then
+    return 0;
+  end if;
+
+  if v_ultima is null then
+    v_racha := 1;
+  elsif v_ultima = current_date then
+    v_racha := greatest(v_racha, 1);
+  elsif v_ultima >= current_date - (dias_descanso() + 1) then
+    v_racha := v_racha + 1;
+  else
+    v_racha := 1;
+  end if;
+
+  update users
+     set racha_dias = v_racha, ultima_practica_en = now(),
+         racha_maxima = greatest(coalesce(racha_maxima, 0), v_racha)
+   where id = p_user_id;
+
+  return v_racha;
+end;
+$$;
+
+create or replace function registrar_tiempo_ruta(p_user_id uuid, p_segundos integer)
+returns jsonb
+language plpgsql
+as $$
+declare
+  v_total integer;
+  v_racha integer;
+begin
+  insert into progreso_diario (user_id, fecha, segundos_practica)
+  values (p_user_id, current_date, greatest(p_segundos, 0))
+  on conflict (user_id, fecha) do update
+     set segundos_practica = progreso_diario.segundos_practica + excluded.segundos_practica
+  returning segundos_practica into v_total;
+
+  if v_total >= 180 then
+    v_racha := marcar_dia_de_racha(p_user_id);
+  else
+    -- La racha viva: si ya pasaron los días de descanso, es 0.
+    select case when ultima_practica_en::date >= current_date - (dias_descanso() + 1) then racha_dias else 0 end
+      into v_racha from users where id = p_user_id;
+  end if;
+
+  return jsonb_build_object('racha', coalesce(v_racha, 0), 'segundos', v_total);
+end;
+$$;
+
+-- ---------------------------------------------------------------------
+--  El curso de cada alumno
+-- ---------------------------------------------------------------------
+alter table users add column if not exists curso text;
+create index if not exists users_colegio_curso on users (institucion_id, curso) where institucion_id is not null;
+
+-- ---------------------------------------------------------------------
+--  Asignaciones de saldo a un colegio o a sus cursos (plan, sección 12).
+--  El saldo queda en cada alumno (bolsa de recarga: no vence) y cada
+--  alumno tiene su movimiento en el libro con el motivo y quién lo hizo.
+-- ---------------------------------------------------------------------
+create table if not exists asignaciones_saldo (
+  id             uuid primary key default gen_random_uuid(),
+  institucion_id uuid not null references instituciones(id) on delete restrict,
+  -- null: todo el colegio
+  cursos         text[],
+  por_alumno     integer not null check (por_alumno > 0),
+  alumnos        integer not null check (alumnos >= 0),
+  motivo         text not null,
+  hecha_por      text not null,
+  creado_en      timestamptz not null default now()
+);
+create index if not exists asignaciones_saldo_colegio on asignaciones_saldo (institucion_id, creado_en desc);
+
+-- ---------------------------------------------------------------------
+--  Intervenciones por parada (ficha del alumno y alerta de "parada que
+--  gasta de más"). Las que se fueron en errores son las que se cobraron
+--  sin contar como intento (no se oyó voz).
+-- ---------------------------------------------------------------------
+create table if not exists ruta_consumo (
+  user_id        uuid not null references users(id) on delete cascade,
+  parada         text not null,
+  intervenciones integer not null default 0,
+  por_errores    integer not null default 0,
+  actualizado_en timestamptz not null default now(),
+  primary key (user_id, parada)
+);
+
+create or replace function registrar_consumo_parada(p_user_id uuid, p_parada text, p_error boolean)
+returns void
+language sql
+as $$
+  insert into ruta_consumo (user_id, parada, intervenciones, por_errores)
+  values (p_user_id, p_parada, 1, case when p_error then 1 else 0 end)
+  on conflict (user_id, parada) do update
+     set intervenciones = ruta_consumo.intervenciones + 1,
+         por_errores    = ruta_consumo.por_errores + excluded.por_errores,
+         actualizado_en = now()
+$$;
+
+-- ---------------------------------------------------------------------
+--  Cada actividad terminada (sección Ruta del panel)
+-- ---------------------------------------------------------------------
+create table if not exists ruta_actividades (
+  id          bigserial primary key,
+  user_id     uuid not null references users(id) on delete cascade,
+  parada      text not null,
+  leccion     smallint not null,
+  paso        smallint not null,
+  tipo        text not null,
+  calificadas smallint not null default 0,
+  aciertos    smallint not null default 0,
+  creado_en   timestamptz not null default now()
+);
+create index if not exists ruta_actividades_parada on ruta_actividades (parada, leccion, paso);
+create index if not exists ruta_actividades_user on ruta_actividades (user_id, creado_en desc);
+
+-- ---------------------------------------------------------------------
+--  Cada intento de escena: escenario de cierre, entrevista, viaje o
+--  escenario del catálogo. Sin llave a conversaciones: la conversación
+--  se borra a los 20 días y la cifra se queda.
+-- ---------------------------------------------------------------------
+create table if not exists escenas_intentos (
+  conversacion_id uuid primary key,
+  user_id         uuid not null references users(id) on delete cascade,
+  actividad       text not null,
+  -- a1-p01 (escenario), a1-p01:4 (entrevista de la lección 4),
+  -- viaje:1, cat:libreria, propio
+  clave           text not null,
+  intervenciones  integer not null default 0,
+  minimo          integer not null default 10,
+  terminada       boolean not null default false,
+  creado_en       timestamptz not null default now(),
+  actualizado_en  timestamptz not null default now()
+);
+create index if not exists escenas_intentos_clave on escenas_intentos (actividad, clave, creado_en);
+create index if not exists escenas_intentos_user on escenas_intentos (user_id);
+
+-- Lo que ya había en las conversaciones de la ruta.
+insert into escenas_intentos (conversacion_id, user_id, actividad, clave, intervenciones, terminada, creado_en, actualizado_en)
+select c.id, c.user_id,
+       coalesce(c.ruta->>'actividad', 'escenario'),
+       case coalesce(c.ruta->>'actividad', 'escenario')
+         when 'entrevista' then (c.ruta->>'parada') || ':' || coalesce(c.ruta->>'leccion', '0')
+         when 'viaje' then 'viaje:' || coalesce(c.ruta->>'viaje', '0')
+         when 'catalogo' then case when (c.ruta->>'clave') like 'propio:%' then 'propio' else coalesce(c.ruta->>'clave', '') end
+         else coalesce(c.ruta->>'parada', '')
+       end,
+       coalesce((c.ruta->>'intervenciones')::int, 0),
+       coalesce((c.ruta->>'terminada')::boolean, false),
+       c.iniciada_en, c.ultima_actividad_en
+  from conversaciones c
+ -- ::text: en db/manual/base-completa.sql todo corre en UNA transacción, y
+ -- Postgres no deja usar como enum un valor agregado en la misma (024).
+ where c.modo::text = 'ruta' and c.ruta is not null
+on conflict (conversacion_id) do nothing;
+
+
+-- =====================================================================
+--  027_avisos_competencia.sql
+-- =====================================================================
+
+-- =====================================================================
+--  Etapa 9: el recordatorio de la racha en el celular y la competencia
+--  por salón (documento "Competencia por salón y recordatorios en el
+--  celular", aprobado el 17 de octubre de 2026)
+--
+--  - suscripciones_push: cada celular o navegador que aceptó los avisos
+--    (notificaciones de la app instalada desde el navegador, Web Push).
+--    Una fila por aparato. Si el servicio de avisos responde que ya no
+--    existe (404 o 410), se borra.
+--  - ajustes.recordatorio_celular: el interruptor del panel, como el del
+--    correo.
+--  - instituciones.competencia_activa: el coordinador puede apagar la
+--    competencia semanal de su colegio.
+--
+--  La competencia no guarda nada propio: sale de los minutos de práctica
+--  que ya están en progreso_diario.segundos_practica y del curso de cada
+--  alumno (users.curso).
+-- =====================================================================
+
+create table if not exists suscripciones_push (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null references users(id) on delete cascade,
+  -- La dirección del servicio de avisos del navegador: identifica al aparato.
+  endpoint   text not null unique,
+  -- Las llaves con que se cifra cada aviso (las da el navegador).
+  p256dh     text not null,
+  auth       text not null,
+  creado_en  timestamptz not null default now(),
+  usado_en   timestamptz
+);
+
+create index if not exists suscripciones_push_usuario on suscripciones_push (user_id);
+
+insert into ajustes (clave, valor) values ('recordatorio_celular', 'true')
+on conflict (clave) do nothing;
+
+alter table instituciones add column if not exists competencia_activa boolean not null default true;
+
+
+-- =====================================================================
 --  Registro de migraciones
 --
 --  Exactamente la tabla que lleva scripts/migrar.mjs. Con esto, la
 --  próxima vez que alguien corra las migraciones contra esta base, verá
---  las 22 como "ya aplicada" y solo aplicará las nuevas.
+--  las 27 como "ya aplicada" y solo aplicará las nuevas.
 -- =====================================================================
 
 create table if not exists migraciones (
@@ -1770,7 +2573,12 @@ insert into migraciones (archivo) values
   ('019_uso_diario.sql'),
   ('020_renovacion_planes.sql'),
   ('021_glosario.sql'),
-  ('022_texto_voz.sql')
+  ('022_texto_voz.sql'),
+  ('023_reportes_correccion.sql'),
+  ('024_ruta.sql'),
+  ('025_viajes_escenarios_repasos.sql'),
+  ('026_panel.sql'),
+  ('027_avisos_competencia.sql')
 on conflict (archivo) do nothing;
 
 -- ---------------------------------------------------------------------

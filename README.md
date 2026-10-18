@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Allison
 
-## Getting Started
+Profesora de inglés con IA para adolescentes colombianos: una PWA hecha
+para el celular donde el alumno habla con Allison por turnos, recibe
+correcciones dentro de la conversación y avanza por una ruta de viaje
+(A1 por Estados Unidos, A2 por el Reino Unido, B1 por Canadá).
 
-First, run the development server:
+Next.js 16 (App Router) · Postgres · Auth.js · Gemini
+(`gemini-2.5-flash-lite`) · la API de voz de Praxis · Bold para los pagos.
+
+## Documentación
+
+| Documento | Qué tiene |
+|---|---|
+| [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md) | Decisiones, modelo de datos, cobro, la ruta y cada actividad |
+| [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) | Cómo se publica en Dokploy: variables, base de datos, migraciones y lista de verificación |
+| [docs/PROMPT.md](docs/PROMPT.md) | El prompt de Allison (se genera del código con `npm run generar:prompt`) |
+| [docs/CURRICULO.md](docs/CURRICULO.md) | Las 60 unidades de las lecciones de Hablar (/temas) |
+| `docs/CONTENIDO-*-POR-REVISAR.md` | Lo que la docente revisa de cada nivel (`node scripts/listar-por-revisar.mjs [a2|b1]`) |
+
+## Trabajar en local
+
+Requiere Node 22 o más nuevo y un Postgres.
 
 ```bash
+npm ci
+cp .env.example .env   # y llena las variables (cada una está explicada ahí); los scripts leen .env
+npm run migrar               # crea o pone al día la base de DATABASE_URL
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`AGENTS.md` avisa que esta versión de Next.js trae cambios grandes: la
+documentación que vale es la de `node_modules/next/dist/docs/`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Pruebas
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npx tsc --noEmit
+npm run revisar     # todas las pruebas; varias usan la base de .env
+```
 
-## Learn More
+Las que no tocan la base se pueden correr solas, por ejemplo
+`npm run probar:contenido`, `npm run probar:ruta` o `npm run probar:admin`.
 
-To learn more about Next.js, take a look at the following resources:
+## Producción
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+La imagen se arma con el `Dockerfile` (salida autónoma de Next) y se
+publica en Dokploy. Los pasos, en orden, están en
+[docs/DESPLIEGUE.md](docs/DESPLIEGUE.md).

@@ -104,7 +104,7 @@ async function usuarioAlEntrar(
   return u;
 }
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, auth } = NextAuth({
   session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30 },
   // Los errores también vuelven a /entrar (con ?error=): la página sabe
   // explicarlos. Sin esto, un fallo al volver de Google caería en la

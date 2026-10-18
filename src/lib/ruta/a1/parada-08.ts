@@ -1,0 +1,367 @@
+import type { Parada } from "../tipos.ts";
+
+/** Parada 8 · Boston. Documento "Contenido A1", aprobada el 15 de octubre de 2026. */
+export const PARADA_08: Parada = {
+  numero: 8,
+  ciudad: "Boston",
+  titulo: "Describe tu casa y tu barrio",
+  gramatica: "There is / there are y preposiciones de lugar",
+  objetivo:
+    "Al terminar, el alumno describe su casa y lo que hay cerca, y pregunta cómo es un lugar. Gramática: there is y there are, y preposiciones de lugar. Usa todo lo de las paradas 1 a 7.",
+  fraseMeta: "There is a park near my house.",
+  portada: "boston",
+  vocabulario: [
+    {
+      grupo: "La casa",
+      ingles: "house, apartment, bedroom, bathroom, kitchen, living room, yard, closet",
+      nota: 'Inglés de Estados Unidos: "apartment" (no "flat"), "yard" para el patio (no "garden"), "closet" para el clóset',
+    },
+    { grupo: "Muebles", ingles: "bed, desk, chair, sofa, table, lamp, window, door", nota: "" },
+    {
+      grupo: "El barrio",
+      ingles: "park, store, supermarket, drugstore, bank, bus stop, hospital",
+      nota: 'Inglés de Estados Unidos: "store" (no "shop") y "drugstore"',
+    },
+    {
+      grupo: "There is / there are",
+      ingles: "There is a park. There are two bedrooms. There isn't a yard. Is there a bus stop? Are there two bathrooms?",
+      nota: 'Las preguntas se hacen con números ("Are there two…?"); "any" queda para A2',
+    },
+    {
+      grupo: "Preposiciones de lugar",
+      ingles: "in, on, under, next to, near, behind, in front of",
+      nota: "La gramática central de la parada, junto con there is",
+    },
+  ],
+  lecciones: [
+    {
+      numero: 1,
+      titulo: "Mi casa",
+      objetivo: "Nombrar las partes de la casa y decir qué hay en ellas.",
+      actividades: [
+        {
+          paso: 1,
+          tipo: "escucha-elige",
+          queAparece:
+            'Oye: "There is a bed and a desk in my bedroom." (no está escrito). Elige entre tres imágenes: un cuarto, una cocina y un baño. Al acertar aparece la frase con su traducción.',
+          siRespondeMal: "Se repite la frase despacio y elige otra vez.",
+          quienHabla: "Allison",
+          audio: ["There is a bed and a desk in my bedroom."],
+          traduccion: ["Hay una cama y un escritorio en mi cuarto."],
+          opciones: [
+            { imagen: "f-cuarto", descripcion: "Un cuarto" },
+            { imagen: "f-cocina-casa", descripcion: "Una cocina" },
+            { imagen: "f-bano", descripcion: "Un baño" },
+          ],
+          correcta: 0,
+          porRevisar: ["traduccion", "quienHabla: el documento no dice quién habla; se puso Allison"],
+        },
+        {
+          paso: 2,
+          tipo: "que-es-esto",
+          queAparece: 'La cocina. Allison pregunta: "What room is this?"',
+          siRespondeMal:
+            'Pistas en inglés, una a la vez: "You cook here." → "There is a stove." → "It starts with k." Sin pistas, Allison dice "kitchen" y el alumno la repite.',
+          imagen: "f-cocina-casa",
+          pregunta: "What room is this?",
+          respuesta: "kitchen",
+          aceptadas: ["It's the kitchen.", "A kitchen."],
+          pistas: ["You cook here.", "There is a stove.", "It starts with k."],
+        },
+        {
+          paso: 3,
+          tipo: "repite",
+          queAparece: 'Audio de Allison: "There are a lot of plants in my apartment."',
+          siRespondeMal:
+            'Si dice "der" en "there": Escucha: there. La lengua sale un poquito entre los dientes, como en this. Luego la frase completa.',
+          frase: "There are a lot of plants in my apartment.",
+          palabraDificil: "there",
+          consejo: "La lengua sale un poquito entre los dientes, como en this.",
+        },
+      ],
+    },
+    {
+      numero: 2,
+      titulo: "¿Dónde está?",
+      objetivo: "Decir dónde está algo con in, on, under y next to.",
+      actividades: [
+        {
+          paso: 1,
+          tipo: "escucha-elige",
+          queAparece:
+            'Oye: "The cat is under the bed." (no está escrito). Elige entre tres imágenes: el gato debajo de la cama, encima de la cama y al lado de la cama. Al acertar aparece la frase con su traducción.',
+          siRespondeMal: "Se repite la frase despacio y elige otra vez.",
+          quienHabla: "Allison",
+          audio: ["The cat is under the bed."],
+          traduccion: ["El gato está debajo de la cama."],
+          opciones: [
+            { imagen: "f-gato-debajo", descripcion: "El gato debajo de la cama" },
+            { imagen: "f-gato-encima", descripcion: "El gato encima de la cama" },
+            { imagen: "f-gato-alado", descripcion: "El gato al lado de la cama" },
+          ],
+          correcta: 0,
+          porRevisar: ["traduccion", "quienHabla: el documento no dice quién habla; se puso Allison"],
+        },
+        {
+          paso: 2,
+          tipo: "tu-turno",
+          queAparece:
+            'Sarah: "Where is your backpack?" En pantalla: "It\'s on / under / next to the ___." y las palabras bed, desk, chair.',
+          siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
+          dialogo: [{ quien: "Sarah", dice: "Where is your backpack?" }],
+          plantilla: "It's on / under / next to the ___.",
+          modelo: "It's under the desk.",
+          aceptadas: ["It's on my bed."],
+          tambienSeAcepta: "It's on my bed. Cualquier lugar.",
+          palabras: ["bed", "desk", "chair"],
+        },
+        {
+          paso: 3,
+          tipo: "dilo",
+          queAparece: 'Frase en español: "Hay una lámpara al lado de la cama." Imagen del cuarto.',
+          siRespondeMal:
+            'Si dice "Is a lamp" o "Have a lamp": Para decir "hay" se usa there is. Al segundo fallo Allison dice la frase y el alumno la repite.',
+          espanol: "Hay una lámpara al lado de la cama.",
+          imagen: "f-cuarto",
+          respuesta: "There is a lamp next to the bed.",
+          aceptadas: ["There's a lamp next to the bed."],
+          palabras: ["There", "is", "a", "lamp", "next", "to", "the", "bed."],
+          explicaciones: [
+            { siDice: "Is a lamp", explicacion: 'Para decir "hay" se usa there is.' },
+            { siDice: "Have a lamp", explicacion: 'Para decir "hay" se usa there is.' },
+          ],
+        },
+      ],
+    },
+    {
+      numero: 3,
+      titulo: "Mi barrio",
+      objetivo: "Decir qué hay en su barrio y dónde.",
+      actividades: [
+        {
+          paso: 1,
+          tipo: "escucha-elige",
+          queAparece:
+            'Allison cuenta: Tom says: "There\'s a drugstore next to my school." Pregunta: ¿qué hay al lado del colegio de Tom? Elige entre la droguería, el supermercado y el banco (c-farmacia, c-supermercado, c-banco).',
+          siRespondeMal: "Se repite la frase despacio y elige otra vez.",
+          quienHabla: "Allison",
+          audio: ['Tom says: "There\'s a drugstore next to my school."'],
+          traduccion: ['Tom dice: "Hay una droguería al lado de mi colegio."'],
+          pregunta: "¿Qué hay al lado del colegio de Tom?",
+          opciones: [
+            { imagen: "c-farmacia", descripcion: "La droguería" },
+            { imagen: "c-supermercado", descripcion: "El supermercado" },
+            { imagen: "c-banco", descripcion: "El banco" },
+          ],
+          correcta: 0,
+          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
+        },
+        {
+          paso: 2,
+          tipo: "describe",
+          queAparece:
+            'Una calle de barrio: una casa, un parque al lado, dos árboles en frente, una tienda y una parada de bus. Allison: "Tell me 3 things." Debajo: "There is a ___." / "There are two ___." y las palabras park, trees, store, bus stop.',
+          siRespondeMal:
+            'Si dice "There is two trees": Con plural se usa there are. Si nombra menos de 3, Allison señala la parada de bus y pregunta "What is this?".',
+          imagen: "f-barrio",
+          pregunta: "Tell me 3 things.",
+          plantillas: ["There is a ___.", "There are two ___."],
+          palabrasAyuda: ["park", "trees", "store", "bus stop"],
+          modelo: ["There is a park.", "There are two trees.", "There is a bus stop."],
+          aceptadas: ["The park is next to the house."],
+          cosas: ["park", "tree", "store", "bus stop", "house"],
+          minimo: 3,
+        },
+        {
+          paso: 3,
+          tipo: "responde",
+          queAparece:
+            "Do you live in a house or an apartment? How many bedrooms are there in your house? Is there a park near your house? Where is your school? Is there a supermarket near your house?",
+          siRespondeMal: "Se muestra una respuesta modelo y la pregunta vuelve al final.",
+          preguntas: [
+            { pregunta: "Do you live in a house or an apartment?", modelo: "I live in a house." },
+            { pregunta: "How many bedrooms are there in your house?", modelo: "There are three bedrooms." },
+            { pregunta: "Is there a park near your house?", modelo: "Yes, there is." },
+            { pregunta: "Where is your school?", modelo: "It's near my house." },
+            { pregunta: "Is there a supermarket near your house?", modelo: "No, there isn't." },
+          ],
+          aceptadas: ["A house.", "Three.", "Yes."],
+          tambienSeAcepta: 'Respuestas cortas: "A house." "Three." "Yes."',
+          segundos: 10,
+        },
+      ],
+    },
+    {
+      numero: 4,
+      titulo: "El apartamento de Allison",
+      objetivo: "Preguntar cómo es la casa de otra persona con Is there…? y How many…?",
+      actividades: [
+        {
+          paso: 1,
+          tipo: "escucha-elige",
+          queAparece:
+            'Allison: "In my apartment, there\'s a small kitchen, but there isn\'t a yard." Pregunta: ¿qué no tiene el apartamento de Allison? Elige entre un patio, una cocina y un cuarto.',
+          siRespondeMal: "Se repite la frase despacio y elige otra vez.",
+          quienHabla: "Allison",
+          audio: ["In my apartment, there's a small kitchen, but there isn't a yard."],
+          traduccion: ["En mi apartamento hay una cocina pequeña, pero no hay patio."],
+          pregunta: "¿Qué no tiene el apartamento de Allison?",
+          opciones: [
+            { imagen: "f-patio", descripcion: "Un patio" },
+            { imagen: "f-cocina-casa", descripcion: "Una cocina" },
+            { imagen: "f-cuarto", descripcion: "Un cuarto" },
+          ],
+          correcta: 0,
+          porRevisar: ["traduccion"],
+        },
+        {
+          paso: 2,
+          tipo: "que-es-esto",
+          queAparece: 'Un clóset abierto con ropa colgada. Allison pregunta: "Where are your clothes? In the…"',
+          siRespondeMal:
+            'Pistas en inglés, una a la vez: "It\'s in your bedroom." → "It has a door." → "It starts with c." Sin pistas, Allison dice "closet" y el alumno la repite.',
+          imagen: "f-closet",
+          pregunta: "Where are your clothes? In the…",
+          respuesta: "closet",
+          aceptadas: ["In the closet.", "The closet."],
+          pistas: ["It's in your bedroom.", "It has a door.", "It starts with c."],
+        },
+        {
+          paso: 3,
+          tipo: "entrevista",
+          queAparece:
+            'Ficha del apartamento de Allison con cinco datos por descubrir: dónde vive, cuántos cuartos hay, si hay un parque cerca, dónde duerme Luna y qué hay en la sala. Arma cada pregunta con palabras de ayuda. Al acertar, el dato se llena, Allison responde y le devuelve la pregunta ("And you?"). Mínimo 10 intervenciones.',
+          siRespondeMal:
+            "Allison: ¿Qué quieres saber? ¿Si hay un parque cerca? Say: Is there a park near your apartment? Hay un botón de ayuda con la pregunta escrita.",
+          ficha: "el apartamento de Allison",
+          datos: [
+            {
+              dato: "Dónde vive",
+              pregunta: "Do you live in a house or an apartment?",
+              respuesta: "I live in an apartment in Brooklyn, in New York.",
+            },
+            { dato: "Cuántos cuartos hay", pregunta: "How many bedrooms are there?", respuesta: "There is one bedroom. It's small!" },
+            {
+              dato: "Si hay un parque cerca",
+              pregunta: "Is there a park near your apartment?",
+              respuesta: "Yes, there is. I always walk in the park on Sundays.",
+            },
+            {
+              dato: "Dónde duerme Luna",
+              pregunta: "Where is Luna's bed?",
+              respuesta: "Her bed is next to the window. She likes the sun.",
+            },
+            {
+              dato: "Qué hay en la sala",
+              pregunta: "What's in your living room?",
+              respuesta: "There's a sofa, a TV and a lot of plants.",
+            },
+          ],
+          aceptadas: ["Park near your house?"],
+          tambienSeAcepta: 'Cualquier pregunta que se entienda: "Park near your house?"',
+          ayuda: "¿Qué quieres saber? ¿Si hay un parque cerca? Say: Is there a park near your apartment?",
+          minimoIntervenciones: 10,
+        },
+      ],
+    },
+  ],
+  escenario: {
+    titulo: "Una habitación en Boston",
+    imagen: "e-boston-habitacion",
+    contexto:
+      "Vas a estudiar un mes en Boston y buscas una habitación. Rachel, la dueña de la casa (Allison en su papel), te la muestra.",
+    personaje: "Rachel, la dueña de la casa en Boston",
+    objetivo: "Preguntar cómo es la habitación, la casa y el barrio, y decidir",
+    tareas: [
+      "Saluda y di que buscas una habitación.",
+      "Pregunta qué hay en la habitación (Is there…?).",
+      "Pregunta cuántos baños hay.",
+      "Pregunta qué hay cerca (Is there a ___ near here?).",
+      "Pregunta dónde está algo (Where is…?).",
+      "Di si la tomas y despídete.",
+    ],
+    dialogo: [
+      { quien: "personaje", dice: "Hi! You're here for the room, right?" },
+      { quien: "alumno", dice: "Yes! Hi, I'm Diego. I'd like a room for one month.", tarea: 1 },
+      { quien: "personaje", dice: "Great. This is the room." },
+      { quien: "alumno", dice: "It's nice! Is there a desk?", tarea: 2 },
+      { quien: "personaje", dice: "Yes, there is. It's next to the window." },
+      { quien: "alumno", dice: "Is there a closet?" },
+      { quien: "personaje", dice: "Yes, there's a big closet behind the door." },
+      { quien: "alumno", dice: "How many bathrooms are there?", tarea: 3 },
+      { quien: "personaje", dice: "There are two bathrooms. One is next to your room." },
+      { quien: "alumno", dice: "Cool. Is there a bus stop near here?", tarea: 4 },
+      { quien: "personaje", dice: "Yes, there is. It's in front of the house." },
+      { quien: "alumno", dice: "Is there a supermarket?" },
+      { quien: "personaje", dice: "Yes, there's a small supermarket on this street." },
+      { quien: "alumno", dice: "Where is the kitchen?", tarea: 5 },
+      { quien: "personaje", dice: "It's downstairs, next to the living room. You can cook there." },
+      { quien: "alumno", dice: "Great! I like the room." },
+      { quien: "personaje", dice: "Wonderful! So, would you like it?" },
+      { quien: "alumno", dice: "Yes, I'd like it, please.", tarea: 6 },
+      { quien: "personaje", dice: "Perfect! Welcome to Boston!" },
+      { quien: "alumno", dice: "Thank you, Rachel! See you on Monday.", tarea: 6 },
+    ],
+    resumen: "¡Lo lograste! Conseguiste una habitación en inglés.",
+    recompensa: "Tres estrellas si no usó la ayuda, y la estampilla de Boston en el pasaporte.",
+    siSeAtasca: [
+      {
+        situacion: "Responde algo que no cumple la tarea",
+        accion: "Sigue en personaje y le da pie",
+        ejemplo: '"OK" → Do you have questions about the room?',
+      },
+      {
+        situacion: "Falla la misma tarea por segunda vez",
+        accion: "Se ilumina el botón de ayuda con la frase sugerida",
+        ejemplo: 'Ayuda: "Is there a ___ near here?"',
+      },
+      {
+        situacion: "Responde en español",
+        accion: "Sale un momento del personaje, da la frase y vuelve a la escena",
+        ejemplo: '"¿Hay un parque cerca?" → En inglés: Is there a park near here? Try it!',
+      },
+      {
+        situacion: "No se entiende el audio",
+        accion: "Pide repetir; no cuenta como intento",
+        ejemplo: "Sorry, can you repeat that?",
+      },
+      {
+        situacion: "Comete un error que no impide entender",
+        accion: "No corrige en la escena; lo menciona en el resumen, máximo un punto",
+        ejemplo: '"Have a desk?" → la escena sigue; en el resumen: Para preguntar si hay algo se dice Is there a desk?',
+      },
+      {
+        situacion: "Pasa de 18 intervenciones sin cumplir las tareas",
+        accion: "Allison cierra la escena con amabilidad y propone repasar la lección que faltó",
+        ejemplo: "No problem. See you soon! Vamos a repasar there is y lo intentas de nuevo.",
+      },
+    ],
+    minimoIntervenciones: 10,
+    maximoIntervenciones: 18,
+  },
+  ilustraciones: [
+    {
+      archivos: ["f-cuarto"],
+      muestra: "Un cuarto con cama, escritorio y lámpara",
+      uso: "Lección 1 (paso 1), lección 2 (paso 3) y lección 4 (paso 1)",
+    },
+    {
+      archivos: ["f-cocina-casa"],
+      muestra: "La cocina de una casa con estufa y nevera",
+      uso: "Lección 1 (pasos 1 y 2) y lección 4 (paso 1)",
+    },
+    { archivos: ["f-bano"], muestra: "Un baño con ducha y lavamanos", uso: "Lección 1 (paso 1)" },
+    {
+      archivos: ["f-gato-debajo", "f-gato-encima", "f-gato-alado"],
+      muestra: "El mismo gato debajo, encima y al lado de la misma cama",
+      uso: "Lección 2 (paso 1)",
+    },
+    {
+      archivos: ["f-barrio"],
+      muestra: "Calle con una casa, un parque al lado, dos árboles, una tienda y una parada de bus",
+      uso: "Lección 3 (paso 2)",
+    },
+    { archivos: ["f-patio"], muestra: "El patio trasero de una casa con césped y una cerca", uso: "Lección 4 (paso 1)" },
+    { archivos: ["f-closet"], muestra: "Un clóset abierto con ropa colgada", uso: "Lección 4 (paso 2)" },
+  ],
+};

@@ -1,0 +1,343 @@
+import type { Parada } from "../tipos.ts";
+
+/** Parada 9 · Seattle. Documento "Contenido A1", aprobada el 15 de octubre de 2026. */
+export const PARADA_09: Parada = {
+  numero: 9,
+  ciudad: "Seattle",
+  titulo: "Cuenta qué está pasando",
+  gramatica: "Presente continuo y la ropa",
+  objetivo:
+    "Al terminar, el alumno cuenta qué está pasando a su alrededor y qué lleva puesto. Gramática: presente continuo y la ropa. Usa todo lo de las paradas 1 a 8.",
+  fraseMeta: "I'm wearing a red jacket. People are dancing.",
+  portada: "seattle",
+  vocabulario: [
+    {
+      grupo: "Ropa",
+      ingles: "T-shirt, shirt, sweater, jacket, raincoat, pants, jeans, shorts, dress, skirt, sneakers, shoes, hat, cap",
+      nota: 'Inglés de Estados Unidos: "pants" (no "trousers"), "sneakers" (no "trainers"), "sweater" (no "jumper")',
+    },
+    { grupo: "Colores con ropa", ingles: "a red jacket, blue jeans, a yellow raincoat", nota: "El color va antes de la prenda" },
+    {
+      grupo: "Presente continuo",
+      ingles: "I'm wearing… She's eating. They're dancing. What are you doing? Is he sleeping?",
+      nota: "Es la gramática central de la parada",
+    },
+    {
+      grupo: "Ahora vs. siempre",
+      ingles: "I usually wear a uniform, but today I'm wearing jeans.",
+      nota: "Junta la parada 5 (siempre) con esta (ahora)",
+    },
+    { grupo: "El clima", ingles: "It's raining. It's sunny. It's cold. umbrella", nota: "En Seattle llueve mucho: el clima entra por ahí" },
+  ],
+  lecciones: [
+    {
+      numero: 1,
+      titulo: "¿Qué llevas puesto?",
+      objetivo: "Decir qué ropa lleva una persona.",
+      actividades: [
+        {
+          paso: 1,
+          tipo: "escucha-elige",
+          queAparece:
+            'Tres personas en la calle. Oye: "She\'s wearing a yellow raincoat." (no está escrito). Toca a la persona. Al acertar aparece la frase con su traducción.',
+          siRespondeMal: "Se repite la frase despacio y elige otra vez.",
+          quienHabla: "Allison",
+          audio: ["She's wearing a yellow raincoat."],
+          traduccion: ["Ella tiene puesto un impermeable amarillo."],
+          opciones: [
+            { imagen: "f-tres-personas-ropa", descripcion: "La muchacha del impermeable amarillo", zona: { x: 27, y: 52, ancho: 40 } },
+            { imagen: "f-tres-personas-ropa", descripcion: "El señor del gorro y la chaqueta café", zona: { x: 50, y: 50, ancho: 40 } },
+            { imagen: "f-tres-personas-ropa", descripcion: "La mujer del vestido verde y el suéter blanco", zona: { x: 74, y: 52, ancho: 40 } },
+          ],
+          correcta: 0,
+          porRevisar: [
+            "quienHabla: el documento no dice quién habla; se puso Allison",
+            "traduccion",
+            "opciones: el documento solo describe a la del impermeable; el señor y la mujer se describieron mirando f-tres-personas-ropa",
+          ],
+        },
+        {
+          paso: 2,
+          tipo: "que-es-esto",
+          queAparece: 'Unos tenis. Allison pregunta: "What are these?"',
+          siRespondeMal:
+            'Pistas en inglés, una a la vez: "You wear them on your feet." → "You can run in them." → "It starts with s." Si dice "trainers": En Estados Unidos se dice sneakers. Sin pistas, Allison dice "sneakers" y el alumno la repite.',
+          imagen: "f-tenis",
+          pregunta: "What are these?",
+          respuesta: "sneakers",
+          aceptadas: ["they're sneakers", "shoes"],
+          pistas: ["You wear them on your feet.", "You can run in them.", "It starts with s."],
+        },
+        {
+          paso: 3,
+          tipo: "repite",
+          queAparece: 'Audio de Allison: "I\'m wearing jeans and a blue sweater."',
+          siRespondeMal: 'Si no se entiende "wearing": Escucha: wear-ing. Suena como "uer". Luego la frase completa.',
+          frase: "I'm wearing jeans and a blue sweater.",
+          palabraDificil: "wearing",
+          consejo: 'Suena como "uer".',
+        },
+      ],
+    },
+    {
+      numero: 2,
+      titulo: "¿Qué estás haciendo?",
+      objetivo: "Decir qué está haciendo en este momento.",
+      actividades: [
+        {
+          paso: 1,
+          tipo: "escucha-elige",
+          queAparece:
+            'Oye: "Leo is having breakfast." Elige entre las tres imágenes de Leo: se levanta, desayuna o sube al bus.',
+          siRespondeMal: "Se repite la frase despacio y elige otra vez.",
+          quienHabla: "Allison",
+          audio: ["Leo is having breakfast."],
+          traduccion: ["Leo está desayunando."],
+          opciones: [
+            { imagen: "f-rutina-levantarse", descripcion: "Leo se levanta" },
+            { imagen: "f-rutina-desayuno", descripcion: "Leo desayuna" },
+            { imagen: "f-rutina-bus", descripcion: "Leo sube al bus" },
+          ],
+          correcta: 1,
+          porRevisar: ["quienHabla: el documento no dice quién habla; se puso Allison", "traduccion"],
+        },
+        {
+          paso: 2,
+          tipo: "tu-turno",
+          queAparece:
+            'Sarah, en videollamada: "Hi! What are you doing?" En pantalla: "I\'m ___." y las palabras studying, eating, watching TV.',
+          siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
+          dialogo: [{ quien: "Sarah", dice: "Hi! What are you doing?" }],
+          plantilla: "I'm ___.",
+          modelo: "I'm studying.",
+          aceptadas: ["I'm eating.", "I'm watching TV."],
+          tambienSeAcepta: "I'm eating. I'm watching TV. Cualquier actividad.",
+          palabras: ["studying", "eating", "watching TV"],
+        },
+        {
+          paso: 3,
+          tipo: "dilo",
+          queAparece: 'Frase en español: "Está lloviendo y tengo puesto un impermeable."',
+          siRespondeMal:
+            'Si dice "I wearing" o "I am wear": Se necesitan las dos partes: I\'m wearing. Al segundo fallo Allison dice la frase y el alumno la repite.',
+          espanol: "Está lloviendo y tengo puesto un impermeable.",
+          respuesta: "It's raining and I'm wearing a raincoat.",
+          aceptadas: ["It's raining, and I'm wearing a raincoat."],
+          palabras: ["It's", "raining", "and", "I'm", "wearing", "a", "raincoat."],
+          explicaciones: [
+            { siDice: "I wearing", explicacion: "Se necesitan las dos partes: I'm wearing." },
+            { siDice: "I am wear", explicacion: "Se necesitan las dos partes: I'm wearing." },
+          ],
+        },
+      ],
+    },
+    {
+      numero: 3,
+      titulo: "El mercado",
+      objetivo: "Contar qué están haciendo otras personas.",
+      actividades: [
+        {
+          paso: 1,
+          tipo: "escucha-elige",
+          queAparece:
+            'La escena del mercado de Seattle. Oye: "A boy is eating ice cream." Toca a la persona en la escena.',
+          siRespondeMal: "Se repite la frase despacio y elige otra vez.",
+          quienHabla: "Allison",
+          audio: ["A boy is eating ice cream."],
+          traduccion: ["Un niño está comiendo un helado."],
+          opciones: [
+            { imagen: "f-mercado-escena", descripcion: "El señor que vende pescado", zona: { x: 22, y: 26, ancho: 38 } },
+            { imagen: "f-mercado-escena", descripcion: "La mujer que compra flores", zona: { x: 40, y: 70, ancho: 38 } },
+            { imagen: "f-mercado-escena", descripcion: "El niño con el helado", zona: { x: 70, y: 40, ancho: 38 } },
+          ],
+          correcta: 2,
+          porRevisar: [
+            "quienHabla: el documento no dice quién habla; se puso Allison",
+            "traduccion",
+            "opciones: el documento no dice cuáles tres personas se ofrecen; se tomaron las tres primeras de la escena, en el orden del paso 2",
+          ],
+        },
+        {
+          paso: 2,
+          tipo: "describe",
+          queAparece:
+            'La misma escena: un señor vende pescado, una mujer compra flores, un niño come helado y un músico toca guitarra mientras dos personas bailan. Allison: "Tell me 3 things." Debajo: "A ___ is ___ing." y las palabras selling, buying, playing, dancing.',
+          siRespondeMal:
+            'Si dice "Two people is dancing": Con varias personas se usa are. Si nombra menos de 3, Allison señala al músico y pregunta "What is he doing?".',
+          imagen: "f-mercado-escena",
+          pregunta: "Tell me 3 things.",
+          plantillas: ["A ___ is ___ing."],
+          palabrasAyuda: ["selling", "buying", "playing", "dancing"],
+          modelo: ["A man is selling fish.", "A woman is buying flowers.", "Two people are dancing."],
+          aceptadas: ["A man is playing the guitar."],
+          cosas: ["selling", "buying", "eating", "playing", "dancing"],
+          minimo: 3,
+          porRevisar: ['cosas: son las palabras de ayuda más "eating" (el niño con el helado también está en la escena)'],
+        },
+        {
+          paso: 3,
+          tipo: "responde",
+          queAparece:
+            "What are you doing now? What are you wearing today? Is it raining now? What is your mom doing now? What do you usually wear to school?",
+          siRespondeMal:
+            "Se muestra una respuesta modelo y la pregunta vuelve al final. La última pregunta mezcla con la parada 5 a propósito.",
+          preguntas: [
+            { pregunta: "What are you doing now?", modelo: "I'm studying English." },
+            { pregunta: "What are you wearing today?", modelo: "I'm wearing jeans." },
+            { pregunta: "Is it raining now?", modelo: "No, it's sunny." },
+            { pregunta: "What is your mom doing now?", modelo: "She's working." },
+            { pregunta: "What do you usually wear to school?", modelo: "I usually wear a uniform." },
+          ],
+          aceptadas: ["Jeans.", "No.", "A uniform."],
+          tambienSeAcepta: 'Respuestas cortas: "Jeans." "No." "A uniform."',
+          segundos: 10,
+        },
+      ],
+    },
+    {
+      numero: 4,
+      titulo: "¿Qué está haciendo Allison?",
+      objetivo: "Preguntar qué está haciendo otra persona.",
+      actividades: [
+        {
+          paso: 1,
+          tipo: "escucha-elige",
+          queAparece:
+            'Allison: "I\'m cooking right now!" Elige entre la mujer cocinando, la que camina en el parque y las dos tomando café (f-mujer-cocina, f-mujer-parque, f-amigas-cafe).',
+          siRespondeMal: "Se repite la frase despacio y elige otra vez.",
+          quienHabla: "Allison",
+          audio: ["I'm cooking right now!"],
+          traduccion: ["¡Estoy cocinando en este momento!"],
+          opciones: [
+            { imagen: "f-mujer-cocina", descripcion: "La mujer cocinando" },
+            { imagen: "f-mujer-parque", descripcion: "La mujer que camina en el parque" },
+            { imagen: "f-amigas-cafe", descripcion: "Las dos amigas tomando café" },
+          ],
+          correcta: 0,
+          porRevisar: ["traduccion"],
+        },
+        {
+          paso: 2,
+          tipo: "que-es-esto",
+          queAparece: 'Un paraguas abierto bajo la lluvia. Allison pregunta: "It\'s raining in Seattle. What do you need?"',
+          siRespondeMal:
+            'Pistas en inglés, una a la vez: "You open it when it\'s raining." → "You hold it over your head." → "It starts with u." Sin pistas, Allison dice "an umbrella" y el alumno la repite.',
+          imagen: "f-paraguas",
+          pregunta: "It's raining in Seattle. What do you need?",
+          respuesta: "an umbrella",
+          aceptadas: ["an umbrella", "a raincoat"],
+          pistas: ["You open it when it's raining.", "You hold it over your head.", "It starts with u."],
+        },
+        {
+          paso: 3,
+          tipo: "entrevista",
+          queAparece:
+            'Ficha de Allison "ahora mismo" con cinco datos por descubrir: qué está haciendo, qué lleva puesto, qué está haciendo Luna, si está lloviendo en Nueva York y qué está haciendo Emily. Arma cada pregunta con palabras de ayuda. Al acertar, el dato se llena, Allison responde y le devuelve la pregunta ("And you?"). Mínimo 10 intervenciones.',
+          siRespondeMal:
+            "Allison: ¿Qué quieres saber? ¿Qué está haciendo Luna? Say: What is Luna doing? Hay un botón de ayuda con la pregunta escrita.",
+          ficha: 'Allison "ahora mismo"',
+          datos: [
+            { dato: "Qué está haciendo", pregunta: "What are you doing?", respuesta: "I'm talking with you!" },
+            { dato: "Qué lleva puesto", pregunta: "What are you wearing?", respuesta: "I'm wearing a green sweater and jeans." },
+            { dato: "Qué está haciendo Luna", pregunta: "What is Luna doing?", respuesta: "She's sleeping on the sofa." },
+            { dato: "Si está lloviendo en Nueva York", pregunta: "Is it raining in New York?", respuesta: "No, it isn't. It's sunny today." },
+            { dato: "Qué está haciendo Emily", pregunta: "What is Emily doing?", respuesta: "She's walking with Rocky in the park." },
+          ],
+          aceptadas: ["Luna, what doing?"],
+          tambienSeAcepta: 'Cualquier pregunta que se entienda: "Luna, what doing?"',
+          ayuda: "¿Qué quieres saber? ¿Qué está haciendo Luna? Say: What is Luna doing?",
+          minimoIntervenciones: 10,
+        },
+      ],
+    },
+  ],
+  escenario: {
+    titulo: "Videollamada desde el mercado",
+    imagen: "e-seattle-mercado",
+    contexto:
+      "Estás en un mercado de Seattle y haces una videollamada a tu prima Laura, en Colombia (Allison en su papel). Ella quiere saber todo lo que está pasando a tu alrededor.",
+    personaje: "Laura, tu prima en Colombia",
+    objetivo: "Contar qué está pasando, qué lleva puesto y qué tiempo hace",
+    tareas: [
+      "Saluda.",
+      "Di dónde estás.",
+      "Di qué tiempo hace y qué llevas puesto.",
+      "Di dos cosas que está haciendo la gente.",
+      "Pregúntale qué está haciendo ella.",
+      "Despídete.",
+    ],
+    dialogo: [
+      { quien: "personaje", dice: "Hi! I can see you! How are you?" },
+      { quien: "alumno", dice: "Hi, Laura! I'm great.", tarea: 1 },
+      { quien: "personaje", dice: "Where are you?" },
+      { quien: "alumno", dice: "I'm at a big market in Seattle.", tarea: 2 },
+      { quien: "personaje", dice: "Cool! Is it cold there?" },
+      { quien: "alumno", dice: "Yes, it's cold and it's raining.", tarea: 3 },
+      { quien: "personaje", dice: "Oh no! What are you wearing?" },
+      { quien: "alumno", dice: "I'm wearing a raincoat and a hat.", tarea: 3 },
+      { quien: "personaje", dice: "Good! What are the people doing?" },
+      { quien: "alumno", dice: "A man is selling fish. Two people are dancing!", tarea: 4 },
+      { quien: "personaje", dice: "Dancing? Is there music?" },
+      { quien: "alumno", dice: "Yes, a man is playing the guitar." },
+      { quien: "personaje", dice: "I love it! And what are you doing?" },
+      { quien: "alumno", dice: "I'm eating an apple. And you? What are you doing?", tarea: 5 },
+      { quien: "personaje", dice: "I'm watching TV with Grandma." },
+      { quien: "alumno", dice: "Is Grandma OK?" },
+      { quien: "personaje", dice: "Yes, she's fine. She's drinking coffee." },
+      { quien: "alumno", dice: "Say hi to her!" },
+      { quien: "personaje", dice: "OK! Have fun in Seattle!" },
+      { quien: "alumno", dice: "Thanks, Laura! Bye!", tarea: 6 },
+    ],
+    resumen: "¡Lo lograste! Contaste todo lo que estaba pasando en inglés.",
+    recompensa: "Tres estrellas si no usó la ayuda, y la estampilla de Seattle en el pasaporte.",
+    siSeAtasca: [
+      {
+        situacion: "Responde algo que no cumple la tarea",
+        accion: "Sigue en personaje y repite la pregunta más simple",
+        ejemplo: '"Yes" → What are you wearing? A jacket?',
+      },
+      {
+        situacion: "Falla la misma tarea por segunda vez",
+        accion: "Se ilumina el botón de ayuda con la frase sugerida",
+        ejemplo: 'Ayuda: "I\'m wearing a ___."',
+      },
+      {
+        situacion: "Responde en español",
+        accion: "Sale un momento del personaje, da la frase y vuelve a la escena",
+        ejemplo: '"Está lloviendo" → En inglés: It\'s raining. Try it!',
+      },
+      {
+        situacion: "No se entiende el audio",
+        accion: "Pide repetir; no cuenta como intento",
+        ejemplo: "Sorry, can you repeat that?",
+      },
+      {
+        situacion: "Comete un error que no impide entender",
+        accion: "No corrige en la escena; lo menciona en el resumen, máximo un punto",
+        ejemplo: '"A man selling fish" → la escena sigue; en el resumen: Falta is: A man is selling fish.',
+      },
+      {
+        situacion: "Pasa de 18 intervenciones sin cumplir las tareas",
+        accion: "Allison cierra la escena con amabilidad y propone repasar la lección que faltó",
+        ejemplo: "Have fun! Vamos a repasar el presente continuo y lo intentas de nuevo.",
+      },
+    ],
+    minimoIntervenciones: 10,
+    maximoIntervenciones: 18,
+  },
+  ilustraciones: [
+    {
+      archivos: ["f-tres-personas-ropa"],
+      muestra: "Tres personas en la calle con ropa distinta, una con impermeable amarillo",
+      uso: "Lección 1 (paso 1)",
+    },
+    { archivos: ["f-tenis"], muestra: "Unos tenis", uso: "Lección 1 (paso 2)" },
+    {
+      archivos: ["f-mercado-escena"],
+      muestra:
+        "El mercado con un señor que vende pescado, una mujer que compra flores, un niño con helado y un músico que toca guitarra mientras dos personas bailan",
+      uso: "Lección 3 (pasos 1 y 2)",
+    },
+    { archivos: ["f-paraguas"], muestra: "Un paraguas abierto bajo la lluvia", uso: "Lección 4 (paso 2)" },
+  ],
+};

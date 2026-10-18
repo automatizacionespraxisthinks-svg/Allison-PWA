@@ -12,7 +12,7 @@
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
-const { construirInstruccion } = await import("../src/lib/allison.ts");
+const { construirInstruccion, COMPORTAMIENTO } = await import("../src/lib/allison.ts");
 const { NIVELES } = await import("../src/lib/tipos.ts");
 const { UNIDADES } = await import("../src/lib/curriculo.ts");
 
@@ -33,18 +33,11 @@ const libre = construirInstruccion(ALUMNO);
 const conLeccion = construirInstruccion(ALUMNO, undefined, LECCION);
 
 /** El bloque que la lección inserta, y que en charla libre no existe. */
-const bloqueLeccion = conLeccion.slice(
-  conLeccion.indexOf("TODAY'S LESSON"),
-  conLeccion.indexOf("\n\nHOW YOU TEACH")
-);
+const bloqueLeccion = conLeccion
+  .slice(conLeccion.indexOf("TODAY'S LESSON"), conLeccion.indexOf("\nHOW YOU TEACH"))
+  .trim();
 
-/** El comportamiento de cada nivel: lo único que cambia entre A1 y C2. */
-function comportamientoDe(nivel) {
-  const texto = construirInstruccion({ nombre: "Alumno", nivel });
-  return texto
-    .slice(texto.indexOf(`CEFR level ${nivel}.`) + `CEFR level ${nivel}.`.length, texto.indexOf("\nListen for these"))
-    .trim();
-}
+const FENCE = "```";
 
 const contenido = `# El prompt de Allison
 
@@ -56,8 +49,10 @@ El prompt no es un texto fijo: \`construirInstruccion\` lo arma en cada
 turno con el nombre del alumno, su nivel, los temas que todavía falla y
 los que domina, y —si está practicando una unidad— la lección del día.
 Se le envía a Gemini como \`systemInstruction\`; la respuesta va sujeta
-además a un esquema obligatorio (transcripción, respuesta y
-correcciones).
+además a un esquema obligatorio: transcripción, caso (cuál de los once
+casos del plan), español, respuesta en inglés y correcciones. El código
+junta el español y el inglés con los marcadores de la voz
+(\`componerRespuesta\`).
 
 Lo que sigue es el prompt REAL, generado para este alumno de ejemplo:
 
@@ -72,30 +67,31 @@ Son ${libre.length.toLocaleString("es-CO")} caracteres y ${libre.split("\n").len
 
 ## 1. Conversación libre
 
-\`\`\`text
+${FENCE}text
 ${libre}
-\`\`\`
+${FENCE}
 
 ---
 
 ## 2. Lo que agrega el modo lección
 
 Cuando el alumno practica una unidad del currículo, este bloque entra
-justo después de sus temas y antes de "HOW YOU TEACH". Ejemplo con la
-unidad **${LECCION.clave} — ${LECCION.titulo}**:
+justo después de la ficha de Allison y antes de "HOW YOU TEACH".
+Ejemplo con la unidad **${LECCION.clave} — ${LECCION.titulo}**:
 
-\`\`\`text
+${FENCE}text
 ${bloqueLeccion}
-\`\`\`
+${FENCE}
 
 ---
 
-## 3. El comportamiento en cada nivel
+## 3. Cuánto habla Allison en cada nivel
 
-Es lo único que cambia entre un A1 y un C2: cuánto habla Allison, a qué
-velocidad y qué corrige.
+Además de esto cambian, por nivel, qué cuenta como caso 1 y como caso 2
+(qué se corrige), cuántas correcciones van por turno y si hay español
+(A1, A2 y B1 sí; de B2 en adelante, no).
 
-${NIVELES.map(({ nivel, etiqueta }) => `### ${nivel} — ${etiqueta}\n\n\`\`\`text\n${comportamientoDe(nivel)}\n\`\`\``).join("\n\n")}
+${NIVELES.map(({ nivel, etiqueta }) => `### ${nivel} — ${etiqueta}\n\n${FENCE}text\n${COMPORTAMIENTO[nivel]}\n${FENCE}`).join("\n\n")}
 `;
 
 if (VERIFICAR) {

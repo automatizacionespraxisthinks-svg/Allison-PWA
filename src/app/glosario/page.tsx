@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ConNavegacion } from "@/components/Navegacion";
 import { Glosario } from "@/components/Glosario";
 import { entradasDe } from "@/lib/glosario";
 import { alumnoActual } from "@/lib/sesion";
@@ -18,6 +19,7 @@ export default async function PaginaGlosario() {
   const entradas = await entradasDe(alumno.id);
 
   return (
+    <ConNavegacion racha={alumno.rachaDias}>
     <main className="mx-auto flex min-h-dvh max-w-lg flex-col gap-5 px-4 py-5">
       <header className="flex items-center justify-between">
         <Link href="/practicar" className="text-sm text-texto-suave">
@@ -35,5 +37,6 @@ export default async function PaginaGlosario() {
           quitar, y un número pintado aquí se quedaría viejo. */}
       <Glosario iniciales={entradas} nivel={alumno.nivel} />
     </main>
+    </ConNavegacion>
   );
 }

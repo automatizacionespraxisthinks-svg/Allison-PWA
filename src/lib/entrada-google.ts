@@ -123,11 +123,21 @@ async function borrarCookieDeConsentimiento(): Promise<void> {
  * Google (si no lo tenía) y el correo queda verificado, porque Google
  * lo acaba de confirmar. No entrega mensajes: la prueba ya se entregó
  * completa al crear la cuenta.
+ *
+ * Si nadie había verificado ese correo, la contraseña la pudo poner
+ * cualquiera que lo escribió en /registro antes que su dueño: se borra
+ * y se cierran las sesiones abiertas con ella. El dueño sigue entrando
+ * con Google, o se pone una contraseña con "Olvidé mi contraseña". La
+ * hora sale de este servidor, igual que la de la sesión que se abre
+ * ahora (src/auth.ts), para que esa sesión no nazca vencida.
  */
 async function vincular(userId: string, sub: string): Promise<void> {
+  const ahora = new Date();
   await sql`
     update users
        set google_id = coalesce(google_id, ${sub}),
+           password_hash = case when email_verificado_en is null then null else password_hash end,
+           sesiones_validas_desde = case when email_verificado_en is null then ${ahora} else sesiones_validas_desde end,
            email_verificado_en = coalesce(email_verificado_en, now()),
            actualizado_en = now()
      where id = ${userId}

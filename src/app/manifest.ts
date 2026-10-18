@@ -13,7 +13,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Allison",
     description:
       "Practica inglés conversando con Allison. Te corrige la pronunciación y la gramática mientras hablas.",
-    start_url: "/practicar",
+    start_url: "/ruta",
     display: "standalone",
     orientation: "portrait",
     background_color: "#f6f8fc",

@@ -23,7 +23,8 @@ export function TablaAlumnos({ alumnos }: { alumnos: AlumnoDelColegio[] }) {
       ? alumnos.filter(
           (a) =>
             a.nombre.toLowerCase().includes(q) ||
-            a.username.toLowerCase().includes(q)
+            a.username.toLowerCase().includes(q) ||
+            (a.curso ?? "").toLowerCase() === q
         )
       : alumnos;
 
@@ -99,8 +100,22 @@ export function TablaAlumnos({ alumnos }: { alumnos: AlumnoDelColegio[] }) {
                   <p className="font-semibold leading-tight">{a.nombre}</p>
                   <p className="mt-0.5 text-sm text-texto-suave">
                     <span className="font-mono">{a.username}</span>
+                    {a.curso && (
+                      <>
+                        <span className="mx-1.5">·</span>
+                        Curso {a.curso}
+                      </>
+                    )}
                     <span className="mx-1.5">·</span>
-                    Nivel {a.nivel}
+                    {a.vaEn}
+                    {a.saltadas > 0 && (
+                      <>
+                        <span className="mx-1.5">·</span>
+                        <span className="text-morado">
+                          {a.saltadas === 1 ? "1 parada saltada" : `${a.saltadas} paradas saltadas`}
+                        </span>
+                      </>
+                    )}
                     {a.rachaDias > 0 && (
                       <>
                         <span className="mx-1.5">·</span>

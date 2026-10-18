@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { sql } from "@/lib/db";
+import { cambiarNivel } from "@/lib/nivel";
 import { alumnoActual } from "@/lib/sesion";
 
 const Cambio = z.object({
@@ -8,11 +8,9 @@ const Cambio = z.object({
 });
 
 /**
- * El alumno cambia su nivel cuando quiera.
- *
- * Sin restricciones: si le queda grande baja, si le aburre sube. Un
- * nivel que no se puede cambiar deja al alumno atrapado en un producto
- * que dejó de servirle.
+ * El alumno cambia de nivel con la regla aprobada (src/lib/nivel.ts):
+ * baja cuando quiera, vuelve a subir hasta el nivel más alto en el que
+ * ya estuvo, y para pasar de ahí completa todas las actividades.
  */
 export async function POST(peticion: Request) {
   const alumno = await alumnoActual();
@@ -25,10 +23,12 @@ export async function POST(peticion: Request) {
     return NextResponse.json({ error: "Nivel inválido" }, { status: 400 });
   }
 
-  await sql`
-    update users set nivel = ${datos.data.nivel}, actualizado_en = now()
-     where id = ${alumno.id}
-  `;
-
+  const r = await cambiarNivel(alumno.id, datos.data.nivel);
+  if (r === "bloqueado") {
+    return NextResponse.json(
+      { error: "bloqueado", mensaje: "Para subir de nivel, completa todas las actividades de tu nivel." },
+      { status: 403 }
+    );
+  }
   return NextResponse.json({ ok: true, nivel: datos.data.nivel });
 }

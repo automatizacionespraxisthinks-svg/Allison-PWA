@@ -80,7 +80,7 @@ export function ttsConfigurado(): boolean {
   return Boolean(process.env.TTS_API_KEY?.trim());
 }
 
-export function configTts(): ConfigTts {
+function configTts(): ConfigTts {
   const clave = process.env.TTS_API_KEY?.trim();
   if (!clave) {
     throw new ErrorTts("no_configurado", 503, false, "Falta TTS_API_KEY.");

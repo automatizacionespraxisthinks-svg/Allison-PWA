@@ -171,12 +171,19 @@ if (claves === null) {
       select distinct leccion from (
         select leccion from progreso_lecciones
         union all
-        select leccion from conversaciones where leccion is not null
+        select leccion from conversaciones where leccion is not null and modo <> 'ruta'
       ) t where leccion <> all(${claves})
     `,
     (f) => `clave desconocida: ${f.leccion}`
   );
 }
+
+await revisar(
+  "toda conversación de la ruta tiene su clave y su estado",
+  sql`select id from conversaciones
+       where modo = 'ruta' and (leccion not like 'ruta:%' or ruta is null)`,
+  (f) => `${f.id}`
+);
 
 await revisar(
   "una lección completada tiene al menos un logro",
@@ -187,8 +194,10 @@ await revisar(
 
 await revisar(
   "toda conversación de modo lección tiene su clave (y al revés)",
+  // Las de la ruta (escenarios y entrevistas) llevan su propia clave
+  // ("ruta:a1-p01:escenario") y su propio modo.
   sql`select id from conversaciones
-       where (modo = 'leccion') <> (leccion is not null)`,
+       where modo <> 'ruta' and (modo = 'leccion') <> (leccion is not null)`,
   (f) => `${f.id}`
 );
 

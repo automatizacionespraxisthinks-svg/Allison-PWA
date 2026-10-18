@@ -3,8 +3,9 @@ import { conversarEnStream } from "@/lib/allison";
 import { conversacionActiva } from "@/lib/conversaciones";
 import { META_LOGROS, unidad } from "@/lib/curriculo";
 import { sql } from "@/lib/db";
-import { limitar } from "@/lib/limite";
-import { temasDe } from "@/lib/progreso";
+import { CUERPO_MUY_GRANDE, cuerpoExcede, limitar } from "@/lib/limite";
+import { contextoDeEnsenanza, temasDe } from "@/lib/progreso";
+import { rutaDe } from "@/lib/ruta";
 import { alumnoActual } from "@/lib/sesion";
 import { senalesDeEspanol } from "@/lib/habla";
 import { AUDIO_MAX_SEGUNDOS } from "@/lib/tipos";
@@ -56,6 +57,7 @@ export async function POST(peticion: Request) {
     );
   }
 
+  if (cuerpoExcede(peticion, MAX_BYTES + 64 * 1024)) return NextResponse.json(CUERPO_MUY_GRANDE, { status: 413 });
   // Un cuerpo mal formado no debe reventar la ruta con un 500.
   const formulario = await peticion.formData().catch(() => null);
   if (!formulario) {
@@ -64,7 +66,13 @@ export async function POST(peticion: Request) {
 
   const audio = formulario.get("audio");
   const textoCrudo = formulario.get("texto");
-  const duracionSeg = Number(formulario.get("duracion") ?? 0);
+  // La duración la manda el navegador: se acota. Un valor raro (NaN,
+  // negativo, enorme) hacía fallar el registro después de la respuesta, y
+  // el turno se devolvía.
+  const duracionCruda = Number(formulario.get("duracion") ?? 0);
+  const duracionSeg = Number.isFinite(duracionCruda)
+    ? Math.max(0, Math.min(AUDIO_MAX_SEGUNDOS + 5, duracionCruda))
+    : 0;
   const conversacionPedida = formulario.get("conversacion") as string | null;
 
   // El turno llega hablado o ESCRITO: el teclado existe para el alumno
@@ -79,7 +87,7 @@ export async function POST(peticion: Request) {
     if (audio.size > MAX_BYTES) {
       return NextResponse.json({ error: "El audio es demasiado grande" }, { status: 413 });
     }
-    if (duracionSeg > AUDIO_MAX_SEGUNDOS + 5) {
+    if (duracionCruda > AUDIO_MAX_SEGUNDOS + 5) {
       return NextResponse.json({ error: "El audio excede el máximo" }, { status: 413 });
     }
   }
@@ -110,7 +118,7 @@ export async function POST(peticion: Request) {
   const propia = conversacionPedida
     ? await sql`
         select id, leccion from conversaciones
-         where id = ${conversacionPedida} and user_id = ${alumno.id}
+         where id = ${conversacionPedida} and user_id = ${alumno.id} and modo <> 'ruta'
       `.then((f) => f[0] ?? null).catch(() => null)
     : null;
 
@@ -141,13 +149,14 @@ export async function POST(peticion: Request) {
         // Las dos consultas no dependen entre sí: van juntas. Cada viaje
         // a la base cuesta tiempo que el alumno espera mirando la
         // pantalla, y en fila india se suman.
-        const [filas, temas] = await Promise.all([
+        const [filas, temas, ensenanza] = await Promise.all([
           sql`
             select rol, texto, texto_voz from mensajes
              where conversacion_id = ${conversacionId}
              order by creado_en desc limit 24
           `,
           temasDe(alumno.id),
+          contextoDeEnsenanza(alumno.id, alumno.nivel),
         ]);
 
         const historial = filas.reverse().map((f, i) => ({
@@ -172,6 +181,8 @@ export async function POST(peticion: Request) {
             nivel: alumno.nivel,
             temasAbiertos: temas.abiertos,
             temasDominados: temas.dominados,
+            erroresRepetidos: ensenanza.erroresRepetidos,
+            temasRecorridos: ensenanza.temasRecorridos,
           },
           historial,
           leccion: leccion ?? undefined,
@@ -189,9 +200,13 @@ export async function POST(peticion: Request) {
           }
         }
 
-        if (!resultado || !resultado.transcripcion.trim()) {
-          // No se entendió nada: no se cobra.
-          await devolver();
+        if (!resultado || !resultado.transcripcion.trim() || !resultado.respuesta.trim()) {
+          // No se entendió nada, o Allison no alcanzó a responder nada:
+          // no se cobra. Salvo una respuesta larga sin nada oído: eso no
+          // es un micrófono fallando ("no te escuché" es corto) sino
+          // alguien que le pidió no transcribir para que le saliera gratis.
+          const largaSinOir = !!resultado && !resultado.transcripcion.trim() && resultado.respuesta.length > 300;
+          if (!largaSinOir) await devolver();
           enviar({
             tipo: "error",
             error: "sin_audio",
@@ -240,6 +255,8 @@ export async function POST(peticion: Request) {
             ${Math.round(duracionSeg)}, true, false
           )
         `;
+        // Un tema de la ruta provisional cuenta como ruta; lo demás, Hablar.
+        await sql`select registrar_parte(${alumno.id}, ${leccion ? "ruta" : "hablar"})`;
 
         for (const c of resultado.correcciones) {
           await sql`
@@ -264,6 +281,17 @@ export async function POST(peticion: Request) {
             completada: fila.r.completada as boolean,
             recien: fila.r.recien as boolean,
           };
+          // Ruta provisional (niveles sin lecciones escritas): completar el
+          // tema gana la estampilla de su ciudad, guardada con la clave que
+          // tendrá la parada cuando se escriba (plan, sección 22).
+          if (avanceLeccion.recien && !rutaDe(leccion.nivel)) {
+            await sql`
+              insert into ruta_paradas (user_id, parada, estrellas, sello_en)
+              values (${alumno.id}, ${`${leccion.nivel.toLowerCase()}-p${String(leccion.orden).padStart(2, "0")}`}, 3, now())
+              on conflict (user_id, parada) do update
+                 set sello_en = coalesce(ruta_paradas.sello_en, now()), actualizado_en = now()
+            `;
+          }
         }
 
         const [saldo] = await sql`

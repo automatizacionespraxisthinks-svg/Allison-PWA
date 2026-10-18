@@ -8,6 +8,10 @@
  * un paso más donde se perdía gente. Lo que frena el abuso ahora es el
  * tope global de cuentas nuevas por hora (REGISTROS_GLOBALES_POR_HORA).
  *
+ * Son 5 desde oct-2026 (plan de mejoras): lo gratis es lo que no usa IA
+ * (Escucha, Guía de frases, Tu turno) y la prueba solo deja probar las
+ * actividades con Allison.
+ *
  * Se lee MENSAJES_PRUEBA. Si un despliegue viejo todavía trae las dos
  * variables partidas, se suman: nadie recibe menos de lo que recibía.
  */
@@ -19,4 +23,4 @@ export const MENSAJES_PRUEBA = entera
   ? Number(entera)
   : inicial || alConfirmar
     ? Number(inicial ?? 0) + Number(alConfirmar ?? 0)
-    : 20;
+    : 5;

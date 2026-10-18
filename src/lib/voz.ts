@@ -34,7 +34,7 @@ import {
  */
 
 /** La base por nivel: un A1 oye más lento que un C1. */
-export function velocidadBase(nivel: Nivel): number {
+function velocidadBase(nivel: Nivel): number {
   return nivel === "A1" ? 0.8 : nivel === "A2" ? 0.9 : 1;
 }
 

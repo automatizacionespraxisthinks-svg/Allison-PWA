@@ -135,3 +135,18 @@ export function origenDe(peticion: Request): string {
 export const REGISTROS_GLOBALES_POR_HORA = Number(
   process.env.REGISTROS_GLOBALES_POR_HORA ?? 60
 );
+
+/**
+ * ¿El cuerpo de la petición pasa del tope? Se mira el Content-Length
+ * ANTES de leerlo: leerlo primero (formData, text, json) ya habría
+ * metido todo en memoria, y un cuerpo de varios GB tumba el proceso.
+ * Sin ese encabezado (envío por partes) la ruta mide después de leer, y
+ * el tope general lo pone Traefik (docs/DESPLIEGUE.md).
+ */
+export function cuerpoExcede(peticion: Request, maximoBytes: number): boolean {
+  const largo = Number(peticion.headers.get("content-length"));
+  return Number.isFinite(largo) && largo > maximoBytes;
+}
+
+/** La respuesta para un cuerpo que pasa del tope. */
+export const CUERPO_MUY_GRANDE = { error: "La petición es demasiado grande" } as const;

@@ -20,6 +20,8 @@ interface Props {
    *  botón se queda en rojo para siempre. */
   onDescartar: () => void;
   deshabilitado?: boolean;
+  /** El volumen mientras graba (0 a 1), o null al terminar: el anillo verde de Allison. */
+  onVolumen?: (volumen: number | null) => void;
 }
 
 /**
@@ -39,6 +41,7 @@ export function BotonGrabar({
   onAudioListo,
   onDescartar,
   deshabilitado,
+  onVolumen,
 }: Props) {
   const [segundos, setSegundos] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +64,8 @@ export function BotonGrabar({
     grabadora.current = null;
     void audioCtx.current?.close();
     audioCtx.current = null;
-  }, []);
+    onVolumen?.(null);
+  }, [onVolumen]);
 
   const detener = useCallback(() => {
     if (grabadora.current?.state === "recording") {
@@ -138,17 +142,18 @@ export function BotonGrabar({
         for (const v of muestras) suma += (v - 128) ** 2;
         const nivel = Math.sqrt(suma / muestras.length) / 128;
         volumenMaximo.current = Math.max(volumenMaximo.current, nivel);
+        onVolumen?.(Math.min(1, nivel * 6));
 
         const transcurridos = Math.round((Date.now() - inicio.current) / 1000);
         setSegundos(transcurridos);
         if (transcurridos >= AUDIO_MAX_SEGUNDOS) detener();
-      }, 250);
+      }, 100);
     } catch {
       setError(
         "No pudimos usar el micrófono. Revisa los permisos, o usa el teclado de abajo."
       );
     }
-  }, [detener, limpiar, onIniciar, onAudioListo, onDescartar]);
+  }, [detener, limpiar, onIniciar, onAudioListo, onDescartar, onVolumen]);
 
   useEffect(() => limpiar, [limpiar]);
 

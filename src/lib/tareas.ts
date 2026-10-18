@@ -4,10 +4,9 @@ import { createHash, timingSafeEqual } from "node:crypto";
  * El candado de las rutas que llama una MÁQUINA, no una persona: la
  * limpieza de cada hora y los diagnósticos del servidor.
  *
- * Dos nombres para el mismo secreto: TAREAS_SECRETO cuando la llama la
- * tarea programada de Dokploy, n8n u otra máquina propia; CRON_SECRET
- * cuando la llama el cron de Vercel, que manda ese valor como Bearer
- * automáticamente.
+ * TAREAS_SECRETO es el de la tarea programada de Dokploy; CRON_SECRET,
+ * opcional, un segundo secreto para otra máquina (n8n) o para cambiar el
+ * primero sin cortar la tarea. Se manda como "Authorization: Bearer ...".
  */
 export function autorizadaPorSecreto(peticion: Request): boolean {
   const secretos = [process.env.TAREAS_SECRETO, process.env.CRON_SECRET].filter(

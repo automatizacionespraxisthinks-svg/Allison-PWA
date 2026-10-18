@@ -70,7 +70,7 @@ export function FormularioRegistro({
       router.push("/entrar");
       return;
     }
-    router.push("/practicar");
+    router.push("/ruta");
     router.refresh();
   }
 
@@ -102,10 +102,10 @@ export function FormularioRegistro({
       return;
     }
 
-    // Se va a Google y vuelve a /practicar con la cuenta creada. Si no
+    // Se va a Google y vuelve a /ruta con la cuenta creada. Si no
     // se pudo ni salir (sin red, o el servidor no respondió), se dice.
     try {
-      await signIn("google", { redirectTo: "/practicar" });
+      await signIn("google", { redirectTo: "/ruta" });
     } catch (e) {
       console.error("No se pudo abrir Google:", e);
       setErrorGoogle("No pudimos abrir Google. Revisa tu conexión e intenta de nuevo.");

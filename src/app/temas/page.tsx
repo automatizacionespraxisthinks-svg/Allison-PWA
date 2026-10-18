@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ConNavegacion } from "@/components/Navegacion";
 import { META_LOGROS, unidadesDe } from "@/lib/curriculo";
 import { progresoLecciones } from "@/lib/progreso";
 import { alumnoActual } from "@/lib/sesion";
@@ -23,6 +24,7 @@ export default async function PaginaTemas() {
   ).length;
 
   return (
+    <ConNavegacion racha={alumno.rachaDias}>
     <main className="mx-auto max-w-2xl px-4 py-6">
       <header className="mb-5 flex items-center gap-3">
         <Link
@@ -148,5 +150,6 @@ export default async function PaginaTemas() {
         nivel, verás los temas de ese nivel.
       </p>
     </main>
+    </ConNavegacion>
   );
 }

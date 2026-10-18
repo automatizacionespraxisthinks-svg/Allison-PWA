@@ -50,7 +50,7 @@ export async function conversacionesDe(
               filter (where m.rol = 'alumno'))[1] as primera
       from conversaciones c
       left join mensajes m on m.conversacion_id = c.id
-     where c.user_id = ${userId}
+     where c.user_id = ${userId} and c.modo <> 'ruta'
      group by c.id
      having count(m.id) > 0
      order by c.ultima_actividad_en desc
@@ -161,7 +161,7 @@ export async function conversacionActiva(
 ): Promise<{ id: string; leccion: string | null }> {
   const [existente] = await sql`
     select id, leccion from conversaciones
-     where user_id = ${userId}
+     where user_id = ${userId} and modo <> 'ruta'
      order by ultima_actividad_en desc
      limit 1
   `;
@@ -229,7 +229,7 @@ export async function conversacionLibre(
 ): Promise<string> {
   const [existente] = await sql`
     select id from conversaciones
-     where user_id = ${userId} and leccion is null
+     where user_id = ${userId} and leccion is null and modo <> 'ruta'
      order by ultima_actividad_en desc
      limit 1
   `;
@@ -241,6 +241,29 @@ export async function conversacionLibre(
     return existente.id;
   }
 
+  const [nueva] = await sql`
+    insert into conversaciones (user_id, modo, nivel_al_iniciar)
+    values (${userId}, 'libre', ${nivel})
+    returning id
+  `;
+  await anotarConversacion(userId);
+  return nueva.id;
+}
+
+/** "Nueva conversación": un hilo libre en blanco, que pasa a ser el activo. */
+export async function nuevaConversacion(userId: string, nivel: string): Promise<string> {
+  // Recargar la página no abre otra: si la última libre sigue en blanco, es esa.
+  const [enBlanco] = await sql`
+    select c.id from conversaciones c
+     where c.user_id = ${userId} and c.leccion is null and c.modo = 'libre'
+       and not exists (select 1 from mensajes m where m.conversacion_id = c.id)
+     order by c.ultima_actividad_en desc
+     limit 1
+  `;
+  if (enBlanco) {
+    await sql`update conversaciones set ultima_actividad_en = now() where id = ${enBlanco.id}`;
+    return enBlanco.id;
+  }
   const [nueva] = await sql`
     insert into conversaciones (user_id, modo, nivel_al_iniciar)
     values (${userId}, 'libre', ${nivel})

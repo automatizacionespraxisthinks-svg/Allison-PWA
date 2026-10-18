@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { borrarConversacion } from "@/lib/conversaciones";
 import { alumnoActual } from "@/lib/sesion";
+import { esUuid } from "@/lib/validar";
 
 export async function DELETE(
   _peticion: Request,
@@ -12,6 +13,7 @@ export async function DELETE(
   }
 
   const { id } = await params;
+  if (!esUuid(id)) return NextResponse.json({ error: "No encontrada" }, { status: 404 });
   const borrada = await borrarConversacion(alumno.id, id);
 
   if (!borrada) {

@@ -122,8 +122,12 @@ consulta, no al importar el módulo.
 | `BOLD_MEDIOS` | opcional — vacío ofrece todos los medios activos, incluido el QR |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | opcionales — las dos o ninguna. Con ellas aparece "Entrar con Google" (punto 1) |
 | `TAREAS_SECRETO` | generado, listo |
-| `PROXY_CONFIABLE` | `reverso` — Traefik reescribe `x-forwarded-for` |
-| `COP_POR_MENSAJE`, `RECARGA_MINIMA_COP`, `MENSAJES_PRUEBA`, `REGISTROS_GLOBALES_POR_HORA` | **ajustar**: `RECARGA_MINIMA_COP=8000` y `MENSAJES_PRUEBA=20`; borra `MENSAJES_PRUEBA_INICIAL` y `MENSAJES_PRUEBA_VERIFICAR` si siguen ahí |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | **faltan** — las llaves de los avisos en el celular (recordatorio de la racha). Se generan una sola vez con `npx web-push generate-vapid-keys` y no se cambian: si cambian, cada celular tiene que volver a activar los avisos. Sin ellas los avisos se esconden y el recordatorio sigue por correo |
+| `PROXY_CONFIABLE` | **`reverso` — no la dejes vacía**: Traefik reescribe `x-forwarded-for`. Vacía, todas las personas comparten un mismo límite: 5 registros por hora para todo el país, 5 recuperaciones de contraseña por hora, y la entrada pierde el freno por dirección |
+| `COP_POR_MENSAJE`, `RECARGA_MINIMA_COP`, `MENSAJES_PRUEBA`, `REGISTROS_GLOBALES_POR_HORA` | **ajustar**: `RECARGA_MINIMA_COP=8000` y `MENSAJES_PRUEBA=5`; borra `MENSAJES_PRUEBA_INICIAL` y `MENSAJES_PRUEBA_VERIFICAR` si siguen ahí |
+| `RUTA_A2`, `RUTA_B1` | **vacías** hasta que la docente apruebe el contenido de A2 y de B1 (con el nativo para el Repaso final). Con `1`, los alumnos de ese nivel ven la ruta nueva |
+| `BOLD_PRUEBAS` | **vacía**: con ella Bold cobra con las llaves de prueba, y en producción la app se niega |
+| `CRON_SECRET` | opcional — un segundo secreto para la limpieza (otra máquina, o cambiar `TAREAS_SECRETO` sin cortarla) |
 
 ---
 
@@ -164,8 +168,10 @@ administrador.
 
 Se niega a correr si dejas la contraseña de ejemplo, si es más corta de
 12 caracteres, o si la base ya tiene esquema — y en los tres casos no
-toca nada. Está probado contra una base vacía de verdad
-(`npm run probar:base`).
+toca nada. Antes de usarlo, pruébalo una vez contra un Postgres de
+prueba de la misma versión que el de producción: `npm run probar:base`
+(lo crea, lo corre y lo borra). Desde las migraciones 023 a 027 no se
+ha vuelto a probar.
 
 *Alternativa desde el contenedor* (Dokploy → tu aplicación → Terminal),
 en dos comandos:
@@ -188,12 +194,37 @@ cambiada.
 node scripts/migrar.mjs
 ```
 
-**Pendiente en producción: las migraciones 020 (renovación mensual de
-los planes), 021 (glosario) y 022 (texto de la voz)**, las que no se hayan corrido. Sin la 020
-los planes no se renuevan (el log dice "No se pudo renovar el plan");
-sin la 021, guardar una palabra responde error de servidor y `/glosario`
-no abre; sin la 022, la voz de Allison no puede mezclar español. Córrelas en la Terminal del contenedor **justo después de
-desplegar**: el comando de arriba solo aplica las que falten.
+**Pendiente en producción: las migraciones 020 a 027**, las que no se
+hayan corrido (el comando solo aplica las que falten, en orden):
+
+- 020 renovación mensual de los planes, 021 glosario, 022 texto de la
+  voz;
+- 023 a 027: reportes, Mi ruta, Viajes y Escenarios, panel, avisos en
+  el celular y competencia por salón.
+
+**Van ANTES de desplegar el código nuevo**: la sesión de cada alumno usa
+`dias_descanso()`, que nace en la 026; con el código nuevo y la base
+vieja nadie puede entrar. Las migraciones solo agregan, así que el
+código que está corriendo sigue funcionando con la base nueva. El
+problema es que ese contenedor viejo no trae los archivos 023 a 027, y
+el puerto de la base está cerrado. Dos caminos:
+
+1. **Sin cortar el servicio (recomendado)**: desde tu máquina, con un
+   túnel SSH hasta la base, en dos terminales:
+
+   ```
+   ssh -N -L 5433:<nombre-interno-de-postgres>:5432 usuario@tu-servidor
+   ```
+   ```
+   DATABASE_URL="postgres://usuario:clave@localhost:5433/allison" node scripts/migrar.mjs
+   ```
+
+   y después despliega. El túnel no abre ningún puerto al mundo. Si el
+   nombre interno no resuelve desde el servidor, usa la IP del
+   contenedor (`docker inspect` en el servidor).
+2. **Con una pausa de un minuto**: despliega y, apenas arranque, en la
+   Terminal del contenedor nuevo corre `node scripts/migrar.mjs`. En
+   ese minuto nadie puede entrar.
 
 Solo aplica los archivos numerados de `db/`; los de `db/manual/` son
 para correr a mano y los ignora. **Ojo**: esos dos archivos se generan
@@ -234,8 +265,8 @@ secreto.
 - [ ] `https://TU-DOMINIO/api/salud` responde `{"ok":true}`.
 - [ ] `https://TU-DOMINIO/api/salud?base=1` responde `{"ok":true,"base":true}`
       — si esta falla y la anterior no, el problema es la base, no la app.
-- [ ] Registrarse con un correo real: entra directo con sus 20
-      intervenciones, sin correo que confirmar.
+- [ ] Registrarse con un correo real: entra directo con sus 5
+      intervenciones de prueba (`MENSAJES_PRUEBA`), sin correo que confirmar.
 - [ ] En un mensaje de Allison, seleccionar una palabra: aparece la barra
       con **Escuchar** y **Guardar**, y la palabra queda en `/glosario`
       (menú → Tu glosario). En `/perfil`, cambiar el nombre y volver.
@@ -255,7 +286,7 @@ secreto.
       "Entrar con Google" con una cuenta de Google que NO existe en Allison
       vuelve a `/registro` con el aviso de marcar las casillas; (b) en
       `/registro`, marcar las casillas y "Continuar con Google" crea la
-      cuenta y entra con las 20 intervenciones, sin correo que confirmar;
+      cuenta y entra con las 5 intervenciones, sin correo que confirmar;
       (c) una cuenta creada con correo y contraseña entra también con
       Google. Si Google muestra `redirect_uri_mismatch`, la URI de
       redirección no coincide letra por letra con `AUTH_URL`.
@@ -312,6 +343,15 @@ secreto.
 - **Monitoreo**: un Uptime Kuma en el mismo Dokploy apuntando a
   `/api/salud?base=1` te avisa por Telegram cuando algo se cae, antes de
   que lo haga un alumno.
+- **Tope de tamaño de las peticiones en Traefik**: las rutas que reciben
+  audio, CSV o avisos de pago rechazan un cuerpo grande antes de leerlo
+  si trae `Content-Length`; uno enviado por partes solo lo frena el
+  proxy. En Dokploy → tu aplicación → **Advanced → Traefik**, agrega un
+  middleware `buffering` con `maxRequestBodyBytes: 10485760` (10 MB: el
+  audio más largo pesa 8 MB).
+- **El repositorio, privado**: el historial de git todavía tiene la IP
+  del servidor (en commits viejos de `scripts/probar-conexion.mjs`). No
+  es una llave, pero con el puerto 5421 abierto dice dónde tocar.
 - **La voz es la API de texto a voz de Praxis** (tts-api.praxisia.org),
   en streaming, con la del navegador de respaldo. Dos límites que hay
   que tener presentes: el servicio sintetiza **dos audios a la vez para

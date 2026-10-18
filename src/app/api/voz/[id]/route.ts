@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { limitar } from "@/lib/limite";
 import { alumnoActual } from "@/lib/sesion";
 import { ErrorTts, sintetizar, vozPedida } from "@/lib/tts";
 
@@ -23,6 +24,12 @@ export async function GET(
   const alumno = await alumnoActual();
   if (!alumno) {
     return NextResponse.json({ error: "Sin sesión" }, { status: 401 });
+  }
+
+  // El navegador abre cada audio una o dos veces; más que eso es alguien
+  // repitiendo la misma voz y ocupando los dos turnos que tiene la API para todos.
+  if (!limitar(`voz-audio:${alumno.id}`, 150, 300).permitido) {
+    return NextResponse.json({ error: "Espera un momento" }, { status: 429 });
   }
 
   const id = Id.safeParse((await params).id);

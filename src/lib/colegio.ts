@@ -1,4 +1,5 @@
 import { sql } from "./db";
+import { vaEn } from "./panel/etiquetas";
 import type { Nivel } from "./tipos";
 
 /**
@@ -37,6 +38,11 @@ export interface AlumnoDelColegio {
   mensajesSemana: number;
   saldo: number;
   diasSinPracticar: number | null;
+  curso: string | null;
+  /** Dónde va en Mi ruta: "A1 · Parada 3", "A2 · ruta provisional". */
+  vaEn: string;
+  /** Paradas saltadas (pasó el escenario sin hacer las lecciones). */
+  saltadas: number;
 }
 
 export interface ResumenColegio {
@@ -56,7 +62,11 @@ export async function resumenDe(institucionId: string): Promise<ResumenColegio |
   if (!colegio) return null;
 
   const filas = await sql`
-    select u.id, u.nombre, u.username, u.nivel, u.racha_dias,
+    select u.id, u.nombre, u.username, u.nivel, u.curso,
+           (select l.parada from ruta_lecciones l where l.user_id = u.id order by l.actualizado_en desc limit 1) as ultima_parada,
+           (select count(*)::int from ruta_paradas p where p.user_id = u.id and p.saltada_en is not null) as saltadas,
+           case when u.ultima_practica_en::date >= current_date - (dias_descanso() + 1)
+                then u.racha_dias else 0 end as racha_dias,
            u.ultima_practica_en,
            coalesce(s.mensajes_plan, 0) + coalesce(s.mensajes_recarga, 0) as saldo,
            coalesce((
@@ -69,7 +79,7 @@ export async function resumenDe(institucionId: string): Promise<ResumenColegio |
      where u.institucion_id = ${institucionId}
        and u.rol = 'estudiante'
        and u.activo
-     order by u.nombre
+     order by u.curso nulls last, u.nombre
   `;
 
   const alumnos: AlumnoDelColegio[] = filas.map((f) => {
@@ -88,6 +98,9 @@ export async function resumenDe(institucionId: string): Promise<ResumenColegio |
       mensajesSemana: f.mensajes_semana,
       saldo: f.saldo,
       diasSinPracticar: dias,
+      curso: f.curso,
+      vaEn: vaEn(f.nivel as Nivel, f.ultima_parada),
+      saltadas: f.saltadas,
     };
   });
 

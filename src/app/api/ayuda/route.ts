@@ -11,6 +11,8 @@ export const maxDuration = 30;
 const Peticion = z.object({
   texto: z.string().trim().min(1).max(1000),
   nivel: z.enum(["A1", "A2", "B1", "B2", "C1", "C2"]),
+  /** Viajes y Escenarios: la tarea de la misión que tiene que cumplir ahora (en español). */
+  tarea: z.string().trim().max(200).optional(),
 });
 
 /**
@@ -29,8 +31,12 @@ export async function POST(peticion: Request) {
     return NextResponse.json({ error: "Sin sesión" }, { status: 401 });
   }
 
+  // Es gratis, así que tiene dos topes: el de ráfaga y uno por día que
+  // ningún alumno de verdad alcanza (unas 300 ayudas es más de lo que se
+  // conversa en un día entero).
   const limite = limitar(`ayuda:${alumno.id}`, 60, 300);
-  if (!limite.permitido) {
+  const porDia = limitar(`ayuda-dia:${alumno.id}`, 300, 86400);
+  if (!limite.permitido || !porDia.permitido) {
     return NextResponse.json({ error: "Espera un momento." }, { status: 429 });
   }
 
@@ -38,7 +44,7 @@ export async function POST(peticion: Request) {
   if (!datos.success) {
     return NextResponse.json({ error: "Petición inválida" }, { status: 400 });
   }
-  const { texto, nivel } = datos.data;
+  const { texto, nivel, tarea } = datos.data;
 
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -53,7 +59,17 @@ this from their English teacher and needs help. Return:
   word: what a person would actually say.
 - "sugerencia": ONE thing they could reply, in English, at level ${nivel}.
   Short, true to a real conversation, and easy enough that they can say
-  it out loud right now. Never a question back unless it fits naturally.
+  it out loud right now. Never a question back unless it fits naturally.${
+    tarea
+      ? `
+  IMPORTANT: their task right now is "${tarea}" (in Spanish). The
+  suggestion MUST do exactly that task, even if the teacher was talking
+  about something else: it may start with a two-word reaction, then do
+  the task. If the task is to ask about something, the suggestion IS that
+  question. Example: task "Pide un café" → "Nice! Can I have a coffee,
+  please?". Always natural US English.`
+      : ""
+  }
 - "sugerenciaEs": what that suggestion means in Spanish, so they know
   what they are saying before they say it.`,
       responseMimeType: "application/json",
@@ -67,6 +83,8 @@ this from their English teacher and needs help. Return:
         required: ["traduccion", "sugerencia", "sugerenciaEs"],
       },
       temperature: 0.4,
+      // Una traducción y una frase: con esto sobra, y nadie puede pedirle textos largos gratis.
+      maxOutputTokens: 600,
     },
   });
 

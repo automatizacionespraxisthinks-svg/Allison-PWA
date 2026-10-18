@@ -34,11 +34,18 @@ const ONDA = [7, 12, 9, 15, 11, 16, 8, 13, 10];
 export function Transcripcion({
   mensajes,
   nivel = "B1",
+  reportadas = [],
 }: {
   mensajes: Mensaje[];
   nivel?: Nivel;
+  /** Correcciones que el alumno ya reportó, como "mensajeId:indice". */
+  reportadas?: string[];
 }) {
   const velocidad = useVelocidad();
+  const [reportes, setReportes] = useState<Record<string, "enviando" | "listo" | "error">>(() =>
+    Object.fromEntries(reportadas.map((k) => [k, "listo" as const]))
+  );
+  const [confirmando, setConfirmando] = useState<string | null>(null);
   const [sonando, setSonando] = useState<string | null>(null);
   const [traducciones, setTraducciones] = useState<Record<string, string>>({});
   const [abiertas, setAbiertas] = useState<Record<string, boolean>>({});
@@ -73,6 +80,27 @@ export function Transcripcion({
   function cambiarVelocidad() {
     const i = VELOCIDADES.findIndex((v) => v.valor === velocidad);
     fijarVelocidad(VELOCIDADES[(i + 1) % VELOCIDADES.length].valor);
+  }
+
+  /**
+   * "Esta corrección está mal". Se pide confirmar con un segundo toque
+   * para que un dedo distraído no mande reportes; el administrador
+   * decide si se devuelve la intervención.
+   */
+  async function reportar(mensajeId: string, indice: number) {
+    const clave = `${mensajeId}:${indice}`;
+    if (confirmando !== clave) {
+      setConfirmando(clave);
+      return;
+    }
+    setConfirmando(null);
+    setReportes((r) => ({ ...r, [clave]: "enviando" }));
+    const r = await pedir("/api/reportes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mensajeId, indice }),
+    });
+    setReportes((e) => ({ ...e, [clave]: r?.ok ? "listo" : "error" }));
   }
 
   async function traducir(m: Mensaje) {
@@ -206,6 +234,12 @@ export function Transcripcion({
                           {c.explicacionEs}
                         </span>
                       )}
+                      <BotonReportar
+                        estado={reportes[`${m.id}:${i}`]}
+                        confirmando={confirmando === `${m.id}:${i}`}
+                        onReportar={() => reportar(m.id, i)}
+                        onCancelar={() => setConfirmando(null)}
+                      />
                     </li>
                   ))}
                 </ul>
@@ -217,5 +251,55 @@ export function Transcripcion({
 
       <SelectorDeFrase zona={zonaRef} nivel={nivel} />
     </div>
+  );
+}
+
+/** El enlace pequeño bajo cada corrección y sus estados. */
+function BotonReportar({
+  estado,
+  confirmando,
+  onReportar,
+  onCancelar,
+}: {
+  estado?: "enviando" | "listo" | "error";
+  confirmando: boolean;
+  onReportar: () => void;
+  onCancelar: () => void;
+}) {
+  if (estado === "listo") {
+    return (
+      <span className="mt-1.5 block text-xs font-medium text-texto-suave">
+        Reportada · la revisamos y te avisamos
+      </span>
+    );
+  }
+  if (estado === "enviando") {
+    return <span className="mt-1.5 block text-xs text-texto-suave">Enviando…</span>;
+  }
+  if (confirmando) {
+    return (
+      <span className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
+        <span className="text-texto-suave">¿Crees que Allison se equivocó?</span>
+        <button
+          type="button"
+          onClick={onReportar}
+          className="rounded-full bg-primario px-2.5 py-0.5 font-semibold text-white"
+        >
+          Sí, reportar
+        </button>
+        <button type="button" onClick={onCancelar} className="font-semibold text-texto-suave">
+          No
+        </button>
+      </span>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={onReportar}
+      className="mt-1.5 block text-xs font-semibold text-texto-suave underline decoration-dotted underline-offset-2 transition hover:text-primario"
+    >
+      {estado === "error" ? "No se pudo enviar · intentar otra vez" : "¿Esta corrección está mal?"}
+    </button>
   );
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { registrarResultado } from "@/lib/cobro";
+import { CUERPO_MUY_GRANDE, cuerpoExcede } from "@/lib/limite";
 import { pasarela } from "@/lib/pasarela";
 
 /**
@@ -19,6 +20,8 @@ import { pasarela } from "@/lib/pasarela";
  * y reintentar no puede cambiar el resultado.
  */
 export async function POST(peticion: Request) {
+  // Un aviso de la pasarela pesa unos pocos KB; nadie sin firma puede obligarnos a leer más.
+  if (cuerpoExcede(peticion, 64 * 1024)) return NextResponse.json(CUERPO_MUY_GRANDE, { status: 413 });
   const crudo = await peticion.text();
   const via = pasarela();
 

@@ -8,7 +8,7 @@ import { CampoContrasena } from "@/components/CampoContrasena";
 import { EMPRESA } from "@/lib/legal";
 import { pedir } from "@/lib/pedir";
 import type { Perfil } from "@/lib/perfil";
-import { NIVELES, type Nivel } from "@/lib/tipos";
+import type { Nivel } from "@/lib/tipos";
 
 const campo =
   "rounded-xl border border-borde bg-superficie px-4 py-3 outline-none focus:border-primario";
@@ -51,7 +51,7 @@ export function FormularioPerfil({ perfil }: { perfil: Perfil }) {
   const [email, setEmail] = useState(perfil.email ?? "");
   const [telefono, setTelefono] = useState(perfil.telefono ?? "");
   const [username, setUsername] = useState(perfil.username ?? "");
-  const [nivel, setNivel] = useState<Nivel>(perfil.nivel);
+  const nivel: Nivel = perfil.nivel;
   const [guardando, setGuardando] = useState(false);
   const [avisoDatos, setAvisoDatos] = useState<Aviso>(null);
 
@@ -239,30 +239,8 @@ export function FormularioPerfil({ perfil }: { perfil: Perfil }) {
           </>
         )}
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 text-sm font-medium">Tu nivel de inglés</legend>
-          <div className="grid grid-cols-3 gap-2">
-            {NIVELES.map((n) => (
-              <button
-                key={n.nivel}
-                type="button"
-                onClick={() => setNivel(n.nivel)}
-                aria-pressed={nivel === n.nivel}
-                className={`rounded-xl border px-2 py-2.5 text-center transition ${
-                  nivel === n.nivel
-                    ? "border-primario bg-primario-suave"
-                    : "border-borde bg-superficie hover:bg-superficie-2"
-                }`}
-              >
-                <span className="block text-sm font-semibold">{n.nivel}</span>
-                <span className="block text-[11px] leading-tight text-texto-suave">
-                  {n.etiqueta}
-                </span>
-              </button>
-            ))}
-          </div>
-        </fieldset>
-
+        {/* El nivel se cambia con su regla (solo bajar; para subir, completar
+            el nivel) en el selector de Ajustes, no aquí. */}
         <AvisoDe aviso={avisoDatos} />
 
         <button

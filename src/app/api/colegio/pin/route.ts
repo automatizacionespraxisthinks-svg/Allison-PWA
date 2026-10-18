@@ -6,6 +6,7 @@ import { sql } from "@/lib/db";
 import { cuentaDeColegio, liberarCuenta } from "@/lib/intentos";
 import { limitar } from "@/lib/limite";
 import { alumnoActual } from "@/lib/sesion";
+import { esUuid } from "@/lib/validar";
 
 /** Reinicios de PIN por hora y por coordinador. */
 const REINICIOS_POR_HORA = 40;
@@ -37,8 +38,8 @@ export async function POST(peticion: Request) {
     );
   }
 
-  const { alumnoId } = (await peticion.json()) as { alumnoId?: string };
-  if (!alumnoId) {
+  const { alumnoId } = ((await peticion.json().catch(() => ({}))) ?? {}) as { alumnoId?: string };
+  if (!esUuid(alumnoId)) {
     return NextResponse.json({ error: "Falta el alumno" }, { status: 400 });
   }
 

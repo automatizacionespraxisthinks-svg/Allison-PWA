@@ -1,6 +1,15 @@
 /** Niveles del Marco Común Europeo de Referencia. */
 export type Nivel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
+/**
+ * Desde B1 Allison explica en inglés sencillo (el español queda a un toque,
+ * en «En español») y la ruta ya no lleva al alumno de la mano: sin
+ * traducciones ni palabras de apoyo (Contenido B1, "Qué cambia en B1").
+ */
+export function desdeB1(nivel: Nivel): boolean {
+  return nivel !== "A1" && nivel !== "A2";
+}
+
 export const NIVELES: { nivel: Nivel; etiqueta: string }[] = [
   { nivel: "A1", etiqueta: "Principiante" },
   { nivel: "A2", etiqueta: "Básico" },

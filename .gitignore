@@ -9,6 +9,10 @@ out/
 build/
 dist/
 
+# Los genera Next o TypeScript en cada compilación (Next 16 pide no subir next-env.d.ts)
+next-env.d.ts
+*.tsbuildinfo
+
 # SECRETOS — nunca subir
 .env
 .env.local
@@ -34,3 +38,10 @@ Thumbs.db
 # Audios de prueba
 /tmp/
 /uploads/
+
+# Las ilustraciones originales de Gemini (unos 50 MB): se quedan en el
+# computador de trabajo. La app solo usa las de public/ilustraciones, que
+# salen de ahí con npm run ilustraciones:*
+ilustraciones-a1/
+ilustraciones-a2/
+ilustraciones-b1/

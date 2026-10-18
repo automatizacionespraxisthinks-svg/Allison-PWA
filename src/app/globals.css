@@ -32,6 +32,19 @@
      dejaría el micrófono blanco en 1,9:1, casi invisible. */
   --hablar: #047857;
   --hablar-claro: #059669;
+
+  /* Mi ruta (bocetos aprobados el 14 de octubre de 2026). El dorado es
+     lo ganado (estrellas, estampillas, pistas); la menta, lo hecho y lo
+     acertado; el morado, lo saltado. Nunca rojo para un error del
+     alumno: el aro de Allison es verde, dorado o azul. */
+  --oro: #a06d0a;
+  --oro-suave: #fbeecf;
+  --menta: #0b8a63;
+  --menta-suave: #d8f3e9;
+  --morado: #7c4dd8;
+  --morado-suave: #ece4fb;
+  --camino: #e4e7f4;
+  --estrella: #f5b82e;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -51,7 +64,31 @@
     --acento: #e8963a;
     --error: #f87171;
     --exito: #34d399;
+
+    --oro: #f2c46b;
+    --oro-suave: #3a2e12;
+    --menta: #5fe0b5;
+    --menta-suave: #0e3a30;
+    --morado: #b39bff;
+    --morado-suave: #2a1f52;
+    --camino: #1c2750;
   }
+}
+
+/* Categorías de Escenarios (pantalla 5): --k1 fuerte, --k2 texto, --kf fondo suave. */
+.cat-viajes { --k1: #4f9bff; --k2: #1d63d6; --kf: #e3efff; }
+.cat-compras { --k1: #ffad5c; --k2: #b8560c; --kf: #fff0df; }
+.cat-comida { --k1: #ff7a7a; --k2: #c42d2d; --kf: #ffe5e5; }
+.cat-salud { --k1: #4fd08a; --k2: #15804a; --kf: #ddf7e9; }
+.cat-ciudad { --k1: #ad84f0; --k2: #6a3dbd; --kf: #efe6ff; }
+.cat-mios { --k1: #f5b82e; --k2: #a06d0a; --kf: #fbeecf; }
+@media (prefers-color-scheme: dark) {
+  .cat-viajes { --k2: #8cbcff; --kf: #16305f; }
+  .cat-compras { --k2: #ffc285; --kf: #3d2812; }
+  .cat-comida { --k2: #ff9e9e; --kf: #3d1a1d; }
+  .cat-salud { --k2: #7fe0aa; --kf: #0e3a2a; }
+  .cat-ciudad { --k2: #c9aaff; --kf: #2a1f52; }
+  .cat-mios { --k2: #f2c46b; --kf: #3a2e12; }
 }
 
 @theme inline {
@@ -67,6 +104,14 @@
   --color-acento: var(--acento);
   --color-error: var(--error);
   --color-exito: var(--exito);
+  --color-oro: var(--oro);
+  --color-oro-suave: var(--oro-suave);
+  --color-menta: var(--menta);
+  --color-menta-suave: var(--menta-suave);
+  --color-morado: var(--morado);
+  --color-morado-suave: var(--morado-suave);
+  --color-camino: var(--camino);
+  --color-estrella: var(--estrella);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -148,4 +193,111 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ---------------------------------------------------------------
+   Mi ruta: calcomanías, camino y aro de Allison
+   (bocetos "Secciones de Allison" y "Actividades de Allison")
+   --------------------------------------------------------------- */
+
+/* El color de cada actividad: borde, ícono y sus detalles (--c2, --c3). */
+.act-escucha-elige { --col: #3b82f6; --c2: #bfdbfe; --c3: #1d4ed8; --sombra: #1e40af; }
+.act-que-es-esto { --col: #ff8a3d; --c2: #ffd8ba; --c3: #ea7022; --sombra: #c66119; }
+.act-repite { --col: #ec4899; --c2: #fbcfe8; --c3: #be185d; --sombra: #9d174d; }
+.act-tu-turno { --col: #12b5a5; --c2: #a6ece3; --c3: #0d8f82; --sombra: #0b7c70; }
+.act-dilo { --col: #65a30d; --c2: #d9f99d; --c3: #3f6212; --sombra: #3f6212; }
+.act-describe { --col: #0891b2; --c2: #a5f3fc; --c3: #155e75; --sombra: #155e75; }
+.act-responde { --col: #ef4f6c; --c2: #ffc2cd; --c3: #c93652; --sombra: #b32e47; }
+.act-entrevista { --col: #8b5cf6; --c2: #d8c8ff; --c3: #6b3fe0; --sombra: #5f33c4; }
+.act-adivina { --col: #f59e0b; --c2: #fde68a; --c3: #b45309; --sombra: #92400e; }
+.act-cuentame { --col: #6366f1; --c2: #c7d2fe; --c3: #4338ca; --sombra: #3730a3; }
+.act-narra { --col: #d946ef; --c2: #f5d0fe; --c3: #a21caf; --sombra: #86198f; }
+.act-ensenale { --col: #14b8a6; --c2: #99f6e4; --c3: #0f766e; --sombra: #115e59; }
+
+/* La calcomanía del camino: blanca y redonda, en el color de su actividad. */
+.calco {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 62px;
+  border-radius: 50%;
+  background: #fff;
+  border: 4px solid #d5daf0;
+  box-shadow: 0 6px 0 #c6cce3;
+  color: var(--col);
+}
+.calco > svg { width: 40px; height: 40px; }
+.calco.bloqueada > svg { filter: grayscale(1); opacity: 0.5; }
+.calco.hecha { border-color: var(--col); box-shadow: 0 6px 0 var(--sombra); }
+.calco.actual {
+  border-color: var(--col);
+  box-shadow: 0 6px 0 var(--sombra), 0 0 0 9px var(--primario-suave), 0 0 0 11px var(--primario);
+  animation: salto 1.6s ease-in-out infinite;
+}
+.calco.escena {
+  width: 74px;
+  height: 66px;
+  border-radius: 20px;
+  border: none;
+  background: var(--oro-suave);
+  box-shadow: 0 6px 0 var(--oro);
+}
+.calco.escena.actual {
+  box-shadow: 0 6px 0 var(--oro), 0 0 0 9px var(--primario-suave), 0 0 0 11px var(--primario);
+}
+@media (prefers-color-scheme: dark) {
+  .calco:not(.escena) { background: #f4f6ff; }
+}
+
+/* La calcomanía pequeña de la pantalla de la lección. */
+.stk {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--col);
+  box-shadow: 0 3px 0 var(--sombra);
+  color: var(--col);
+}
+.stk > svg { width: 26px; height: 26px; }
+.stk.apagada { filter: grayscale(1); opacity: 0.55; }
+.stk.actual { box-shadow: 0 3px 0 var(--sombra), 0 0 0 4px var(--primario-suave), 0 0 0 6px var(--primario); }
+
+@keyframes salto {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+
+/* El aro de la foto de Allison: azul al preguntar, verde al acertar,
+   dorado al dar una pista y azul al enseñar la respuesta. */
+.aro-allison { outline: 3px solid var(--primario); outline-offset: 3px; transition: outline-color 0.3s, width 0.3s, height 0.3s; }
+.aro-allison.bien { outline-color: var(--menta); outline-width: 4px; }
+.aro-allison.pista { outline-color: var(--oro); outline-width: 4px; }
+
+/* Respira muy suave en reposo (avatar, opción B). */
+@keyframes respira {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.025); }
+}
+.respira { animation: respira 4s ease-in-out infinite; }
+
+/* La flecha de ¿Qué es esto? sobre la foto: baja despacio hacia lo que señala. */
+@keyframes flecha-foto {
+  0%, 100% { transform: translateY(-12%); }
+  50%      { transform: translateY(0); }
+}
+.flecha-foto { transform-box: fill-box; animation: flecha-foto 1.6s ease-in-out infinite; }
+
+/* Animaciones apagadas desde Perfil · Ajustes (src/lib/sonidos.ts):
+   todo se queda quieto, igual que con "reducir movimiento". */
+[data-quieto] *,
+[data-quieto] *::before,
+[data-quieto] *::after {
+  animation: none !important;
+  transition: none !important;
 }

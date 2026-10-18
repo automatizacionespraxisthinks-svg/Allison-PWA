@@ -48,6 +48,14 @@ const crear = () => {
       idle_timeout: 20,
       prepare: !esPooler,
       onnotice: () => {},
+      /**
+       * "Hoy" es hoy en Colombia. La base corre en GMT, y sin esto
+       * current_date cambiaba a las 7 de la noche de Bogotá: la racha,
+       * la meta de hoy y el progreso del día se partían justo a la hora
+       * en que más practican los alumnos (y a la del recordatorio). Las
+       * fechas guardadas (timestamptz) no cambian; solo cómo se lee el día.
+       */
+      connection: { TimeZone: "America/Bogota" },
     });
   } catch (e) {
     // Ante una URL ilegible, el error de la librería trae la URL ENTERA

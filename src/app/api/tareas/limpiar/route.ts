@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { leerAjustes } from "@/lib/ajustes";
 import { registrarResultado } from "@/lib/cobro";
 import { sql } from "@/lib/db";
 import { pasarela } from "@/lib/pasarela";
+import { avisar, avisoDeRacha } from "@/lib/avisos";
+import { correo, correoDeRacha } from "@/lib/correo";
 import { autorizadaPorSecreto } from "@/lib/tareas";
 
 /**
@@ -16,11 +19,6 @@ import { autorizadaPorSecreto } from "@/lib/tareas";
  */
 
 export async function POST(peticion: Request) {
-  return limpiar(peticion);
-}
-
-/** El cron de Vercel solo sabe hacer GET. Mismo trabajo, mismo candado. */
-export async function GET(peticion: Request) {
   return limpiar(peticion);
 }
 
@@ -47,6 +45,7 @@ async function limpiar(peticion: Request) {
 
   const renovadas = await renovarPlanes();
   const conciliados = await conciliarPagos();
+  const recordados = await recordarRachas();
 
   // Órdenes de pago que se abrieron y nunca se pagaron. A las 48 horas
   // son carritos abandonados: se cierran para que no ensucien los
@@ -62,7 +61,7 @@ async function limpiar(peticion: Request) {
 
   console.log(
     `Limpieza: ${borradas} conversaciones, ${tokens} enlaces vencidos, ${renovadas} planes renovados, ` +
-      `${conciliados} pagos conciliados y ${abandonadas.length} órdenes abandonadas`
+      `${conciliados} pagos conciliados, ${abandonadas.length} órdenes abandonadas y ${recordados} recordatorios de racha`
   );
 
   return NextResponse.json({
@@ -72,7 +71,57 @@ async function limpiar(peticion: Request) {
     ordenesAbandonadas: abandonadas.length,
     planesRenovados: renovadas,
     pagosConciliados: conciliados,
+    recordatoriosDeRacha: recordados,
   });
+}
+
+/**
+ * El recordatorio de la racha (plan, sección 10): a la hora que eligió
+ * el alumno, solo el último día antes de perderla (con los días de
+ * descanso de los ajustes, 2 por defecto: si practicó hace tres días y
+ * hoy no, mañana se reinicia). Uno por día como mucho, y nunca tumba la
+ * limpieza.
+ *
+ * Va al celular si el alumno activó los avisos; si no le llegó a ningún
+ * celular, por correo. Nunca los dos el mismo día. Los alumnos de
+ * colegio no tienen correo: para ellos el celular es el único camino.
+ * Cada canal se apaga desde Ajustes del panel.
+ */
+async function recordarRachas(): Promise<number> {
+  let enviados = 0;
+  try {
+    const ajustes = await leerAjustes();
+    if (!ajustes.recordatorioCorreo && !ajustes.recordatorioCelular) return 0;
+    const pendientes = await sql`
+      select id, nombre, email, racha_dias
+        from users u
+       where activo and recordatorio_hora is not null
+         and (email is not null or exists (select 1 from suscripciones_push s where s.user_id = u.id))
+         and racha_dias > 0
+         and ultima_practica_en::date = current_date - (dias_descanso() + 1)
+         and extract(hour from recordatorio_hora) = extract(hour from now() at time zone 'America/Bogota')
+         and (recordatorio_enviado_en is null or recordatorio_enviado_en < current_date)
+       limit 500
+    `;
+    const enlace = `${(process.env.AUTH_URL ?? "").replace(/\/$/, "")}/ruta`;
+    for (const u of pendientes) {
+      try {
+        const nombre = u.nombre.split(" ")[0];
+        const alCelular = ajustes.recordatorioCelular ? await avisar(u.id, avisoDeRacha(nombre, u.racha_dias)) : 0;
+        if (!alCelular) {
+          if (!ajustes.recordatorioCorreo || !u.email) continue;
+          await correo().enviar({ ...correoDeRacha(nombre, u.racha_dias, enlace), para: u.email });
+        }
+        await sql`update users set recordatorio_enviado_en = current_date where id = ${u.id}`;
+        enviados++;
+      } catch (e) {
+        console.error(`No se pudo enviar el recordatorio a ${u.id}:`, e instanceof Error ? e.message : e);
+      }
+    }
+  } catch (e) {
+    console.error("Recordatorios de racha omitidos:", e instanceof Error ? e.message : e);
+  }
+  return enviados;
 }
 
 /**

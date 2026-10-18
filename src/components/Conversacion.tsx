@@ -1,21 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { AvatarAllison } from "@/components/AvatarAllison";
 import { BotonGrabar } from "@/components/BotonGrabar";
+import { fijarVolumen, useVolumenGrabacion } from "@/lib/volumen";
 import { Bienvenida } from "@/components/Bienvenida";
 import { BotonInstalar } from "@/components/InstalarApp";
-import { SelectorNivel } from "@/components/SelectorNivel";
 import { FinDePrueba, type LogroPrueba } from "@/components/FinDePrueba";
 import { Transcripcion } from "@/components/Transcripcion";
+import { AvisoReportes } from "@/components/AvisoReportes";
+import type { AvisoReporte } from "@/lib/reportes";
 import type { EstadoConversacion, Mensaje, Nivel } from "@/lib/tipos";
 import { fijarModoTexto, useModoTexto } from "@/lib/entrada";
 import { useVelocidad } from "@/lib/velocidad";
 import { desbloquearVoz, hablarIngles } from "@/lib/voz";
-import { descartarAscenso, useAscensoDescartado } from "@/lib/sugerencia";
 import { pedir } from "@/lib/pedir";
 import { pesos } from "@/lib/precios";
 
@@ -34,6 +34,10 @@ interface Props {
   esCoordinador: boolean;
   esAdmin: boolean;
   racha: number;
+  /** Correcciones que el alumno ya reportó ("mensajeId:indice"). */
+  reportadas?: string[];
+  /** Decisiones sobre sus reportes que todavía no ha visto. */
+  avisosReporte?: AvisoReporte[];
   logro?: LogroPrueba;
   /** Presente cuando este hilo es una lección del currículo. */
   leccion?: {
@@ -43,11 +47,6 @@ interface Props {
     logros: number;
     meta: number;
     completada: boolean;
-  };
-  /** Presente cuando el desempeño amerita proponer el siguiente nivel. */
-  sugerenciaNivel?: {
-    siguiente: Nivel;
-    razon: string;
   };
 }
 
@@ -77,19 +76,15 @@ export function Conversacion({
   esCoordinador,
   esAdmin,
   racha,
+  reportadas = [],
+  avisosReporte = [],
   logro,
   leccion: leccionInicial,
-  sugerenciaNivel,
 }: Props) {
   const [estado, setEstado] = useState<EstadoConversacion>("inactivo");
   const [leccion, setLeccion] = useState(leccionInicial ?? null);
   /** true solo el turno en que la unidad se acaba de completar. */
   const [festejo, setFestejo] = useState(false);
-  const ascensoDescartado = useAscensoDescartado(nivel);
-  const [subiendo, setSubiendo] = useState(false);
-  // El refresh tras subir no navega: la transición es la única señal
-  // de que la página fresca (con el nivel nuevo) ya llegó.
-  const [refrescandoNivel, empezarTransicion] = useTransition();
   const [mensajes, setMensajes] = useState<Mensaje[]>(historial);
   const [mensajesRestantes, setMensajesRestantes] = useState(mensajesIniciales);
   const [error, setError] = useState<string | null>(null);
@@ -107,24 +102,6 @@ export function Conversacion({
   const conversacionId = useRef<string | null>(idInicial);
   const velocidad = useVelocidad();
   const finRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-
-  /** Aceptar el ascenso: el mismo endpoint libre del selector. */
-  async function subirDeNivel() {
-    if (!sugerenciaNivel || subiendo) return;
-    setSubiendo(true);
-    const r = await pedir("/api/nivel", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nivel: sugerenciaNivel.siguiente }),
-    });
-    setSubiendo(false);
-    if (r?.ok) {
-      // Que no reaparezca si algún día vuelve a este nivel
-      descartarAscenso(nivel);
-      empezarTransicion(() => router.refresh());
-    }
-  }
 
   useEffect(() => {
     finRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -295,12 +272,12 @@ export function Conversacion({
     "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition hover:bg-superficie-2";
 
   return (
-    <main className="mx-auto flex h-dvh max-w-2xl flex-col px-4">
+    <main className="mx-auto flex h-[calc(100dvh-4.25rem-env(safe-area-inset-bottom,0px))] max-w-2xl flex-col px-4 lg:h-dvh">
       <Bienvenida nombre={nombre} />
 
       {/* ---- Identidad: Allison siempre presente ---- */}
       <header className="flex shrink-0 items-center gap-3 py-3">
-        <AvatarAllison estado={estado} compacto />
+        <AvatarConVolumen estado={estado} compacto />
         <div className="min-w-0 flex-1">
           <p className="text-base font-semibold leading-tight">Allison</p>
           <p className="flex items-center gap-1.5 text-xs text-texto-suave">
@@ -343,29 +320,15 @@ export function Conversacion({
                 className="fixed inset-0 z-10 cursor-default"
               />
               <nav className="absolute right-0 top-full z-20 mt-2 w-56 rounded-2xl border border-borde bg-superficie p-2 shadow-lg">
-                <Link href="/recargar" className={enlaceMenu}>
+                {/* Pantalla 4: Temas, Progreso, Glosario y Perfil pasaron a la
+                    barra de abajo; aquí quedan la conversación y salir. */}
+                <Link href="/practicar?nueva=1" className={enlaceMenu}>
                   <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
-                  Recargar
-                </Link>
-                <Link href="/temas" className={enlaceMenu}>
-                  <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="0.5" /></svg>
-                  Temas de tu nivel
-                </Link>
-                <Link href="/progreso" className={enlaceMenu}>
-                  <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18M7 15l4-4 3 3 5-6" /></svg>
-                  Tu progreso
+                  Nueva conversación
                 </Link>
                 <Link href="/conversaciones" className={enlaceMenu}>
                   <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-                  Tus conversaciones
-                </Link>
-                <Link href="/glosario" className={enlaceMenu}>
-                  <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z" /></svg>
-                  Tu glosario
-                </Link>
-                <Link href="/perfil" className={enlaceMenu}>
-                  <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
-                  Tu perfil
+                  Conversaciones
                 </Link>
                 {esCoordinador && (
                   <Link href="/colegio" className={enlaceMenu}>
@@ -390,7 +353,7 @@ export function Conversacion({
                   className={`${enlaceMenu} w-full text-left`}
                 >
                   <svg viewBox="0 0 24 24" className="size-4 text-texto-suave" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" /></svg>
-                  Cerrar sesión
+                  Salir
                 </button>
               </nav>
             </>
@@ -400,13 +363,13 @@ export function Conversacion({
 
       {/* ---- Las cifras que importan, cada una lleva a su sitio ---- */}
       <div className="flex shrink-0 flex-wrap gap-2 pb-2">
-        <SelectorNivel nivel={nivel} />
         <Link
           href="/temas"
-          className="flex items-center gap-1 rounded-full bg-superficie-2 px-2.5 py-1 text-xs font-semibold text-texto transition hover:brightness-95"
-          title="Temas de tu nivel"
+          className="flex items-center gap-1 rounded-full border border-dashed border-borde px-2.5 py-1 text-xs font-semibold text-texto transition hover:bg-superficie-2"
+          title="Elige un tema o pon el tuyo"
         >
-          <span aria-hidden>🎯</span> Temas
+          Tema: <b className="font-bold text-primario">{leccion ? leccion.titulo : "libre"}</b>
+          <svg viewBox="0 0 24 24" className="size-3" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden><path d="m6 9 6 6 6-6" /></svg>
         </Link>
         {/* Siempre a la vista mientras no esté instalada: el uso
             principal es desde el celular, y un acceso escondido en un
@@ -497,47 +460,14 @@ export function Conversacion({
         </div>
       )}
 
-      {/* ---- El ascenso se PROPONE, nunca se fuerza ---- */}
-      {sugerenciaNivel && !ascensoDescartado && !festejo && (
-        <div className="mb-2 flex shrink-0 flex-wrap items-center gap-x-2.5 gap-y-2 rounded-xl border border-primario/30 bg-primario/5 px-3 py-2.5 text-sm">
-          <span aria-hidden className="shrink-0 text-base">🚀</span>
-          <p className="min-w-0 flex-1 basis-40 leading-snug">
-            <span className="font-semibold">
-              ¿Pasamos al nivel {sugerenciaNivel.siguiente}?
-            </span>{" "}
-            {sugerenciaNivel.razon}. Tú decides — puedes volver cuando
-            quieras.
-          </p>
-          <span className="flex shrink-0 items-center gap-2">
-            {/* Altura táctil real: en el celular esto se toca con el
-                dedo, y un botón de 24px se falla más de lo que se
-                acierta. */}
-            <button
-              type="button"
-              onClick={subirDeNivel}
-              disabled={subiendo || refrescandoNivel}
-              className="min-h-10 rounded-full bg-primario px-4 text-xs font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
-            >
-              {subiendo || refrescandoNivel
-                ? "Cambiando…"
-                : `Subir a ${sugerenciaNivel.siguiente}`}
-            </button>
-            <button
-              type="button"
-              onClick={() => descartarAscenso(nivel)}
-              className="min-h-10 rounded-full px-3 text-xs font-semibold text-texto-suave transition hover:bg-superficie-2"
-            >
-              Ahora no
-            </button>
-          </span>
-        </div>
-      )}
+      {/* ---- Decisiones sobre sus reportes de correcciones ---- */}
+      <AvisoReportes avisos={avisosReporte} />
 
       {/* ---- El chat ---- */}
       <div className="min-h-0 flex-1 overflow-y-auto py-3">
         {mensajes.length === 0 && !dichoAhora ? (
           <div className="flex h-full flex-col items-center justify-center gap-6 text-center">
-            <AvatarAllison estado={estado} />
+            <AvatarConVolumen estado={estado} />
             <div className="max-w-sm">
               <h1 className="text-2xl font-semibold">Hi! I&apos;m Allison</h1>
               <p className="mt-2 text-texto-suave">
@@ -549,7 +479,7 @@ export function Conversacion({
           </div>
         ) : (
           <>
-            <Transcripcion mensajes={mensajes} nivel={nivel} />
+            <Transcripcion mensajes={mensajes} nivel={nivel} reportadas={reportadas} />
 
             {dichoAhora && (
               <div className="mt-4 flex justify-end">
@@ -689,6 +619,7 @@ export function Conversacion({
 
         <BotonGrabar
           estado={estado}
+          onVolumen={fijarVolumen}
           onIniciar={() => {
             // El toque de grabar es el gesto que desbloquea la voz:
             // sin esto, el primer audio de Allison sale mudo en iOS
@@ -719,4 +650,13 @@ export function Conversacion({
       )}
     </main>
   );
+}
+
+/**
+ * Allison con el anillo que sigue el volumen del micrófono. Solo este
+ * pedazo se vuelve a pintar mientras el alumno habla.
+ */
+function AvatarConVolumen(props: Omit<React.ComponentProps<typeof AvatarAllison>, "volumen">) {
+  const volumen = useVolumenGrabacion();
+  return <AvatarAllison {...props} volumen={volumen} />;
 }

@@ -1,12 +1,14 @@
 /**
  * Service worker de Allison.
  *
- * Existe por dos razones, en este orden:
+ * Existe por tres razones, en este orden:
  *
  * 1. Sin un service worker con manejador de "fetch", el navegador NO
  *    ofrece instalar la aplicación. Es requisito, no adorno.
  * 2. Le da a la app una pantalla decente cuando se cae la red — que en
  *    datos móviles colombianos pasa a diario.
+ * 3. Muestra el aviso de la racha en el celular (Web Push) aunque la app
+ *    esté cerrada, y al tocarlo abre Mi ruta.
  *
  * Es deliberadamente MÍNIMO y no cachea páginas ni respuestas de la
  * API. La conversación con Allison necesita red sí o sí (el audio va y
@@ -73,6 +75,44 @@ self.addEventListener("fetch", (evento) => {
         });
       }
       return Response.error();
+    })
+  );
+});
+
+// Los avisos (src/lib/avisos.ts): { titulo, texto, url, etiqueta }.
+self.addEventListener("push", (evento) => {
+  let aviso = { titulo: "Allison", texto: "", url: "/ruta" };
+  try {
+    aviso = { ...aviso, ...evento.data.json() };
+  } catch {
+    // Un aviso sin datos legibles igual se muestra, con lo de siempre.
+  }
+  evento.waitUntil(
+    self.registration.showNotification(aviso.titulo, {
+      body: aviso.texto,
+      icon: "/icono-192.png",
+      badge: "/icono-192.png",
+      tag: aviso.etiqueta,
+      data: { url: aviso.url },
+    })
+  );
+});
+
+// Al tocar el aviso: si la app ya está abierta, va ahí; si no, la abre.
+self.addEventListener("notificationclick", (evento) => {
+  evento.notification.close();
+  const url = new URL(evento.notification.data?.url ?? "/ruta", self.location.origin).href;
+  evento.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((ventanas) => {
+      const abierta = ventanas.find((v) => v.url.startsWith(self.location.origin));
+      // navigate() falla con una ventana que este service worker no controla
+      // (la que se abrió antes de instalarlo): ahí se abre una nueva.
+      if (abierta)
+        return abierta
+          .navigate(url)
+          .then((v) => (v ?? abierta).focus())
+          .catch(() => self.clients.openWindow(url));
+      return self.clients.openWindow(url);
     })
   );
 });

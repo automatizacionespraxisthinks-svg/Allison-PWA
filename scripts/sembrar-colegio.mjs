@@ -14,7 +14,7 @@ const sql = postgres(process.env.DATABASE_URL, {
 });
 
 const CODIGO = "COLEGIO2026";
-const GRATIS = Number(process.env.MENSAJES_PRUEBA_GRATIS ?? 20);
+const GRATIS = Number(process.env.MENSAJES_PRUEBA_GRATIS ?? 5);
 
 const ALUMNOS = [
   { username: "ana.garcia",   nombre: "Ana García",       nivel: "A1", pin: "1234" },

@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Transcripcion } from "@/components/Transcripcion";
 import { conversacionDe } from "@/lib/conversaciones";
+import { correccionesReportadas } from "@/lib/reportes";
 import { alumnoActual } from "@/lib/sesion";
+import { esUuid } from "@/lib/validar";
 
 export default async function PaginaConversacion({
   params,
@@ -13,8 +15,14 @@ export default async function PaginaConversacion({
   if (!alumno) redirect("/entrar");
 
   const { id } = await params;
+  if (!esUuid(id)) notFound();
   const c = await conversacionDe(alumno.id, id);
   if (!c) notFound();
+
+  const reportadas = await correccionesReportadas(
+    alumno.id,
+    c.mensajes.filter((m) => m.rol === "alumno" && m.correcciones.length > 0).map((m) => m.id)
+  );
 
   const fecha = new Date(c.resumen.iniciadaEn).toLocaleDateString("es-CO", {
     day: "numeric",
@@ -42,6 +50,7 @@ export default async function PaginaConversacion({
 
       <Transcripcion
         nivel={c.resumen.nivel}
+        reportadas={reportadas}
         mensajes={c.mensajes.map((m) => ({
           id: m.id,
           rol: m.rol,

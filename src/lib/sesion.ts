@@ -12,7 +12,17 @@ export interface Alumno {
   mensajesRecarga: number;
   /** Nunca ha pagado: sigue con los mensajes de regalo. */
   enPrueba: boolean;
+  /**
+   * La racha viva: la guardada, o 0 si ya pasaron más de los dos días de
+   * descanso sin practicar (la base la reinicia en la próxima práctica).
+   */
   rachaDias: number;
+  /** Minutos de la meta diaria: 5, 10 o 15. */
+  metaDiariaMin: number;
+  /** Ya hizo la primera sesión guiada. */
+  primeraSesion: boolean;
+  /** Ya vio la pantalla que les cuenta la ruta nueva a los alumnos actuales. */
+  rutaPresentada: boolean;
 }
 
 /**
@@ -26,7 +36,11 @@ export async function alumnoActual(): Promise<Alumno | null> {
   if (!sesion?.user?.id) return null;
 
   const leer = () => sql`
-    select u.id, u.nombre, u.nivel, u.rol, u.institucion_id, u.racha_dias,
+    select u.id, u.nombre, u.nivel, u.rol, u.institucion_id,
+           case when u.ultima_practica_en::date >= current_date - (dias_descanso() + 1)
+                then u.racha_dias else 0 end as racha_dias,
+           u.meta_diaria_min, u.primera_sesion_en is not null as primera_sesion,
+           u.ruta_presentada_en is not null as ruta_presentada,
            coalesce(s.mensajes_plan, 0)    as mensajes_plan,
            coalesce(s.mensajes_recarga, 0) as mensajes_recarga,
            not exists (
@@ -86,5 +100,8 @@ export async function alumnoActual(): Promise<Alumno | null> {
     mensajesRecarga: fila.mensajes_recarga,
     enPrueba: fila.en_prueba,
     rachaDias: fila.racha_dias ?? 0,
+    metaDiariaMin: fila.meta_diaria_min ?? 10,
+    primeraSesion: fila.primera_sesion,
+    rutaPresentada: fila.ruta_presentada,
   };
 }

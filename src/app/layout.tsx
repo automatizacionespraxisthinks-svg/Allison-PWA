@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
+import { PreferenciasVisuales } from "@/components/PreferenciasVisuales";
 import { RegistrarSW } from "@/components/RegistrarSW";
 
 const geist = Geist({
@@ -34,6 +35,7 @@ export default function RootLayout({
       <body className={`${geist.variable} font-sans antialiased`}>
         {children}
         <RegistrarSW />
+        <PreferenciasVisuales />
       </body>
     </html>
   );

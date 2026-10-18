@@ -45,7 +45,7 @@ for (const h of internos) {
 
 const publicos = [
   "ep-x.us-east-2.aws.neon.tech", // Neon
-  "46.225.66.78:5421", // la IP pública del VPS
+  "203.0.113.10:5421", // una IP pública (de documentación, RFC 5737)
   "172.32.0.1:5432", // 172.32 NO es privada: la privada llega a 172.31
   "8.8.8.8",
 ];
@@ -61,7 +61,7 @@ probar(
 
 let error = null;
 try {
-  modoSsl(url("46.225.66.78:5421", "?sslmode=disable"), "production");
+  modoSsl(url("203.0.113.10:5421", "?sslmode=disable"), "production");
 } catch (e) {
   error = e;
 }
@@ -78,7 +78,7 @@ probar(
 const avisos = [];
 const warnOriginal = console.warn;
 console.warn = (m) => avisos.push(String(m));
-const enDesarrollo = modoSsl(url("46.225.66.78:5421", "?sslmode=disable"), "development");
+const enDesarrollo = modoSsl(url("203.0.113.10:5421", "?sslmode=disable"), "development");
 console.warn = warnOriginal;
 probar(
   "en desarrollo lo permite, pero AVISA",
@@ -88,7 +88,7 @@ probar(
 // --- no se puede rebajar el cifrado hacia afuera ------------------------
 probar(
   "sslmode=prefer hacia un host público NO rebaja a texto plano → require",
-  modoSsl(url("46.225.66.78:5421", "?sslmode=prefer"), "production") === "require"
+  modoSsl(url("203.0.113.10:5421", "?sslmode=prefer"), "production") === "require"
 );
 probar(
   "sslmode=require hacia un host interno se respeta",
