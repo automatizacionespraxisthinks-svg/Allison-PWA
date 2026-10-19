@@ -175,10 +175,17 @@ function revisarActividad(a, donde, imagenes) {
         if (o.imagen) imagenes.push(o.imagen);
         else if (!o.texto?.trim() && !o.descripcion?.trim()) fallo(donde, "una opción sin imagen ni texto");
       });
+      {
+        const conEtiqueta = (a.opciones ?? []).filter((o) => o.etiqueta?.trim()).length;
+        if (conEtiqueta && conEtiqueta !== a.opciones.length) fallo(donde, "la etiqueta va en las tres opciones o en ninguna");
+        if ((a.opciones ?? []).some((o) => (o.etiqueta?.length ?? 0) > 14)) aviso(donde, "una etiqueta larga no cabe debajo del dibujo");
+      }
       break;
     case "que-es-esto":
       if (!a.respuesta?.trim()) fallo(donde, "sin respuesta");
       if (!a.pistas?.length || a.pistas.length > 3) fallo(donde, `tiene ${a.pistas?.length} pistas (1 a 3)`);
+      if (a.contexto !== undefined && !a.contexto.trim()) fallo(donde, "el contexto está vacío");
+      if (a.contexto && desdeB1()) aviso(donde, "B1 no lleva la situación en español (contexto)");
       if (desdeB1() && a.pistas?.length !== 1) aviso(donde, `tiene ${a.pistas?.length} pistas (B1: una sola)`);
       if (a.imagen) imagenes.push(a.imagen);
       else if (!a.texto?.trim()) fallo(donde, "sin imagen ni texto de lo que dibuja la app");

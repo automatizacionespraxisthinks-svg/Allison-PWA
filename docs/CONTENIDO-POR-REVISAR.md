@@ -10,9 +10,11 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
+| Lección 1, paso 1 (Escucha y elige) | Nota | etiquetas Mañana, Mediodía y Noche debajo de los dibujos: el sol saliendo se confundía con un atardecer (cambio del 19 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | vocabulario armado desde las actividades |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Good morning" → "Buenos días" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | contexto: la situación en español debajo de la pregunta, porque el dibujo (sol y reloj) no dice que hay que saludar (cambio del 19 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Sarah says: "Hi, I'm Sarah. What's your name?"" → "Sarah dice: "Hola, soy Sarah. ¿Cómo te llamas?"" |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Tom says: "My name is Tom. Nice to meet you."" → "Tom dice: "Me llamo Tom. Mucho gusto."" |
@@ -28,6 +30,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 3, paso 3 (Responde rápido) | Nota | aceptadas: el documento no da ejemplos; se pusieron frases completas que ya están en la parada |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "See you tomorrow" → "Nos vemos mañana" |
 | Lección 4, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | contexto: la situación en español debajo de la pregunta (cambio del 19 de octubre de 2026) |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | What's your name? → "My name is Allison." |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | Where are you from? → "I'm from New York! It's a big, busy city!" |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | How old are you? → "I'm 28." |

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { letraDicha, llevaRaya, lugar, lugaresDeLetra, palabrasDeFrase, respuestaCompleta } from "@/lib/ruta/rayas";
 import type { QueEsEsto as Datos } from "@/lib/ruta/tipos";
 import { desdeB1 } from "@/lib/tipos";
 import { Icono } from "../Iconos";
@@ -14,6 +15,13 @@ import { Ondas, Reloj } from "./EscuchaElige";
  * nunca se da la primera letra; sin pistas, Allison da la respuesta y el
  * alumno la repite. El aro: azul al preguntar, verde al acertar, dorado
  * con pista, azul al enseñar.
+ *
+ * En A1 y A2 las rayas se van llenando: una palabra de la respuesta que
+ * dijo se queda puesta y una letra dicha o escrita aparece en su lugar.
+ * Ni lo uno ni lo otro abre pista. Con todo a la vista, acierta al decir
+ * la frase completa (el orden cuenta). Buscar letras cuenta como ayuda:
+ * ya no es acierto al primer intento. Una letra escrita se busca aquí
+ * mismo, sin gastar intervención.
  */
 type Fase = "pregunta" | "pista" | "bien" | "ensena" | "repetida";
 
@@ -39,6 +47,16 @@ export function QueEsEsto({
   const [explicacion, setExplicacion] = useState<{ en: string; es?: string } | null>(null);
   const [miVoz, setMiVoz] = useState<string | null>(null);
   const b1 = desdeB1(ctx.nivel);
+  /** A1 y A2: la frase, una palabra o una letra van llenando las rayas. */
+  const rellenar = !b1;
+  const palabras = useMemo(() => palabrasDeFrase(a.respuesta), [a.respuesta]);
+  /** Las palabras de la respuesta que ya dijo (desde 0). */
+  const [dichas, setDichas] = useState<number[]>([]);
+  /** Las rayas que llenó con letras ("palabra:letra"). */
+  const [halladas, setHalladas] = useState<string[]>([]);
+  const [conLetras, setConLetras] = useState(false);
+  /** Lo que ya va bien ("¡Sí! Tiene la O."). */
+  const [logro, setLogro] = useState<string | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => void decir(a.pregunta), 400);
@@ -66,12 +84,38 @@ export function QueEsEsto({
     })();
   }
 
+  /** Una letra aparece en sus rayas, si la respuesta la tiene. No abre pista. */
+  function probarLetra(letra: string) {
+    const L = letra.toUpperCase();
+    if (!lugaresDeLetra(palabras, letra).length) {
+      setMensaje(`No tiene la ${L}. Prueba otra letra.`);
+      return;
+    }
+    const nuevos = lugaresDeLetra(palabras, letra, dichas).filter((k) => !halladas.includes(k));
+    if (!nuevos.length) {
+      setLogro(`La ${L} ya está.`);
+      return;
+    }
+    const ahora = [...halladas, ...nuevos];
+    setHalladas(ahora);
+    setConLetras(true);
+    setLogro(respuestaCompleta(palabras, dichas, ahora) ? "¡Ya la tienes completa! Ahora dila en voz alta." : `¡Sí! Tiene la ${L}.`);
+  }
+
   async function responder(e: Entrada) {
     setMensaje(null);
+    setLogro(null);
     if ("url" in e) setMiVoz(e.url);
     // Después de que Allison enseña, el alumno la repite una vez: no se califica.
     if (fase === "ensena") {
       setFase("repetida");
+      return;
+    }
+    // Una letra escrita se busca aquí mismo: no pasa por el servidor ni gasta.
+    const escrita = rellenar && "texto" in e && e.texto.trim().length === 1 ? letraDicha(e.texto) : null;
+    if (escrita) {
+      setOido(null);
+      probarLetra(escrita);
       return;
     }
     setOcupado(true);
@@ -86,6 +130,33 @@ export function QueEsEsto({
       setFase("bien");
       void decir(`Yes! ${a.respuesta}!`);
       return;
+    }
+    if (rellenar) {
+      // Las palabras de la respuesta que dijo se quedan puestas. Con todas a
+      // la vista falta decirla completa: el orden cuenta ("Can I try it
+      // on?" no es "I can try it on").
+      const nuevas =
+        r.palabras.length === palabras.length
+          ? r.palabras.flatMap((w, i) => (w.estado === "bien" && !dichas.includes(i) ? [i] : []))
+          : [];
+      if (nuevas.length) {
+        const ahora = [...dichas, ...nuevas];
+        setDichas(ahora);
+        setOido(null);
+        const faltan = palabras.length - ahora.length;
+        setLogro(
+          respuestaCompleta(palabras, ahora, halladas)
+            ? "¡Ya la tienes completa! Ahora dila completa en voz alta."
+            : `¡Bien! Ya tienes «${nuevas.map((i) => palabras[i]).join(" ")}». ${faltan === 1 ? "Te falta una palabra." : `Te faltan ${faltan} palabras.`}`
+        );
+        return;
+      }
+      const letra = letraDicha(r.transcripcion);
+      if (letra) {
+        setOido(null);
+        probarLetra(letra);
+        return;
+      }
     }
     setOido({ texto: r.transcripcion, pistaAntes: pistas, escrito: "texto" in e });
     if (r.espanol) {
@@ -110,7 +181,6 @@ export function QueEsEsto({
 
   const terminado = fase === "bien" || fase === "repetida";
   const aro = fase === "bien" ? "bien" : fase === "pista" ? "pista" : "pregunta";
-  const letras = a.respuesta.replace(/[.!?]/g, "");
 
   return (
     <div className="flex flex-col gap-3.5">
@@ -132,6 +202,9 @@ export function QueEsEsto({
                 ? a.respuesta
                 : a.pregunta}
         </h2>
+        {a.contexto && (fase === "pregunta" || fase === "pista") && (
+          <p className="mt-1 text-[15px] font-bold text-balance text-texto-suave">{a.contexto}</p>
+        )}
       </div>
 
       <div className="relative grid h-48 place-items-center overflow-hidden rounded-3xl bg-superficie-2">
@@ -162,10 +235,18 @@ export function QueEsEsto({
       )}
 
       <Rayas
-        texto={letras}
+        palabras={palabras}
         llenas={fase === "bien" || fase === "ensena" || fase === "repetida"}
         tono={fase === "bien" ? "menta" : "primario"}
+        dichas={dichas}
+        halladas={halladas}
       />
+      {rellenar && (fase === "pregunta" || fase === "pista") && !respuestaCompleta(palabras, dichas, halladas) && (
+        <p className="text-center text-[13px] font-semibold text-balance text-texto-suave">
+          Di la frase completa, o una palabra o una letra: lo que aciertes se va llenando.
+        </p>
+      )}
+      {logro && !terminado && fase !== "ensena" && <p className="text-center text-sm font-bold text-menta">{logro}</p>}
 
       {explicacion && !terminado && (
         <div className="rounded-2xl bg-oro-suave px-4 py-2.5 text-center text-sm font-bold text-oro">
@@ -205,13 +286,13 @@ export function QueEsEsto({
           onBoton={() =>
             onTerminar({
               calificadas: 1,
-              aciertos: fase === "bien" && intentos === 1 ? 1 : 0,
+              aciertos: fase === "bien" && intentos === 1 && !conLetras ? 1 : 0,
               fallos: fase === "bien" ? [] : [a.respuesta],
             })
           }
         >
           <div className="flex flex-wrap gap-2">
-            <BotonOir onClick={() => void decir(a.respuesta)} texto="Oír la palabra" />
+            <BotonOir onClick={() => void decir(a.respuesta)} texto={palabras.length > 1 ? "Oír la frase" : "Oír la palabra"} />
             {miVoz && <BotonOir onClick={() => oirGrabacion(miVoz)} texto="Oír mi voz" />}
           </div>
         </Hoja>
@@ -225,7 +306,15 @@ export function QueEsEsto({
           <Grabador
             onEntrada={responder}
             ocupado={ocupado}
-            ayuda={fase === "ensena" ? `Say it: ${a.respuesta}` : fase === "pista" ? "Toca e inténtalo de nuevo" : "Toca y di la palabra en inglés"}
+            ayuda={
+              fase === "ensena"
+                ? `Say it: ${a.respuesta}`
+                : fase === "pista"
+                  ? "Toca e inténtalo de nuevo"
+                  : palabras.length > 1
+                    ? "Toca y dilo en inglés"
+                    : "Toca y di la palabra en inglés"
+            }
           />
         </>
       )}
@@ -233,28 +322,52 @@ export function QueEsEsto({
   );
 }
 
-/** Una raya por cada letra; se llenan al acertar (verde) o al enseñar (azul). */
-function Rayas({ texto, llenas, tono }: { texto: string; llenas: boolean; tono: "menta" | "primario" }) {
-  const palabras = texto.split(/\s+/).filter(Boolean);
-  const letras = texto.replace(/\s/g, "").length;
+/**
+ * Una raya por cada letra; se llenan todas al acertar (verde) o al
+ * enseñar (azul). Antes, las palabras que ya dijo salen en verde y las
+ * letras que halló, en azul. El apóstrofo no lleva raya.
+ */
+function Rayas({
+  palabras,
+  llenas,
+  tono,
+  dichas,
+  halladas,
+}: {
+  palabras: string[];
+  llenas: boolean;
+  tono: "menta" | "primario";
+  dichas: number[];
+  halladas: string[];
+}) {
+  const letras = palabras.join("").replace(/'/g, "").length;
+  const color = (t: "menta" | "primario") => (t === "menta" ? "border-menta text-menta" : "border-primario text-primario");
   return (
     <div
       className="flex flex-wrap justify-center gap-x-5 gap-y-2"
       role="img"
-      aria-label={llenas ? texto : `La respuesta tiene ${letras} letras`}
+      aria-label={llenas ? palabras.join(" ") : `La respuesta tiene ${letras} letras`}
     >
       {palabras.map((p, i) => (
-        <span key={i} className="flex gap-1.5">
-          {[...p].map((c, j) => (
-            <i
-              key={j}
-              className={`w-6 border-b-[3px] pb-0.5 text-center text-xl font-black not-italic ${
-                llenas ? (tono === "menta" ? "border-menta text-menta" : "border-primario text-primario") : "h-8 border-texto-suave"
-              }`}
-            >
-              {llenas ? c.toUpperCase() : ""}
-            </i>
-          ))}
+        <span key={i} className="flex items-end gap-1.5">
+          {[...p].map((c, j) => {
+            if (!llevaRaya(c)) {
+              return (
+                <i key={j} className="text-xl font-black text-texto-suave not-italic">
+                  {c}
+                </i>
+              );
+            }
+            const visto = llenas ? tono : dichas.includes(i) ? "menta" : halladas.includes(lugar(i, j)) ? "primario" : null;
+            return (
+              <i
+                key={j}
+                className={`min-h-8 w-6 border-b-[3px] pb-0.5 text-center text-xl font-black not-italic ${visto ? color(visto) : "border-texto-suave"}`}
+              >
+                {visto ? c.toUpperCase() : ""}
+              </i>
+            );
+          })}
         </span>
       ))}
     </div>

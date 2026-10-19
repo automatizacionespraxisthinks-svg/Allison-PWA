@@ -94,9 +94,12 @@ export interface EscuchaElige extends ActividadBase {
   /**
    * Tres opciones. Si son personas de una misma foto, la misma imagen con
    * su zona. Si la app las dibuja (tarjetas con una hora, un mapa), no
-   * llevan imagen sino `texto`.
+   * llevan imagen sino `texto`. `etiqueta` es una palabra en español que
+   * se ve debajo del dibujo cuando el dibujo solo no basta ("Mañana",
+   * "Noche"): no delata la respuesta, porque para elegir igual hay que
+   * entender la frase. Va en las tres opciones o en ninguna.
    */
-  opciones: { imagen?: Ilustracion; texto?: string; descripcion: string; zona?: Zona }[];
+  opciones: { imagen?: Ilustracion; texto?: string; descripcion: string; zona?: Zona; etiqueta?: string }[];
   /** Índice de la opción correcta. */
   correcta: number;
 }
@@ -112,6 +115,12 @@ export interface QueEsEsto extends ActividadBase {
   flecha?: Zona;
   /** Lo que se le pregunta o se le deja a medias ("What is this?", "This is my…"). */
   pregunta: string;
+  /**
+   * La situación en español, debajo de la pregunta, cuando el dibujo solo
+   * no dice qué se espera ("Son las 7 de la mañana y ves a tu vecino.
+   * ¿Qué le dices?"). Allison no la dice: solo hace la pregunta en inglés.
+   */
+  contexto?: string;
   /** La respuesta esperada ("mom"). Las rayas en pantalla salen de aquí. */
   respuesta: string;
   /** Otras formas que valen ("mother", "my mom"). */

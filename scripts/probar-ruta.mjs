@@ -22,7 +22,8 @@ const { PARADA_07 } = await import("../src/lib/ruta/a1/parada-07.ts");
 const { PARADA_01: A2_P01 } = await import("../src/lib/ruta/a2/parada-01.ts");
 const { PARADA_09: A2_P09 } = await import("../src/lib/ruta/a2/parada-09.ts");
 const { respuestaCorta, respuestaDeAdivina, preguntaDeEjemplo, barajarRondas } = await import("../src/lib/ruta/adivina.ts");
-const { estaEnLoDicho } = await import("../src/lib/evaluacion.ts");
+const { estaEnLoDicho, palabrasDeRepite } = await import("../src/lib/evaluacion.ts");
+const { palabrasDeFrase, lugaresDeLetra, respuestaCompleta, letraDicha } = await import("../src/lib/ruta/rayas.ts");
 const { rutaDe } = await import("../src/lib/ruta/index.ts");
 const { srcIlustracion } = await import("../src/lib/ruta/ilustracion.ts");
 
@@ -228,6 +229,25 @@ ok("relato: la cita está en lo dicho", estaEnLoDicho("I study math.", "I go to 
 ok("relato: una frase inventada no", !estaEnLoDicho("I play soccer.", "I go to school at seven."));
 ok("ilustración: la del nivel y la reutilizada", srcIlustracion("f-chef-cocina", "A2") === "/ilustraciones/a2/f-chef-cocina.webp" && srcIlustracion("a1/a-profesor", "A2") === "/ilustraciones/a1/a-profesor.webp");
 ok("A2: sin RUTA_A2 sigue la ruta provisional", process.env.RUTA_A2 === "1" || rutaDe("A2") === null);
+
+// --- Las rayas de ¿Qué es esto? (se llenan con palabras y letras) ----------
+{
+  ok("rayas: palabras sin puntuación y con el apóstrofo", palabrasDeFrase("It's ten o'clock.").join("|") === "It's|ten|o'clock");
+  ok("rayas: la coma no lleva raya", palabrasDeFrase("Yes, he has.").join("|") === "Yes|he|has");
+  const gm = palabrasDeFrase("Good morning");
+  ok("rayas: la O va en tres lugares", lugaresDeLetra(gm, "o").join() === "0:1,0:2,1:1");
+  ok("rayas: sin las letras de una palabra ya dicha", lugaresDeLetra(gm, "o", [0]).join() === "1:1");
+  ok("rayas: una letra que no tiene", lugaresDeLetra(gm, "z").length === 0);
+  ok("rayas: completa con una palabra dicha y las letras de la otra", respuestaCompleta(gm, [0], ["1:0", "1:1", "1:2", "1:3", "1:4", "1:5", "1:6"]));
+  ok("rayas: incompleta si falta una letra", !respuestaCompleta(gm, [0], ["1:0", "1:1"]));
+  ok("rayas: el apóstrofo no hay que hallarlo", respuestaCompleta(palabrasDeFrase("It's"), [], ["0:0", "0:1", "0:3"]));
+  const letras = [["G.", "g"], ["Gee", "g"], ["the letter G", "g"], ["la jota", "j"], ["double you", "w"], ["Eye", "i"], ["Good", null], ["good morning", null], ["", null]];
+  for (const [dicho, letra] of letras) ok(`rayas: letra dicha "${dicho}"`, letraDicha(dicho) === letra, String(letraDicha(dicho)));
+  // La evaluación devuelve las palabras en el mismo orden que las rayas.
+  const dicho = palabrasDeRepite("Good morning", "good");
+  ok("rayas: dijo solo «good»", dicho.map((w) => w.estado).join() === "bien,mejorar", JSON.stringify(dicho));
+  ok("rayas: las palabras de la evaluación son las de las rayas", palabrasDeRepite("It's ten o'clock.", "").map((w) => w.palabra).join("|") === palabrasDeFrase("It's ten o'clock.").join("|"));
+}
 
 console.log(`${total - fallos}/${total} comprobaciones de la ruta bien.`);
 process.exit(fallos ? 1 : 0);

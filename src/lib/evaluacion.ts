@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { Nivel } from "./tipos.ts";
+import { palabrasDeFrase } from "./ruta/rayas.ts";
 
 /**
  * La "evaluación corta" del plan de mejoras (sección 6): comprobar UNA
@@ -190,20 +191,16 @@ export function cosasNombradas(dicho: string, cosas: string[]): string[] {
  */
 export function palabrasDeRepite(frase: string, transcripcion: string): { palabra: string; estado: EstadoPalabra }[] {
   const disponibles = palabrasDe(transcripcion);
-  return frase
-    .split(/\s+/)
-    .map((w) => w.replace(/[^A-Za-z0-9']/g, ""))
-    .filter(Boolean)
-    .map((palabra) => {
-      // Una contracción ("I'm") son dos palabras normalizadas: valen las dos.
-      const partes = palabrasDe(palabra);
-      const posiciones = partes.map((p) => disponibles.findIndex((d) => mismaPalabra(d, p)));
-      const todas = posiciones.every((i) => i >= 0);
-      if (todas) {
-        for (const i of [...posiciones].sort((a, b) => b - a)) disponibles.splice(i, 1);
-      }
-      return { palabra, estado: todas ? ("bien" as const) : ("mejorar" as const) };
-    });
+  return palabrasDeFrase(frase).map((palabra) => {
+    // Una contracción ("I'm") son dos palabras normalizadas: valen las dos.
+    const partes = palabrasDe(palabra);
+    const posiciones = partes.map((p) => disponibles.findIndex((d) => mismaPalabra(d, p)));
+    const todas = posiciones.every((i) => i >= 0);
+    if (todas) {
+      for (const i of [...posiciones].sort((a, b) => b - a)) disponibles.splice(i, 1);
+    }
+    return { palabra, estado: todas ? ("bien" as const) : ("mejorar" as const) };
+  });
 }
 
 /**
@@ -297,6 +294,8 @@ export async function evaluarRespuestaCorta(p: PedidoEvaluacion): Promise<Result
     case "que-es-esto":
     case "dilo":
       resultado.correcto = contieneAlguna(transcripcion, [p.esperado, ...(p.aceptadas ?? [])]);
+      // ¿Qué es esto?: las palabras de la respuesta que ya dijo van llenando las rayas.
+      if (p.tipo === "que-es-esto") resultado.palabras = palabrasDeRepite(p.esperado, transcripcion);
       break;
     case "describe":
       // "Tell me 3 things you see": tres cosas distintas del dibujo.

@@ -14,7 +14,8 @@ import { AllisonAro, BotonOir, Hoja, useVoz } from "./comun";
  * y elige entre tres imágenes. Gratis: no usa IA. Si falla, la frase
  * vuelve a sonar despacio y elige otra vez, sin límite. En A1, al acertar
  * aparece la frase con su traducción; desde A2 la traducción queda a un
- * toque, no aparece sola (Contenido A2, "Qué cambia en A2"). Desde B1 es
+ * toque, no aparece sola (Contenido A2, "Qué cambia en A2"). "Ver la
+ * frase" la muestra con su traducción, con esa misma regla. Desde B1 es
  * una historia de tres o cuatro frases sin traducción ni texto a la vista:
  * se puede oír otra vez y, una sola vez, más despacio (Contenido B1).
  */
@@ -97,7 +98,20 @@ export function EscuchaElige({
           )}
         </div>
       )}
-      {verFrase && !acierto && <p className="text-center text-xl font-black">{frase}</p>}
+      {/* La frase con su traducción, para aprenderla (en A2, la traducción a un toque). */}
+      {verFrase && !acierto && (
+        <div className="flex flex-col items-center gap-1 text-center">
+          <p className="text-xl font-black">{frase}</p>
+          {verTraduccion && a.traduccion.length > 0 && (
+            <p className="text-[15px] font-bold text-texto-suave">{a.traduccion.join(" ")}</p>
+          )}
+          {!verTraduccion && a.traduccion.length > 0 && (
+            <button type="button" onClick={() => setVerTraduccion(true)} className="text-[13px] font-extrabold text-primario underline">
+              Ver la traducción
+            </button>
+          )}
+        </div>
+      )}
       {fallidas.length > 0 && !acierto && (
         <p className="text-center text-sm font-bold text-oro">{b1 ? "¡Casi! Escúchala otra vez y elige." : "¡Casi! Escúchala despacio y elige otra vez."}</p>
       )}
@@ -132,8 +146,13 @@ export function EscuchaElige({
               </span>
               {/* La descripción delata la respuesta ("Tom, un muchacho…"): solo se
                   muestra cuando dos opciones usan la misma foto y no tienen zona
-                  (con zona, cada tarjeta ya muestra ampliada a su persona). */}
-              {sinDistinguir(o) && <span className="line-clamp-2">{o.descripcion}</span>}
+                  (con zona, cada tarjeta ya muestra ampliada a su persona). La
+                  etiqueta sí se muestra siempre: no la delata. */}
+              {o.etiqueta ? (
+                <span className="text-[13px]">{o.etiqueta}</span>
+              ) : (
+                sinDistinguir(o) && <span className="line-clamp-2">{o.descripcion}</span>
+              )}
             </button>
           );
         })}

@@ -58,12 +58,13 @@ export const PARADA_01: Parada = {
           audio: ["Good morning"],
           traduccion: ["Buenos días"],
           opciones: [
-            { imagen: "a-sol-saliendo", descripcion: "Sol saliendo" },
-            { imagen: "a-sol-alto", descripcion: "Sol alto" },
-            { imagen: "a-luna", descripcion: "Luna" },
+            { imagen: "a-sol-saliendo", descripcion: "Sol saliendo", etiqueta: "Mañana" },
+            { imagen: "a-sol-alto", descripcion: "Sol alto", etiqueta: "Mediodía" },
+            { imagen: "a-luna", descripcion: "Luna", etiqueta: "Noche" },
           ],
           correcta: 0,
           porRevisar: [
+            "etiquetas Mañana, Mediodía y Noche debajo de los dibujos: el sol saliendo se confundía con un atardecer (cambio del 19 de octubre de 2026)",
             "vocabulario armado desde las actividades",
             "traduccion",
             "quienHabla: el documento no dice quién habla; se puso Allison",
@@ -77,9 +78,13 @@ export const PARADA_01: Parada = {
             'Pistas en inglés, una a la vez: "It\'s seven in the morning." → "You say it when you see someone." → "The answer has two words." Sin pistas, Allison dice "Good morning" y el alumno la repite.',
           imagen: "a-sol-reloj",
           pregunta: "What do you say?",
+          contexto: "Son las 7 de la mañana y ves a tu vecino. ¿Qué le dices?",
           respuesta: "Good morning",
           aceptadas: ["Morning", "Good morning!"],
           pistas: ["It's seven in the morning.", "You say it when you see someone.", "The answer has two words."],
+          porRevisar: [
+            "contexto: la situación en español debajo de la pregunta, porque el dibujo (sol y reloj) no dice que hay que saludar (cambio del 19 de octubre de 2026)",
+          ],
         },
         {
           paso: 3,
@@ -240,9 +245,11 @@ export const PARADA_01: Parada = {
             'Pistas en inglés, una a la vez: "You are leaving." → "You say it at the door." → "It\'s the opposite of hello." Sin pistas, Allison dice "Goodbye" y el alumno la repite.',
           imagen: "a-despedida-puerta",
           pregunta: "What do you say?",
+          contexto: "Te vas de la casa de un amigo y estás en la puerta. ¿Qué le dices?",
           respuesta: "Goodbye",
           aceptadas: ["Bye", "Bye-bye", "See you"],
           pistas: ["You are leaving.", "You say it at the door.", "It's the opposite of hello."],
+          porRevisar: ["contexto: la situación en español debajo de la pregunta (cambio del 19 de octubre de 2026)"],
         },
         {
           paso: 3,

@@ -194,20 +194,17 @@ cambiada.
 node scripts/migrar.mjs
 ```
 
-**Pendiente en producción: las migraciones 020 a 027**, las que no se
-hayan corrido (el comando solo aplica las que falten, en orden):
+**Producción está al día hasta la 027** (aplicadas en octubre de 2026,
+después de una copia con `pg_dump`). El comando solo aplica las que
+falten, en orden.
 
-- 020 renovación mensual de los planes, 021 glosario, 022 texto de la
-  voz;
-- 023 a 027: reportes, Mi ruta, Viajes y Escenarios, panel, avisos en
-  el celular y competencia por salón.
-
-**Van ANTES de desplegar el código nuevo**: la sesión de cada alumno usa
-`dias_descanso()`, que nace en la 026; con el código nuevo y la base
-vieja nadie puede entrar. Las migraciones solo agregan, así que el
-código que está corriendo sigue funcionando con la base nueva. El
-problema es que ese contenedor viejo no trae los archivos 023 a 027, y
-el puerto de la base está cerrado. Dos caminos:
+**Cuando una migración nueva tenga que ir ANTES del código nuevo**
+(porque el código la usa al arrancar, como pasó con `dias_descanso()`,
+que nace en la 026: con el código nuevo y la base vieja nadie podía
+entrar): las migraciones solo agregan, así que el código que está
+corriendo sigue funcionando con la base nueva. El problema es que ese
+contenedor viejo no trae los archivos nuevos, y el puerto de la base
+está cerrado. Dos caminos:
 
 1. **Sin cortar el servicio (recomendado)**: desde tu máquina, con un
    túnel SSH hasta la base, en dos terminales:
