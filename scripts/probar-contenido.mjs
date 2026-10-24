@@ -178,7 +178,8 @@ function revisarActividad(a, donde, imagenes) {
       {
         const conEtiqueta = (a.opciones ?? []).filter((o) => o.etiqueta?.trim()).length;
         if (conEtiqueta && conEtiqueta !== a.opciones.length) fallo(donde, "la etiqueta va en las tres opciones o en ninguna");
-        if ((a.opciones ?? []).some((o) => (o.etiqueta?.length ?? 0) > 14)) aviso(donde, "una etiqueta larga no cabe debajo del dibujo");
+        if ((a.opciones ?? []).some((o) => (o.etiqueta?.length ?? 0) > 22)) aviso(donde, "una etiqueta de más de dos líneas no cabe debajo del dibujo");
+        if (conEtiqueta && desdeB1()) aviso(donde, "B1 no lleva texto a la vista (etiqueta)");
       }
       break;
     case "que-es-esto":
@@ -493,6 +494,26 @@ if (!solo || solo.startsWith("viajes")) {
       console.log(`viajes.ts: ${lista.length} viajes`);
       revisarViajes(lista);
     }
+  }
+}
+
+// La frase del día (src/lib/expresiones.ts): inglés de Estados Unidos, como todo lo demás.
+// También el catálogo de Escenarios (src/lib/escenarios/datos.ts), que no es de una parada.
+{
+  const { EXPRESIONES } = await import(pathToFileURL("src/lib/expresiones.ts").href);
+  for (const [nivel, lista] of Object.entries(EXPRESIONES))
+    for (const e of lista)
+      for (const s of [e.en, e.ejemplo]) if (esBritanico(s)) fallo(`expresiones ${nivel}`, `inglés británico: "${s}"`);
+  const { CATALOGO } = await import(pathToFileURL("src/lib/escenarios/datos.ts").href);
+  for (const c of CATALOGO) {
+    const e = c.escenario;
+    for (const l of e.dialogo) if (esBritanico(l.dice)) fallo(c.clave, `inglés británico: "${l.dice}"`);
+    if (PAPEL_DE_HOMBRE.test(e.personaje)) fallo(c.clave, `Allison hace "${e.personaje}": el papel tiene que ser de mujer`);
+    e.tareas.forEach((_, i) => {
+      if (!e.dialogo.some((l) => l.quien === "alumno" && l.tarea === i + 1)) fallo(c.clave, `ninguna línea del diálogo cumple la tarea ${i + 1}`);
+    });
+    const delAlumno = e.dialogo.filter((l) => l.quien === "alumno").length;
+    if (delAlumno < e.minimoIntervenciones) aviso(c.clave, `el diálogo de ejemplo tiene ${delAlumno} intervenciones del alumno (el mínimo es ${e.minimoIntervenciones})`);
   }
 }
 

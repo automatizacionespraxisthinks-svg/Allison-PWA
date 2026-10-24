@@ -289,3 +289,40 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 3 (Entrevista a Allison) | Pista en inglés | Qué hará si le da gripa (parada 8) → "Ask me about getting a cold! Start with: What will you do if…?" |
 | Lección 4, paso 3 (Entrevista a Allison) | Pista en inglés | Si podría ir a Medellín algún día (parada 9) → "Ask me about Medellín! Start with: Do you think…?" |
 | Lección 4, paso 3 (Entrevista a Allison) | Pista en inglés | Qué haría si ganara mucho dinero (parada 10) → "Ask me about money! Start with: What would you do if…?" |
+
+## Frase del día (expresiones)
+
+Expresiones de los nativos que no se traducen palabra por palabra: qué significan, qué NO significan (la traducción literal) y un ejemplo del nivel. Inglés de Estados Unidos; el español tiene que servir para un muchacho o una muchacha.
+
+| Expresión | Significa | No es | Ejemplo |
+|---|---|---|---|
+| Bite off more than you can chew | Comprometerse con más de lo que puedes hacer. | Morder más de lo que puedes masticar. | I joined three clubs, and I think I bit off more than I can chew. |
+| Beat around the bush | Andarse con rodeos. | Golpear alrededor del arbusto. | Stop beating around the bush and tell me what happened. |
+| Let the cat out of the bag | Revelar un secreto sin querer. | Dejar salir al gato de la bolsa. | We were planning a surprise party, but Leo let the cat out of the bag. |
+| Cut corners | Hacer algo a la carrera y sin cuidado. | Cortar esquinas. | If you cut corners on your homework, you'll make mistakes. |
+| Get cold feet | Echarse para atrás por los nervios. | Tener los pies fríos. | She wanted to sing in the show, but she got cold feet. |
+| A blessing in disguise | No hay mal que por bien no venga. | Una bendición disfrazada. | Missing the bus was a blessing in disguise: I met my best friend at the stop. |
+| Miss the boat | Dejar pasar la oportunidad. | Perder el barco. | The tickets sold out in an hour. We missed the boat. |
+| Back to square one | Volver a empezar desde cero. | De vuelta al cuadro uno. | The file didn't save, so we're back to square one. |
+| The last straw | La gota que rebosó la copa. | La última pajita. | He was late again. That was the last straw! |
+| Go the extra mile | Hacer más de lo que te piden. | Ir la milla extra. | Our teacher always goes the extra mile for us. |
+| Play it by ear | Improvisar sobre la marcha. | Tocarlo de oído. | We don't have a plan for Saturday. Let's play it by ear. |
+| Keep your chin up! | ¡Ánimo, no te desanimes! | ¡Mantén la barbilla arriba! | You lost the game, but keep your chin up! |
+| Speak of the devil! | Hablando del rey de Roma… | ¡Hablando del diablo! | Speak of the devil! We were just talking about you. |
+| It's not rocket science. | No es tan difícil. | No es ciencia de cohetes. | Just follow the instructions. It's not rocket science. |
+| Through thick and thin | En las buenas y en las malas. | A través de lo grueso y lo delgado. | My best friend has been there for me through thick and thin. |
+| Sit on the fence | No decidirse por ningún lado. | Sentarse en la cerca. | You can't sit on the fence forever. Which team do you support? |
+| Have a lot on your plate | Tener muchas cosas por hacer. | Tener mucho en tu plato. | I can't go out this weekend. I have a lot on my plate. |
+| Burn the midnight oil | Trasnochar estudiando o trabajando. | Quemar el aceite de medianoche. | I burned the midnight oil to finish my project. |
+| Get something off your chest | Desahogarse. | Sacarse algo del pecho. | Thanks for listening. I needed to get that off my chest. |
+| Learn the ropes | Aprender cómo funciona algo. | Aprender las cuerdas. | It's my first week at the job, so I'm still learning the ropes. |
+| When pigs fly | Cuando las ranas críen pelo: nunca. | Cuando los cerdos vuelen. | My brother will clean his room when pigs fly! |
+| Give someone a piece of your mind | Decirle a alguien sus cuatro verdades. | Darle a alguien un pedazo de tu mente. | If he's late again, I'll give him a piece of my mind. |
+| Up in the air | Todavía sin decidir. | Arriba en el aire. | Our trip is still up in the air. |
+| Face the music | Afrontar las consecuencias. | Enfrentar la música. | I broke the window, so now I have to face the music. |
+| On thin ice | En la cuerda floja. | Sobre hielo delgado. | You've forgotten your homework three times. You're on thin ice! |
+| Break the bank | Costar demasiado, gastar una fortuna. | Romper el banco. | A pizza with friends won't break the bank. |
+| Hit the ground running | Empezar algo con toda la energía. | Golpear el suelo corriendo. | The new captain hit the ground running and changed the team. |
+| Cross that bridge when we come to it | Preocuparse por eso cuando llegue el momento. | Cruzar ese puente cuando lleguemos a él. | What if it rains? We'll cross that bridge when we come to it. |
+| Call it a night | Dar por terminada la noche e irse. | Llamarlo una noche. | It's almost midnight. Let's call it a night. |
+| Wrap your head around something | Lograr entender algo complicado. | Envolver tu cabeza alrededor de algo. | I can't wrap my head around this math problem. |

@@ -34,20 +34,24 @@ export function AllisonAro({ aro = "pregunta", tam = 72, hablando = false }: { a
           style={{ animation: "pulso-voz 1.4s ease-in-out infinite" }}
         />
       )}
-      <Image
-        src="/allison.png"
-        alt="Allison"
-        width={tam}
-        height={tam}
-        style={{
-          width: tam,
-          height: tam,
-          ...(escuchando ? { boxShadow: `0 0 0 ${4 + volumen * Math.round(tam / 5)}px color-mix(in srgb, var(--menta) 35%, transparent)` } : {}),
-        }}
-        className={`aro-allison relative rounded-full object-cover ${escuchando || aro === "bien" ? "bien" : aro === "pista" ? "pista" : ""} ${
-          hablando || escuchando ? "" : "respira"
-        }`}
-      />
+      {/* Hablando, la foto se mueve como alguien que conversa: vaivén afuera,
+          el ritmo de las sílabas adentro (globals.css). */}
+      <span className={`relative inline-grid rounded-full ${hablando ? "habla-vaiven" : ""}`}>
+        <Image
+          src="/allison.png"
+          alt="Allison"
+          width={tam}
+          height={tam}
+          style={{
+            width: tam,
+            height: tam,
+            ...(escuchando ? { boxShadow: `0 0 0 ${4 + volumen * Math.round(tam / 5)}px color-mix(in srgb, var(--menta) 35%, transparent)` } : {}),
+          }}
+          className={`aro-allison relative rounded-full object-cover ${escuchando || aro === "bien" ? "bien" : aro === "pista" ? "pista" : ""} ${
+            hablando ? "habla-ritmo" : escuchando ? "" : "respira"
+          }`}
+        />
+      </span>
     </span>
   );
 }

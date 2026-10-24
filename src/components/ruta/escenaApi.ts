@@ -87,7 +87,7 @@ export async function iniciarEscena(p: {
   };
 }
 
-/** Un turno del alumno: una intervención (se devuelve si no se oyó nada). */
+/** Un turno del alumno: una intervención (se devuelve si algo falla; si no se oyó nada, no cuenta como intento). */
 export async function turnoEscena(conversacion: string, e: Entrada): Promise<TurnoEscena> {
   const campos: Record<string, string | Blob> = { accion: "turno", conversacion };
   if ("texto" in e) campos.texto = e.texto;
@@ -111,9 +111,11 @@ export async function turnoEscena(conversacion: string, e: Entrada): Promise<Tur
 }
 
 /** La frase sugerida de la tarea actual. Apaga una estrella. */
-export async function ayudaEscena(conversacion: string): Promise<{ tarea: number; frase: string; explicacion: string } | null> {
+export async function ayudaEscena(
+  conversacion: string
+): Promise<{ tarea: number; frase: string; es: string; explicacion: string } | null> {
   const r = await enviar({ accion: "ayuda", conversacion });
-  return r.ok ? (r.datos as { tarea: number; frase: string; explicacion: string }) : null;
+  return r.ok ? (r.datos as { tarea: number; frase: string; es: string; explicacion: string }) : null;
 }
 
 /** Cierra el escenario: estrellas y estampilla. */

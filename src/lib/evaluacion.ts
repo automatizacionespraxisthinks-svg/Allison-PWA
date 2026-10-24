@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { Nivel } from "./tipos.ts";
 import { palabrasDeFrase } from "./ruta/rayas.ts";
+import { limpiarTranscripcion } from "./transcripcion.ts";
 
 /**
  * La "evaluación corta" del plan de mejoras (sección 6): comprobar UNA
@@ -95,6 +96,23 @@ function esquemaDe(tipo: TipoActividad) {
     required.push("correcto");
   }
   return { type: Type.OBJECT, properties, required, propertyOrdering: Object.keys(properties) };
+}
+
+/**
+ * El JSON que devolvió el modelo. Si llegó cortado (tope de salida),
+ * vacío o bloqueado, es falla de la IA: se lanza un error y la ruta
+ * devuelve la intervención. Antes quedaba "{}": un audio se tomaba por
+ * silencio y un relato por cero frases, y se cobraban (auditoría,
+ * octubre de 2026).
+ */
+function jsonDelModelo<T>(r: { text?: string; candidates?: { finishReason?: unknown }[] }): T {
+  const fin = String(r.candidates?.[0]?.finishReason ?? "STOP");
+  if (fin !== "STOP") throw new Error(`El modelo no terminó la respuesta (${fin})`);
+  try {
+    return JSON.parse(r.text ?? "") as T;
+  } catch {
+    throw new Error("El modelo devolvió un JSON incompleto");
+  }
 }
 
 const NUMEROS: Record<string, string> = {
@@ -222,18 +240,13 @@ export async function transcribirACiegas(
       responseMimeType: "application/json",
       responseSchema: esquemaDe("que-es-esto"),
       temperature: 0,
-      maxOutputTokens: largo ? 600 : 200,
+      maxOutputTokens: largo ? 1000 : 400,
       abortSignal: AbortSignal.timeout(largo ? 20_000 : 12_000),
     },
   });
-  let datos: { hayVoz?: boolean; transcripcion?: string } = {};
-  try {
-    datos = JSON.parse(r.text ?? "{}");
-  } catch {
-    datos = {};
-  }
+  const datos = jsonDelModelo<{ hayVoz?: boolean; transcripcion?: string }>(r);
   return {
-    transcripcion: datos.hayVoz === false ? "" : (datos.transcripcion ?? "").trim(),
+    transcripcion: datos.hayVoz === false ? "" : limpiarTranscripcion(datos.transcripcion ?? ""),
     tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
     tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
   };
@@ -266,7 +279,7 @@ export async function evaluarRespuestaCorta(p: PedidoEvaluacion): Promise<Result
         responseMimeType: "application/json",
         responseSchema: esquemaDe(p.tipo),
         temperature: 0,
-        maxOutputTokens: 200,
+        maxOutputTokens: 400,
         // Una evaluación tarda 1-3 s; en la prueba hubo una de 24 s por
         // la red. Mejor cortar y que la ruta devuelva la intervención que
         // dejar al alumno mirando la pantalla.
@@ -274,14 +287,10 @@ export async function evaluarRespuestaCorta(p: PedidoEvaluacion): Promise<Result
       },
     });
     uso = r.usageMetadata;
-    try {
-      datos = JSON.parse(r.text ?? "{}");
-    } catch {
-      datos = {};
-    }
+    datos = jsonDelModelo<typeof datos>(r);
   }
 
-  const transcripcion = (p.texto?.trim() || (datos.hayVoz === false ? "" : datos.transcripcion) || "").trim();
+  const transcripcion = (p.texto?.trim() || (datos.hayVoz === false ? "" : limpiarTranscripcion(datos.transcripcion ?? "")) || "").trim();
   const resultado: ResultadoEvaluacion = {
     transcripcion,
     correcto: false,
@@ -462,16 +471,11 @@ Never invent sentences they did not say. A wrong fact is not a mistake.`;
         propertyOrdering: Object.keys(props),
       },
       temperature: 0,
-      maxOutputTokens: 400,
+      maxOutputTokens: 700,
       abortSignal: AbortSignal.timeout(15_000),
     },
   });
-  let d: DatosComentario = {};
-  try {
-    d = JSON.parse(r.text ?? "{}");
-  } catch {
-    d = {};
-  }
+  const d = jsonDelModelo<DatosComentario>(r);
   return {
     ...comentarioVerificado(d, p.transcripcion, p.nivel),
     tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
@@ -549,16 +553,11 @@ Never invent sentences they did not say.`;
         propertyOrdering: Object.keys(props),
       },
       temperature: 0,
-      maxOutputTokens: 450,
+      maxOutputTokens: 800,
       abortSignal: AbortSignal.timeout(15_000),
     },
   });
-  let d: DatosComentario & { contados?: number[] } = {};
-  try {
-    d = JSON.parse(r.text ?? "{}");
-  } catch {
-    d = {};
-  }
+  const d = jsonDelModelo<DatosComentario & { contados?: number[] }>(r);
   const total = p.dibujos.length;
   const dibujos = [...new Set((d.contados ?? []).filter((n) => Number.isInteger(n) && n >= 1 && n <= total))];
   const faltante = Array.from({ length: total }, (_, i) => i + 1).find((n) => !dibujos.includes(n)) ?? null;

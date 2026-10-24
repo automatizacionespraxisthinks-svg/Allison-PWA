@@ -22,6 +22,7 @@ const {
   contieneErrorRepetido,
   marcarEspanolSuelto,
   componerRespuesta,
+  hablaEspanolClaro,
   casoEfectivo,
   correccionesDelCaso,
   recortarOraciones,
@@ -217,9 +218,17 @@ probar(
   armar("2", "Como fue ayer, se dice 'played'.", "You played soccer! Who did you play with?") === "[es] Como fue ayer, se dice 'played'. [en-US] You played soccer! Who did you play with?"
 );
 probar(
-  "caso 6: siempre la frase aprobada, diga lo que diga el modelo",
-  armar("6", "", "What? I don't know.") === "Sorry. [es] No te oí. [en-US] I didn't hear you. Could you repeat that for me?" &&
-    componerRespuesta({ caso: "6", respuesta: "x", nivel: "B2", nombre: "D" }) === "Sorry, I didn't hear you. Could you repeat that for me?"
+  "caso 6: siempre la frase fija, y cada idioma dice algo distinto",
+  armar("6", "", "What? I don't know.") === "[es] No te oí bien. [en-US] Can you say it again?" &&
+    componerRespuesta({ caso: "6", respuesta: "x", nivel: "B2", nombre: "D" }) === "Sorry, I didn't hear you. Can you say it again?",
+  armar("6", "", "What? I don't know.")
+);
+probar(
+  "caso 6: una frase clara en español sí se oyó (no es \"No te oí\")",
+  armar("6", "", "Sorry, I didn't hear you.", { espanolClaro: true }) === "[es] Te entendí. [en-US] Now try to say it in English!" &&
+    hablaEspanolClaro("te estoy preguntando que qué más puedes hacer") &&
+    !hablaEspanolClaro("ay yo uhay") &&
+    !hablaEspanolClaro("I like pizza")
 );
 probar("caso 6: si el modelo dice que no entendió, es el 6", casoEfectivo("1", "Sorry, I didn't understand that. Could you repeat it?", false) === "6" && casoEfectivo("9", "Can you say that again?", false) === "9");
 probar(

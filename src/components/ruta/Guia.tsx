@@ -167,7 +167,7 @@ export function Guia({
             alt=""
             width={36}
             height={36}
-            className={`size-9 rounded-full object-cover ${hablando ? "aro-allison" : ""}`}
+            className={`size-9 rounded-full object-cover ${hablando ? "aro-allison habla-ritmo" : ""}`}
           />
           Allison la dice
         </span>

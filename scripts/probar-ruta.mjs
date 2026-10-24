@@ -24,6 +24,11 @@ const { PARADA_09: A2_P09 } = await import("../src/lib/ruta/a2/parada-09.ts");
 const { respuestaCorta, respuestaDeAdivina, preguntaDeEjemplo, barajarRondas } = await import("../src/lib/ruta/adivina.ts");
 const { estaEnLoDicho, palabrasDeRepite } = await import("../src/lib/evaluacion.ts");
 const { palabrasDeFrase, lugaresDeLetra, respuestaCompleta, letraDicha } = await import("../src/lib/ruta/rayas.ts");
+const { citaDe, frasesDe } = await import("../src/lib/ruta/frases.ts");
+const { EXPRESIONES, expresionDelDia } = await import("../src/lib/expresiones.ts");
+const { limpiarTranscripcion } = await import("../src/lib/transcripcion.ts");
+const { sinEcoDelAlumno } = await import("../src/lib/ruta/escena.ts");
+const { CATALOGO } = await import("../src/lib/escenarios/datos.ts");
 const { rutaDe } = await import("../src/lib/ruta/index.ts");
 const { srcIlustracion } = await import("../src/lib/ruta/ilustracion.ts");
 
@@ -169,12 +174,33 @@ ok("corrección: I from → I'm from", esCorreccionDe("I from Colombia.", "I'm f
 ok("corrección: no es otra respuesta", !esCorreccionDe("I am fine.", "My name is..."));
 ok("corrección: igual no cuenta", !esCorreccionDe("Good morning!", "Good morning."));
 ok("tarea obvia: saluda", JSON.stringify(tareasObvias(PARADA_01.escenario, "Hello!")) === "[1]");
-ok("tarea obvia: despídete", JSON.stringify(tareasObvias(PARADA_01.escenario, "Thank you. Goodbye!")) === "[4]");
+ok("tarea obvia: despídete", JSON.stringify(tareasObvias(PARADA_01.escenario, "Thank you. Goodbye!")) === "[7]");
 ok(
   "tarea obvia: da las gracias y despídete",
   tareasObvias(PARADA_07.escenario, "Thanks! Bye!").includes(PARADA_07.escenario.tareas.length)
 );
-ok("tarea obvia: nada", tareasObvias(PARADA_01.escenario, "My name is Diego.").length === 0);
+ok("tarea obvia: nada", tareasObvias(PARADA_01.escenario, "I like pizza.").length === 0 && tareasObvias(PARADA_01.escenario, "I'm happy.").length === 0);
+{
+  const p1 = (dicho) => JSON.stringify(tareasObvias(PARADA_01.escenario, dicho));
+  ok(
+    "tarea obvia: cómo estás",
+    p1("I'm fine, thanks. And you?") === "[2]" && p1("Fine, thank you.") === "[2]" && p1("Good, thanks!") === "[2]",
+    p1("I'm fine, thanks. And you?")
+  );
+  ok("tarea obvia: \"Good morning!\" es solo el saludo", p1("Good morning!") === "[1]" && p1("Good afternoon.") === "[1]", p1("Good morning!"));
+  ok("tarea obvia: el nombre", p1("My name is Diego.") === "[3]" && p1("I'm Diego.") === "[3]", p1("I'm Diego."));
+  ok("tarea obvia: la edad", p1("I'm 15.") === "[4]" && p1("I am fifteen years old.") === "[4]", p1("I'm 15."));
+  ok("tarea obvia: de dónde", p1("I'm from Colombia.") === "[5]" && p1("I from Colombia.") === "[]", p1("I from Colombia."));
+  // Los falsos positivos que encontró la auditoría (octubre de 2026).
+  ok("tarea obvia: \"Nice to see you\" no es despedirse", p1("Hi Allison! Nice to see you!") === "[1]" && p1("Hi, Laura! I can see you too!") === "[1]", p1("Hi Allison! Nice to see you!"));
+  ok("tarea obvia: \"See you later!\" sí es despedirse", p1("See you later!") === "[7]" && p1("OK. See you!") === "[7]", p1("See you later!"));
+  ok("tarea obvia: \"I'm Colombian\" no es el nombre", p1("I'm Colombian.") === "[]", p1("I'm Colombian."));
+  ok("tarea obvia: \"I'm good at soccer\" no es cómo estás", p1("I'm good at soccer.") === "[]" && p1("Great! My name is Diego.") === "[3]", p1("Great! My name is Diego."));
+  ok("tarea obvia: la edad de otro no es la suya", p1("My brother is ten years old.") === "[]", p1("My brother is ten years old."));
+  ok("tarea obvia: con apóstrofo curvo", p1("I’m from Colombia.") === "[5]" && p1("I’m 15.") === "[4]", p1("I’m from Colombia."));
+  const aeropuerto = CATALOGO.find((c) => c.clave === "cat:aeropuerto").escenario;
+  ok("tarea obvia: saluda y di tu nombre (las dos)", JSON.stringify(tareasObvias(aeropuerto, "Good morning! My name is Diego.")) === "[1]" && tareasObvias(aeropuerto, "My name is Diego.").length === 0);
+}
 const ent = PARADA_01.lecciones[3].actividades.find((a) => a.tipo === "entrevista");
 {
   const r = respuestaDeEntrevista({ entrevista: ent, clasificacion: { tipo: "pregunta", dato: 2, espanol: false }, descubiertos: [], turno: 0 });
@@ -247,6 +273,63 @@ ok("A2: sin RUTA_A2 sigue la ruta provisional", process.env.RUTA_A2 === "1" || r
   const dicho = palabrasDeRepite("Good morning", "good");
   ok("rayas: dijo solo «good»", dicho.map((w) => w.estado).join() === "bien,mejorar", JSON.stringify(dicho));
   ok("rayas: las palabras de la evaluación son las de las rayas", palabrasDeRepite("It's ten o'clock.", "").map((w) => w.palabra).join("|") === palabrasDeFrase("It's ten o'clock.").join("|"));
+}
+
+// --- Lo que se oyó y lo que dice Allison en la escena (pruebas en producción) -
+{
+  ok("transcripción: solo marcas de tiempo es silencio", limpiarTranscripcion("00:00 00:01 00:02") === "");
+  ok("transcripción: sin las marcas en medio", limpiarTranscripcion("00:00 00:01 I don't know 00:02 00:03") === "I don't know");
+  ok("transcripción: marcas con corchetes", limpiarTranscripcion("[00:01] Hello [0:02]") === "Hello");
+  ok("transcripción: una hora dicha se queda", limpiarTranscripcion("It's 7:30") === "It's 7:30" && limpiarTranscripcion("At 10:00") === "At 10:00");
+  ok("transcripción: un número solo es voz", limpiarTranscripcion("15") === "15");
+  ok("transcripción: el eco duplicado", limpiarTranscripcion("I like soccer a lot I like soccer a lot") === "I like soccer a lot");
+  ok(
+    "transcripción: las notas de que no hubo voz",
+    limpiarTranscripcion("[silence]") === "" && limpiarTranscripcion("(inaudible)") === "" && limpiarTranscripcion("[Música] Hello") === "Hello" && limpiarTranscripcion("Silence.") === ""
+  );
+  ok("transcripción: el apóstrofo curvo", limpiarTranscripcion("I’m from Colombia.") === "I'm from Colombia.");
+  ok("escena: no dice como suya la frase del alumno", sinEcoDelAlumno("I'm from Colombia. Why are you here?", "I from Colombia") === "Why are you here?");
+  ok("escena: su reacción sí se queda", sinEcoDelAlumno("I like pizza too! What else?", "I like pizza") === "I like pizza too! What else?");
+  ok("escena: hablar de sí misma se queda", sinEcoDelAlumno("My name is Allison. And you?", "My name is Diego") === "My name is Allison. And you?");
+  ok("escena: una línea en segunda persona no se toca", sinEcoDelAlumno("Oh, you're from Colombia! Nice!", "I from Colombia") === "Oh, you're from Colombia! Nice!");
+  ok(
+    "escena: si el alumno le preguntó (\"And you?\"), su respuesta se queda",
+    sinEcoDelAlumno("I'm fine, thank you! What's your name?", "I'm fine, thank you. And you?") === "I'm fine, thank you! What's your name?"
+  );
+}
+
+// --- La Guía de frases: lo que dice cada persona, sin "Sarah says:" ---------
+{
+  ok("frases: la cita de lo contado", citaDe('Sarah says: "Hi, I\'m Sarah."') === "Hi, I'm Sarah." && citaDe('Sarah dice: "Hola, soy Sarah."') === "Hola, soy Sarah.");
+  ok("frases: una frase de Allison no es cita", citaDe("Good morning") === null && citaDe("I said: I'd love to!") === null);
+  const guia = frasesDe(RUTA_A1[0]);
+  ok("frases: la guía no trae «says:»", guia.every((f) => !/\b(says|asks|dice|pregunta):/.test(f.en + f.es)), guia.map((f) => f.en).join(" | "));
+  ok("frases: la guía trae lo que dice cada uno", guia.some((f) => f.en === "Where are you from?" && f.es === "¿De dónde eres?"));
+  ok("frases: sin frases a medias", RUTA_A1.flatMap(frasesDe).every((f) => !f.en.endsWith("…")));
+}
+
+// --- La frase del día: expresiones de los nativos que no se traducen literal --
+{
+  const comparable = (s) => s.toLowerCase().normalize("NFD").replace(/[^a-z ]/g, "").trim();
+  // Español que sirva para un muchacho o una muchacha (como en el prompt de Allison).
+  const DE_GENERO = /\b(tranquil|cansad|list|bienvenid|aburrid|enferm|nervios|content|llen|solit|perdid|rendid|agotad)[oa]s?\b/i;
+  for (const [nivel, lista] of Object.entries(EXPRESIONES)) {
+    ok(`expresiones ${nivel}: al menos 25`, lista.length >= 25, String(lista.length));
+    const repetidas = lista.map((e) => comparable(e.en)).filter((x, i, todas) => todas.indexOf(x) !== i);
+    ok(`expresiones ${nivel}: sin repetidas`, repetidas.length === 0, repetidas.join(" | "));
+    const incompletas = lista.filter((e) => !e.en?.trim() || !e.significa?.trim() || !e.literal?.trim() || !e.ejemplo?.trim());
+    ok(`expresiones ${nivel}: completas`, incompletas.length === 0, incompletas.map((e) => e.en).join(" | "));
+    const literales = lista.filter((e) => comparable(e.literal) === comparable(e.significa));
+    ok(`expresiones ${nivel}: lo que significa no es la traducción literal`, literales.length === 0, literales.map((e) => e.en).join(" | "));
+    const conGenero = lista.filter((e) => DE_GENERO.test(e.significa));
+    ok(`expresiones ${nivel}: español sin género`, conGenero.length === 0, conGenero.map((e) => e.significa).join(" | "));
+    const ejemploEnEspanol = lista.filter((e) => /[¿¡ñáéíóú]/i.test(e.ejemplo) || /[¿¡ñáéíóú]/i.test(e.en));
+    ok(`expresiones ${nivel}: la expresión y el ejemplo, en inglés`, ejemploEnEspanol.length === 0, ejemploEnEspanol.map((e) => e.en).join(" | "));
+  }
+  const dias = Array.from({ length: 30 }, (_, d) => expresionDelDia("A1", new Date(Date.UTC(2026, 9, 1) + d * 86_400_000).toISOString().slice(0, 10)).en);
+  ok("expresión del día: 30 días, 30 distintas", new Set(dias).size === 30, String(new Set(dias).size));
+  ok("expresión del día: el mismo día, la misma", expresionDelDia("A2", "2026-10-24").en === expresionDelDia("A2", "2026-10-24").en);
+  ok("expresión del día: desde B1, las de B1", EXPRESIONES.B1.some((e) => e.en === expresionDelDia("C1", "2026-10-24").en));
 }
 
 console.log(`${total - fallos}/${total} comprobaciones de la ruta bien.`);

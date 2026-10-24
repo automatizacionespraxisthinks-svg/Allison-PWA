@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { RutaProvisional as Ruta } from "@/lib/ruta/provisional";
+import type { Expresion } from "@/lib/expresiones";
 import { EncabezadoRuta } from "./Encabezado";
+import { FraseDelDia } from "./FraseDelDia";
 import { Icono } from "./Iconos";
 import { TarjetaSalon } from "./TarjetaSalon";
 import type { SalonDelAlumno } from "@/lib/competencia/tabla";
@@ -17,6 +19,7 @@ export function RutaProvisional({
   racha,
   minutosHoy,
   metaMin,
+  frase = null,
   salon = null,
 }: {
   ruta: Ruta;
@@ -24,12 +27,15 @@ export function RutaProvisional({
   racha: number;
   minutosHoy: number;
   metaMin: number;
+  /** La frase del día, en el globo de Allison. */
+  frase?: Expresion | null;
   salon?: SalonDelAlumno | null;
 }) {
   return (
     <main className="mx-auto flex w-full max-w-lg flex-col gap-3 px-4 pt-4 pb-6">
       <EncabezadoRuta nombre={nombre} nivel={ruta.nivel} racha={racha} minutosHoy={minutosHoy} metaMin={metaMin} />
       {salon && <TarjetaSalon salon={salon} />}
+      {frase && <FraseDelDia frase={frase} nivel={ruta.nivel} />}
 
       <p className="rounded-2xl bg-superficie-2 px-4 py-3 text-sm text-texto-suave">
         Tu viaje por <b className="text-texto">{ruta.pais}</b>: en cada ciudad conversas con Allison sobre un tema. Al

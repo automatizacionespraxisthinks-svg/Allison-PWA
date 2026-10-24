@@ -2,7 +2,8 @@
  * Escribe docs/CONTENIDO-POR-REVISAR.md: todo lo que NO estaba escrito en
  * el documento aprobado "Contenido A1" y se agregó al pasarlo a datos
  * (traducciones de lo que se oye, respuestas de Allison en las
- * entrevistas, zonas de las fotos por marcar). Es la lista para la
+ * entrevistas, las palabras debajo de los dibujos, la situación en
+ * español de ¿Qué es esto?, zonas de las fotos por marcar). Es la lista para la
  * revisión de la licenciada o el licenciado en inglés (paso 4 del plan).
  *
  *   node scripts/listar-por-revisar.mjs       A1 y el catálogo de Escenarios
@@ -54,8 +55,14 @@ for (const archivo of archivos) {
   const filas = [];
   for (const l of u.lecciones) {
     for (const a of l.actividades) {
+      const donde = `Lección ${l.numero}, paso ${a.paso} (${NOMBRES[a.tipo] ?? a.tipo})`;
+      // Las palabras debajo de los dibujos y la situación en español se
+      // escribieron para la app (octubre de 2026): se revisan todas.
+      if (a.tipo === "escucha-elige" && a.opciones?.some((o) => o.etiqueta)) {
+        filas.push(`| ${donde} | Palabras debajo de los dibujos | ${a.opciones.map((o) => o.etiqueta).join(" · ")} |`);
+      }
+      if (a.tipo === "que-es-esto" && a.contexto) filas.push(`| ${donde} | Situación en español | ${a.contexto} |`);
       for (const nota of a.porRevisar ?? []) {
-        const donde = `Lección ${l.numero}, paso ${a.paso} (${NOMBRES[a.tipo] ?? a.tipo})`;
         if (nota.startsWith("traduccion") && a.traduccion) {
           a.audio.forEach((en, i) => filas.push(`| ${donde} | Traducción | "${en}" → "${a.traduccion[i]}" |`));
         } else if (nota.startsWith("datos.respuesta") && a.datos) {
@@ -87,6 +94,7 @@ for (const archivo of archivos) {
       }
     }
   }
+  for (const nota of u.escenario?.porRevisar ?? []) filas.push(`| Escenario de cierre | Nota | ${nota} |`);
   if (!filas.length) continue;
   total += filas.length;
   lineas.push(`## ${titulo}`, "", "| Dónde | Qué | Texto |", "|---|---|---|", ...filas, "");
@@ -117,6 +125,21 @@ if (filasCatalogo.length) lineas.push(
   "| Escenario | Qué | Texto |",
   "|---|---|---|",
   ...filasCatalogo,
+  ""
+);
+
+// La frase del día (src/lib/expresiones.ts): escrita para la app el 24 de octubre de 2026.
+const { EXPRESIONES } = await import(pathToFileURL(join("src/lib/expresiones.ts")).href);
+const expresiones = EXPRESIONES[NIVEL.toUpperCase()] ?? [];
+total += expresiones.length;
+if (expresiones.length) lineas.push(
+  "## Frase del día (expresiones)",
+  "",
+  "Expresiones de los nativos que no se traducen palabra por palabra: qué significan, qué NO significan (la traducción literal) y un ejemplo del nivel. Inglés de Estados Unidos; el español tiene que servir para un muchacho o una muchacha.",
+  "",
+  "| Expresión | Significa | No es | Ejemplo |",
+  "|---|---|---|---|",
+  ...expresiones.map((e) => `| ${e.en} | ${e.significa} | ${e.literal} | ${e.ejemplo} |`),
   ""
 );
 

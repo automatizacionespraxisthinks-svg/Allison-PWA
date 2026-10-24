@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { Momento } from "@/lib/ruta/tipos";
-import type { Nivel } from "@/lib/tipos";
+import { desdeB1, type Nivel } from "@/lib/tipos";
 import { sonar } from "@/lib/sonidos";
 import { Estampilla, type LugarSello } from "./Estampilla";
 import { Estrella, Estrellas, Icono } from "./Iconos";
@@ -85,7 +85,7 @@ export function Escenario({
   const [cumplidas, setCumplidas] = useState<number[]>([]);
   const [intervenciones, setIntervenciones] = useState(0);
   const [ayudas, setAyudas] = useState(0);
-  const [ayuda, setAyuda] = useState<{ frase: string; explicacion: string } | null>(null);
+  const [ayuda, setAyuda] = useState<{ frase: string; es: string; explicacion: string } | null>(null);
   const [sinAvanzar, setSinAvanzar] = useState(0);
   const [meta, setMeta] = useState(false);
   const [ocupado, setOcupado] = useState(false);
@@ -93,6 +93,8 @@ export function Escenario({
   const [fin, setFin] = useState<FinEscena | null>(null);
   const terminando = useRef(false);
   const pidiendo = useRef(false);
+  /** Cuántos turnos lleva: una ayuda que llega después de otro turno ya no sirve. */
+  const turnos = useRef(0);
 
   const primerNombre = ctx.nombre.split(" ")[0];
   const oculta = tareaOculta(e, cumplidas);
@@ -139,6 +141,7 @@ export function Escenario({
   }
 
   async function responder(entrada: Entrada) {
+    turnos.current += 1;
     if (!conversacion) return;
     setMensaje(null);
     setAyuda(null);
@@ -166,11 +169,15 @@ export function Escenario({
   async function pedirAyuda() {
     if (!conversacion || pidiendo.current) return;
     pidiendo.current = true;
+    const mio = turnos.current;
     const r = await ayudaEscena(conversacion);
     pidiendo.current = false;
+    // Si mientras llegaba ya respondió, la ayuda es de la línea anterior.
+    if (mio !== turnos.current) return;
     if (!r) return setMensaje("No pudimos traer la ayuda. Intenta otra vez.");
     setAyudas((n) => n + 1);
-    setAyuda({ frase: r.frase, explicacion: r.explicacion });
+    // Desde B1 la escena no muestra español (Contenido B1).
+    setAyuda({ frase: r.frase, es: desdeB1(ctx.nivel) ? "" : r.es, explicacion: r.explicacion });
     void decir(r.frase);
   }
 
@@ -336,6 +343,7 @@ export function Escenario({
                   {ayuda.frase.includes("___") ? "Ayuda · empieza así" : "Ayuda · puedes decir"}
                 </small>
                 <b className="block text-lg font-extrabold text-texto">{ayuda.frase}</b>
+                {ayuda.es && <span className="block text-[13px] font-semibold text-texto-suave">{ayuda.es}</span>}
                 <span className="text-[13px] font-semibold text-texto-suave">Tu tarea: {ayuda.explicacion}</span>
               </div>
             </div>
@@ -349,7 +357,8 @@ export function Escenario({
               <button
                 type="button"
                 onClick={() => void cerrar()}
-                className="rounded-xl bg-menta px-4 py-2.5 font-extrabold text-superficie"
+                disabled={ocupado}
+                className="rounded-xl bg-menta px-4 py-2.5 font-extrabold text-superficie disabled:opacity-50"
               >
                 Terminar la escena
               </button>
@@ -365,7 +374,8 @@ export function Escenario({
               <button
                 type="button"
                 onClick={pedirAyuda}
-                disabled={(!!salto && ayudas >= 1) || todas}
+                // Mientras Allison responde, no: la ayuda sería para su línea anterior.
+                disabled={ocupado || (!!salto && ayudas >= 1) || todas}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-extrabold transition disabled:opacity-40 ${
                   sinAvanzar >= 2 ? "bg-oro text-superficie shadow-[0_0_0_4px_var(--oro-suave)]" : "border border-borde"
                 }`}
@@ -379,7 +389,8 @@ export function Escenario({
               <button
                 type="button"
                 onClick={() => void cerrar()}
-                className="self-center text-[12.5px] font-bold text-texto-suave underline"
+                disabled={ocupado}
+                className="self-center text-[12.5px] font-bold text-texto-suave underline disabled:opacity-40"
               >
                 Terminar ahora
               </button>
@@ -438,6 +449,10 @@ function Mision({
 }) {
   const actual = tareas.findIndex((_, i) => i + 1 !== oculta && !cumplidas.includes(i + 1));
   const visibles = tareas.length - (oculta ? 1 : 0);
+  // Durante la escena, en el teléfono: una fila de números y la tarea de
+  // ahora. La lista de dos columnas, con 7 tareas, bajaba el micrófono
+  // fuera de la pantalla (auditoría, octubre de 2026).
+  if (compacta) return <MisionCompacta tareas={tareas} cumplidas={cumplidas} actual={actual} oculta={oculta} imprevisto={imprevisto} />;
   return (
     <div className="flex flex-col gap-1.5">
       {!compacta && (
@@ -477,6 +492,56 @@ function Mision({
           );
         })}
       </ol>
+    </div>
+  );
+}
+
+/**
+ * La misión durante la escena: un número por tarea (verde la cumplida,
+ * azul la de ahora) y la tarea de ahora escrita. Cabe igual con 3 que con
+ * 7 tareas.
+ */
+export function MisionCompacta({
+  tareas,
+  cumplidas,
+  actual,
+  oculta = 0,
+  imprevisto,
+}: {
+  tareas: string[];
+  cumplidas: number[];
+  actual: number;
+  oculta?: number;
+  imprevisto?: number;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <ol className="flex flex-wrap items-center gap-1.5">
+        {tareas.map((t, i) => {
+          if (i + 1 === oculta) return null;
+          const ok = cumplidas.includes(i + 1);
+          const on = i === actual;
+          return (
+            <li
+              key={i}
+              aria-label={`Tarea ${i + 1}: ${t}${ok ? " (cumplida)" : on ? " (la de ahora)" : ""}`}
+              className={`grid size-7 place-items-center rounded-full text-xs font-black ${
+                ok ? "bg-menta text-superficie" : on ? "bg-primario text-white ring-4 ring-primario-suave" : "bg-superficie-2 text-texto-suave"
+              }`}
+            >
+              {ok ? <Icono nombre="check" className="size-3.5 stroke-[3]" /> : i + 1}
+            </li>
+          );
+        })}
+      </ol>
+      {actual >= 0 ? (
+        <p className="text-[14px] leading-tight font-extrabold">
+          <span className="text-primario">{imprevisto === actual + 1 ? "¡Imprevisto! " : "Ahora: "}</span>
+          {tareas[actual]}
+        </p>
+      ) : (
+        <p className="text-[14px] leading-tight font-extrabold text-menta">¡Misión cumplida!</p>
+      )}
     </div>
   );
 }

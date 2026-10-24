@@ -9,15 +9,23 @@ export const maxDuration = 60;
 
 const MAX_BYTES = 8 * 1024 * 1024;
 
-const ESTADOS: Record<string, number> = { no_existe: 404, bloqueada: 409, salto_hoy: 409, terminada: 409 };
+const ESTADOS: Record<string, number> = { no_existe: 404, bloqueada: 409, salto_hoy: 409, terminada: 409, ocupada: 409, desactualizada: 409 };
+
+/** Lo que ve el alumno en los errores que no son suyos (la pantalla muestra "mensaje"). */
+const MENSAJES: Record<string, string> = {
+  ocupada: "Tu mensaje se cruzó con otro. No te cobramos: inténtalo otra vez.",
+  desactualizada: "Esta escena se actualizó. Sal y vuelve a empezarla; no te cobramos.",
+};
+const error = (e: string) => NextResponse.json({ error: e, mensaje: MENSAJES[e] }, { status: ESTADOS[e] ?? 400 });
 
 /**
  * Las conversaciones de la ruta: el escenario de cierre de cada parada,
  * la Entrevista a Allison y Adivina. Una sola ruta con cuatro acciones:
  *
  *   · inicio: abre el intento y trae la primera línea de Allison. Gratis.
- *   · turno: lo que dice el alumno. Una intervención (se devuelve si no
- *     se oyó nada o si algo falla).
+ *   · turno: lo que dice el alumno. Una intervención: se devuelve si algo
+ *     falla (la IA, un choque con otra acción); si no se oyó nada, se
+ *     cobra (la IA ya trabajó) pero no cuenta como intento.
  *   · ayuda: la frase sugerida de la tarea actual. Gratis, apaga una estrella.
  *   · fin: cierra el escenario y entrega estrellas y estampilla.
  */
@@ -43,19 +51,19 @@ export async function POST(peticion: Request) {
       viaje: Number(f.get("viaje")) || undefined,
       clave: String(f.get("clave") ?? "").slice(0, 60) || undefined,
     });
-    if (!r.ok) return NextResponse.json({ error: r.error }, { status: ESTADOS[r.error] ?? 400 });
+    if (!r.ok) return error(r.error);
     return NextResponse.json(r);
   }
 
   if (accion === "ayuda") {
     const r = await pedirAyuda(alumno.id, conversacion);
-    if (!r.ok) return NextResponse.json({ error: r.error }, { status: ESTADOS[r.error] ?? 400 });
+    if (!r.ok) return error(r.error);
     return NextResponse.json(r);
   }
 
   if (accion === "fin") {
     const r = await terminarEscenario(alumno.id, alumno.nivel, conversacion);
-    if (!r.ok) return NextResponse.json({ error: r.error }, { status: ESTADOS[r.error] ?? 400 });
+    if (!r.ok) return error(r.error);
     return NextResponse.json(r.fin);
   }
 
@@ -111,7 +119,7 @@ export async function POST(peticion: Request) {
   }
   if (!r.ok) {
     await devolver();
-    return NextResponse.json({ error: r.error }, { status: ESTADOS[r.error] ?? 400 });
+    return error(r.error);
   }
   // La IA no dio una respuesta que sirva: es falla nuestra, no se cobra.
   if (r.r.sinRespuesta) {

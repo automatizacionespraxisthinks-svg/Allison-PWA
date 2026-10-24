@@ -260,7 +260,8 @@ export function QueEsEsto({
           {!oido.escrito && (
             <>
               {" · "}
-              <button type="button" onClick={noDijeEso} className="font-extrabold text-primario underline">
+              {/* Mientras se revisa otro intento, no: abriría la pista equivocada. */}
+              <button type="button" onClick={noDijeEso} disabled={ocupado} className="font-extrabold text-primario underline disabled:opacity-40">
                 ¿No dijiste eso?
               </button>
             </>

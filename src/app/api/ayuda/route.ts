@@ -48,11 +48,11 @@ export async function POST(peticion: Request) {
 
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-  const r = await ai.models.generateContent({
-    model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
-    contents: [{ role: "user", parts: [{ text: texto }] }],
-    config: {
-      systemInstruction: `A Colombian student at CEFR level ${nivel} just heard
+  // Una llamada colgada o un JSON roto no puede tumbar la ruta (antes daba
+  // un 500 sin mensaje): se responde un error que la pantalla sabe mostrar.
+  const fallo = () =>
+    NextResponse.json({ error: "fallo_ia", mensaje: "No pudimos traer la ayuda. Intenta otra vez." }, { status: 502 });
+  const instruccion = `A Colombian student at CEFR level ${nivel} just heard
 this from their English teacher and needs help. Return:
 
 - "traduccion": what it means, in natural Colombian Spanish. Not word by
@@ -71,24 +71,42 @@ this from their English teacher and needs help. Return:
       : ""
   }
 - "sugerenciaEs": what that suggestion means in Spanish, so they know
-  what they are saying before they say it.`,
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          traduccion: { type: Type.STRING },
-          sugerencia: { type: Type.STRING },
-          sugerenciaEs: { type: Type.STRING },
-        },
-        required: ["traduccion", "sugerencia", "sugerenciaEs"],
-      },
-      temperature: 0.4,
-      // Una traducción y una frase: con esto sobra, y nadie puede pedirle textos largos gratis.
-      maxOutputTokens: 600,
-    },
-  });
+  what they are saying before they say it.`;
 
-  const d = JSON.parse(r.text ?? "{}");
+  let r: Awaited<ReturnType<typeof ai.models.generateContent>>;
+  try {
+    r = await ai.models.generateContent({
+      model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
+      contents: [{ role: "user", parts: [{ text: texto }] }],
+      config: {
+        systemInstruction: instruccion,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            traduccion: { type: Type.STRING },
+            sugerencia: { type: Type.STRING },
+            sugerenciaEs: { type: Type.STRING },
+          },
+          required: ["traduccion", "sugerencia", "sugerenciaEs"],
+        },
+        temperature: 0.4,
+        // Una traducción y una frase: con esto sobra, y nadie puede pedirle textos largos gratis.
+        maxOutputTokens: 600,
+        abortSignal: AbortSignal.timeout(15_000),
+      },
+    });
+  } catch (e) {
+    console.error("Fallo en la ayuda:", e instanceof Error ? e.message : e);
+    return fallo();
+  }
+
+  let d: { traduccion?: string; sugerencia?: string; sugerenciaEs?: string };
+  try {
+    d = JSON.parse(r.text ?? "");
+  } catch {
+    return fallo();
+  }
 
   /**
    * Esta llamada también cuesta dinero, y hasta ahora no quedaba

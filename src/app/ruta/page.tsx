@@ -10,7 +10,7 @@ import { RutaProvisional } from "@/components/ruta/RutaProvisional";
 import { salonDe } from "@/lib/competencia";
 import { sql } from "@/lib/db";
 import { estadoRutaDe, minutosDeHoy } from "@/lib/ruta/avance";
-import { fraseDelDia } from "@/lib/ruta/frases";
+import { expresionDelDia } from "@/lib/expresiones";
 import type { EstadoDeRuta } from "@/lib/ruta/estado";
 import { rutaProvisionalDe } from "@/lib/ruta/provisional";
 import { alumnoActual } from "@/lib/sesion";
@@ -40,9 +40,8 @@ export default async function PaginaRuta() {
     // Solo los alumnos de colegio con curso; los particulares no tienen salón.
     alumno.institucionId ? salonDe(alumno.id) : null,
   ]);
-  // La frase del día sale de las paradas a las que ya llegó.
-  const enCurso = estado ? Math.max(0, estado.paradas.findIndex((p) => p.clave === estado.siguiente?.parada)) : 0;
-  const frase = estado ? fraseDelDia(alumno.nivel, enCurso, hoy) : null;
+  // La frase del día: una expresión de los nativos de su nivel (src/lib/expresiones.ts).
+  const frase = expresionDelDia(alumno.nivel, hoy);
   const repaso = estado ? await repasoDeHoy(alumno.id, alumno.nivel, false) : null;
 
   return (
@@ -65,6 +64,7 @@ export default async function PaginaRuta() {
           racha={alumno.rachaDias}
           minutosHoy={minutosHoy}
           metaMin={alumno.metaDiariaMin}
+          frase={frase}
           salon={salon}
         />
       )}

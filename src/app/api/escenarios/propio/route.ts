@@ -3,6 +3,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { limitar } from "@/lib/limite";
+import { soloIngles } from "@/lib/ruta/escena";
 import { alumnoActual } from "@/lib/sesion";
 
 export const maxDuration = 30;
@@ -23,7 +24,7 @@ const NIVEL_EN: Record<string, string> = {
 
 /**
  * "Crea tu propio escenario" (pantalla 5): Allison arma la escena a la
- * medida del alumno, a su nivel, con su papel y 3 tareas, y queda en
+ * medida del alumno, a su nivel, con su papel y 6 tareas, y queda en
  * "Míos". Usa una intervención; si la IA falla o el pedido no sirve para
  * una escena (algo que no es para el colegio), se devuelve.
  */
@@ -68,9 +69,11 @@ they want to do. Build a short role-play scene from it.
   ("La vendedora de boletas").
 - "contexto": in Spanish, one short sentence that sets the scene for the
   student ("Llegas a la taquilla y quieres dos boletas.").
-- "tareas": exactly 3 tasks for the student, in Spanish, in the order they
-  happen, each one short and starting with a verb ("Pide dos boletas.").
-  The last one usually closes the scene (pay, say thanks, say goodbye).
+- "tareas": exactly 6 tasks for the student, in Spanish, in the order they
+  happen: small steps, each one something the student SAYS, short and
+  starting with a verb ("Saluda y pide dos boletas.", "Di para qué día
+  las quieres.", "Pregunta cuánto cuestan."). The last one usually
+  closes the scene (pay, say thanks, say goodbye).
 - "apertura": Allison's first line IN CHARACTER, in natural US English
   only (no Spanish), at the student's level, max 15 words, ending with a
   question that invites the first task. No stage directions.
@@ -91,7 +94,8 @@ Always US English (soccer, apartment, check, "I have").`,
           required: ["sirve", "titulo", "lugar", "papel", "contexto", "tareas", "apertura"],
         },
         temperature: 0.5,
-        maxOutputTokens: 800,
+        maxOutputTokens: 900,
+        abortSignal: AbortSignal.timeout(20_000),
       },
     });
     tokens = { entrada: r.usageMetadata?.promptTokenCount ?? 0, salida: r.usageMetadata?.candidatesTokenCount ?? 0 };
@@ -103,16 +107,20 @@ Always US English (soccer, apartment, check, "I have").`,
   }
 
   const texto = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
-  const tareas = Array.isArray(d.tareas) ? d.tareas.map((t) => texto(t, 120)).filter(Boolean).slice(0, 3) : [];
+  // 6 tareas para una escena de 10 turnos como mínimo (con 3, Allison
+  // rellenaba con preguntas fuera del nivel). De 5 a 7 también sirve: la
+  // última suele ser la despedida y no se corta.
+  const tareas = Array.isArray(d.tareas) ? d.tareas.map((t) => texto(t, 120)).filter(Boolean).slice(0, 7) : [];
   const escena = {
     titulo: texto(d.titulo, 80),
     lugar: texto(d.lugar, 40),
     papel: texto(d.papel, 80),
     contexto: texto(d.contexto, 200),
-    // Solo inglés en la línea de Allison: sin acotaciones entre paréntesis.
-    apertura: texto(d.apertura, 200).replace(/\([^)]*\)/g, "").trim(),
+    // Solo inglés en la línea de Allison: sin acotaciones entre paréntesis
+    // ni oraciones en español (la leería la voz en inglés).
+    apertura: soloIngles(texto(d.apertura, 200).replace(/\([^)]*\)/g, "")),
   };
-  const completa = d.sirve === true && tareas.length === 3 && Object.values(escena).every(Boolean);
+  const completa = d.sirve === true && tareas.length >= 5 && Object.values(escena).every(Boolean);
   if (!completa) {
     await devolver();
     return NextResponse.json(

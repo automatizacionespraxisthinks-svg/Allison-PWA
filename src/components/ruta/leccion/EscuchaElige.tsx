@@ -90,7 +90,12 @@ export function EscuchaElige({
           {!b1 && (
             <button
               type="button"
-              onClick={() => setVerFrase(true)}
+              onClick={() => {
+                // Con la frase (y su traducción) a la vista ya no es acertar
+                // solo de oído: cuenta como ayuda, como las letras en ¿Qué es esto?
+                primerIntento.current = false;
+                setVerFrase(true);
+              }}
               className="rounded-full border border-borde px-3.5 py-2 text-[13px] font-extrabold"
             >
               Ver la frase
@@ -100,11 +105,16 @@ export function EscuchaElige({
       )}
       {/* La frase con su traducción, para aprenderla (en A2, la traducción a un toque). */}
       {verFrase && !acierto && (
-        <div className="flex flex-col items-center gap-1 text-center">
-          <p className="text-xl font-black">{frase}</p>
-          {verTraduccion && a.traduccion.length > 0 && (
-            <p className="text-[15px] font-bold text-texto-suave">{a.traduccion.join(" ")}</p>
-          )}
+        <div className="flex flex-col items-center gap-2 text-center">
+          {/* Un diálogo va línea por línea, cada una con su traducción. */}
+          {a.audio.map((linea, i) => (
+            <div key={i} className="flex flex-col gap-0.5">
+              <p className={`font-black text-balance ${a.audio.length > 1 ? "text-lg" : "text-xl"}`}>{linea}</p>
+              {verTraduccion && a.traduccion[i] && (
+                <p className="text-[15px] font-bold text-balance text-texto-suave">{a.traduccion[i]}</p>
+              )}
+            </div>
+          ))}
           {!verTraduccion && a.traduccion.length > 0 && (
             <button type="button" onClick={() => setVerTraduccion(true)} className="text-[13px] font-extrabold text-primario underline">
               Ver la traducción
@@ -149,7 +159,7 @@ export function EscuchaElige({
                   (con zona, cada tarjeta ya muestra ampliada a su persona). La
                   etiqueta sí se muestra siempre: no la delata. */}
               {o.etiqueta ? (
-                <span className="text-[13px]">{o.etiqueta}</span>
+                <span className="text-[13px] leading-tight text-balance">{o.etiqueta}</span>
               ) : (
                 sinDistinguir(o) && <span className="line-clamp-2">{o.descripcion}</span>
               )}

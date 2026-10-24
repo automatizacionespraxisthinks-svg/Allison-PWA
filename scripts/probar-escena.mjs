@@ -22,6 +22,7 @@ const { escenarioDeViaje, reglasDeViaje } = await import("../src/lib/ruta/viaje.
 const { CATALOGO } = await import("../src/lib/escenarios/datos.ts");
 const MEXICO = VIAJES.find((v) => v.numero === 1);
 const LIBRERIA = CATALOGO.find((c) => c.clave === "cat:libreria").escenario;
+const AEROPUERTO = CATALOGO.find((c) => c.clave === "cat:aeropuerto").escenario;
 
 const reps = Number(process.argv[2] ?? 2);
 const ver = process.env.VER === "1";
@@ -54,9 +55,12 @@ const GUIONES = [
     PARADA_01.escenario,
     [
       ["Good morning!", [[1]]],
-      ["My name is Diego.", [[2]]],
-      ["I from Colombia.", [[3]], { error: true }],
-      ["Thank you. Goodbye!", [[4]]],
+      ["I'm fine, thanks. And you?", [[2]]],
+      ["My name is Diego.", [[3]]],
+      ["I'm 15.", [[4]]],
+      ["I from Colombia.", [[5]], { error: true, sinEco: true }],
+      ["And you? Where are you from?", [[6]]],
+      ["Thank you. Goodbye!", [[7]]],
     ],
   ],
   [
@@ -65,7 +69,7 @@ const GUIONES = [
     [
       ["Hello!", [[1]]],
       ["Me llamo Diego", [[]], { espanol: true }],
-      ["I am Diego.", [[2]]],
+      ["I am Diego.", [[3]]],
     ],
   ],
   [
@@ -73,7 +77,19 @@ const GUIONES = [
     PARADA_01.escenario,
     [
       ["Good morning.", [[1]]],
-      ["I am fine.", [[]]],
+      ["I like pizza.", [[]]],
+    ],
+  ],
+  [
+    // Las capturas de producción (octubre de 2026): la tarea doble contaba
+    // a medias, Allison decía "I'm from Colombia" y la idea no le respondía.
+    "Escenarios · aeropuerto",
+    AEROPUERTO,
+    [
+      ["Good morning! My name is Diego.", [[1]], { idea: true }],
+      ["I from Colombia.", [[2]], { error: true, sinEco: true, idea: true }],
+      ["Yes, it is.", [[]], { idea: true }],
+      ["I'm here on vacation.", [[3]], { idea: true }],
     ],
   ],
   [
@@ -113,7 +129,8 @@ const GUIONES = [
     LIBRERIA,
     [
       ["Hi! I'd like a book in English, please.", [[1]], { sinPrecio: true }],
-      ["How much is it?", [[2]]],
+      ["I like books about animals.", [[2]], { sinPrecio: true }],
+      ["How much is it?", [[3]]],
     ],
   ],
 ];
@@ -152,6 +169,13 @@ for (let rep = 0; rep < reps; rep++) {
       revisarRespuesta(`"${dice}"`, r, { espanol: op.espanol, maxPalabras: op.maxPalabras });
       // Allison no hace la tarea del alumno: si le toca preguntar el precio, ella no lo dice antes.
       if (op.sinPrecio) revisar(`"${dice}" · no adelanta el precio`, !/\$|\bdollars?\b|\bcents?\b/i.test(r.respuesta), r.respuesta);
+      // Allison no dice como suya la frase del alumno ("I'm from Colombia.").
+      if (op.sinEco) revisar(`"${dice}" · no la dice como suya`, !/\bI('m| am) from Colombia\b/i.test(r.respuesta), r.respuesta);
+      // La idea le responde a la línea de Allison, en inglés y corta.
+      if (op.idea) {
+        const idea = r.idea?.en ?? "";
+        revisar(`"${dice}" · trae idea`, !!idea && !separarIdiomas(idea).espanol.trim() && idea.split(/\s+/).length <= 14, `${idea} | ${r.respuesta}`);
+      }
       // Anotar el error es lo mejor que se puede: el resumen lo muestra si
       // lo hay. Que falte no es un fallo, solo un aviso.
       if (op.error) {
@@ -159,7 +183,7 @@ for (let rep = 0; rep < reps; rep++) {
         avisos.esperados++;
       }
       else if (!op.espanol) revisar(`"${dice}" · sin error inventado`, !r.error, JSON.stringify(r.error));
-      if (ver) console.log(`     Allison: ${r.respuesta}`);
+      if (ver) console.log(`     Allison: ${r.respuesta}${r.idea ? `   (idea: ${r.idea.en} · tarea ${r.idea.tarea})` : ""}`);
       historial.push({ rol: "alumno", texto: dice }, { rol: "allison", texto: r.respuesta });
       cumplidas = [...new Set([...cumplidas, ...r.tareas])];
     }

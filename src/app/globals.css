@@ -286,6 +286,29 @@ body {
 }
 .respira { animation: respira 4s ease-in-out infinite; }
 
+/* Mientras Allison habla, la foto se mueve como alguien que conversa:
+   un vaivén lento de la cabeza (la foto entera) y, por dentro, un pulso
+   corto e irregular con el ritmo de las sílabas. Sin boca que se mueva:
+   la foto bien presentada se ve mejor que mal animada (AvatarAllison).
+   Con "reducir movimiento" se queda quieta (la regla de arriba). */
+@keyframes habla-vaiven {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  20%      { transform: translateY(-2%) rotate(-1.6deg); }
+  45%      { transform: translateY(0.6%) rotate(1.1deg); }
+  70%      { transform: translateY(-1.2%) rotate(1.8deg); }
+  85%      { transform: translateY(0.3%) rotate(-0.5deg); }
+}
+@keyframes habla-ritmo {
+  0%, 100% { transform: scale(1); }
+  18%      { transform: scale(1.045); }
+  32%      { transform: scale(1.012); }
+  55%      { transform: scale(1.038); }
+  74%      { transform: scale(1.006); }
+  88%      { transform: scale(1.03); }
+}
+.habla-vaiven { animation: habla-vaiven 2.8s ease-in-out infinite; }
+.habla-ritmo { animation: habla-ritmo 1.1s ease-in-out infinite; }
+
 /* La flecha de ¿Qué es esto? sobre la foto: baja despacio hacia lo que señala. */
 @keyframes flecha-foto {
   0%, 100% { transform: translateY(-12%); }

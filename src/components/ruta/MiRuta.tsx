@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { Expresion } from "@/lib/expresiones";
 import type { EstadoDeRuta, LeccionEnMapa, ParadaEnMapa } from "@/lib/ruta/estado";
 import { NOMBRE_CORTO } from "@/lib/ruta/nombres";
 import { NIVELES } from "@/lib/tipos";
@@ -52,7 +53,7 @@ export function MiRuta({
   minutosHoy: number;
   metaMin: number;
   /** La frase del día, en el globo de Allison. */
-  frase?: { en: string; es: string } | null;
+  frase?: Expresion | null;
   /** Hay un repaso sorpresa para hoy (empezado o por empezar). */
   repaso?: { empezado: boolean } | null;
   /** La competencia por salón, si su salón compite. */

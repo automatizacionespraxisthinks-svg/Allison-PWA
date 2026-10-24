@@ -94,10 +94,10 @@ export interface EscuchaElige extends ActividadBase {
   /**
    * Tres opciones. Si son personas de una misma foto, la misma imagen con
    * su zona. Si la app las dibuja (tarjetas con una hora, un mapa), no
-   * llevan imagen sino `texto`. `etiqueta` es una palabra en español que
-   * se ve debajo del dibujo cuando el dibujo solo no basta ("Mañana",
-   * "Noche"): no delata la respuesta, porque para elegir igual hay que
-   * entender la frase. Va en las tres opciones o en ninguna.
+   * llevan imagen sino `texto`. `etiqueta` (A1 y A2) es una palabra en
+   * español que se ve debajo del dibujo y nombra lo que muestra
+   * ("Mañana", "Noche"): no delata la respuesta, porque para elegir igual
+   * hay que entender la frase. Va en las tres opciones o en ninguna.
    */
   opciones: { imagen?: Ilustracion; texto?: string; descripcion: string; zona?: Zona; etiqueta?: string }[];
   /** Índice de la opción correcta. */
@@ -116,9 +116,10 @@ export interface QueEsEsto extends ActividadBase {
   /** Lo que se le pregunta o se le deja a medias ("What is this?", "This is my…"). */
   pregunta: string;
   /**
-   * La situación en español, debajo de la pregunta, cuando el dibujo solo
-   * no dice qué se espera ("Son las 7 de la mañana y ves a tu vecino.
-   * ¿Qué le dices?"). Allison no la dice: solo hace la pregunta en inglés.
+   * La situación en español, debajo de la pregunta (A1 y A2): dice qué se
+   * pide sin traducir la respuesta ("Son las 7 de la mañana y ves a tu
+   * vecino. ¿Qué le dices?"). Allison no la dice: solo hace la pregunta
+   * en inglés.
    */
   contexto?: string;
   /** La respuesta esperada ("mom"). Las rayas en pantalla salen de aquí. */
@@ -424,6 +425,8 @@ export interface Escenario {
   resumen: string;
   /** Lo que gana y lo que se abre al terminar (estrellas, estampilla, siguiente parada). */
   recompensa: string;
+  /** Lo que se cambió del documento aprobado y revisa la docente (listar-por-revisar.mjs). */
+  porRevisar?: string[];
   /**
    * Qué hace Allison si se atasca: la tabla de las paradas. En los repasos
    * el documento lo escribe como un párrafo: va en `siSeAtascaTexto`.

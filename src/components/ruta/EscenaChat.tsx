@@ -5,14 +5,15 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Transcripcion } from "@/components/Transcripcion";
 import { sonar } from "@/lib/sonidos";
-import type { Mensaje, Nivel } from "@/lib/tipos";
+import { desdeB1, type Mensaje, type Nivel } from "@/lib/tipos";
 import { Estampilla, type LugarSello } from "./Estampilla";
 import { Estrellas, Icono, type NombreIcono } from "./Iconos";
 import { ayudaEscena, iniciarEscena, terminarEscena, turnoEscena, type FinEscena } from "./escenaApi";
+import { MisionCompacta } from "./Escenario";
 import { AllisonAro, BotonOir, Grabador, useVoz, type Entrada } from "./leccion/comun";
 import { Practicarla } from "./Practicarla";
 
-/** Los colores de las 3 tareas (pantalla 3: íconos de color). */
+/** Los colores de las tareas, en ciclo (pantalla 3: íconos de color). */
 const COLORES_TAREA = ["#ff8a3d", "#ec4899", "#12b5a5"];
 
 /** El ícono de una tarea por lo que pide: comida, pregunta, comparar o hablar. */
@@ -64,7 +65,7 @@ type Fase = "antes" | "charla" | "resumen";
  * hablando; al terminar, Allison da el resumen (y la estampilla).
  */
 export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel; nombre: string } }) {
-  const { decir } = useVoz(ctx.nivel);
+  const { decir, hablando } = useVoz(ctx.nivel);
   const [fase, setFase] = useState<Fase>("antes");
   const [conversacion, setConversacion] = useState<string | null>(null);
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
@@ -79,6 +80,8 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
   const [fin, setFin] = useState<FinEscena | null>(null);
   const terminando = useRef(false);
   const pidiendo = useRef(false);
+  /** Cuántos turnos lleva: una idea que llega después de otro turno ya no sirve. */
+  const turnos = useRef(0);
   const abajo = useRef<HTMLDivElement>(null);
   const contador = useRef(0);
 
@@ -138,6 +141,7 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
 
   async function responder(entrada: Entrada) {
     if (!conversacion) return;
+    turnos.current += 1;
     setMensaje(null);
     setIdea(null);
     setOcupado(true);
@@ -169,12 +173,15 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
     if (idea) return setIdea(null);
     pidiendo.current = true;
     setMensaje(null);
+    // Si mientras llega la idea el alumno ya respondió, la idea es de la
+    // línea anterior de Allison: no se muestra.
+    const mio = turnos.current;
     try {
       const r = await ayudaEscena(conversacion);
       if (!r) return setMensaje("No pudimos traer la idea. Intenta otra vez.");
       setAyudas((n) => n + 1);
       let frase = r.frase;
-      let es = "";
+      let es = r.es ?? "";
       if (!frase) {
         const ultima = [...mensajes].reverse().find((m) => m.rol === "allison")?.texto ?? "";
         const a = await fetch("/api/ayuda", {
@@ -188,8 +195,10 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
         frase = a?.sugerencia ?? "";
         es = a?.sugerenciaEs ?? "";
       }
+      if (mio !== turnos.current) return;
       if (!frase) return setMensaje("No pudimos traer la idea. Intenta otra vez.");
-      setIdea({ frase, es, tarea: r.explicacion });
+      // Desde B1 la escena no muestra español (Contenido B1), como en Escenario.
+      setIdea({ frase, es: desdeB1(ctx.nivel) ? "" : es, tarea: r.explicacion });
       void decir(frase);
     } finally {
       pidiendo.current = false;
@@ -223,7 +232,7 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
         <div className="flex flex-col gap-3 lg:sticky lg:top-4">
           <Portada d={d} />
           <div className="relative z-[1] -mt-8 mx-1 flex items-center gap-3 rounded-2xl bg-primario-suave px-3 py-2.5 shadow-sm">
-            <AllisonAro tam={52} aro={meta ? "bien" : "pregunta"} />
+            <AllisonAro tam={52} aro={meta ? "bien" : "pregunta"} hablando={hablando} />
             <span className="min-w-0 leading-tight">
               <small className="text-[11px] font-extrabold tracking-[0.06em] text-primario uppercase">{d.guia.rotulo}</small>
               <b className="block text-[17px] font-black">Allison</b>
@@ -238,7 +247,7 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
           {fase === "antes" ? (
             <div className="flex flex-col gap-2 rounded-3xl border border-borde p-4 text-sm font-semibold text-texto-suave">
               <b className="text-base font-black text-texto">Cómo funciona</b>
-              <span>Allison te habla en inglés y tú le respondes con tu voz o escribiendo. Cumple las 3 tareas de tu misión.</span>
+              <span>Allison te habla en inglés y tú le respondes con tu voz o escribiendo. Cumple las {d.tareas.length} tareas de tu misión.</span>
               <span>
                 Meta: {d.minimo} intervenciones · <span className="font-extrabold text-oro">usa intervenciones</span>
               </span>
@@ -275,7 +284,12 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
               <b className="font-black">
                 {todas ? "¡Meta cumplida!" : `Ya llevas ${d.minimo} intervenciones.`} Puedes terminar o seguir hablando.
               </b>
-              <button type="button" onClick={() => void cerrar()} className="rounded-xl bg-menta px-4 py-2.5 font-extrabold text-superficie">
+              <button
+                type="button"
+                onClick={() => void cerrar()}
+                disabled={ocupado}
+                className="rounded-xl bg-menta px-4 py-2.5 font-extrabold text-superficie disabled:opacity-50"
+              >
                 Terminar y ver mi resumen
               </button>
             </div>
@@ -309,7 +323,12 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
               <Grabador onEntrada={responder} ocupado={ocupado} deshabilitado={sinSaldo} ayuda="Toca y respóndele" izquierda={botonIdea} />
             )}
             {fase === "charla" && !meta && intervenciones > 0 && (
-              <button type="button" onClick={() => void cerrar()} className="self-center text-[12.5px] font-bold text-texto-suave underline">
+              <button
+                type="button"
+                onClick={() => void cerrar()}
+                disabled={ocupado}
+                className="self-center text-[12.5px] font-bold text-texto-suave underline disabled:opacity-40"
+              >
                 Terminar ahora
               </button>
             )}
@@ -356,7 +375,7 @@ function Portada({ d }: { d: DatosEscenaChat }) {
   );
 }
 
-/** "Tu misión en Río": las 3 tareas como calcomanías, la tarea actual y la meta. */
+/** "Tu misión en Río": las tareas como calcomanías, la tarea actual y la meta. */
 function Mision({ d, cumplidas, intervenciones }: { d: DatosEscenaChat; cumplidas: number[]; intervenciones: number }) {
   const actual = d.tareas.findIndex((_, i) => !cumplidas.includes(i + 1));
   return (
@@ -367,34 +386,40 @@ function Mision({ d, cumplidas, intervenciones }: { d: DatosEscenaChat; cumplida
           {actual < 0 ? "¡Misión cumplida!" : `Tarea ${actual + 1} de ${d.tareas.length}`}
         </span>
       </div>
-      <ol className="grid gap-1" style={{ gridTemplateColumns: `repeat(${d.tareas.length}, minmax(0, 1fr))` }}>
-        {d.tareas.map((t, i) => {
-          const ok = cumplidas.includes(i + 1);
-          const on = i === actual;
-          const color = COLORES_TAREA[i % COLORES_TAREA.length];
-          return (
-            <li key={i} className="relative flex flex-col items-center gap-1 text-center">
-              {i > 0 && <span aria-hidden className="absolute top-6 right-1/2 w-full border-t-2 border-dashed border-borde" />}
-              <span
-                className={`relative grid size-12 place-items-center rounded-2xl border-2 ${on ? "shadow-[0_0_0_4px_var(--primario-suave)]" : ""}`}
-                style={
-                  ok || on
-                    ? { borderColor: color, background: `color-mix(in srgb, ${color} 18%, var(--superficie))`, color }
-                    : { borderColor: "var(--borde)", background: "var(--superficie-2)", color: "var(--texto-suave)" }
-                }
-              >
-                <Icono nombre={iconoDeTarea(t)} className="size-6" />
-                {ok && (
-                  <span className="absolute -right-1.5 -bottom-1.5 grid size-5 place-items-center rounded-full border-2 border-superficie bg-[#1fae7a] text-white">
-                    <Icono nombre="check" className="size-3 stroke-[3.4]" />
-                  </span>
-                )}
-              </span>
-              <span className={`text-[12px] leading-tight font-extrabold ${on ? "text-primario" : ok ? "text-texto" : "text-texto-suave"}`}>{t}</span>
-            </li>
-          );
-        })}
-      </ol>
+      {/* Con más de 4 tareas (el catálogo, los propios), los íconos con su
+          texto no caben en el teléfono: van números y la tarea de ahora. */}
+      {d.tareas.length > 4 ? (
+        <MisionCompacta tareas={d.tareas} cumplidas={cumplidas} actual={actual} />
+      ) : (
+        <ol className="grid gap-1" style={{ gridTemplateColumns: `repeat(${d.tareas.length}, minmax(0, 1fr))` }}>
+          {d.tareas.map((t, i) => {
+            const ok = cumplidas.includes(i + 1);
+            const on = i === actual;
+            const color = COLORES_TAREA[i % COLORES_TAREA.length];
+            return (
+              <li key={i} className="relative flex flex-col items-center gap-1 text-center">
+                {i > 0 && <span aria-hidden className="absolute top-6 right-1/2 w-full border-t-2 border-dashed border-borde" />}
+                <span
+                  className={`relative grid size-12 place-items-center rounded-2xl border-2 ${on ? "shadow-[0_0_0_4px_var(--primario-suave)]" : ""}`}
+                  style={
+                    ok || on
+                      ? { borderColor: color, background: `color-mix(in srgb, ${color} 18%, var(--superficie))`, color }
+                      : { borderColor: "var(--borde)", background: "var(--superficie-2)", color: "var(--texto-suave)" }
+                  }
+                >
+                  <Icono nombre={iconoDeTarea(t)} className="size-6" />
+                  {ok && (
+                    <span className="absolute -right-1.5 -bottom-1.5 grid size-5 place-items-center rounded-full border-2 border-superficie bg-[#1fae7a] text-white">
+                      <Icono nombre="check" className="size-3 stroke-[3.4]" />
+                    </span>
+                  )}
+                </span>
+                <span className={`text-[12px] leading-tight font-extrabold ${on ? "text-primario" : ok ? "text-texto" : "text-texto-suave"}`}>{t}</span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
       <div className="flex items-center gap-2.5">
         <div className="h-2 flex-1 rounded-full bg-superficie-2">
           <div className="h-full rounded-full bg-oro transition-all" style={{ width: `${Math.min(100, (intervenciones / d.minimo) * 100)}%` }} />

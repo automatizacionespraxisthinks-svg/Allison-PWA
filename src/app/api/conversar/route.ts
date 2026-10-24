@@ -212,7 +212,7 @@ export async function POST(peticion: Request) {
             error: "sin_audio",
             mensaje: "No te escuchamos. Revisa el micrófono e intenta otra vez.",
           });
-          control.close();
+          // El "finally" cierra el flujo: cerrarlo dos veces lanza un error.
           return;
         }
 

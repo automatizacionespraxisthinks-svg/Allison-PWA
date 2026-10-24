@@ -104,7 +104,7 @@ export function PrimeraSesion({
             height={64}
             className={`size-16 rounded-full object-cover outline-[3px] outline-offset-2 outline ${
               volumen !== null ? "outline-menta" : "outline-primario"
-            } ${hablando ? "" : "respira"}`}
+            } ${hablando ? "habla-ritmo" : "respira"}`}
             style={volumen !== null ? { boxShadow: `0 0 0 ${4 + volumen * 14}px var(--menta-suave)` } : undefined}
           />
         </button>

@@ -49,6 +49,9 @@ const casos = [
   [["11", "1"], "Do you like reggaeton?", "Hi Diego!"],
   [["11"], "Are you a real person?", "Hi Diego! How are you today?"],
   [["7"], "Ayer fui al parque con mi hermana", "What did you do yesterday?"],
+  // Producción, octubre de 2026: una pregunta en español a Allison recibía "No te oí" (caso 6).
+  [["7"], "Hola Allison, ¿qué más puedes hacer?", "Good morning, Diego!"],
+  [["7"], "te estoy preguntando que qué más puedes hacer", "Sorry. I didn't hear you. Can you say it again?"],
 ];
 
 const REQUIERE_ES = new Set(["2", "3", "4", "5", "6", "7", "8", "9", "10"]);

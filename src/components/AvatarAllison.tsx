@@ -15,8 +15,11 @@ import type { EstadoConversacion } from "@/lib/tipos";
  * con cuatro estados y sin mover la boca. En reposo respira muy suave;
  * escuchando, el borde se pone verde y un anillo verde crece y baja con
  * el volumen real del micrófono del alumno; pensando, tres puntos;
- * hablando, el borde azul y el halo que late. Con "reducir movimiento",
- * todo se queda quieto (globals.css y la consulta de abajo).
+ * hablando, el borde azul, el halo que late y la foto que se mueve como
+ * alguien que conversa (un vaivén de la cabeza y un pulso con el ritmo de
+ * las sílabas, sin mover la boca; pedido del 24 de octubre de 2026). Con
+ * "reducir movimiento", todo se queda quieto (globals.css y la consulta
+ * de abajo).
  *
  * Los tres videos cortos quedan para una segunda etapa: se reemplaza la
  * <Image> por un <video> que cambia de fuente según el estado.
@@ -64,18 +67,20 @@ export function AvatarAllison({
       <div
         className={`relative overflow-hidden rounded-full bg-primario-suave transition-all duration-300 ${
           compacto ? "size-14 border-2" : "size-40 border-4 sm:size-52"
-        } ${hablando ? "border-primario" : escuchando ? "border-menta" : "border-borde"} ${
+        } ${hablando ? "border-primario habla-vaiven" : escuchando ? "border-menta" : "border-borde"} ${
           estado === "inactivo" ? "respira" : ""
         }`}
       >
-        <Image
-          src="/allison.png"
-          alt="Allison, tu profesora de inglés"
-          fill
-          sizes="(max-width: 640px) 160px, 208px"
-          className="object-cover"
-          priority
-        />
+        <span className={`absolute inset-0 ${hablando ? "habla-ritmo" : ""}`}>
+          <Image
+            src="/allison.png"
+            alt="Allison, tu profesora de inglés"
+            fill
+            sizes="(max-width: 640px) 160px, 208px"
+            className="object-cover"
+            priority
+          />
+        </span>
       </div>
 
       {/* Tres puntos mientras piensa */}

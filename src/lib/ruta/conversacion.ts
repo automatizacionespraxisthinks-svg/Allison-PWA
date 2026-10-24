@@ -82,10 +82,18 @@ export interface EstadoEscena {
   ensenale?: { actual: number; intentos: number };
   /** Errores anotados en silencio, para el resumen y el repaso sorpresa. */
   errores?: { dijo: string; mejor: string }[];
+  /**
+   * Escenario: las tareas con que empezó (unidas). Si el contenido cambia a
+   * mitad de una escena (un despliegue), las cumplidas apuntarían a otras
+   * tareas: la escena se da por desactualizada y se empieza de nuevo.
+   */
+  tareasClave?: string;
+  /** Escenario: qué responderle a la última línea de Allison (la ayuda la muestra). */
+  idea?: { en: string; es: string; tarea: number } | null;
   terminada?: boolean;
 }
 
-export type ErrorEscena = "no_existe" | "bloqueada" | "salto_hoy" | "terminada";
+export type ErrorEscena = "no_existe" | "bloqueada" | "salto_hoy" | "terminada" | "ocupada" | "desactualizada";
 
 interface Ubicacion {
   nivel: Nivel;
@@ -237,6 +245,7 @@ export async function iniciarEscena(
         : { errores: [] }),
     ...(pedido.actividad === "viaje" ? { viaje: pedido.viaje, nivel } : {}),
     ...(pedido.actividad === "catalogo" ? { clave: pedido.clave, nivel } : {}),
+    ...(u.escenario ? { tareasClave: claveDeTareas(u.escenario) } : {}),
     cumplidas: [],
     intervenciones: 0,
     ayudas: 0,
@@ -275,8 +284,10 @@ export async function iniciarEscena(
 
 /** El estado que ve el navegador: sin decir en qué piensa Allison en Adivina. */
 function estadoPublico(e: EstadoEscena): EstadoEscena {
-  if (!e.adivina) return e;
-  return { ...e, adivina: { ...e.adivina, rondas: e.adivina.rondas.map(() => "") } };
+  // La idea se ve solo al pedir la ayuda, que apaga una estrella.
+  const publico = { ...e, idea: undefined };
+  if (!e.adivina) return publico;
+  return { ...publico, adivina: { ...e.adivina, rondas: e.adivina.rondas.map(() => "") } };
 }
 
 async function leerEscena(userId: string, conversacionId: string) {
@@ -307,16 +318,60 @@ function claveDeIntento(e: EstadoEscena): string {
   return e.parada;
 }
 
-async function guardarEstado(conversacionId: string, estado: EstadoEscena) {
-  await sql`
-    update conversaciones set ruta = ${sql.json(estado as never)}, ultima_actividad_en = now()
+/** Las tareas de un escenario, unidas: la huella con que empezó la escena. */
+function claveDeTareas(e: { tareas: string[] }): string {
+  return e.tareas.join("|");
+}
+
+/** La escena empezó con otras tareas (cambió el contenido a mitad de camino). */
+function desactualizada(estado: EstadoEscena, u: { escenario?: { tareas: string[] } }): boolean {
+  return !!u.escenario && !!estado.tareasClave && estado.tareasClave !== claveDeTareas(u.escenario);
+}
+
+/**
+ * Guarda el turno solo si nadie tocó la escena mientras la IA respondía:
+ * el mismo número de intervenciones y sin cerrar. Las ayudas pedidas en
+ * ese rato se conservan (la mayor de las dos). Devuelve false si chocó.
+ */
+async function guardarTurno(conversacionId: string, estado: EstadoEscena, intervencionesAntes: number): Promise<boolean> {
+  const filas = await sql`
+    update conversaciones
+       set ruta = jsonb_set(${sql.json(estado as never)}::jsonb, '{ayudas}',
+                            to_jsonb(greatest(${estado.ayudas}::int, coalesce((ruta->>'ayudas')::int, 0)))),
+           ultima_actividad_en = now()
      where id = ${conversacionId}
+       and coalesce((ruta->>'intervenciones')::int, 0) = ${intervencionesAntes}
+       and not coalesce((ruta->>'terminada')::boolean, false)
+    returning (ruta->>'ayudas')::int as ayudas
   `;
+  if (!filas.length) return false;
+  estado.ayudas = filas[0].ayudas;
   await sql`
     update escenas_intentos
        set intervenciones = ${estado.intervenciones}, terminada = ${!!estado.terminada}, actualizado_en = now()
      where conversacion_id = ${conversacionId}
   `.catch((e) => console.error("No se pudo anotar el intento:", e instanceof Error ? e.message : e));
+  return true;
+}
+
+/**
+ * Cierra la escena una sola vez: si dos "Terminar" llegan juntos (doble
+ * toque), solo el primero anota estrellas, sellos y viajes. Solo marca
+ * "terminada", sin pisar lo que haya guardado un turno.
+ */
+async function cerrarEscena(conversacionId: string, estado: EstadoEscena): Promise<boolean> {
+  const filas = await sql`
+    update conversaciones
+       set ruta = jsonb_set(ruta, '{terminada}', 'true'::jsonb), ultima_actividad_en = now()
+     where id = ${conversacionId} and not coalesce((ruta->>'terminada')::boolean, false)
+    returning id
+  `;
+  if (!filas.length) return false;
+  estado.terminada = true;
+  await sql`
+    update escenas_intentos set terminada = true, actualizado_en = now() where conversacion_id = ${conversacionId}
+  `.catch((e) => console.error("No se pudo anotar el intento:", e instanceof Error ? e.message : e));
+  return true;
 }
 
 export interface ResultadoTurno {
@@ -354,6 +409,8 @@ export async function turnoDeEscena(
   if (estado.terminada) return { ok: false, error: "terminada" };
   const u = await ubicar(userId, estado, leida.nivel);
   if (!u) return { ok: false, error: "no_existe" };
+  if (desactualizada(estado, u)) return { ok: false, error: "desactualizada" };
+  const intervencionesAntes = estado.intervenciones;
 
   const total = u.escenario
     ? u.escenario.tareas.length
@@ -406,6 +463,7 @@ export async function turnoDeEscena(
       tokensSalida: t.tokensSalida,
     };
     if (t.error) estado.errores = [...(estado.errores ?? []), t.error].slice(-5);
+    estado.idea = t.idea ?? null;
   } else if (u.adivina) {
     const juego = estado.adivina;
     if (!juego || juego.ronda >= juego.rondas.length) return { ok: false, error: "terminada" };
@@ -531,7 +589,7 @@ export async function turnoDeEscena(
   // No se oyó nada: no cuenta como intento ni para la meta (sí gasta, la
   // IA ya se usó). No se guarda nada.
   if (!r.transcripcion) {
-    return { ok: true, r: { ...r, sinVoz: true, nuevas: [], respuesta: REPETIR, respuestaVoz: REPETIR } };
+    return { ok: true, r: { ...r, estado: estadoPublico(estado), sinVoz: true, nuevas: [], respuesta: REPETIR, respuestaVoz: REPETIR } };
   }
 
   estado.cumplidas = [...new Set([...estado.cumplidas, ...r.nuevas])].sort((a, b) => a - b);
@@ -547,7 +605,9 @@ export async function turnoDeEscena(
     r.metaCumplida = todasAhora && estado.intervenciones >= u.minimo;
     r.cerrada = estado.intervenciones >= (todasAhora ? topeDuro(u) : u.maximo);
   }
-  await guardarEstado(conversacionId, estado);
+  // Si en el camino se cerró la escena, se pidió una ayuda o llegó otro
+  // turno, no se pisa: el turno no cuenta y la ruta devuelve la intervención.
+  if (!(await guardarTurno(conversacionId, estado, intervencionesAntes))) return { ok: false, error: "ocupada" };
   r.estado = estadoPublico(estado);
 
   await sql`
@@ -562,28 +622,63 @@ export async function turnoDeEscena(
   return { ok: true, r };
 }
 
-/** "Ayuda" en el escenario: apaga una estrella. Devuelve la frase sugerida de la tarea actual. */
+/** Lo que dice la ayuda cuando la idea responde una pregunta de más, no una tarea. */
+const RESPONDE_SU_PREGUNTA = "Responde su pregunta.";
+
+/**
+ * "Ayuda" en el escenario: apaga una estrella. Devuelve qué decir ahora,
+ * de acuerdo con lo último que dijo Allison (la idea que escribió el
+ * modelo con su línea). En el escenario de una parada, cuando Allison
+ * pregunta por la tarea, va la ayuda aprobada del contenido (en A2, solo
+ * el comienzo de la frase); la idea solo cuando hace una pregunta de más.
+ * En el catálogo, los viajes y los escenarios propios, siempre la idea.
+ * Sin idea (el primer turno), la frase de la tarea que sigue.
+ */
 export async function pedirAyuda(
   userId: string,
   conversacionId: string
-): Promise<{ ok: true; tarea: number; frase: string; explicacion: string; estado: EstadoEscena } | { ok: false; error: ErrorEscena }> {
+): Promise<
+  { ok: true; tarea: number; frase: string; es: string; explicacion: string; estado: EstadoEscena } | { ok: false; error: ErrorEscena }
+> {
   const leida = await leerEscena(userId, conversacionId);
   if (!leida) return { ok: false, error: "no_existe" };
   const u = await ubicar(userId, leida.estado, leida.nivel);
   if (!u?.escenario) return { ok: false, error: "no_existe" };
   const estado = leida.estado;
   if (estado.terminada) return { ok: false, error: "terminada" };
+  if (desactualizada(estado, u)) return { ok: false, error: "desactualizada" };
   const tarea = tareasVisibles(u.escenario, estado.cumplidas).find((n) => !estado.cumplidas.includes(n)) ?? u.escenario.tareas.length;
-  estado.ayudas += 1;
-  await guardarEstado(conversacionId, estado);
+  // Solo se suma la ayuda, sin reescribir el resto: un turno que esté en
+  // camino guarda después sus tareas sin borrar esta ayuda.
+  const [fila] = await sql`
+    update conversaciones
+       set ruta = jsonb_set(ruta, '{ayudas}', to_jsonb(coalesce((ruta->>'ayudas')::int, 0) + 1)),
+           ultima_actividad_en = now()
+     where id = ${conversacionId}
+    returning (ruta->>'ayudas')::int as ayudas
+  `;
+  estado.ayudas = fila?.ayudas ?? estado.ayudas + 1;
+  const deParada = !estado.clave && !estado.viaje;
+  const idea = estado.idea;
+  if (idea?.en && (!deParada || idea.tarea === 0)) {
+    return {
+      ok: true,
+      tarea: idea.tarea || tarea,
+      frase: idea.en,
+      es: idea.es,
+      explicacion: idea.tarea ? (u.escenario.tareas[idea.tarea - 1] ?? "") : RESPONDE_SU_PREGUNTA,
+      estado: estadoPublico(estado),
+    };
+  }
   return {
     ok: true,
     tarea,
     // Los viajes y los escenarios propios no tienen diálogo de ejemplo: la
     // frase la sugiere la ayuda de siempre (/api/ayuda) en la pantalla.
     frase: ayudasDe(u.escenario)[tarea - 1] ?? "",
+    es: "",
     explicacion: u.escenario.tareas[tarea - 1] ?? "",
-    estado,
+    estado: estadoPublico(estado),
   };
 }
 
@@ -619,9 +714,7 @@ export async function terminarEscenario(
 
   let sello = false;
   let saltoLogrado: boolean | undefined;
-  if (!estado.terminada) {
-    estado.terminada = true;
-    await guardarEstado(conversacionId, estado);
+  if (!estado.terminada && (await cerrarEscena(conversacionId, estado))) {
 
     if (estado.actividad === "viaje") {
       await sql`

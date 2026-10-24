@@ -15,6 +15,7 @@ import {
 } from "./habla.ts";
 import { CLAVES_TEMA } from "./temas.ts";
 import { bloquePersonaje, FRASE_IA_ES } from "./personaje.ts";
+import { limpiarTranscripcion } from "./transcripcion.ts";
 
 /**
  * El cerebro de Allison.
@@ -171,15 +172,17 @@ function bloqueCasos(nivel: Nivel, estructura?: string): string {
 Every turn is exactly ONE case. Decide it FIRST and write its number in
 "caso". Check in THIS order and stop at the first one that fits:
   6  You cannot understand the speech: noise, mumbling, or words that
-     make no sense together ("ay yo uhay").
+     make no sense together ("ay yo uhay"). If you can write down what
+     they said, in English OR in Spanish, it is NEVER 6.
   9  They say they did not understand you or ask you to repeat ("I not
      understand", "no entiendo", "repeat, please", "más despacio").
   10 They ask you to spell a word or how it sounds ("deletréamela",
      "¿cómo se escribe?", "how do you spell it?", "¿cómo se
      pronuncia?"). If they ask how to say AND how to spell it: 10.
   7  They ask how to say something in English ("¿Cómo se dice...?"), or
-     they say a whole sentence in Spanish that is not a question to you
-     ("Ayer fui al parque"): give them that sentence in English.
+     they say a whole sentence in Spanish ("Ayer fui al parque"), or they
+     ask YOU something in Spanish ("¿Qué más puedes hacer?"): give them
+     that sentence or question in English, so they can say it.
   8  They ask you to explain grammar ("enséñame...", "¿cuál es la
      diferencia entre...?", "explain...").
   3  They used a wrong word that changes the meaning ("I take my desk"),
@@ -254,9 +257,9 @@ ${ej(
 6  Never guess and never correct.
 ${ej(
   'you heard "ay yo uhay":',
-  "No te oí.",
-  "Sorry. I didn't hear you. Could you repeat that for me?",
-  "Sorry, I didn't hear you. Could you repeat that for me?"
+  "No te oí bien.",
+  "Can you say it again?",
+  "Sorry, I didn't hear you. Can you say it again?"
 )}
 7  Give the English sentence and invite them to say it.
 ${campos('"Se dice así."', 'the English sentence (and, if useful, a more polite one) + "Try saying it!"', 'the English sentence + "Try saying it!"')}
@@ -271,6 +274,12 @@ ${ej(
   "Se dice así.",
   "I want to go to the bathroom. More polite: Can I go to the bathroom, please? Try saying it!",
   "You say: I want to go to the bathroom. More polite: Can I go to the bathroom, please? Try saying it!"
+)}
+${ej(
+  'they asked you "¿Qué más puedes hacer?":',
+  "Se dice así.",
+  "What else can you do? Try asking me!",
+  "You say: What else can you do? Try asking me!"
 )}
 8  A grammar question is your moment to really teach -- never just
    praise the question. The rule, then TWO short examples in English,
@@ -772,9 +781,13 @@ export function casoEfectivo(caso: string | undefined, respuesta: string, repeti
   // ("say it with me") o "you didn't understand the movie?" no son ella
   // diciendo que no oyó. En los casos que responden un pedido (4, 7, 8,
   // 9, 10) nunca aplica.
+  // "Say it again: I missed the bus." (caso 3) o un "…Can you say it again?"
+  // dentro de una corrección no son ella pidiendo que repita: solo la
+  // pregunta entera, sin el "Say it:" de una corrección (auditoría).
   const noEntendio =
-    /\bI didn'?t (?:understand|hear|catch)\b|could you (?:please )?repeat that|say that again/i.test(respuesta);
-  if (!["4", "7", "8", "9", "10"].includes(c) && noEntendio) return "6";
+    /\bI didn'?t (?:understand|hear|catch)\b/i.test(respuesta) ||
+    (/\b(?:can|could) you (?:please )?(?:repeat that|say (?:that|it) again)\b[^.!]*\?/i.test(respuesta) && !/\bSay it\b(?! again\?)/i.test(respuesta));
+  if (!["3", "4", "7", "8", "9", "10"].includes(c) && noEntendio) return "6";
   // Un 5 sin error repetido no existe: el modelo lo confundía con
   // preguntas normales ("What is your Instagram?") y traducía al español.
   if (c === "5") return "11";
@@ -974,6 +987,19 @@ export function esEspanolClaro(oracion: string): boolean {
   return es >= 2 || (esFuerte >= 1 && en === 0) || (es >= 1 && /[ñáéíóú]/i.test(sinNombres));
 }
 
+/**
+ * ¿El alumno dijo una frase clara en español (tres palabras o más, nada en
+ * inglés)? Entonces se oyó bien, aunque no fuera en inglés: no es "No te
+ * oí" (caso 6).
+ */
+export function hablaEspanolClaro(transcripcion: string): boolean {
+  // Con ¿ o ¡ bastan dos palabras ("¿Qué haces?").
+  const minimo = /[¿¡]/.test(transcripcion) ? 2 : 3;
+  if (transcripcion.trim().split(/\s+/).length < minimo) return false;
+  const { espanol, ingles } = separarIdiomas(transcripcion);
+  return !!espanol.trim() && !ingles.trim() && esEspanolClaro(transcripcion);
+}
+
 /** Las oraciones de un texto. */
 const oracionesDe = (texto: string) =>
   texto.match(/[^.!?]+[.!?]+["')]?|[^.!?]+$/g)?.map((s) => s.trim()).filter(Boolean) ?? [];
@@ -1089,7 +1115,10 @@ const comparable = (s: string) => s.toLowerCase().replace(/[^a-záéíóúñ ]/g
  *   · cada parte en su idioma: una oración inglesa dentro de "espanol"
  *     pasa a "respuesta" y una española dentro de "respuesta" pasa a
  *     "espanol" (si no, la leería la voz equivocada);
- *   · 6: siempre "Sorry. [es] No te oí. [en-US] I didn't hear you...";
+ *   · 6: siempre "[es] No te oí bien. [en-US] Can you say it again?":
+ *     cada idioma dice algo distinto (antes repetía "No te oí" y "I
+ *     didn't hear you"). Si el alumno sí habló claro en español, no es
+ *     que no se oyera: "Te entendí" y que lo intente en inglés;
  *   · 7: el español es siempre "Se dice así.";
  *   · 5 (error repetido): elogio fijo y solo la pregunta para seguir;
  *   · 1 y 11: sin español, salvo la frase aprobada "soy una profesora
@@ -1116,14 +1145,22 @@ function componerSinCierre(o: {
   anterior?: string;
   /** El alumno preguntó si Allison es real, humana o una IA. */
   preguntaIA?: boolean;
+  /**
+   * Lo que dijo el alumno es una frase clara en español: si el modelo
+   * igual marcó 6 ("no se entiende"), Allison no dice "No te oí".
+   */
+  espanolClaro?: boolean;
 }): string {
   const sinEs = NIVELES_SIN_ESPANOL.has(o.nivel);
   const caso = casoEfectivo(o.caso, o.respuesta ?? "", o.repetido ?? false);
 
   if (caso === "6") {
-    return sinEs
-      ? "Sorry, I didn't hear you. Could you repeat that for me?"
-      : `Sorry. ${MARCADOR_ES} No te oí. ${MARCADOR_EN} I didn't hear you. Could you repeat that for me?`;
+    // En producción, "¿qué más puedes hacer?" recibió "No te oí" dos veces
+    // seguidas (octubre de 2026): se oyó, solo que en español.
+    if (o.espanolClaro) {
+      return sinEs ? "I understood you. Now try to say it in English!" : `${MARCADOR_ES} Te entendí. ${MARCADOR_EN} Now try to say it in English!`;
+    }
+    return sinEs ? "Sorry, I didn't hear you. Can you say it again?" : `${MARCADOR_ES} No te oí bien. ${MARCADOR_EN} Can you say it again?`;
   }
 
   // Cada parte en su idioma. Lo que el modelo puso en el campo
@@ -1394,6 +1431,7 @@ export async function* conversarEnStream(opciones: {
         repetido,
         anterior: anteriorEnIngles,
         preguntaIA: preguntaSiEsReal(d.transcripcion ?? ""),
+        espanolClaro: hablaEspanolClaro(d.transcripcion ?? ""),
       }),
       alumno.nivel
     );
@@ -1438,34 +1476,15 @@ export async function* conversarEnStream(opciones: {
       // Un turno legítimo — transcripción + respuesta + correcciones —
       // cabe de sobra en mil tokens.
       maxOutputTokens: 1024,
+      // Una llamada que se queda colgada deja al alumno esperando con su
+      // intervención gastada: se corta y la ruta la devuelve.
+      abortSignal: AbortSignal.timeout(30_000),
     },
   });
 
-  /**
-   * El modelo a veces intercala marcas de tiempo ("00:01") sacadas del
-   * audio — al inicio o en la mitad de la frase. No es nada que el
-   * alumno haya dicho, así que se filtran como palabras sueltas.
-   * Costo asumido: si un alumno dictara una hora tipo "3:30", también
-   * caería; hablado casi siempre se transcribe en palabras.
-   */
-  const sinArtefactos = (t: string): string => {
-    const limpio = t
-      .split(" ")
-      .filter((p) => !/^[0-9]{1,2}:[0-9]{2}$/.test(p))
-      .join(" ")
-      .replace(/ {2,}/g, " ")
-      .trim();
-
-    // Eco duplicado: cuando el modelo alucina, a veces pega la misma
-    // frase dos veces seguidas ("X X"). Ninguna frase real de más de
-    // doce letras es idéntica a su propia segunda mitad.
-    const mitad = Math.floor(limpio.length / 2);
-    const a = limpio.slice(0, mitad).trim().toLowerCase();
-    const b = limpio.slice(limpio.length - mitad).trim().toLowerCase();
-    if (a.length > 12 && a === b) return limpio.slice(0, mitad).trim();
-
-    return limpio;
-  };
+  // Las marcas de tiempo ("00:01") y el eco duplicado no son nada que el
+  // alumno haya dicho (src/lib/transcripcion.ts).
+  const sinArtefactos = limpiarTranscripcion;
 
   let acumulado = "";
   const entregada = { transcripcion: false, respuesta: false };
@@ -1521,6 +1540,12 @@ export async function* conversarEnStream(opciones: {
    * tomó por un audio sin voz ("No te escuchamos").
    */
   const escrito = texto?.trim() || undefined;
+  /**
+   * Un audio que, limpio, no dice nada ("00:00 00:01"): Allison no
+   * responde (antes la respuesta sonaba y después salía "No te
+   * escuchamos"). La ruta lo trata como audio sin voz.
+   */
+  let sinVoz = false;
 
   for await (const trozo of stream) {
     acumulado += trozo.text ?? "";
@@ -1530,11 +1555,12 @@ export async function* conversarEnStream(opciones: {
       const t = campoCompleto(acumulado, "transcripcion");
       if (t !== null) {
         entregada.transcripcion = true;
+        sinVoz = !escrito && !sinArtefactos(t);
         yield { tipo: "transcripcion", texto: escrito ?? quitarMarcadores(sinArtefactos(t)) };
       }
     }
 
-    if (entregada.transcripcion && !entregada.respuesta) {
+    if (entregada.transcripcion && !entregada.respuesta && !sinVoz) {
       const r = campoCompleto(acumulado, "respuesta");
       // Se espera también a "caso" y "espanol": sin ellos no se puede
       // armar lo que Allison dice. Casi siempre ya cerraron (van antes en
@@ -1596,7 +1622,7 @@ export async function* conversarEnStream(opciones: {
   // Va ANTES del filtro de correcciones: arma() fija el caso aplicado.
   const respuestaVoz =
     vozEntregada ?? armar({ ...datos, transcripcion: escrito ?? sinArtefactos(datos.transcripcion ?? "") });
-  if (!entregada.respuesta && respuestaVoz) {
+  if (!entregada.respuesta && respuestaVoz && !sinVoz) {
     entregada.respuesta = true;
     yield { tipo: "respuesta", texto: quitarMarcadores(respuestaVoz), voz: respuestaVoz };
   }

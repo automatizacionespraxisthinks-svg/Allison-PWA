@@ -296,7 +296,7 @@ function CreaTuPropio({ saldo }: { saldo: number }) {
           ))}
         </div>
         <span className="text-[12px] font-semibold text-texto-suave">
-          Allison arma la escena a tu nivel, con 3 tareas. Crearla usa 1 intervención (tienes {saldo}).
+          Allison arma la escena a tu nivel, con unas 6 tareas. Crearla usa 1 intervención (tienes {saldo}).
         </span>
         {error && (
           <p role="alert" className="text-sm font-bold text-oro">
