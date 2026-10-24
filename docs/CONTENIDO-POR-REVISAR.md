@@ -333,6 +333,21 @@ Escritos completos para la etapa 7: el boceto aprobado solo trae el nombre, el l
 | Explicar tus síntomas (Médico, desde B1) | Tareas | Explica qué te duele. Di desde cuándo te sientes así. Responde sus preguntas sobre cómo te sientes. Cuenta qué comiste antes de enfermarte. Pregunta qué debes hacer. Pregunta si puedes seguir tu viaje. |
 | Explicar tus síntomas (Médico, desde B1) | Diálogo de ejemplo | Allison: Hello! What seems to be the problem? / Alumno: My stomach hurts a lot. / Allison: I'm sorry to hear that. When did it start? / Alumno: It started two days ago, after dinner. / Allison: Do you have a fever? Have you thrown up? / Alumno: I've had a little fever, but I haven't thrown up. / Allison: Have you eaten anything unusual? / Alumno: Yes, I ate street food on Friday. It was very spicy chicken. / Allison: Are you drinking enough water? / Alumno: Not really. I've only had a few glasses a day. / Allison: That might be part of the problem. Are you taking any medicine? / Alumno: No, I'm not taking anything. / Allison: Does it hurt more when you eat? / Alumno: Yes, it gets worse after I eat. / Allison: It's probably something you ate. It isn't serious. / Alumno: That's good to hear. What should I do? / Allison: Drink a lot of water, eat light food and rest for two days. / Alumno: Can I keep traveling? I'm going to Chicago on Monday. / Allison: If you feel better by Sunday, you can go. Come back if it doesn't get better. / Alumno: OK. Thank you so much, doctor. |
 
+## Viajes
+
+| Viaje | Nota |
+|---|---|
+| Viaje 1 · México | Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Di qué te parece la pirámide. Pregunta quién construyó Chichén Itzá. Da las gracias y despídete. |
+| Viaje 2 · Perú | Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta qué tan alto está Machu Picchu. Pregunta qué idiomas se hablan en Perú. Da las gracias y despídete. |
+| Viaje 3 · Brasil | Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta cómo se sube al Pan de Azúcar. Pregunta qué idioma se habla en Brasil. Da las gracias y despídete. |
+| Viaje 4 · España | Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta qué idiomas se hablan en España. Pregunta por el flamenco. Da las gracias y despídete. |
+| Viaje 5 · Francia | Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta por la torre Eiffel. Di qué te gusta hacer cuando viajas. Da las gracias y despídete. |
+| Viaje 6 · Italia | Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta cuántas personas cabían en el Coliseo. Pregunta qué es el Vaticano. Da las gracias y despídete. |
+| Viaje 7 · Egipto | Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta para qué se construyeron. Pregunta por una comida típica de la calle. Da las gracias y despídete. |
+| Viaje 8 · India | Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Di qué te parece el Taj Mahal. Pregunta qué se come en la India. Da las gracias y despídete. |
+| Viaje 9 · China | Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta por la Gran Muralla. Pregunta si la muralla se ve desde la Luna. Da las gracias y despídete. |
+| Viaje 10 · Japón | Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta por el monte Fuji. Di cómo se saluda en Colombia. Da las gracias y despídete. |
+
 ## Frase del día (expresiones)
 
 Expresiones de los nativos que no se traducen palabra por palabra: qué significan, qué NO significan (la traducción literal) y un ejemplo del nivel. Inglés de Estados Unidos; el español tiene que servir para un muchacho o una muchacha.

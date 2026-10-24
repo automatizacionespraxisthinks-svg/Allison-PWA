@@ -439,7 +439,8 @@ function revisarViajes(viajes) {
     if (v.numero !== i + 1) fallo(d, "numeración");
     for (const k of ["pais", "lugar", "papel", "inicio", "estampilla", "evita"]) if (!v[k]?.trim()) fallo(d, `falta ${k}`);
     if (!["A1", "A2", "B1", "B2", "C1", "C2"].includes(v.nivelMinimo)) fallo(d, `nivel "${v.nivelMinimo}"`);
-    if (v.tareas?.length !== 3) fallo(d, `tiene ${v.tareas?.length} tareas, deben ser 3`);
+    // 3 del documento y 3 agregadas (24 de octubre de 2026), para 10 intervenciones.
+    if (!(v.tareas?.length >= 5 && v.tareas?.length <= 7)) fallo(d, `tiene ${v.tareas?.length} tareas, deben ser de 5 a 7`);
     if (!v.puentes?.length) fallo(d, "sin puentes con Colombia");
     if (!v.palabrasPorNivel?.length) fallo(d, "sin palabras por nivel");
     if (!v.datos?.length) fallo(d, "sin datos verificados");

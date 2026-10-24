@@ -491,8 +491,10 @@ export interface Viaje {
   papel: string;
   /** La primera frase de Allison. */
   inicio: string;
-  /** Las tres tareas del viaje. */
+  /** Las tareas del viaje: las 3 del documento y 3 agregadas (24 de octubre de 2026). */
   tareas: string[];
+  /** Lo que se cambió del documento aprobado y revisa la docente (listar-por-revisar.mjs). */
+  porRevisar?: string[];
   estampilla: string;
   /** Preguntas para comparar con Colombia (Allison pregunta, no afirma). */
   puentes: string[];

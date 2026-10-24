@@ -10,13 +10,13 @@ import { alumnoActual } from "@/lib/sesion";
 
 export const metadata: Metadata = { title: "Viajes · Allison" };
 
-/** Los colores de las 3 tareas de un viaje (pantalla 3: íconos de color). */
+/** Los colores de las tareas de un viaje, en ciclo (pantalla 3: íconos de color). */
 const COLORES = ["bg-[#ff8a3d]", "bg-[#ec4899]", "bg-[#12b5a5]"];
 
 /**
  * Viajes (pantalla 3, aprobada el 14 de octubre de 2026): Allison saluda
  * y anima; la portada del próximo destino con su estampilla "Por ganar",
- * sus 3 tareas y el botón para empezar; debajo, el pasaporte con los 10
+ * sus tareas y el botón para empezar; debajo, el pasaporte con los 10
  * países en orden: ganados a color, el siguiente con marco azul y los
  * demás en gris con candado y su nivel mínimo.
  */

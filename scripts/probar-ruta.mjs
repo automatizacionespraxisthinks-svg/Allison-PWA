@@ -198,6 +198,14 @@ ok("tarea obvia: nada", tareasObvias(PARADA_01.escenario, "I like pizza.").lengt
   ok("tarea obvia: \"I'm good at soccer\" no es cómo estás", p1("I'm good at soccer.") === "[]" && p1("Great! My name is Diego.") === "[3]", p1("Great! My name is Diego."));
   ok("tarea obvia: la edad de otro no es la suya", p1("My brother is ten years old.") === "[]", p1("My brother is ten years old."));
   ok("tarea obvia: con apóstrofo curvo", p1("I’m from Colombia.") === "[5]" && p1("I’m 15.") === "[4]", p1("I’m from Colombia."));
+  // Los viajes: 6 tareas (3 del documento y 3 agregadas), y la última es despedirse.
+  const { VIAJES } = await import("../src/lib/ruta/viajes.ts");
+  const { escenarioDeViaje } = await import("../src/lib/ruta/viaje.ts");
+  const malos = VIAJES.filter((v) => {
+    const e = escenarioDeViaje(v);
+    return e.tareas.length < 5 || e.tareas.length > 7 || JSON.stringify(tareasObvias(e, "Thank you! Goodbye!")) !== `[${e.tareas.length}]`;
+  });
+  ok("viajes: de 5 a 7 tareas y la última es la despedida", malos.length === 0, malos.map((v) => v.pais).join(", "));
   const aeropuerto = CATALOGO.find((c) => c.clave === "cat:aeropuerto").escenario;
   ok("tarea obvia: saluda y di tu nombre (las dos)", JSON.stringify(tareasObvias(aeropuerto, "Good morning! My name is Diego.")) === "[1]" && tareasObvias(aeropuerto, "My name is Diego.").length === 0);
 }

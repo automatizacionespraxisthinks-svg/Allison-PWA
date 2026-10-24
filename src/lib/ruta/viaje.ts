@@ -5,8 +5,8 @@ import type { Escenario, Viaje } from "./tipos.ts";
 /**
  * Un viaje (plan, sección 18; pantallas 3 y 8) corre con el mismo motor
  * que el escenario de cierre: Allison conversa como mínimo 10
- * intervenciones, no corrige durante el viaje, lleva al alumno por sus 3
- * tareas y al final da un resumen y la estampilla del país. La
+ * intervenciones, no corrige durante el viaje, lleva al alumno por sus
+ * tareas (6) y al final da un resumen y la estampilla del país. La
  * diferencia: aquí Allison es ella misma, la guía, y solo puede decir los
  * datos verificados de la ficha del país (pestaña Viajes de "Contenido
  * A1"); a Colombia se la compara PREGUNTANDO, nunca afirmando.

@@ -128,6 +128,12 @@ if (filasCatalogo.length) lineas.push(
   ""
 );
 
+// Viajes (pestaña Viajes de "Contenido A1"): las tareas agregadas el 24 de octubre de 2026.
+const { VIAJES } = await import(pathToFileURL(join("src/lib/ruta/viajes.ts")).href);
+const filasViajes = NIVEL === "a1" ? VIAJES.flatMap((v) => (v.porRevisar ?? []).map((n) => `| Viaje ${v.numero} · ${v.pais} | ${n} |`)) : [];
+total += filasViajes.length;
+if (filasViajes.length) lineas.push("## Viajes", "", "| Viaje | Nota |", "|---|---|", ...filasViajes, "");
+
 // La frase del día (src/lib/expresiones.ts): escrita para la app el 24 de octubre de 2026.
 const { EXPRESIONES } = await import(pathToFileURL(join("src/lib/expresiones.ts")).href);
 const expresiones = EXPRESIONES[NIVEL.toUpperCase()] ?? [];

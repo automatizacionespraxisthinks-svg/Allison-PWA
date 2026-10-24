@@ -6,7 +6,10 @@ import type { Viaje } from "./tipos.ts";
  *   · "Desde A1" sale del lugar y pasa a `nivelMinimo`;
  *   · se quitan las notas de estado "(ya aprobada/s)" de tareas y estampilla;
  *   · cada puente conserva las comillas de la pregunta y su nota en español;
- *   · Brasil (la ficha muestra, escrita en párrafos) se pasa a los mismos campos.
+ *   · Brasil (la ficha muestra, escrita en párrafos) se pasa a los mismos campos;
+ *   · 24 de octubre de 2026: de 3 a 6 tareas, para que el alumno hable más. Las 3
+ *     del documento siguen tal cual; las agregadas solo usan los datos de la ficha
+ *     y están en porRevisar, para la docente.
  * Cada viaje dura mínimo 10 intervenciones (introducción de la pestaña).
  */
 export const VIAJES: Viaje[] = [
@@ -17,7 +20,15 @@ export const VIAJES: Viaje[] = [
     nivelMinimo: "A1",
     papel: "Tu guía en Chichén Itzá",
     inicio: "Welcome to Mexico! Look at this big pyramid. It's El Castillo!",
-    tareas: ["Pide unos tacos y di qué les pones", "Pregunta por el Día de Muertos", "Compara una comida con Colombia"],
+    tareas: [
+      "Di qué te parece la pirámide",
+      "Pregunta quién construyó Chichén Itzá",
+      "Pide unos tacos y di qué les pones",
+      "Pregunta por el Día de Muertos",
+      "Compara una comida con Colombia",
+      "Da las gracias y despídete",
+    ],
+    porRevisar: ["Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Di qué te parece la pirámide. Pregunta quién construyó Chichén Itzá. Da las gracias y despídete."],
     estampilla: "México, con Chichén Itzá",
     puentes: [
       '"Do you eat corn in Colombia?" (arepas y tortillas)',
@@ -63,7 +74,15 @@ export const VIAJES: Viaje[] = [
     nivelMinimo: "A1",
     papel: "Tu guía en Machu Picchu",
     inicio: "Welcome to Peru! We are very high in the mountains. Look, that's Machu Picchu!",
-    tareas: ["Pide un plato típico", "Pregunta quién construyó Machu Picchu", "Compara una costumbre con Colombia"],
+    tareas: [
+      "Pregunta qué tan alto está Machu Picchu",
+      "Pregunta quién construyó Machu Picchu",
+      "Pregunta qué idiomas se hablan en Perú",
+      "Pide un plato típico",
+      "Compara una costumbre con Colombia",
+      "Da las gracias y despídete",
+    ],
+    porRevisar: ["Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta qué tan alto está Machu Picchu. Pregunta qué idiomas se hablan en Perú. Da las gracias y despídete."],
     estampilla: "Perú, con Machu Picchu",
     puentes: ['"Do you have mountains in Colombia?" (los Andes)', '"Do you eat fish in Colombia?"'],
     palabrasPorNivel: [
@@ -101,7 +120,15 @@ export const VIAJES: Viaje[] = [
     // El documento añade: ("Tu guía en Río", pantalla 8), una nota para el diseño.
     papel: 'Tu guía en Río. Habla en inglés y adapta su inglés al nivel del alumno',
     inicio: "Welcome to Rio de Janeiro! I'm your guide today. Look, that's Sugarloaf Mountain!",
-    tareas: ["Pide una comida típica", "Pregunta por el Carnaval", "Compara una costumbre con Colombia"],
+    tareas: [
+      "Pregunta cómo se sube al Pan de Azúcar",
+      "Pregunta qué idioma se habla en Brasil",
+      "Pide una comida típica",
+      "Pregunta por el Carnaval",
+      "Compara una costumbre con Colombia",
+      "Da las gracias y despídete",
+    ],
+    porRevisar: ["Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta cómo se sube al Pan de Azúcar. Pregunta qué idioma se habla en Brasil. Da las gracias y despídete."],
     estampilla: "Brasil, con el Pan de Azúcar",
     puentes: [
       '"Do you have a carnival in Colombia?" para que el alumno hable del Carnaval de Barranquilla',
@@ -155,7 +182,15 @@ export const VIAJES: Viaje[] = [
     nivelMinimo: "A2",
     papel: "Tu guía en Barcelona. Aunque allí se habla español, la conversación es en inglés",
     inicio: "Welcome to Barcelona! Look up. That church is the Sagrada Família, and it isn't finished!",
-    tareas: ["Pide un plato típico", "Pregunta por la Sagrada Familia", "Cuenta un viaje que hiciste (pasado)"],
+    tareas: [
+      "Pregunta por la Sagrada Familia",
+      "Pregunta qué idiomas se hablan en España",
+      "Pide un plato típico",
+      "Pregunta por el flamenco",
+      "Cuenta un viaje que hiciste (pasado)",
+      "Da las gracias y despídete",
+    ],
+    porRevisar: ["Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta qué idiomas se hablan en España. Pregunta por el flamenco. Da las gracias y despídete."],
     estampilla: "España, con las torres de la Sagrada Familia",
     puentes: ['"Do you have a typical rice dish in Colombia?"', '"What music do people dance to in Colombia?"'],
     palabrasPorNivel: [
@@ -193,7 +228,15 @@ export const VIAJES: Viaje[] = [
     nivelMinimo: "A2",
     papel: "Pasa la tarde contigo en París y hablan de la cultura francesa",
     inicio: "Bonjour! That's French for hello. Welcome to Paris! Can you see the Eiffel Tower?",
-    tareas: ["Habla de arte y museos", "Opina sobre su comida", "Planea un día en la ciudad"],
+    tareas: [
+      "Pregunta por la torre Eiffel",
+      "Habla de arte y museos",
+      "Opina sobre su comida",
+      "Di qué te gusta hacer cuando viajas",
+      "Planea un día en la ciudad",
+      "Da las gracias y despídete",
+    ],
+    porRevisar: ["Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta por la torre Eiffel. Di qué te gusta hacer cuando viajas. Da las gracias y despídete."],
     estampilla: "Francia, con la torre Eiffel",
     puentes: ['"Is there a famous museum in Colombia?"', '"What bread do you eat in Colombia?"'],
     palabrasPorNivel: [
@@ -233,10 +276,14 @@ export const VIAJES: Viaje[] = [
     papel: "Tu guía en Roma",
     inicio: "Welcome to Rome! This is the Colosseum. It's almost 2,000 years old!",
     tareas: [
-      "Pide una pizza o una pasta",
       "Pregunta qué pasaba en el Coliseo",
+      "Pregunta cuántas personas cabían en el Coliseo",
+      "Pregunta qué es el Vaticano",
+      "Pide una pizza o una pasta",
       "Cuenta qué hiciste el fin de semana (pasado)",
+      "Da las gracias y despídete",
     ],
+    porRevisar: ["Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta cuántas personas cabían en el Coliseo. Pregunta qué es el Vaticano. Da las gracias y despídete."],
     estampilla: "Italia, con el Coliseo",
     puentes: ['"Is there a very old building in your city?"', '"What\'s your favorite pizza?"'],
     palabrasPorNivel: [
@@ -270,7 +317,15 @@ export const VIAJES: Viaje[] = [
     nivelMinimo: "B1",
     papel: "Está contigo frente a las pirámides y hablan de la cultura egipcia",
     inicio: "Here we are in Giza! The Great Pyramid is more than 4,000 years old. What do you think?",
-    tareas: ["Describe lo que ves", "Pregunta quién las construyó", "Di qué te sorprende"],
+    tareas: [
+      "Describe lo que ves",
+      "Pregunta quién las construyó",
+      "Pregunta para qué se construyeron",
+      "Di qué te sorprende",
+      "Pregunta por una comida típica de la calle",
+      "Da las gracias y despídete",
+    ],
+    porRevisar: ["Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta para qué se construyeron. Pregunta por una comida típica de la calle. Da las gracias y despídete."],
     estampilla: "Egipto, con Giza",
     puentes: [
       '"Are there ancient places in Colombia?" (Ciudad Perdida, San Agustín, sin que Allison dé datos de ellos)',
@@ -313,9 +368,13 @@ export const VIAJES: Viaje[] = [
     inicio: "Welcome to Agra! This white building is the Taj Mahal. Do you know why it was built?",
     tareas: [
       "Pregunta por la historia del Taj Mahal",
+      "Di qué te parece el Taj Mahal",
+      "Pregunta qué se come en la India",
       "Pregunta por el Diwali",
       "Compara una celebración con Colombia",
+      "Da las gracias y despídete",
     ],
+    porRevisar: ["Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Di qué te parece el Taj Mahal. Pregunta qué se come en la India. Da las gracias y despídete."],
     estampilla: "India, con la cúpula del Taj Mahal",
     puentes: [
       '"Do you light candles at a celebration in Colombia?" (el Día de las Velitas, sin que Allison dé datos de él)',
@@ -359,10 +418,14 @@ export const VIAJES: Viaje[] = [
     papel: "Acabas de llegar a Pekín y hablan de la cultura china",
     inicio: "Welcome to Beijing! Tomorrow we're visiting the Great Wall. Have you heard about it?",
     tareas: [
+      "Pregunta por la Gran Muralla",
+      "Pregunta si la muralla se ve desde la Luna",
       "Di qué comida quieres probar",
       "Pregunta por una fiesta tradicional",
       "Compara una costumbre con Colombia",
+      "Da las gracias y despídete",
     ],
+    porRevisar: ["Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta por la Gran Muralla. Pregunta si la muralla se ve desde la Luna. Da las gracias y despídete."],
     estampilla: "China, con la Gran Muralla",
     puentes: [
       '"What do families eat together at New Year in Colombia?"',
@@ -403,7 +466,15 @@ export const VIAJES: Viaje[] = [
     nivelMinimo: "B1",
     papel: "Pasea contigo por Tokio y hablan de la cultura japonesa",
     inicio: "Welcome to Tokyo! On a clear day, you can see Mount Fuji from here.",
-    tareas: ["Pide un plato típico", "Pregunta por las costumbres al saludar", "Cuenta qué te gustaría visitar"],
+    tareas: [
+      "Pregunta por el monte Fuji",
+      "Pide un plato típico",
+      "Pregunta por las costumbres al saludar",
+      "Di cómo se saluda en Colombia",
+      "Cuenta qué te gustaría visitar",
+      "Da las gracias y despídete",
+    ],
+    porRevisar: ["Tareas agregadas para que el alumno hable más (de 3 a 6, con los datos de la ficha; cambio del 24 de octubre de 2026): Pregunta por el monte Fuji. Di cómo se saluda en Colombia. Da las gracias y despídete."],
     estampilla: "Japón, con el monte Fuji",
     puentes: ['"How do people greet each other in Colombia?"', '"Is there a famous mountain or volcano in Colombia?"'],
     palabrasPorNivel: [

@@ -118,9 +118,9 @@ const GUIONES = [
     "Viaje 1 · México",
     escenarioDeViaje(MEXICO),
     [
-      ["Hi! I'd like tacos with chicken and cheese, please.", [[1]]],
-      ["What is the Day of the Dead?", [[2]], { maxPalabras: 30 }],
-      ["In Colombia we eat arepas with corn.", [[3]], { maxPalabras: 30 }],
+      ["Hi! I'd like tacos with chicken and cheese, please.", [[3]]],
+      ["What is the Day of the Dead?", [[4]], { maxPalabras: 30 }],
+      ["In Colombia we eat arepas with corn.", [[5]], { maxPalabras: 30 }],
     ],
     reglasDeViaje(MEXICO, "A1"),
   ],
