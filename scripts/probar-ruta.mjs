@@ -304,6 +304,49 @@ ok("A2: sin RUTA_A2 sigue la ruta provisional", process.env.RUTA_A2 === "1" || r
     "escena: si el alumno le preguntó (\"And you?\"), su respuesta se queda",
     sinEcoDelAlumno("I'm fine, thank you! What's your name?", "I'm fine, thank you. And you?") === "I'm fine, thank you! What's your name?"
   );
+  // Restaurante en producción (octubre de 2026): "Okay okay, somos 14
+  // personas" contó la tarea como inglés, y "Fourteen people? Wow! This
+  // way, please." pasó por pregunta y la escena perdió el hilo.
+  const { mezclaEspanol, llevaPregunta, sinFrasesFueraDeLugar, sinPreguntasDeInformacion } = await import("../src/lib/ruta/escena.ts");
+  ok(
+    "escena: si sigue una pregunta del alumno, Allison no la hace ella (las que lo invitan se quedan)",
+    sinPreguntasDeInformacion("Yes, it is! It's very old. Who built Chichén Itzá?") === "Yes, it is! It's very old." &&
+      sinPreguntasDeInformacion("Gladiators fought there. What else do you want to know?") === "Gladiators fought there. What else do you want to know?" &&
+      sinPreguntasDeInformacion("It's huge! Do you like it?") === "It's huge! Do you like it?"
+  );
+  const restaurante = CATALOGO.find((c) => c.clave === "cat:restaurante").escenario;
+  const aeropuertoE = CATALOGO.find((c) => c.clave === "cat:aeropuerto").escenario;
+  ok(
+    "escena: Allison no dice la frase del alumno (pregunta o en primera persona)",
+    sinFrasesFueraDeLugar("Okay. Can I have the check, please?", restaurante, new Set([5, 6]), []) === "Okay." &&
+      sinFrasesFueraDeLugar("I'm here on vacation. Why are you here?", aeropuertoE, new Set([3, 4, 5, 6]), []) === "Why are you here?"
+  );
+  ok(
+    "escena: tampoco repite la pregunta de la tarea que se acaba de cumplir",
+    sinFrasesFueraDeLugar("And what would you like to drink?", restaurante, new Set([3, 4, 5, 6]), [3]) === "" &&
+      sinFrasesFueraDeLugar("Here you go. Enjoy! Would you like a dessert?", restaurante, new Set([4, 5, 6]), []) ===
+        "Here you go. Enjoy! Would you like a dessert?"
+  );
+  ok(
+    "escena: español mezclado con muletillas en inglés es español",
+    mezclaEspanol("Okay Okay somos 14 personas") && mezclaEspanol("Una hamburguesa, por favor") && mezclaEspanol("¿Cuánto cuesta?")
+  );
+  ok(
+    "escena: inglés con un nombre o una palabra suelta en español sigue siendo inglés",
+    !mezclaEspanol("Hello, good morning.") &&
+      !mezclaEspanol("I'm from Cartagena de Indias.") &&
+      !mezclaEspanol("My name is Diego de la Torre.") &&
+      !mezclaEspanol("I want a hamburguesa, please.") &&
+      !mezclaEspanol("Hi! Just one, please.")
+  );
+  ok(
+    "escena: un eco corto no es pregunta; una pregunta de verdad sí",
+    !llevaPregunta("Fourteen people? Wow! This way, please.") &&
+      !llevaPregunta("Here's your table.") &&
+      llevaPregunta("Great! What would you like to eat?") &&
+      llevaPregunta("Anything else?") &&
+      llevaPregunta("What would you like to drink? We have lemonade.")
+  );
 }
 
 // --- La Guía de frases: lo que dice cada persona, sin "Sarah says:" ---------

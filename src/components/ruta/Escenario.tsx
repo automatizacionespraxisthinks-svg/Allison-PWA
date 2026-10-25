@@ -11,6 +11,7 @@ import { Estrella, Estrellas, Icono } from "./Iconos";
 import { ayudaEscena, iniciarEscena, terminarEscena, turnoEscena, type FinEscena } from "./escenaApi";
 import { Practicarla } from "./Practicarla";
 import { srcIlustracion } from "@/lib/ruta/ilustracion";
+import { desbloquearVoz } from "@/lib/voz";
 import { AllisonAro, BotonOir, Grabador, oirGrabacion, useVoz, type Entrada } from "./leccion/comun";
 
 interface Datos {
@@ -106,6 +107,9 @@ export function Escenario({
   const conBotonAyuda = !e.ayudaDesdeSegundoFallo || sinAvanzar >= 2 || !!ayuda;
 
   async function empezar() {
+    // En el toque, antes de esperar: la primera línea de Allison llega
+    // después y el celular solo la deja sonar si el audio ya se desbloqueó.
+    desbloquearVoz();
     setMensaje(null);
     setOcupado(true);
     const r = await iniciarEscena({ parada: parada.clave, actividad: "escenario", salto: !!salto });

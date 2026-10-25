@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { Transcripcion } from "@/components/Transcripcion";
 import { sonar } from "@/lib/sonidos";
 import { desdeB1, type Mensaje, type Nivel } from "@/lib/tipos";
+import { desbloquearVoz } from "@/lib/voz";
 import { Estampilla, type LugarSello } from "./Estampilla";
 import { Estrellas, Icono, type NombreIcono } from "./Iconos";
 import { ayudaEscena, iniciarEscena, terminarEscena, turnoEscena, type FinEscena } from "./escenaApi";
@@ -84,9 +85,23 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
   const turnos = useRef(0);
   const abajo = useRef<HTMLDivElement>(null);
   const contador = useRef(0);
+  /** La tarjeta de Allison arriba: cuando sale de la vista, aparece la barra fija. */
+  const guia = useRef<HTMLDivElement>(null);
+  const [guiaFuera, setGuiaFuera] = useState(false);
 
   const actual = d.tareas.findIndex((_, i) => !cumplidas.includes(i + 1));
   const todas = actual < 0;
+
+  // En el celular, al conversar la tarjeta de Allison se va hacia arriba y
+  // con ella su foto: Allison hablaba sin que se la viera moverse (prueba
+  // en producción, octubre de 2026). Fuera de la vista, va la barra fija.
+  useEffect(() => {
+    const el = guia.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const o = new IntersectionObserver(([e]) => setGuiaFuera(!e.isIntersecting));
+    o.observe(el);
+    return () => o.disconnect();
+  }, []);
 
   // Cada mensaje nuevo queda a la vista, justo encima del micrófono.
   useEffect(() => {
@@ -107,6 +122,9 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
   }
 
   async function empezar() {
+    // En el toque, antes de esperar: la primera línea de Allison llega
+    // después y el celular solo la deja sonar si el audio ya se desbloqueó.
+    desbloquearVoz();
     setMensaje(null);
     setOcupado(true);
     const r = await iniciarEscena(d.inicio);
@@ -227,11 +245,28 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col gap-3 px-4 pt-4 pb-6 lg:max-w-5xl">
+      {/* Celular, ya en la charla: Allison (que se mueve al hablar) y la
+          tarea de ahora, siempre a la vista. */}
+      {fase === "charla" && guiaFuera && (
+        <div className="fixed inset-x-0 top-0 z-30 lg:hidden" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+          <div className="mx-auto flex max-w-lg items-center gap-2.5 border-b border-borde bg-superficie/95 px-4 py-2 backdrop-blur">
+            <AllisonAro tam={38} aro={meta ? "bien" : "pregunta"} hablando={hablando} />
+            <span className="min-w-0 flex-1 leading-tight">
+              <b className="block text-[14px] font-black">
+                Allison {hablando && <span className="font-semibold text-texto-suave">· hablando…</span>}
+              </b>
+              <span className="block truncate text-[12.5px] font-bold text-primario">
+                {todas ? "¡Misión cumplida!" : `Tarea ${actual + 1} de ${d.tareas.length}: ${d.tareas[actual]}`}
+              </span>
+            </span>
+          </div>
+        </div>
+      )}
       <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start lg:gap-8">
         {/* Lo que se ve: el lugar, Allison en su papel y la misión. */}
         <div className="flex flex-col gap-3 lg:sticky lg:top-4">
           <Portada d={d} />
-          <div className="relative z-[1] -mt-8 mx-1 flex items-center gap-3 rounded-2xl bg-primario-suave px-3 py-2.5 shadow-sm">
+          <div ref={guia} className="relative z-[1] -mt-8 mx-1 flex items-center gap-3 rounded-2xl bg-primario-suave px-3 py-2.5 shadow-sm">
             <AllisonAro tam={52} aro={meta ? "bien" : "pregunta"} hablando={hablando} />
             <span className="min-w-0 leading-tight">
               <small className="text-[11px] font-extrabold tracking-[0.06em] text-primario uppercase">{d.guia.rotulo}</small>

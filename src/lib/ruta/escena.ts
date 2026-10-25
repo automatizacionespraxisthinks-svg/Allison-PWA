@@ -166,29 +166,34 @@ HOW YOU PLAY
    like the examples. Never do a pending task for them: if a task is to
    ask for something (the price, the time, the way), do not say it until
    they ask.
-   The scene lasts at least ${t.minimo} student turns. Between tasks, ask
-   extra simple questions that fit the situation and your role, so the
-   scene does not end too soon: first the questions of the examples that
-   you have not asked yet, and never harder words than the examples${
-     t.nivel === "A1" || t.nivel === "A2" ? `\n   ("purpose", "declare" are too hard for ${t.nivel})` : ""
-   }. Do not say
+   The scene lasts at least ${t.minimo} student turns. Between tasks you
+   may ask ONE extra simple question that fits the situation and your
+   role, so the scene does not end too soon: first the questions of the
+   examples that you have not asked yet, and never harder words than the
+   examples${
+     t.nivel === "A1" || t.nivel === "A2" ? ` ("purpose", "declare" are too hard for ${t.nivel})` : ""
+   }. After it, always come back to the next pending task: the
+   scene must not lose its goal. Do not say
    goodbye before turn ${t.minimo}: if the student says goodbye earlier,
    answer kindly and ask one more question.
 3. NEVER correct the student and never explain grammar in the scene. If
    you understand them, the scene goes on.
 4. If their message does not do the task you asked about, stay in your
    role and ask again, simpler.${otraVez ? ` Example: ${otraVez.ejemplo}` : ""}
-5. If the student speaks Spanish ("espanol": true): no task counts. In
-   "traduccion" write only what they just said, translated to simple
-   correct English -- not your answer to it. "Soy de Colombia" -> "I'm
-   from Colombia." "Me llamo Diego" -> "My name is Diego."${t.nivel !== "A1" && t.nivel !== "A2" ? ` (Level ${t.nivel}: never write Spanish; the app adds "Sorry, in English, please!".)` : ""}
+5. If the student speaks Spanish, even mixed with a few English words
+   ("espanol": true): no task counts. In "traduccion" write only what
+   they just said, all of it translated to simple correct English -- not
+   your answer to it, without fillers or repeated words. "Soy de
+   Colombia" -> "I'm from Colombia." "Me llamo Diego" -> "My name is
+   Diego." "Okay okay, somos 14 personas" -> "We are fourteen people."${t.nivel !== "A1" && t.nivel !== "A2" ? ` (Level ${t.nivel}: never write Spanish; the app adds "Sorry, in English, please!".)` : ""}
 6. You are an AI teacher: never say you are a person.
 ${t.extra ? `\n${t.extra.trim()}\n` : ""}
 THE JSON
 - "transcripcion": exactly what the student said, in the language they
   used, with their mistakes. Never complete it or correct it. "" if you
   hear no voice.
-- "espanol": true if the student's last message is in Spanish.
+- "espanol": true if the student's last message is in Spanish, or
+  mixes Spanish words into English ("Okay, somos catorce" -> true).
 - "tareas": the numbers of the PENDING tasks that the student's last
   message does: in English, understandable, even with mistakes. [] if
   none. Count only what the student said, never what you said.
@@ -236,11 +241,26 @@ function recordatorioEscenario(t: {
       sinDespedirse || " If they say goodbye, say goodbye."
     }]`;
   }
-  const pendientes = tareasVisibles(t.escenario, t.cumplidas)
-    .filter((n) => !t.cumplidas.includes(n))
-    .map((n) => `${n}. ${t.escenario.tareas[n - 1]}`)
-    .join(" ");
-  return `[${cuenta} Pending tasks: ${pendientes} Stay in your role, English only in respuesta, never correct, short.${sinDespedirse}${antesDeSorpresa}]`;
+  const quedan = tareasVisibles(t.escenario, t.cumplidas).filter((n) => !t.cumplidas.includes(n));
+  const pendientes = quedan.map((n) => `${n}. ${t.escenario.tareas[n - 1]}`).join(" ");
+  // La tarea que sigue, con la pregunta del ejemplo que lleva a ella: con
+  // varias intervenciones encima, el modelo se quedaba conversando y la
+  // escena perdía su objetivo (prueba en producción, octubre de 2026). Si
+  // quedan tantas tareas como turnos para el mínimo, nada de preguntas de más.
+  const pregunta = preguntaDeLaTarea(t.escenario, quedan[0]);
+  const sinHolgura = quedan.length >= t.minimo - t.turno;
+  // Si la tarea es que el alumno pregunte, "llevar a ella" no es hacerla:
+  // en los viajes (sin diálogo de ejemplo) Allison preguntaba ella misma
+  // "Who built Chichén Itzá?" (pruebas, octubre de 2026).
+  const lePregunta = quedan.some((n) => /^pregunta/i.test(t.escenario.tareas[n - 1]));
+  const meta =
+    ` Your line ends with ONE simple question that leads to the first pending task this message does not do` +
+    `${pregunta ? ` (for task ${quedan[0]}, like "${pregunta}")` : ""}.` +
+    `${lePregunta ? ` When that task is for the student to ASK something, never ask it or answer it yourself: invite them to ask ("Do you have a question about it?").` : ""}` +
+    `${sinHolgura ? " No extra questions now." : ""}`;
+  return `[${cuenta} Pending tasks: ${pendientes}${meta} Stay in your role, English only in respuesta, never correct, short.${
+    sinDespedirse ? " Do not say goodbye yet." : ""
+  }${antesDeSorpresa}]`;
 }
 
 const ESQUEMA_ESCENARIO = {
@@ -284,6 +304,52 @@ export function hablaEspanol(transcripcion: string): boolean {
 }
 
 /**
+ * Palabras que en la boca del alumno solo pueden ser español. Sin las
+ * que van en los nombres ("de", "la", "del", "y", "San": "Cartagena de
+ * Indias", "Diego de la Torre") ni las que también son inglés ("me",
+ * "no", "son", "con", "sin", "come").
+ */
+const ESPANOL_DEL_ALUMNO = new Set([
+  "soy", "eres", "es", "somos", "estoy", "estás", "estas", "está", "esta", "estamos", "están",
+  "tengo", "tienes", "tiene", "tenemos", "tienen", "quiero", "quieres", "quiere", "queremos", "quisiera",
+  "necesito", "puedo", "puedes", "puede", "podemos", "llamo", "llama", "vamos", "voy", "hay", "hace",
+  "años", "persona", "personas", "mesa", "cuenta", "gracias", "hola", "por", "favor", "para",
+  "una", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez",
+  "doce", "trece", "catorce", "quince", "veinte", "que", "qué", "cómo", "como", "dónde", "donde",
+  "cuánto", "cuanto", "cuánta", "cuesta", "sí", "si", "pero", "porque", "también", "tambien", "muy",
+  "bien", "bueno", "buena", "buenos", "buenas", "días", "dias", "tardes", "noches", "señor", "señora",
+  "agua", "comida", "bebida", "postre", "hamburguesa", "papas", "pollo", "carne", "jugo", "helado",
+  "yo", "usted", "ustedes", "nosotros", "aquí", "aqui", "eso", "esto", "ese", "esa", "en", "mi", "mis",
+  "mucho", "mucha", "muchos", "gusto", "nombre", "entonces", "pues", "ahora", "todo", "algo",
+  "listo", "perdón", "perdon", "disculpe", "ayuda", "baño", "quisiéramos", "traiga", "tráigame",
+]);
+
+/**
+ * ¿Mezcló español? Dos palabras que solo pueden ser español, o una con
+ * "¿" o "¡". "Okay okay, somos 14 personas" es español con una muletilla
+ * en inglés: el modelo lo tomó por inglés, contó la tarea y siguió en su
+ * papel (prueba en producción, octubre de 2026). "I want a hamburguesa"
+ * (una sola palabra) sigue siendo inglés con una palabra que no sabía.
+ */
+export function mezclaEspanol(transcripcion: string): boolean {
+  const deEspanol = (transcripcion.toLowerCase().match(/[a-záéíóúñü]+/g) ?? []).filter((p) => ESPANOL_DEL_ALUMNO.has(p)).length;
+  return deEspanol >= 2 || (deEspanol >= 1 && /[¿¡]/.test(transcripcion));
+}
+
+/** Lo que se dice igual en inglés y no dice nada del idioma de la frase. */
+const MULETILLAS_EN = /\b(okay|ok|yes|yeah|yep|no|hello|hi|hey|um+|uh+|ah+|oh+|so|well|wow|sorry|please|thanks|thank you)\b/gi;
+
+/**
+ * ¿Es inglés claro lo que dijo el alumno? Sin las muletillas: "Okay" no
+ * vuelve inglés a "Okay okay, somos 14 personas". Solo muletillas
+ * ("Okay.", "Yes, please!") sí es inglés.
+ */
+function inglesClaroDelAlumno(transcripcion: string): boolean {
+  const resto = transcripcion.replace(MULETILLAS_EN, " ").replace(/[\s,.!?;:]+/g, " ").trim();
+  return !resto || esInglesClaro(resto);
+}
+
+/**
  * Las tareas que el código reconoce solo, como respaldo del modelo: en
  * las pruebas, flash-lite dejó pasar un "Thank you. Goodbye!" una de cada
  * tres veces, y con las 7 tareas de la Parada 1, un "My name is Diego."
@@ -301,6 +367,21 @@ const SALUDO = /\b(hi|hello|hey|good (morning|afternoon|evening))\b/i;
 const DESPEDIDA = /\b(bye|goodbye|good night|have a (nice|good) (day|night|evening))\b|\bsee you (later|soon|tomorrow|next|on|at|then|there)\b|\bsee you[.!\s]*$/i;
 const NO_ES_DESPEDIDA = /\b(good|nice|great|happy) to see you\b|\bcan see you\b/i;
 /** Lo que va después de "I'm" y no es un nombre ("I'm Colombian", "I'm Fine"). */
+/** Pagar: entregar el dinero o decir cómo. */
+const PAGA =
+  /\b(here you (are|go)|here it is|here's (the|my|your) (money|card|cash)|i('ll| will) pay|i('d like to| want to| can) pay|(by|with) (card|cash|credit card))\b/i;
+const GRACIAS = /\b(thanks?|thank you)\b/i;
+/**
+ * Solo un saludo ("Hello, good morning.", "Hi! How are you?"): no hace
+ * "Saluda y di para cuántas personas es la mesa". El modelo lo llegó a
+ * contar así (pruebas, octubre de 2026).
+ */
+function soloSaluda(dicho: string): boolean {
+  const resto = conApostrofoRecto(dicho)
+    .replace(/\b(hi|hello|hey|good (morning|afternoon|evening)|there|allison|how are you|nice to meet you|okay|ok)\b/gi, " ")
+    .replace(/[^a-z0-9]/gi, "");
+  return SALUDO.test(dicho) && !resto;
+}
 const NO_ES_NOMBRE =
   /\b(?:I'm|I am) (?:Fine|Good|Great|Ok|Okay|Here|From|Colombian|American|Mexican|Canadian|Spanish|English|British|Brazilian|Peruvian|Venezuelan|Argentinian|Argentine|Chilean|Ecuadorian|French|Italian|German|Chinese|Japanese|Korean)\b/;
 const diceSuNombre = (d: string) => /\bmy name(?:'s| is) [a-z]+/i.test(d) || (/\b(?:I'm|I am) [A-Z][a-z]+\b/.test(d) && !NO_ES_NOMBRE.test(d));
@@ -311,6 +392,11 @@ const RECONOCIBLES: [RegExp, (dicho: string) => boolean][] = [
   // "I'm Diego" con mayúscula: "I'm happy" no es un nombre.
   [/^(di cómo te llamas|di tu nombre)\.?$/, diceSuNombre],
   [/^saluda y di tu nombre\.?$/, (d) => SALUDO.test(d) && diceSuNombre(d)],
+  // "Here you are. Thank you!" es el ejemplo mismo y el modelo no lo contó
+  // tres veces seguidas: la escena no terminaba (pruebas, octubre de 2026).
+  [/^paga y da las gracias\.?$/, (d) => PAGA.test(d) && GRACIAS.test(d)],
+  [/^paga y despídete\.?$/, (d) => PAGA.test(d) && DESPEDIDA.test(d) && !NO_ES_DESPEDIDA.test(d)],
+  [/^paga( el pasaje| la cuenta)?\.?$/, (d) => PAGA.test(d)],
   [/^di de dónde (vienes|eres)\.?$/, (d) => /\b(?:i'?m|i am|i come) from [a-z]+/i.test(d)],
   // La edad es la suya: "My brother is ten years old" no cuenta.
   [/^di cuántos años tienes\.?$/, (d) => /\b(?:i'?m|i am) (?:\d{1,2}|ten|eleven|twelve|[a-z]+teen)\b/i.test(d)],
@@ -348,6 +434,80 @@ export function preguntaDeLaTarea(e: Escenario, tarea: number): string | null {
     return preguntas.at(-1) ?? null;
   }
   return null;
+}
+
+/** Las oraciones de una línea. */
+const oracionesDe = (linea: string) => (linea.match(/[^.!?]+[.!?]+["')]?|[^.!?]+$/g) ?? []).map((o) => o.trim()).filter(Boolean);
+const esPregunta = (o: string) => /\?["')]?$/.test(o);
+
+/**
+ * ¿La línea le pregunta algo al alumno? Termina en pregunta, o trae una
+ * de tres palabras o más. Un eco corto en medio ("Fourteen people? Wow!
+ * This way, please.") no le dice qué contestar.
+ */
+export function llevaPregunta(linea: string): boolean {
+  const oraciones = oracionesDe(linea);
+  return esPregunta(oraciones.at(-1) ?? "") || oraciones.some((o) => esPregunta(o) && o.split(/\s+/).length >= 3);
+}
+
+/** Una pregunta para comparar: sin mayúsculas, signos ni el "And" o "So" del comienzo. */
+const comoPregunta = (o: string) => palabras(o).join(" ").replace(/^(?:and|so|okay|ok|great|sure) /, "");
+
+/** Con lo que Allison invita a preguntar cuando la tarea que sigue es que el alumno pregunte y no hay ejemplo. */
+export const INVITA_A_PREGUNTAR = "Do you have any questions?";
+
+/**
+ * Sin las preguntas de información de Allison ("Who built Chichén
+ * Itzá?"): cuando lo que sigue es que el ALUMNO pregunte, si ella lo
+ * pregunta, le quita la tarea. En los viajes pasaba siempre en México, aun
+ * con la instrucción (pruebas, octubre de 2026). Las que lo invitan a
+ * preguntar ("What else do you want to know?") se quedan.
+ */
+export function sinPreguntasDeInformacion(linea: string): string {
+  return oracionesDe(linea)
+    .filter((o) => !(esPregunta(o) && /^(?:who|what|where|when|why|how|which|whose)\b/i.test(o) && !/\b(question|ask|know|else|curious)\b/i.test(o)))
+    .join(" ");
+}
+
+/** Lo que dice el alumno en primera persona ("I'm here on vacation."): en boca de Allison es el papel al revés. */
+const enPrimeraPersona = (o: string) => /^(?:I|I'm|I am|I'd|I'll|I want|My|We|We're)\b/i.test(o);
+
+/**
+ * Quita de la línea de Allison lo que no le toca decir (pruebas con el
+ * modelo, octubre de 2026):
+ *   · la frase del alumno para una tarea pendiente, sea pregunta ("Okay.
+ *     Can I have the check, please?", la mesera pidiendo la cuenta) o en
+ *     primera persona ("I'm here on vacation. Why are you here?", el
+ *     agente contestando su propia pregunta);
+ *   · la pregunta que lleva a una tarea que el alumno acaba de cumplir:
+ *     "A lemonade, please." → "And what would you like to drink?".
+ * Después, si no quedó pregunta, el código pone la de la tarea que sigue.
+ */
+export function sinFrasesFueraDeLugar(linea: string, e: Escenario, pendientes: Set<number>, hechas: number[]): string {
+  const delAlumno = e.dialogo
+    .filter((l) => l.quien === "alumno" && !!l.tarea && pendientes.has(l.tarea) && !hechas.includes(l.tarea))
+    .flatMap((l) => oracionesDe(l.dice))
+    .filter((o) => esPregunta(o) || enPrimeraPersona(o));
+  const yaHechas = hechas.map((n) => preguntaDeLaTarea(e, n) ?? "").filter(Boolean);
+  const fuera = new Set([...delAlumno, ...yaHechas].map(comoPregunta));
+  return oracionesDe(linea)
+    .filter((o) => !((esPregunta(o) || enPrimeraPersona(o)) && fuera.has(comoPregunta(o))))
+    .join(" ");
+}
+
+/**
+ * Lo que el alumno dijo, en inglés, listo para que lo repita: sin las
+ * palabras repetidas ("Okay Okay we are…") y con su punto final (sin él,
+ * "…fourteen people Try it!" se lee como una sola frase).
+ */
+function fraseLimpia(s: string): string {
+  const sin = s
+    .replace(/\b([\w']+)(?:[\s,]+\1\b)+/gi, "$1")
+    // La muletilla del comienzo no se enseña: "Okay we are…" → "We are…".
+    .replace(/^(?:okay|ok|um+|uh+|eh+|so)[\s,]+(?=[a-z])/i, "")
+    .trim();
+  const frase = sin.charAt(0).toUpperCase() + sin.slice(1);
+  return frase && !/[.!?]["')]?$/.test(frase) ? `${frase}.` : frase;
 }
 
 /** Las oraciones que no son preguntas. */
@@ -408,6 +568,39 @@ export function esCorreccionDe(dijo: string, mejor: string): boolean {
   if (!a.length || a.join(" ") === [...palabras(mejor)].join(" ")) return false;
   const comunes = a.filter((w) => b.has(w)).length;
   return comunes * 2 >= a.length && !/\.\.\.|…/.test(mejor);
+}
+
+/**
+ * Lo que el alumno dijo en español (o mezclado), dicho en inglés: la frase
+ * que Allison le da para que la intente. Solo cuando el modelo de la
+ * escena no la escribió. Si falla, "" (el turno se devuelve).
+ */
+async function alIngles(dicho: string): Promise<{ en: string; tokensEntrada: number; tokensSalida: number }> {
+  try {
+    const r = await cliente().models.generateContent({
+      model: modelo(),
+      contents: [{ role: "user", parts: [{ text: dicho }] }],
+      config: {
+        systemInstruction: `A Spanish-speaking teenager who is learning English said this, maybe
+mixing Spanish and English. Write ALL of it in simple, correct US English,
+as the student would say it. Only their words in English: never an answer
+to them.`,
+        responseMimeType: "application/json",
+        responseSchema: { type: Type.OBJECT, properties: { ingles: { type: Type.STRING } }, required: ["ingles"] },
+        temperature: 0,
+        maxOutputTokens: 200,
+        abortSignal: AbortSignal.timeout(10_000),
+      },
+    });
+    const d = JSON.parse(r.text ?? "") as { ingles?: string };
+    return {
+      en: String(r.candidates?.[0]?.finishReason ?? "STOP") === "STOP" ? soloIngles(d.ingles ?? "") : "",
+      tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
+      tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+    };
+  } catch {
+    return { en: "", tokensEntrada: 0, tokensSalida: 0 };
+  }
 }
 
 export async function turnoDeEscenario(t: TurnoEscenario): Promise<ResultadoEscenario> {
@@ -474,8 +667,12 @@ export async function turnoDeEscenario(t: TurnoEscenario): Promise<ResultadoEsce
   const pendientes = new Set(tareasVisibles(t.escenario, t.cumplidas).filter((n) => !t.cumplidas.includes(n)));
   // Español: lo dice el código, o el modelo salvo que la frase sea inglés
   // claro (llegó a marcar "I am Diego." como español). El código solo no
-  // basta: "Me llamo Diego" o "Mucho gusto" le quedan en duda.
-  const espanol = transcripcion ? hablaEspanol(transcripcion) || (d.espanol === true && !esInglesClaro(transcripcion)) : false;
+  // basta: "Me llamo Diego" o "Mucho gusto" le quedan en duda. Mezclado
+  // ("Okay okay, somos 14 personas") también es español: no cuenta la
+  // tarea y Allison le da la frase en inglés.
+  const espanol = transcripcion
+    ? hablaEspanol(transcripcion) || mezclaEspanol(transcripcion) || (d.espanol === true && !inglesClaroDelAlumno(transcripcion))
+    : false;
   const b1 = t.nivel !== "A1" && t.nivel !== "A2";
 
   let en = soloIngles(d.respuesta ?? "")
@@ -484,8 +681,21 @@ export async function turnoDeEscenario(t: TurnoEscenario): Promise<ResultadoEsce
     .replace(/\b[A-Za-z](?:-[A-Za-z]){2,}\b/g, (m) => m.toUpperCase().split("-").join(", "));
   // Si habló en español, lo que dice Allison es su frase en inglés, de su
   // propio campo (en "respuesta" el modelo llegó a contestarle en el papel:
-  // "En inglés se dice así: Hello Diego! What is your name?").
-  const traduccion = espanol ? sinPreguntas(soloIngles(d.traduccion ?? "")) : "";
+  // "En inglés se dice así: Hello Diego! What is your name?"). Las
+  // preguntas se quitan, salvo que el alumno haya preguntado ("¿Cuánto
+  // cuesta?" → "How much is it?"). Si el código vio el español y el modelo
+  // no ("Okay okay, somos 14 personas"), la frase se pide aparte.
+  let tokensEntrada = falla.tokensEntrada;
+  let tokensSalida = falla.tokensSalida;
+  const pregunto = /[¿?]/.test(transcripcion) || /^(qué|que|cómo|como|dónde|donde|cuánto|cuanto|cuál|cual|cuándo|cuando|puedo|me puede)\b/i.test(transcripcion);
+  const comoLaDijo = (s: string) => (pregunto ? s : sinPreguntas(s));
+  let traduccion = espanol ? comoLaDijo(fraseLimpia(soloIngles(d.traduccion ?? ""))) : "";
+  if (espanol && !traduccion && !t.ultimo) {
+    const a = await alIngles(transcripcion);
+    traduccion = comoLaDijo(fraseLimpia(a.en));
+    tokensEntrada += a.tokensEntrada;
+    tokensSalida += a.tokensSalida;
+  }
   if (espanol && !t.ultimo) en = traduccion ? `${traduccion} Try it!` : "";
   const delModelo = !!en;
   // Allison no dice como suya la frase del alumno ("I'm from Colombia.").
@@ -496,15 +706,19 @@ export async function turnoDeEscenario(t: TurnoEscenario): Promise<ResultadoEsce
   if (t.ultimo) en = (!espanol && sinPreguntas(en)) || despedidaDe(t.escenario);
   // El alumno habló y el modelo no dio una línea en inglés que sirva: es
   // falla de la IA (se devuelve), no un "repite" que se le cobra.
-  if (!delModelo && transcripcion && !t.ultimo) return { ...falla, transcripcion };
+  if (!delModelo && transcripcion && !t.ultimo) return { ...falla, transcripcion, tokensEntrada, tokensSalida };
   if (!en && transcripcion) en = REPETIR;
 
   // En español no se cumple ninguna tarea: Allison da la frase en inglés.
+  // Un saludo solo no hace "Saluda y di…".
+  const saludoSolo = soloSaluda(transcripcion);
   const tareas = espanol
     ? []
-    : [...new Set([...(d.tareas ?? []), ...tareasObvias(t.escenario, transcripcion)].filter((n) => pendientes.has(n)))].sort(
-        (a, b) => a - b
-      );
+    : [...new Set([...(d.tareas ?? []), ...tareasObvias(t.escenario, transcripcion)])]
+        .filter((n) => pendientes.has(n) && !(saludoSolo && /^saluda y /i.test(t.escenario.tareas[n - 1].trim())))
+        .sort((a, b) => a - b);
+  // Sin la frase del alumno ni la pregunta de una tarea que acaba de cumplir.
+  if (!espanol && !t.ultimo && transcripcion) en = sinFrasesFueraDeLugar(en, t.escenario, pendientes, tareas) || "Sure!";
 
   // El imprevisto (B1): al cumplir la tarea después de la cual pasa,
   // Allison lo trae con la línea aprobada del diálogo de ejemplo. Lo que
@@ -516,22 +730,35 @@ export async function turnoDeEscenario(t: TurnoEscenario): Promise<ResultadoEsce
     en = reaccion && !imp.linea.toLowerCase().includes(reaccion.toLowerCase()) ? `${reaccion} ${imp.linea}` : imp.linea;
   }
 
-  // Antes del mínimo, la línea de Allison termina con una pregunta: sin
-  // ella el alumno no sabe qué decir y la escena se cae ("Sure, this way.
-  // Here's the menu."). Si el modelo no la hizo, va la del ejemplo
-  // aprobado para la tarea que sigue.
-  let preguntaAgregada = false;
-  if (!llegaSorpresa && !t.ultimo && !espanol && t.turno < t.minimo && transcripcion && !en.includes("?")) {
-    const sigue = [...pendientes].find((n) => !tareas.includes(n));
-    const pregunta = sigue ? preguntaDeLaTarea(t.escenario, sigue) : null;
+  // Antes del mínimo, o mientras falten tareas, la línea de Allison
+  // termina con una pregunta: sin ella el alumno no sabe qué decir y la
+  // escena se cae ("Sure, this way. Here's the menu."). Si el modelo no la
+  // hizo, va la del ejemplo aprobado para la tarea que sigue. Un eco
+  // ("Fourteen people? Wow! This way, please.") no cuenta como pregunta:
+  // con él la escena perdía el hilo (prueba en producción, octubre de 2026).
+  const sigue = [...pendientes].find((n) => !tareas.includes(n));
+  const ejemplo = sigue ? preguntaDeLaTarea(t.escenario, sigue) : null;
+  // Sin ejemplo (los viajes, los escenarios propios), si lo que sigue es
+  // que el alumno pregunte, Allison no lo pregunta ella: lo invita.
+  const invita = !!sigue && !ejemplo && /^pregunta/i.test(t.escenario.tareas[sigue - 1].trim());
+  let lineaCambiada = false;
+  if (invita && !llegaSorpresa && !t.ultimo && !espanol && transcripcion) {
+    const sinSuPregunta = sinPreguntasDeInformacion(en);
+    if (sinSuPregunta !== en) {
+      en = sinSuPregunta || "Great!";
+      lineaCambiada = true;
+    }
+  }
+  if (!llegaSorpresa && !t.ultimo && !espanol && (t.turno < t.minimo || sigue) && transcripcion && !llevaPregunta(en)) {
+    const pregunta = ejemplo ?? (invita ? INVITA_A_PREGUNTAR : null);
     if (pregunta && !en.toLowerCase().includes(pregunta.toLowerCase())) {
-      en = `${en} ${pregunta}`;
-      preguntaAgregada = true;
+      en = `${en} ${pregunta}`.trim();
+      lineaCambiada = true;
     }
   }
 
   // La idea responde a la línea que escribió el modelo: si el código la
-  // cambió (la sorpresa, una pregunta agregada) o la escena se cierra, no
+  // cambió (la sorpresa, una pregunta agregada o quitada) o la escena se cierra, no
   // sirve, y la ayuda vuelve a la frase de la tarea que sigue.
   const quedan = new Set([...pendientes].filter((n) => !tareas.includes(n)));
   const ideaTarea = quedan.has(Number(d.ideaTarea)) ? Number(d.ideaTarea) : 0;
@@ -556,7 +783,7 @@ export async function turnoDeEscenario(t: TurnoEscenario): Promise<ResultadoEsce
     ? null
     : espanol && traduccion
       ? { en: traduccion, es: transcripcion, tarea: 0 }
-      : ideaEn && !llegaSorpresa && !preguntaAgregada
+      : ideaEn && !llegaSorpresa && !lineaCambiada
         ? { en: ideaEn, es: ideaEs && !esInglesClaro(ideaEs) ? ideaEs : "", tarea: ideaTarea }
         : null;
   // "En inglés se dice así:" solo antecede a la versión en inglés de lo
@@ -580,8 +807,8 @@ export async function turnoDeEscenario(t: TurnoEscenario): Promise<ResultadoEsce
     respuestaVoz,
     error,
     idea,
-    tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
-    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+    tokensEntrada,
+    tokensSalida,
   };
 }
 

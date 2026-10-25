@@ -95,13 +95,18 @@ export function desbloquearVoz(): void {
   desbloquearVozNavegador();
   try {
     const a = reproductor();
+    // Si Allison ya está sonando (la computadora deja sonar sin gesto), el
+    // <audio> ya sirve: cambiarle el src cortaría su frase.
+    if (!a.paused) return;
     a.muted = true;
-    a.src = silencio();
+    const mudo = silencio();
+    a.src = mudo;
     const promesa = a.play();
     if (promesa) {
       promesa
         .then(() => {
-          a.pause();
+          // Si mientras tanto empezó una frase de verdad, no se pausa.
+          if (a.src === mudo) a.pause();
           a.muted = false;
         })
         .catch(() => {
@@ -221,6 +226,8 @@ async function hablar(
     } catch {
       // Navegadores viejos: cambia el tono con la velocidad. Se oye igual de claro.
     }
+    // Por si el silencio del desbloqueo todavía no había terminado.
+    a.muted = false;
     a.src = url;
     const promesa = a.play();
     if (promesa) {

@@ -309,6 +309,17 @@ body {
 .habla-vaiven { animation: habla-vaiven 2.8s ease-in-out infinite; }
 .habla-ritmo { animation: habla-ritmo 1.1s ease-in-out infinite; }
 
+/* Con "reducir movimiento" (o "quitar animaciones" en Android, que traen
+   algunos ahorros de batería) la foto no se mueve, pero se ilumina con el
+   ritmo: un brillo no es movimiento y deja ver que Allison está hablando. */
+@keyframes habla-luz {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.18) saturate(1.1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .habla-ritmo { animation: habla-luz 1.1s ease-in-out infinite !important; }
+}
+
 /* La flecha de ¿Qué es esto? sobre la foto: baja despacio hacia lo que señala. */
 @keyframes flecha-foto {
   0%, 100% { transform: translateY(-12%); }

@@ -429,6 +429,25 @@ export async function turnoDeEscena(
   let r: ResultadoTurno;
 
   if (u.escenario) {
+    // Hablado, primero se transcribe A CIEGAS, sin la conversación: con el
+    // audio y el historial juntos, el modelo copiaba lo que el alumno había
+    // dicho antes ("Hello, good morning." dos veces) en vez de oír lo nuevo
+    // (prueba en producción, octubre de 2026).
+    let texto = entrada.texto?.trim() ?? "";
+    let tokensEntrada = 0;
+    let tokensSalida = 0;
+    if (!texto && entrada.audioBase64) {
+      const tr = await transcribirACiegas(entrada.audioBase64, entrada.mimeType ?? "audio/webm");
+      texto = tr.transcripcion;
+      tokensEntrada += tr.tokensEntrada;
+      tokensSalida += tr.tokensSalida;
+    }
+    if (!texto) {
+      return {
+        ok: true,
+        r: { ...vacio, estado: estadoPublico(estado), sinVoz: true, transcripcion: "", respuesta: REPETIR, respuestaVoz: REPETIR, tokensEntrada, tokensSalida },
+      };
+    }
     const filas = await sql`
       select rol, texto from mensajes where conversacion_id = ${conversacionId}
        order by creado_en desc limit 20
@@ -448,10 +467,12 @@ export async function turnoDeEscena(
       turno: estado.intervenciones + 1,
       minimo: u.minimo,
       extra: u.extra,
-      ...entrada,
+      texto,
     });
+    tokensEntrada += t.tokensEntrada;
+    tokensSalida += t.tokensSalida;
     if (t.sinRespuesta) {
-      return { ok: true, r: { ...vacio, sinRespuesta: true, transcripcion: t.transcripcion, respuesta: "", respuestaVoz: "", tokensEntrada: t.tokensEntrada, tokensSalida: t.tokensSalida } };
+      return { ok: true, r: { ...vacio, sinRespuesta: true, transcripcion: t.transcripcion, respuesta: "", respuestaVoz: "", tokensEntrada, tokensSalida } };
     }
     r = {
       ...vacio,
@@ -459,8 +480,8 @@ export async function turnoDeEscena(
       respuesta: t.respuesta,
       respuestaVoz: t.respuestaVoz,
       nuevas: t.tareas,
-      tokensEntrada: t.tokensEntrada,
-      tokensSalida: t.tokensSalida,
+      tokensEntrada,
+      tokensSalida,
     };
     if (t.error) estado.errores = [...(estado.errores ?? []), t.error].slice(-5);
     estado.idea = t.idea ?? null;
