@@ -23,8 +23,10 @@ process.env.TTS_ESPERA_TURNO_MS = "300";
 
 const { ErrorTts, registrarVoz, sintetizar, ttsConfigurado, turnosEnCurso, validarTextoVoz, vozPedida } =
   await import("../src/lib/tts.ts");
-const { estimarSegundos, idiomaDe, limpiarParaVoz, nuevoIdPeticion, tiempoDeEsperaMs } =
+const { conPunto, estimarSegundos, idiomaDe, limpiarParaVoz, nuevoIdPeticion, prepararParaVoz, puntuarParaVoz, tiempoDeEsperaMs, tramosDeVoz } =
   await import("../src/lib/habla.ts");
+const { segmentosParaVoz } = await import("../src/lib/voz-idiomas.ts");
+const { todaLaRuta } = await import("../src/lib/ruta/index.ts");
 
 let fallos = 0;
 const probar = (nombre, ok, detalle = "") => {
@@ -104,11 +106,7 @@ console.log("\nLa petición a la API:");
   const cabeceras = new Headers(opciones.headers);
   probar("POST al endpoint nativo /v1/tts, sin barra doble", url === "https://tts.ejemplo.org/v1/tts" && opciones.method === "POST", url);
   probar("clave Bearer", cabeceras.get("authorization") === "Bearer clave-de-prueba");
-  probar(
-    "mp3 en STREAMING, velocidad 1 (la velocidad se aplica en el reproductor)",
-    cuerpo.format === "mp3" && cuerpo.stream === true && cuerpo.speed === 1,
-    opciones.body
-  );
+  probar("mp3 en STREAMING, velocidad 1 si no se pide otra", cuerpo.format === "mp3" && cuerpo.stream === true && cuerpo.speed === 1, opciones.body);
   probar("texto en inglés: voz inglesa y lang en-US", cuerpo.voice === "af_heart" && cuerpo.lang === "en-US");
   probar("solo text, nunca text y segments a la vez", "text" in cuerpo && !("segments" in cuerpo));
   const id = cabeceras.get("x-request-id") ?? "";
@@ -116,13 +114,27 @@ console.log("\nLa petición a la API:");
   probar("el flujo vuelve tal cual y con el rastro (cache, id)", (await leerTodo(r.cuerpo)) === "ab" && r.cache === "MISS" && r.idPeticion === "eco");
   probar("al terminar el flujo, el turno queda libre", turnosEnCurso() === 0, String(turnosEnCurso()));
   probar("tiempo de espera dimensionado al audio: 2×duración + 30 s", tiempoDeEsperaMs("x".repeat(300)) === (2 * 20 + 30) * 1000 && opciones.signal instanceof AbortSignal);
+  probar("más despacio, el audio dura más y la espera también", tiempoDeEsperaMs("x".repeat(300), 0.5) === (2 * 40 + 30) * 1000);
+}
+{
+  // La velocidad la pone la API (octubre de 2026: comparada de oído, sonó
+  // más natural que estirar el audio en el celular).
+  await leerTodo((await sintetizar({ texto: "Nice to meet you!", velocidad: 0.8 * 0.7 })).cuerpo);
+  probar("la velocidad pedida va a la API, redondeada (0,8 × 0,7 → 0,56)", JSON.parse(ultima().opciones.body).speed === 0.56, ultima().opciones.body);
+  await leerTodo((await sintetizar({ texto: "Nice to meet you!", velocidad: 0.2 })).cuerpo);
+  const lenta = JSON.parse(ultima().opciones.body).speed;
+  await leerTodo((await sintetizar({ texto: "Nice to meet you!", velocidad: 9 })).cuerpo);
+  const rapida = JSON.parse(ultima().opciones.body).speed;
+  probar("fuera de lo que acepta la API (0,5 a 2), se ajusta", lenta === 0.5 && rapida === 2, `${lenta} / ${rapida}`);
 }
 {
   await leerTodo((await sintetizar({ texto: "¿Cómo estás? Muy bien, gracias." })).cuerpo);
   const cuerpo = JSON.parse(ultima().opciones.body);
   probar("texto en español: voz española y lang es", cuerpo.voice === "ef_dora" && cuerpo.lang === "es", ultima().opciones.body);
-  await leerTodo((await sintetizar({ texto: "Good morning", idioma: "es" })).cuerpo);
-  probar("un idioma explícito manda sobre la detección", JSON.parse(ultima().opciones.body).lang === "es");
+  // "Mucho gusto" no trae ninguna señal de español para idiomaDe: lo dice quien lo pide.
+  await leerTodo((await sintetizar({ texto: "Mucho gusto", idioma: "es" })).cuerpo);
+  const explicito = JSON.parse(ultima().opciones.body);
+  probar("un idioma explícito manda sobre la detección", explicito.lang === "es" && explicito.voice === "ef_dora", ultima().opciones.body);
 }
 
 {
@@ -130,8 +142,15 @@ console.log("\nLa petición a la API:");
   await leerTodo(r.cuerpo);
   const cuerpo = JSON.parse(ultima().opciones.body);
   probar(
-    "una respuesta mixta va con la voz inglesa, lang en-US y los marcadores normalizados",
-    cuerpo.voice === "af_heart" && cuerpo.lang === "en-US" && cuerpo.text === "You went. [es] Fuiste. [en-US] Great!",
+    "una respuesta mixta va por partes, cada una con su idioma, y con la voz inglesa",
+    cuerpo.voice === "af_heart" &&
+      !("text" in cuerpo) &&
+      JSON.stringify(cuerpo.segments) ===
+        JSON.stringify([
+          { text: "You went.", lang: "en-US" },
+          { text: "Fuiste.", lang: "es" },
+          { text: "Great!", lang: "en-US" },
+        ]),
     ultima().opciones.body
   );
 }
@@ -140,6 +159,89 @@ console.log("\nLa petición a la API:");
 console.log("\nEl texto que se manda:");
 probar("se quitan marcas de formato y emojis, y se colapsan espacios", limpiarParaVoz("**Great** job! 🎉\n\nKeep  going.") === "Great job! Keep going.", JSON.stringify(limpiarParaVoz("**Great** job! 🎉\n\nKeep  going.")));
 probar("la puntuación se conserva (marca las pausas)", limpiarParaVoz("Hi, Ana! How are you?") === "Hi, Ana! How are you?");
+// La API no tiene marcas de pausa: las pausas salen de los signos (octubre de 2026).
+probar(
+  "un salto de línea sin signo es una pausa: se vuelve punto",
+  limpiarParaVoz("Good morning\nHow are you?") === "Good morning. How are you?" &&
+    limpiarParaVoz('She says "Hi"\nHe says "Bye."') === 'She says "Hi". He says "Bye."',
+  limpiarParaVoz("Good morning\nHow are you?")
+);
+probar(
+  "signos pegados: el punto sobra, los puntos suspensivos se unen",
+  puntuarParaVoz("Can I try it on?. Say it.") === "Can I try it on? Say it." &&
+    puntuarParaVoz("Yes! Good morning.!") === "Yes! Good morning!" &&
+    puntuarParaVoz("Start with: I..") === "Start with: I." &&
+    puntuarParaVoz("Wait...") === "Wait…"
+);
+probar(
+  "sin espacio después del signo, se agrega (pero U.S.A. queda igual)",
+  puntuarParaVoz("Hi!How are you?Fine.") === "Hi! How are you? Fine." && puntuarParaVoz("I live in the U.S.A. now.") === "I live in the U.S.A. now."
+);
+probar("conPunto: punto final solo si no hay ningún signo", conPunto("Nice to meet you") === "Nice to meet you." && conPunto("How are you?") === "How are you?" && conPunto("Start with:") === "Start with:");
+{
+  const tramos = tramosDeVoz("Great job [es] Te entendí [en-US] Now try it!", "en");
+  probar(
+    "al cambiar de idioma, cada tramo termina en un signo (la pausa)",
+    JSON.stringify(tramos) ===
+      JSON.stringify([
+        { texto: "Great job.", idioma: "en" },
+        { texto: "Te entendí.", idioma: "es" },
+        { texto: "Now try it!", idioma: "en" },
+      ]),
+    JSON.stringify(tramos)
+  );
+}
+
+console.log("\nEl inglés dentro del español:");
+const partes = (texto, idioma = "es") =>
+  segmentosParaVoz(prepararParaVoz(texto), idioma)
+    .segmentos.map((s) => (s.idioma === "en" ? `[${s.texto}]` : s.texto))
+    .join(" ");
+probar("lo que se explica va en inglés", partes("Para pedir se usa I'd like.") === "Para pedir se usa [I'd like.]", partes("Para pedir se usa I'd like."));
+probar("una palabra suelta también", partes("Para un hombre es his; para una mujer, her.") === "Para un hombre es [his;] para una mujer, [her.]", partes("Para un hombre es his; para una mujer, her."));
+probar(
+  "una dudosa en el borde se queda en español (can no lleva), el sufijo va en inglés",
+  partes("Con can el verbo no cambia y can no lleva -s: he can speak.") === "Con [can] el verbo no cambia y [can] no lleva [s: he can speak.]",
+  partes("Con can el verbo no cambia y can no lleva -s: he can speak.")
+);
+probar(
+  "lo citado en inglés va en inglés; la pronunciación escrita para leer en español, no",
+  partes("Como fue ayer, se dice 'played', con 'ed' al final.") === "Como fue ayer, se dice ['played',] con ['ed'] al final." &&
+    partes("Suena 'pleid'.") === "Suena 'pleid'." &&
+    partes('Para decir "hay" se usa there is.') === 'Para decir "hay" se usa [there is.]',
+  partes("Como fue ayer, se dice 'played', con 'ed' al final.")
+);
+probar(
+  "el español no se toca: 'he comido', la bienvenida",
+  partes("Ya he comido arepas hoy.") === "Ya he comido arepas hoy." &&
+    partes("¡Hola! Soy Allison, tu profesora de inglés. Vamos a aprender inglés conversando, de forma natural y sin miedo a equivocarnos.") ===
+      "¡Hola! Soy Allison, tu profesora de inglés. Vamos a aprender inglés conversando, de forma natural y sin miedo a equivocarnos."
+);
+probar("un número al final de la frase en inglés va con ella", partes("Para la edad se usa am: I'm 15.") === "Para la edad se usa [am: I'm 15.]", partes("Para la edad se usa am: I'm 15."));
+probar("el inglés no se parte: un nombre en español suena con acento inglés", partes("I'm from Bogotá. I love arepas!", "en") === "[I'm from Bogotá. I love arepas!]");
+{
+  // Todas las explicaciones de A1 y A2 que se dicen en español llevan su inglés aparte.
+  const explicaciones = [];
+  const recorrer = (v, campo) => {
+    if (typeof v === "string") {
+      if (campo === "explicacion") explicaciones.push(v);
+    } else if (Array.isArray(v)) v.forEach((x) => recorrer(x, campo));
+    else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) recorrer(x, k);
+  };
+  recorrer(todaLaRuta().slice(0, 24), "");
+  const sinIngles = explicaciones.filter((x) => !segmentosParaVoz(prepararParaVoz(x), "es").segmentos.some((s) => s.idioma === "en"));
+  probar(`las ${explicaciones.length} explicaciones de A1 y A2 llevan su inglés aparte`, explicaciones.length > 30 && !sinIngles.length, sinIngles.join(" | "));
+}
+{
+  await leerTodo((await sintetizar({ texto: "Para pedir se usa I'd like.", idioma: "es" })).cuerpo);
+  const cuerpo = JSON.parse(ultima().opciones.body);
+  probar(
+    "una explicación en español va por partes con la voz española",
+    cuerpo.voice === "ef_dora" &&
+      JSON.stringify(cuerpo.segments) === JSON.stringify([{ text: "Para pedir se usa", lang: "es" }, { text: "I'd like.", lang: "en-US" }]),
+    ultima().opciones.body
+  );
+}
 {
   const n = llamadas.length;
   const vacio = await falla(() => sintetizar({ texto: "🎉 ** " }));
@@ -227,6 +329,13 @@ console.log("\nLo pedido y no reproducido:");
   probar("otro alumno no", vozPedida(id, "juan", ahora + 1000) === null);
   probar("vence a los diez minutos", vozPedida(id, "ana", ahora + 10 * 60 * 1000) === null);
   probar("un id inventado no existe", vozPedida("00000000-0000-4000-8000-000000000000", "ana", ahora) === null);
+  // (El de arriba ya venció: se piden dos nuevos.)
+  const lento = registrarVoz({ userId: "ana", texto: "Hello there", velocidad: 0.8 }, ahora);
+  const normal = registrarVoz({ userId: "ana", texto: "Hello there" }, ahora);
+  probar(
+    "guarda la velocidad pedida (1 si no se pide)",
+    vozPedida(lento, "ana", ahora + 1000)?.velocidad === 0.8 && vozPedida(normal, "ana", ahora + 1000)?.velocidad === 1
+  );
 }
 
 if (fallos > 0) {

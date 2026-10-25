@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { conPunto } from "@/lib/habla";
 import { letraDicha, llevaRaya, lugar, lugaresDeLetra, palabrasDeFrase, respuestaCompleta } from "@/lib/ruta/rayas";
 import type { QueEsEsto as Datos } from "@/lib/ruta/tipos";
 import { desdeB1 } from "@/lib/tipos";
@@ -80,7 +81,7 @@ export function QueEsEsto({
     setFase("ensena");
     void (async () => {
       if (antes) await decir(antes, { espanol: !b1 });
-      await decir(`${a.respuesta}. Say it: ${a.respuesta}.`);
+      await decir(`${conPunto(a.respuesta)} Say it: ${conPunto(a.respuesta)}`);
     })();
   }
 

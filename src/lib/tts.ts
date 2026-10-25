@@ -1,12 +1,12 @@
 import {
-  idiomaDe,
   nuevoIdPeticion,
   prepararParaVoz,
   TEXTO_VOZ_MAX,
-  tieneMarcadores,
   tiempoDeEsperaMs,
+  velocidadParaVoz,
   type IdiomaVoz,
 } from "./habla.ts";
+import { segmentosParaVoz } from "./voz-idiomas.ts";
 
 /**
  * La voz de Allison: la API de texto a voz de Praxis (tts-api.praxisia.org).
@@ -34,11 +34,13 @@ import {
  *     que la app caiga a la voz del navegador en vez de dejar al alumno
  *     mirando la pantalla.
  *
- * La velocidad se pide siempre en 1.0: la preferencia del alumno y la
- * base por nivel se aplican en el reproductor (playbackRate), así que
- * repetir una frase más despacio no obliga a sintetizarla otra vez —y
- * la caché del servicio, que guarda cada resultado, sirve para todas
- * las velocidades.
+ * La velocidad la pone la API (speed): la base del nivel (A1 0,8; A2
+ * 0,9), la preferencia del alumno y el botón "lento". Hasta octubre de
+ * 2026 se pedía siempre en 1.0 y el celular estiraba el audio
+ * (playbackRate); comparadas de oído, la voz que genera la API más
+ * despacio sonó más natural. Repetir una frase más lento pide otro
+ * audio, pero la caché del servicio guarda cada uno: las frases del
+ * contenido, iguales para todos los alumnos, suelen estar ya hechas.
  */
 
 export interface ConfigTts {
@@ -196,6 +198,8 @@ export async function sintetizar(opciones: {
   texto: string;
   /** Sin idioma, se deduce del texto (ver idiomaDe). */
   idioma?: IdiomaVoz | "auto";
+  /** Entre 0,5 y 2; sin ella, 1. */
+  velocidad?: number;
   idPeticion?: string;
 }): Promise<AudioTts> {
   const cfg = configTts();
@@ -206,25 +210,22 @@ export async function sintetizar(opciones: {
     throw new ErrorTts("text_too_long", 413, false, `Más de ${LIMITE_API} caracteres.`);
   }
 
-  // Un texto con marcadores ([es] … [en-US]) es una respuesta de
-  // Allison que mezcla idiomas: va con SU voz de inglés y la API cambia
-  // de idioma donde diga el marcador, sin cambiar de voz. Los demás
-  // textos son de un solo idioma y llevan la voz de ese idioma.
-  const hibrido = tieneMarcadores(texto);
-  const idioma = hibrido
-    ? "en"
-    : !opciones.idioma || opciones.idioma === "auto"
-      ? idiomaDe(texto)
-      : opciones.idioma;
+  // Cada parte va con la fonética de su idioma: los marcadores ([es] …
+  // [en-US]) separan las frases de una respuesta de Allison y, dentro
+  // del español, el inglés que se explica ("Para pedir se usa I'd
+  // like.") va aparte (voz-idiomas.ts). Todo con la misma voz: la del
+  // idioma en que empieza el texto (una respuesta de Allison empieza en
+  // inglés). Con un solo idioma, la petición de siempre.
+  const { base, segmentos } = segmentosParaVoz(texto, opciones.idioma ?? "auto");
+  const lang = (i: IdiomaVoz) => (i === "es" ? "es" : "en-US");
   const idPeticion = opciones.idPeticion ?? nuevoIdPeticion();
-  const cuerpo = JSON.stringify({
-    text: texto,
-    voice: idioma === "es" ? cfg.vozEspanol : cfg.vozIngles,
-    lang: idioma === "es" ? "es" : "en-US",
-    speed: 1,
-    format: "mp3",
-    stream: true,
-  });
+  const speed = velocidadParaVoz(opciones.velocidad);
+  const comun = { voice: base === "es" ? cfg.vozEspanol : cfg.vozIngles, speed, format: "mp3", stream: true };
+  const cuerpo = JSON.stringify(
+    segmentos.length > 1
+      ? { segments: segmentos.map((s) => ({ text: s.texto, lang: lang(s.idioma) })), ...comun }
+      : { text: segmentos[0]?.texto ?? texto, lang: lang(segmentos[0]?.idioma ?? base), ...comun }
+  );
 
   const liberar = await ocuparTurno();
   try {
@@ -241,7 +242,7 @@ export async function sintetizar(opciones: {
             "X-Request-ID": idPeticion,
           },
           body: cuerpo,
-          signal: AbortSignal.timeout(tiempoDeEsperaMs(texto)),
+          signal: AbortSignal.timeout(tiempoDeEsperaMs(texto, speed)),
         });
       } catch (e) {
         const agotado = (e as { name?: string })?.name === "TimeoutError";
@@ -296,6 +297,7 @@ export interface VozPedida {
   userId: string;
   texto: string;
   idioma: IdiomaVoz | "auto";
+  velocidad: number;
   expira: number;
 }
 
@@ -304,7 +306,7 @@ const PEDIDOS_MAX = 5_000;
 const pedidos = new Map<string, VozPedida>();
 
 export function registrarVoz(
-  datos: { userId: string; texto: string; idioma?: IdiomaVoz | "auto" },
+  datos: { userId: string; texto: string; idioma?: IdiomaVoz | "auto"; velocidad?: number },
   ahora = Date.now()
 ): string {
   if (pedidos.size >= PEDIDOS_MAX) {
@@ -316,6 +318,7 @@ export function registrarVoz(
     userId: datos.userId,
     texto: datos.texto,
     idioma: datos.idioma ?? "auto",
+    velocidad: velocidadParaVoz(datos.velocidad),
     expira: ahora + VIGENCIA_PEDIDO_MS,
   });
   return id;

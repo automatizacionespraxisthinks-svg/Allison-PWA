@@ -39,7 +39,7 @@ export async function GET(
   }
 
   try {
-    const audio = await sintetizar({ texto: pedido.texto, idioma: pedido.idioma });
+    const audio = await sintetizar({ texto: pedido.texto, idioma: pedido.idioma, velocidad: pedido.velocidad });
     return new Response(audio.cuerpo, {
       headers: {
         "Content-Type": audio.tipo,

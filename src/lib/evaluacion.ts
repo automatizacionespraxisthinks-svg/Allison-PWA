@@ -229,14 +229,30 @@ export async function transcribirACiegas(
   audioBase64: string,
   mimeType: string,
   /** Un relato de 30 segundos (Cuéntame) necesita más que una pregunta corta. */
-  largo = false
+  largo = false,
+  /**
+   * En una escena, su situación en español ("Llegas en avión a Estados
+   * Unidos…"): nunca la pregunta ni lo que se espera que diga. Con el
+   * acento, "I'm here on vacation" salía "I'm going to make a cake" y "I
+   * have two brothers", "y a bet your brothers". Con la situación al
+   * final, solo para lo que no se entiende, 24 de 24 grabaciones de
+   * acento marcado salen bien (sin ella, 22), y el español, los titubeos
+   * y el silencio quedan igual. Dicha como "contexto" a secas, cambiaba
+   * palabras que sí se oían bien ("My favorite for all this pizza"), y
+   * como "fondo", traducía el español (pruebas, 25 de octubre de 2026).
+   */
+  escena?: string
 ): Promise<{ transcripcion: string; tokensEntrada: number; tokensSalida: number }> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const r = await ai.models.generateContent({
     model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
     contents: [{ role: "user", parts: [{ inlineData: { mimeType, data: audioBase64 } }] }],
     config: {
-      systemInstruction: TRANSCRIBIR,
+      systemInstruction: escena
+        ? `${TRANSCRIBIR}
+- Write what the sounds say first. Only if a word is unclear, the
+  role-play (in Spanish) may help: ${escena}`
+        : TRANSCRIBIR,
       responseMimeType: "application/json",
       responseSchema: esquemaDe("que-es-esto"),
       temperature: 0,

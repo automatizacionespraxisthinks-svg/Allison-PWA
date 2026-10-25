@@ -42,7 +42,12 @@ export interface DatosEscenaChat {
   /** Viajes: la estampilla del país. */
   sello?: { lugar: LugarSello; numero: number; ganado: boolean };
   /** "Tu guía en Río" / "Allison hace de cajera". */
-  guia: { rotulo: string; detalle: string };
+  guia: {
+    rotulo: string;
+    detalle: string;
+    /** Su papel en pocas palabras, para la barra de arriba: "Mesera del restaurante", "Tu guía en Río". */
+    papel?: string;
+  };
   /** "Tu misión en Río". */
   mision: string;
   tareas: string[];
@@ -245,17 +250,31 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col gap-3 px-4 pt-4 pb-6 lg:max-w-5xl">
-      {/* Celular, ya en la charla: Allison (que se mueve al hablar) y la
-          tarea de ahora, siempre a la vista. */}
+      {/* Celular, ya en la charla: Allison (que se mueve al hablar), su
+          papel, el avance de la misión y la tarea de ahora completa,
+          siempre a la vista (opción A, elegida el 25 de octubre de 2026). */}
       {fase === "charla" && guiaFuera && (
         <div className="fixed inset-x-0 top-0 z-30 lg:hidden" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
-          <div className="mx-auto flex max-w-lg items-center gap-2.5 border-b border-borde bg-superficie/95 px-4 py-2 backdrop-blur">
-            <AllisonAro tam={38} aro={meta ? "bien" : "pregunta"} hablando={hablando} />
+          <div className="mx-auto flex max-w-lg items-center gap-3 border-b border-borde bg-superficie/95 px-4 py-2.5 backdrop-blur">
+            <AllisonAro tam={56} aro={meta ? "bien" : "pregunta"} hablando={hablando} />
             <span className="min-w-0 flex-1 leading-tight">
-              <b className="block text-[14px] font-black">
-                Allison {hablando && <span className="font-semibold text-texto-suave">· hablando…</span>}
-              </b>
-              <span className="block truncate text-[12.5px] font-bold text-primario">
+              <span className="flex items-center gap-1.5">
+                <b className="text-[16px] font-black">Allison</b>
+                {hablando && <OndaHablando />}
+              </span>
+              <span className="block truncate text-[12.5px] font-semibold text-texto-suave">{d.guia.papel ?? d.guia.rotulo}</span>
+              <span className="mt-1.5 flex gap-[3px]" aria-hidden>
+                {d.tareas.map((_, i) => (
+                  <span
+                    key={i}
+                    className={`h-[5px] flex-1 rounded-full ${cumplidas.includes(i + 1) ? "bg-menta" : i === actual ? "bg-primario" : "bg-borde"}`}
+                  />
+                ))}
+              </span>
+              <span className="sr-only">
+                {cumplidas.length} de {d.tareas.length} tareas cumplidas.
+              </span>
+              <span className="mt-1 block text-[13.5px] font-bold text-primario">
                 {todas ? "¡Misión cumplida!" : `Tarea ${actual + 1} de ${d.tareas.length}: ${d.tareas[actual]}`}
               </span>
             </span>
@@ -371,6 +390,21 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
         </div>
       </div>
     </main>
+  );
+}
+
+/** Las ondas junto al nombre mientras Allison habla. */
+function OndaHablando() {
+  return (
+    <span role="img" aria-label="hablando" className="flex h-3.5 items-center gap-[2px]">
+      {[9, 14, 10, 12].map((alto, i) => (
+        <span
+          key={i}
+          className="w-[3px] rounded-full bg-primario"
+          style={{ height: alto, animation: `barra-sonando 0.9s ease-in-out ${i * 0.12}s infinite` }}
+        />
+      ))}
+    </span>
   );
 }
 

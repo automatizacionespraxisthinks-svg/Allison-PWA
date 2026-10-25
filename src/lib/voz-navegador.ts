@@ -1,6 +1,6 @@
 "use client";
 
-import type { IdiomaVoz } from "./habla";
+import type { IdiomaVoz, SegmentoVoz } from "./habla";
 
 /**
  * La voz del NAVEGADOR: el respaldo cuando la API de voz no responde.
@@ -53,21 +53,27 @@ export function desbloquearVozNavegador(): void {
 /** Android reporta "en_US" con guion bajo; se normaliza antes de comparar. */
 const lengua = (v: SpeechSynthesisVoice) => v.lang.toLowerCase().replace("_", "-");
 
-function mejorVoz(idioma: IdiomaVoz): SpeechSynthesisVoice | null {
-  const todas = window.speechSynthesis.getVoices();
-  const preferida = idioma === "es" ? "es-co" : "en-us";
-  const exactas = todas.filter((v) => lengua(v).startsWith(preferida));
-  const delIdioma = todas.filter((v) => lengua(v).startsWith(idioma));
+/**
+ * Voces de mujer y de hombre por su nombre, en Windows, Mac, iPhone y
+ * Chrome. Solo habla Allison: una voz de hombre para el español (en
+ * Windows la de por defecto es "Microsoft Raul") sonaba a otra persona.
+ */
+const VOZ_DE_MUJER =
+  /\b(female|zira|aria|jenny|hazel|susan|heera|sabina|helena|laura|dalia|elvira|paloma|salome|catalina|samantha|victoria|karen|moira|tessa|fiona|allison|ava|zoe|nicky|paulina|m[oó]nica|marisol|soledad|isabela|francisca|ang[eé]lica|google us english|google español)\b/i;
+const VOZ_DE_HOMBRE =
+  /\b(male|david|mark|guy|george|ra[uú]l|pablo|jorge|juan|diego|carlos|alex|daniel|fred|tom|aaron|arthur|gordon|rishi|[aá]lvaro|enrique)\b/i;
 
-  return (
-    // La de Google es la buena en Chrome; la default del sistema después
-    exactas.find((v) => v.name.includes("Google")) ??
-    exactas.find((v) => v.default) ??
-    exactas[0] ??
-    delIdioma.find((v) => v.name.includes("Google")) ??
-    delIdioma[0] ??
-    null
-  );
+function mejorVoz(idioma: IdiomaVoz): SpeechSynthesisVoice | null {
+  const preferida = idioma === "es" ? "es-co" : "en-us";
+  const delIdioma = window.speechSynthesis.getVoices().filter((v) => lengua(v).startsWith(idioma));
+  // Primero que sea de mujer; después el acento (es-CO, en-US); la de
+  // Google es la buena en Chrome, y la del sistema desempata.
+  const puntaje = (v: SpeechSynthesisVoice) =>
+    (VOZ_DE_MUJER.test(v.name) ? 3 : VOZ_DE_HOMBRE.test(v.name) ? -3 : 0) +
+    (lengua(v).startsWith(preferida) ? 2 : 0) +
+    (v.name.includes("Google") ? 1 : 0) +
+    (v.default ? 0.5 : 0);
+  return delIdioma.reduce<SpeechSynthesisVoice | null>((mejor, v) => (!mejor || puntaje(v) > puntaje(mejor) ? v : mejor), null);
 }
 
 /** Espera a que el navegador cargue las voces, con tope: hablar tarde
@@ -88,6 +94,29 @@ function conVoces(maxMs = 1200): Promise<void> {
   });
 }
 
+/**
+ * Dice las partes de un texto una tras otra, cada una con la voz de su
+ * idioma: el español con una voz en español y el inglés con una en
+ * inglés. Antes lo leía todo una voz inglesa, marcadores incluidos
+ * ("[es] En inglés se dice así…"). Para si una parte no suena (la
+ * cortaron) o si `vigente` dice que ya se pidió otra cosa.
+ */
+export async function hablarSegmentosConNavegador(
+  segmentos: SegmentoVoz[],
+  ritmo = 1,
+  alEmpezar?: () => void,
+  vigente: () => boolean = () => true
+): Promise<boolean> {
+  let primero = true;
+  for (const s of segmentos) {
+    if (!vigente()) return false;
+    const ok = await hablarConNavegador(s.texto, s.idioma, ritmo, primero ? alEmpezar : undefined);
+    if (!ok) return false;
+    primero = false;
+  }
+  return !primero;
+}
+
 /** Corta lo que esté sonando (y su latido). */
 export function detenerVozNavegador(): void {
   if (!hayVoz()) return;
@@ -102,7 +131,7 @@ export function detenerVozNavegador(): void {
  * Dice un texto con la voz del navegador. Resuelve cuando termina de
  * sonar; false si el navegador no lo dejó sonar.
  */
-export function hablarConNavegador(
+function hablarConNavegador(
   texto: string,
   idioma: IdiomaVoz,
   ritmo = 1,

@@ -31,7 +31,7 @@ export default async function PaginaViaje({ params }: { params: Promise<{ n: str
           inicio: { actividad: "viaje", viaje: v.numero },
           portada: { imagen: `/ilustraciones/a1/${enPasaporte.clave}.webp`, rotulo: `Viaje ${v.numero} de ${VIAJES.length}`, titulo: v.pais },
           sello: { lugar: enPasaporte.clave as LugarSello, numero: v.numero, ganado: enPasaporte.ganado },
-          guia: { rotulo: `Tu guía en ${sitio}`, detalle: "Te habla despacio y te ayuda si te atascas." },
+          guia: { rotulo: `Tu guía en ${sitio}`, detalle: "Te habla despacio y te ayuda si te atascas.", papel: `Tu guía en ${sitio}` },
           mision: `Tu misión en ${sitio}`,
           tareas: v.tareas,
           minimo: v.minimoIntervenciones,

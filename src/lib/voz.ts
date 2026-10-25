@@ -1,12 +1,12 @@
 "use client";
 
-import type { IdiomaVoz } from "./habla";
+import { idiomaBase, prepararParaVoz, tramosDeVoz, type IdiomaVoz, type SegmentoVoz } from "./habla";
 import { pedir } from "./pedir";
 import type { Nivel } from "./tipos";
 import {
   desbloquearVozNavegador,
   detenerVozNavegador,
-  hablarConNavegador,
+  hablarSegmentosConNavegador,
 } from "./voz-navegador";
 
 /**
@@ -25,9 +25,10 @@ import {
  *     silencio. iOS y algunos Android solo dejan reproducir sin gesto a
  *     un elemento que ya sonó con gesto; la respuesta de Allison llega
  *     segundos después del toque, y sin esto saldría muda.
- *   · La velocidad se aplica AQUÍ (playbackRate, conservando el tono),
- *     no en la API: repetir una frase más despacio es instantáneo, y el
- *     mismo audio sirve para todas las velocidades.
+ *   · La velocidad la pone la API al generar el audio (el nivel, la
+ *     preferencia del alumno y "lento"): comparada de oído en octubre de
+ *     2026, sonó más natural que estirar el audio aquí con playbackRate.
+ *     La voz del navegador, de respaldo, usa su propio rate.
  *   · Si la API no está (sin clave, caída, ocupada), se cae a la voz
  *     del navegador y se dice en la consola. Oír a Allison peor es
  *     mejor que no oírla.
@@ -36,6 +37,15 @@ import {
 /** La base por nivel: un A1 oye más lento que un C1. */
 function velocidadBase(nivel: Nivel): number {
   return nivel === "A1" ? 0.8 : nivel === "A2" ? 0.9 : 1;
+}
+
+/**
+ * El botón "Lento": A1 a 0,6 y desde A2 a 0,7. Elegido de oído el 25 de
+ * octubre de 2026 con muestras de la API; antes era el 70 % de la base
+ * (A1 0,56, que sonaba demasiado arrastrado, y A2 0,63).
+ */
+function velocidadLenta(nivel: Nivel): number {
+  return nivel === "A1" ? 0.6 : 0.7;
 }
 
 export interface OpcionesHabla {
@@ -150,9 +160,23 @@ export function hablarIngles(
   return hablar(texto, "auto", velocidadBase(nivel) * velocidad, opciones);
 }
 
+/** Lo mismo, más despacio: lo que suena al tocar "Lento" o "Más despacio". */
+export function hablarInglesLento(texto: string, nivel: Nivel, opciones?: OpcionesHabla): Promise<boolean> {
+  return hablar(texto, "auto", velocidadLenta(nivel), opciones);
+}
+
 /** Lo mismo en español: la bienvenida. */
 export function hablarEspanol(texto: string, opciones?: OpcionesHabla): Promise<boolean> {
   return hablar(texto, "es", 1, opciones);
+}
+
+/** Los segmentos que mandó el servidor, si tienen la forma esperada. */
+function segmentosValidos(x: unknown): SegmentoVoz[] | null {
+  if (!Array.isArray(x) || !x.length) return null;
+  const ok = x.every(
+    (s) => s && typeof s.texto === "string" && s.texto.trim() && (s.idioma === "es" || s.idioma === "en")
+  );
+  return ok ? (x as SegmentoVoz[]) : null;
 }
 
 async function hablar(
@@ -165,27 +189,42 @@ async function hablar(
 
   detenerVoz();
   const mio = ++turno;
-  const idiomaNavegador: IdiomaVoz = idioma === "es" ? "es" : "en";
 
   const respuesta = await pedir("/api/voz", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ texto, idioma }),
+    body: JSON.stringify({ texto, idioma, velocidad: ritmo }),
     signal: AbortSignal.timeout(15_000),
   });
   if (mio !== turno) return false; // se pidió otra cosa mientras tanto
+  const datos = (respuesta ? await respuesta.json().catch(() => ({})) : {}) as {
+    url?: string;
+    error?: string;
+    segmentos?: unknown;
+  };
+  if (mio !== turno) return false;
+
+  // La voz del dispositivo, cada parte con su idioma: los segmentos que
+  // armó el servidor (con el inglés dentro del español) o, sin red, los
+  // de los marcadores.
+  const respaldo = () =>
+    hablarSegmentosConNavegador(
+      segmentosValidos(datos.segmentos) ?? tramosDeVoz(prepararParaVoz(texto), idiomaBase(texto, idioma)),
+      ritmo,
+      opciones?.alEmpezar,
+      () => mio === turno
+    );
 
   if (!respuesta?.ok) {
-    const datos = respuesta ? await respuesta.json().catch(() => ({})) : {};
     console.warn(
       `La voz de Allison no está disponible (${respuesta?.status ?? "sin red"}` +
-        `${datos?.error ? `: ${datos.error}` : ""}). Se usa la voz del navegador.`
+        `${datos.error ? `: ${datos.error}` : ""}). Se usa la voz del navegador.`
     );
-    return hablarConNavegador(texto, idiomaNavegador, ritmo, opciones?.alEmpezar);
+    return respaldo();
   }
 
-  const { url } = (await respuesta.json().catch(() => ({}))) as { url?: string };
-  if (!url || mio !== turno) return false;
+  const { url } = datos;
+  if (!url) return false;
 
   const a = reproductor();
   return new Promise<boolean>((resolver) => {
@@ -217,15 +256,11 @@ async function hablar(
         return;
       }
       console.warn("El audio de la API de voz no se pudo reproducir; se usa la voz del navegador.");
-      cerrar(hablarConNavegador(texto, idiomaNavegador, ritmo, opciones?.alEmpezar));
+      cerrar(respaldo());
     };
 
-    a.playbackRate = ritmo;
-    try {
-      (a as HTMLAudioElement & { preservesPitch?: boolean }).preservesPitch = true;
-    } catch {
-      // Navegadores viejos: cambia el tono con la velocidad. Se oye igual de claro.
-    }
+    // El audio ya viene a su velocidad: sin estirarlo.
+    a.playbackRate = 1;
     // Por si el silencio del desbloqueo todavía no había terminado.
     a.muted = false;
     a.src = url;

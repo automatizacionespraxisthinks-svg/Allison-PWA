@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { conPunto } from "@/lib/habla";
 import type { Describe as Datos } from "@/lib/ruta/tipos";
 import { evaluar, type Contexto, type FinActividad } from "./api";
 import { AllisonAro, BotonOir, Grabador, Hoja, IlustracionCompleta, NoDijeEso, useVoz, type Entrada } from "./comun";
@@ -118,7 +119,7 @@ export function Describe({
     if (r.espanol) setMensaje("¡Eso es! Ahora dilo en inglés.");
     if (s) {
       setSugerida(s);
-      void decir(`Look! ${s} Say it.`);
+      void decir(`Look! ${conPunto(s)} Say it.`);
     }
   }
 

@@ -437,7 +437,9 @@ export async function turnoDeEscena(
     let tokensEntrada = 0;
     let tokensSalida = 0;
     if (!texto && entrada.audioBase64) {
-      const tr = await transcribirACiegas(entrada.audioBase64, entrada.mimeType ?? "audio/webm");
+      // Con la situación de la escena (no la pregunta ni la respuesta): con
+      // el acento, el lugar ayuda a distinguir sonidos parecidos.
+      const tr = await transcribirACiegas(entrada.audioBase64, entrada.mimeType ?? "audio/webm", false, u.escenario.contexto);
       texto = tr.transcripcion;
       tokensEntrada += tr.tokensEntrada;
       tokensSalida += tr.tokensSalida;

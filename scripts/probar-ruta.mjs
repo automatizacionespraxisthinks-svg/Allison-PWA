@@ -307,7 +307,25 @@ ok("A2: sin RUTA_A2 sigue la ruta provisional", process.env.RUTA_A2 === "1" || r
   // Restaurante en producción (octubre de 2026): "Okay okay, somos 14
   // personas" contó la tarea como inglés, y "Fourteen people? Wow! This
   // way, please." pasó por pregunta y la escena perdió el hilo.
-  const { mezclaEspanol, llevaPregunta, sinFrasesFueraDeLugar, sinPreguntasDeInformacion } = await import("../src/lib/ruta/escena.ts");
+  const { mezclaEspanol, llevaPregunta, sinFrasesFueraDeLugar, sinPreguntasDeInformacion, sinRepetirLaAnterior } = await import(
+    "../src/lib/ruta/escena.ts"
+  );
+  // Producción, 25 de octubre de 2026: después de un "yes", Allison dijo su línea anterior otra vez.
+  const anteriorAeropuerto = "Oh, you are from the United States? Is this your first time here?";
+  ok(
+    "escena: Allison no repite su línea anterior; va la pregunta de la tarea que sigue",
+    sinRepetirLaAnterior(anteriorAeropuerto, anteriorAeropuerto, "Why are you here?") === "Okay! Why are you here?" &&
+      sinRepetirLaAnterior(`Okay. ${anteriorAeropuerto}`, anteriorAeropuerto, "Why are you here?") === "Okay! Why are you here?"
+  );
+  ok(
+    "escena: sin otra pregunta, solo vuelve a preguntar (sin lo demás)",
+    sinRepetirLaAnterior(anteriorAeropuerto, anteriorAeropuerto, null) === "Is this your first time here?"
+  );
+  ok(
+    "escena: una línea nueva, o una anterior muy corta, no se toca",
+    sinRepetirLaAnterior("Why are you here?", anteriorAeropuerto, "Why are you here?") === "Why are you here?" &&
+      sinRepetirLaAnterior("Hi! How are you?", "Hi!", null) === "Hi! How are you?"
+  );
   ok(
     "escena: si sigue una pregunta del alumno, Allison no la hace ella (las que lo invitan se quedan)",
     sinPreguntasDeInformacion("Yes, it is! It's very old. Who built Chichén Itzá?") === "Yes, it is! It's very old." &&

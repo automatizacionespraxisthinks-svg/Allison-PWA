@@ -122,29 +122,100 @@ export function sinEspanol(texto: string): string {
   return limitarEspanol(texto, 0);
 }
 
+/** Termina en un signo (con su comilla o paréntesis de cierre, si lo lleva). */
+const TERMINA_CON_SIGNO = /[.!?…:;,]["'”’»)]?$/;
+
+/**
+ * La frase con su punto final si no tenía ningún signo: "Nice to meet
+ * you" seguido de "Say it:" se oye como una sola frase, sin pausa.
+ */
+export function conPunto(frase: string): string {
+  const t = frase.trim();
+  return !t || TERMINA_CON_SIGNO.test(t) ? t : `${t}.`;
+}
+
+/**
+ * La puntuación como la necesita la voz: la API no tiene marcas de
+ * pausa, así que las pausas salen SOLO de los signos (octubre de 2026).
+ *   · Un salto de línea sin signo al final es una pausa: se vuelve punto.
+ *   · Tres puntos o más son puntos suspensivos; dos, un punto; y el punto
+ *     pegado a otro signo sobra ("Can I try it on?." → "Can I try it on?",
+ *     "Good morning.!" → "Good morning!").
+ *   · Sin espacio después del signo, la voz junta las frases ("Hi!How").
+ *     Solo tras una minúscula: "U.S.A." se queda como está.
+ */
+export function puntuarParaVoz(texto: string): string {
+  return texto
+    .replace(/([^\s.!?…:;,"'”’»)])(["'”’»)]?)[ \t]*(?:\r?\n)+/g, "$1$2. ")
+    .replace(/\.{3,}/g, "…")
+    .replace(/\.\./g, ".")
+    .replace(/([!?…])\./g, "$1")
+    .replace(/\.([!?])/g, "$1")
+    .replace(/(?<=[a-záéíóúñ"'”’)])([.!?…;:])(?=[A-ZÁÉÍÓÚÑ¿¡])/g, "$1 ");
+}
+
 /**
  * Limpia el texto para que suene bien: el motor lee lo que ve, y un
  * asterisco de negrita o un emoji se convierten en ruido o en una
- * pausa rara. Los saltos de línea pasan a espacios; la puntuación se
- * conserva, que es lo que marca las pausas naturales. Los marcadores
- * de idioma sobreviven: se normalizan ANTES de llegar aquí.
+ * pausa rara. Los saltos de línea se vuelven pausas (puntuarParaVoz) y
+ * la puntuación se conserva, que es lo que marca las pausas naturales.
+ * Los marcadores de idioma sobreviven.
  */
 export function limpiarParaVoz(texto: unknown): string {
   if (typeof texto !== "string") return "";
-  return (
+  return puntuarParaVoz(
     texto
       // Marcas de formato que a veces se cuelan en un texto generado
       .replace(/[*_`#>~]+/g, " ")
       // Emojis y pictogramas: el motor no los pronuncia, los tropieza
       .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, " ")
-      .replace(/\s+/g, " ")
-      .trim()
-  );
+      .replace(/[ \t]+/g, " ")
+  )
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-/** Marcadores normalizados y texto limpio: lo que se le manda a la API. */
+/** Texto limpio y marcadores normalizados: lo que se le manda a la API. */
 export function prepararParaVoz(texto: unknown): string {
-  return typeof texto === "string" ? limpiarParaVoz(normalizarMarcadores(texto)) : "";
+  return typeof texto === "string" ? normalizarMarcadores(limpiarParaVoz(texto)) : "";
+}
+
+/** Una parte de lo que se dice, toda en un idioma. */
+export interface SegmentoVoz {
+  texto: string;
+  idioma: IdiomaVoz;
+}
+
+/**
+ * En qué idioma empieza un texto. Con marcadores es una respuesta de
+ * Allison, que empieza en inglés, salvo que se haya pedido en español.
+ */
+export function idiomaBase(texto: string, idioma: IdiomaVoz | "auto" = "auto"): IdiomaVoz {
+  if (idioma !== "auto") return idioma;
+  return tieneMarcadores(texto) ? "en" : idiomaDe(texto);
+}
+
+/**
+ * Los tramos de un texto según sus marcadores ([es] … [en-US] …), cada
+ * uno con su idioma; lo que va antes del primero, en `base`. Cada tramo
+ * que da paso a otro idioma termina en un signo: sin él la voz pasaba de
+ * un idioma al otro sin respirar ("…en pasado [en-US] Now try" → "…en
+ * pasado. Now try").
+ */
+export function tramosDeVoz(texto: string, base: IdiomaVoz): SegmentoVoz[] {
+  const salida: SegmentoVoz[] = [];
+  let idioma = base;
+  for (const parte of normalizarMarcadores(texto).split(/(\[es\]|\[en-US\])/)) {
+    if (parte === MARCADOR_ES) idioma = "es";
+    else if (parte === MARCADOR_EN) idioma = "en";
+    else if (parte.trim()) {
+      const previo = salida.at(-1);
+      if (previo?.idioma === idioma) previo.texto = `${previo.texto} ${parte.trim()}`;
+      else salida.push({ texto: parte.trim(), idioma });
+    }
+  }
+  for (const s of salida.slice(0, -1)) s.texto = conPunto(s.texto);
+  return salida;
 }
 
 const PALABRAS_ES = new Set([
@@ -244,8 +315,19 @@ export function estimarSegundos(texto: string): number {
  * La API genera casi en tiempo real, así que un tope fijo y corto
  * cortaría justo las respuestas largas.
  */
-export function tiempoDeEsperaMs(texto: string): number {
-  return (2 * estimarSegundos(texto) + 30) * 1000;
+export function tiempoDeEsperaMs(texto: string, velocidad = 1): number {
+  return Math.round((2 * (estimarSegundos(texto) / velocidad) + 30) * 1000);
+}
+
+/**
+ * La velocidad que se le pide a la API: entre 0,5 y 2 (lo que acepta),
+ * con dos decimales. Redondeada, la misma velocidad pide siempre el
+ * mismo audio y la caché del servicio lo encuentra (0,8 × 0,7 da
+ * 0,5599999…, que sería otro audio distinto de 0,56).
+ */
+export function velocidadParaVoz(velocidad: unknown): number {
+  const v = typeof velocidad === "number" && Number.isFinite(velocidad) ? velocidad : 1;
+  return Math.round(Math.min(2, Math.max(0.5, v)) * 100) / 100;
 }
 
 /** Un X-Request-ID válido para la API: alfanumérico con - _ . :, máximo 64. */

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { conPunto } from "@/lib/habla";
 import type { Dilo as Datos } from "@/lib/ruta/tipos";
 import { desdeB1 } from "@/lib/tipos";
 import { evaluar, type Contexto, type FinActividad } from "./api";
@@ -144,7 +145,7 @@ export function Dilo({
       // (una sola voz a la vez, sin cortarse).
       void (async () => {
         if (exp) await decirExplicacion(exp.explicacion);
-        await decir(`${a.respuesta} Say it: ${a.respuesta}`);
+        await decir(`${conPunto(a.respuesta)} Say it: ${conPunto(a.respuesta)}`);
       })();
     } else {
       // Se marca hasta dónde iba bien y la primera palabra que falla.

@@ -36,7 +36,7 @@ export default async function PaginaEscenario({ params }: { params: Promise<{ cl
             clase: ESTILO_CATEGORIA[categoria].clase,
             icono: ESTILO_CATEGORIA[categoria].icono,
           },
-          guia: { rotulo: `Allison es ${minuscula(e.personaje)}`, detalle: e.contexto },
+          guia: { rotulo: `Allison es ${minuscula(e.personaje)}`, detalle: e.contexto, papel: sinArticulo(e.personaje) },
           mision: "Tu misión",
           tareas: e.tareas.map((t) => t.replace(/\.$/, "")),
           minimo: e.minimoIntervenciones,
@@ -52,4 +52,10 @@ export default async function PaginaEscenario({ params }: { params: Promise<{ cl
 
 function minuscula(t: string) {
   return t.charAt(0).toLowerCase() + t.slice(1);
+}
+
+/** "La mesera del restaurante" → "Mesera del restaurante", para la barra de arriba. */
+function sinArticulo(t: string) {
+  const sin = t.replace(/^(el|la|los|las|un|una)\s+/i, "");
+  return sin.charAt(0).toUpperCase() + sin.slice(1);
 }

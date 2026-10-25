@@ -106,6 +106,15 @@ const RUTA_B1: PasoDeRuta[] = [
   repaso(B1_REPASO_FINAL),
 ];
 
+/**
+ * Las tres rutas, estén abiertas o no: de su inglés sale el vocabulario
+ * con el que la voz reconoce el inglés dentro de una frase en español
+ * (src/lib/voz-idiomas.ts).
+ */
+export function todaLaRuta(): PasoDeRuta[] {
+  return [...RUTA_A1, ...RUTA_A2, ...RUTA_B1];
+}
+
 /** La ruta de un nivel, o null si su contenido todavía no está escrito. */
 export function rutaDe(nivel: Nivel): PasoDeRuta[] | null {
   if (nivel === "A1") return RUTA_A1;

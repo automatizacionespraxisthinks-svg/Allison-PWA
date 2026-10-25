@@ -1,7 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { esEspanolClaro, esInglesClaro, separarIdiomas } from "../allison.ts";
 import { estaEnLoDicho } from "../evaluacion.ts";
-import { MARCADOR_EN, MARCADOR_ES, quitarMarcadores } from "../habla.ts";
+import { conPunto, MARCADOR_EN, MARCADOR_ES, quitarMarcadores } from "../habla.ts";
 import { limpiarTranscripcion } from "../transcripcion.ts";
 import type { Nivel } from "../tipos.ts";
 import { preguntaDeAdivinar, type LecturaAdivina } from "./adivina.ts";
@@ -469,6 +469,22 @@ export function sinPreguntasDeInformacion(linea: string): string {
     .join(" ");
 }
 
+/**
+ * Allison no repite entera su línea anterior: después de un "yes" dijo
+ * otra vez "Oh, you are from the United States? Is this your first time
+ * here?" (prueba en producción, 25 de octubre de 2026). Si el modelo la
+ * repite, va la pregunta de la tarea que sigue; si no hay otra, solo
+ * vuelve a hacer su pregunta, sin lo demás.
+ */
+export function sinRepetirLaAnterior(linea: string, anterior: string, siguiente: string | null): string {
+  const a = palabras(anterior).join(" ");
+  const l = palabras(linea).join(" ");
+  const repite = !!a && !!l && (l === a || (a.split(" ").length >= 4 && l.includes(a)));
+  if (!repite) return linea;
+  if (siguiente && !a.includes(palabras(siguiente).join(" "))) return `Okay! ${siguiente}`;
+  return oracionesDe(anterior).filter(esPregunta).at(-1) ?? linea;
+}
+
 /** Lo que dice el alumno en primera persona ("I'm here on vacation."): en boca de Allison es el papel al revés. */
 const enPrimeraPersona = (o: string) => /^(?:I|I'm|I am|I'd|I'll|I want|My|We|We're)\b/i.test(o);
 
@@ -749,10 +765,21 @@ export async function turnoDeEscenario(t: TurnoEscenario): Promise<ResultadoEsce
       lineaCambiada = true;
     }
   }
+  // Nunca su línea anterior entera otra vez. Si va otra pregunta, la idea
+  // ya no sirve; si solo vuelve a hacer la misma ("How long is your
+  // trip?" cuando el alumno contestó otra cosa), la idea sigue sirviendo.
+  if (!llegaSorpresa && !t.ultimo && !espanol && transcripcion) {
+    const anterior = soloIngles([...t.historial].reverse().find((m) => m.rol === "allison")?.texto ?? "");
+    const sinRepetir = sinRepetirLaAnterior(en, anterior, ejemplo ?? (invita ? INVITA_A_PREGUNTAR : null));
+    if (sinRepetir !== en) {
+      if (!oracionesDe(en).includes(sinRepetir)) lineaCambiada = true;
+      en = sinRepetir;
+    }
+  }
   if (!llegaSorpresa && !t.ultimo && !espanol && (t.turno < t.minimo || sigue) && transcripcion && !llevaPregunta(en)) {
     const pregunta = ejemplo ?? (invita ? INVITA_A_PREGUNTAR : null);
     if (pregunta && !en.toLowerCase().includes(pregunta.toLowerCase())) {
-      en = `${en} ${pregunta}`.trim();
+      en = `${conPunto(en)} ${pregunta}`.trim();
       lineaCambiada = true;
     }
   }

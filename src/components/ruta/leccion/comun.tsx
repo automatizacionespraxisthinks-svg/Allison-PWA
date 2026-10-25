@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { sonar } from "@/lib/sonidos";
 import { fijarVolumen, useVolumenGrabacion } from "@/lib/volumen";
 import { estimarSegundos } from "@/lib/habla";
-import { desbloquearVoz, detenerVoz, hablarEspanol, hablarIngles } from "@/lib/voz";
+import { desbloquearVoz, detenerVoz, hablarEspanol, hablarIngles, hablarInglesLento } from "@/lib/voz";
 import { srcIlustracion } from "@/lib/ruta/ilustracion";
 import type { Zona } from "@/lib/ruta/tipos";
 import type { Nivel } from "@/lib/tipos";
@@ -74,7 +74,11 @@ export function useVoz(nivel: Nivel) {
       const mio = ++turno.current;
       setHablando(true);
       try {
-        const habla = opciones.espanol ? hablarEspanol(texto) : hablarIngles(texto, nivel, opciones.lento ? 0.7 : 1);
+        const habla = opciones.espanol
+          ? hablarEspanol(texto)
+          : opciones.lento
+            ? hablarInglesLento(texto, nivel)
+            : hablarIngles(texto, nivel);
         const limite = 8000 + estimarSegundos(texto) * 2500;
         let vencio = false;
         await Promise.race([habla, new Promise((r) => setTimeout(() => ((vencio = true), r(null)), limite))]);
