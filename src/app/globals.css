@@ -327,6 +327,17 @@ body {
 }
 .flecha-foto { transform-box: fill-box; animation: flecha-foto 1.6s ease-in-out infinite; }
 
+/* El anillo del micrófono (AnilloMicrofono): se llena en azul mientras el
+   micrófono se abre, sin pasar del 90 %, y se completa en verde cuando la
+   grabación de verdad arranca. Quieto (reducir movimiento, animaciones
+   apagadas), se queda en el 90 % hasta que graba. */
+@keyframes anillo-prepara {
+  from { stroke-dashoffset: 100; }
+  to   { stroke-dashoffset: 10; }
+}
+.anillo-prepara { stroke: var(--primario); stroke-dashoffset: 10; animation: anillo-prepara 1.2s cubic-bezier(0.2, 0.7, 0.3, 1) forwards; }
+.anillo-listo { stroke: var(--menta); stroke-dashoffset: 0; transition: stroke-dashoffset 0.15s ease-out, stroke 0.15s; }
+
 /* Animaciones apagadas desde Perfil · Ajustes (src/lib/sonidos.ts):
    todo se queda quieto, igual que con "reducir movimiento". */
 [data-quieto] *,

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { avisarMicrofonoListo } from "@/components/AnilloMicrofono";
 import { fijarVolumen } from "@/lib/volumen";
 import { desbloquearVoz, detenerVoz } from "@/lib/voz";
 import { srcIlustracion } from "@/lib/ruta/ilustracion";
@@ -65,6 +66,10 @@ export function Narra({
   const [aviso, setAviso] = useState<string | null>(null);
 
   const grabadora = useRef<MediaRecorder | null>(null);
+  /** El micrófono se está abriendo: todavía no graba (el anillo se llena en azul). */
+  const [preparando, setPreparando] = useState(false);
+  /** Un segundo toque mientras se abre no abre otro micrófono. */
+  const abriendo = useRef(false);
   const trozos = useRef<Blob[]>([]);
   const antes = useRef(0);
   const desde = useRef(0);
@@ -142,7 +147,9 @@ export function Narra({
   }
 
   const empezar = useCallback(async () => {
-    if (grabadora.current) return;
+    if (grabadora.current || abriendo.current) return;
+    abriendo.current = true;
+    setPreparando(true);
     setAviso(null);
     desbloquearVoz();
     detenerVoz();
@@ -179,6 +186,8 @@ export function Narra({
       mr.start(250);
       setMs(0);
       setFase("grabando");
+      setPreparando(false);
+      avisarMicrofonoListo();
       intervalo.current = setInterval(() => {
         if (mr.state !== "recording") return;
         analizador.getByteTimeDomainData(muestras);
@@ -195,6 +204,9 @@ export function Narra({
       grabadora.current = null;
       setAviso("No pudimos usar el micrófono. Revisa los permisos, o escribe tu historia.");
       setEscribiendo(true);
+    } finally {
+      abriendo.current = false;
+      setPreparando(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [a.segundos, limite, soltar]);
@@ -342,7 +354,7 @@ export function Narra({
         </form>
       ) : (
         <div className="flex flex-col items-center gap-2 text-[13px] font-bold text-texto-suave">
-          <Reloj fraccion={ms / limite} activo={fase === "grabando"}>
+          <Reloj fraccion={ms / limite} activo={fase === "grabando"} preparando={preparando}>
             {fase === "enviando" ? (
               <span className="relative flex gap-1" aria-hidden>
                 {[0, 1, 2].map((i) => (
@@ -390,7 +402,9 @@ export function Narra({
                 ? "Allison está escuchando tu historia…"
                 : fase === "grabando"
                   ? "Cuenta los cuatro dibujos. Toca para terminar."
-                  : "Toca y empieza a contar"}
+                  : preparando
+                    ? "Preparando el micrófono…"
+                    : "Toca y empieza a contar"}
             </span>
           )}
 

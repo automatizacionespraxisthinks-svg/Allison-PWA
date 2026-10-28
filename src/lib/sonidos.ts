@@ -66,8 +66,9 @@ function nota(ctx: AudioContext, frecuencia: number, inicio: number, duracion: n
  * "acierto": dos notas que suben, al responder bien.
  * "logro": tres notas, al terminar una lección, ganar una estampilla o
  * celebrar la racha.
+ * "listo": un tic corto y agudo, cuando el micrófono ya graba: "habla ahora".
  */
-export function sonar(tipo: "acierto" | "logro") {
+export function sonar(tipo: "acierto" | "logro" | "listo") {
   if (typeof window === "undefined" || !sonidosActivos()) return;
   try {
     const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -76,7 +77,9 @@ export function sonar(tipo: "acierto" | "logro") {
     const ctx = contexto;
     void ctx.resume();
     const t = ctx.currentTime + 0.02;
-    if (tipo === "acierto") {
+    if (tipo === "listo") {
+      nota(ctx, 1318.5, t, 0.12, 0.09);
+    } else if (tipo === "acierto") {
       nota(ctx, 880, t, 0.25, 0.12);
       nota(ctx, 1318.5, t + 0.09, 0.35, 0.1);
     } else {

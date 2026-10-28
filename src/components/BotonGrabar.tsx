@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AnilloMicrofono, avisarMicrofonoListo } from "@/components/AnilloMicrofono";
 import { AUDIO_MAX_SEGUNDOS, type EstadoConversacion } from "@/lib/tipos";
 
 /**
@@ -45,6 +46,10 @@ export function BotonGrabar({
 }: Props) {
   const [segundos, setSegundos] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  /** El micrófono se está abriendo: todavía no graba (el anillo se llena). */
+  const [preparando, setPreparando] = useState(false);
+  /** Un segundo toque mientras se abre no abre otro micrófono. */
+  const abriendo = useRef(false);
 
   const grabadora = useRef<MediaRecorder | null>(null);
   const trozos = useRef<Blob[]>([]);
@@ -74,7 +79,10 @@ export function BotonGrabar({
   }, []);
 
   const empezar = useCallback(async () => {
+    if (abriendo.current || grabadora.current) return;
+    abriendo.current = true;
     setError(null);
+    setPreparando(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true },
@@ -134,6 +142,8 @@ export function BotonGrabar({
       inicio.current = Date.now();
       mr.start();
       onIniciar();
+      setPreparando(false);
+      avisarMicrofonoListo();
 
       setSegundos(0);
       intervalo.current = setInterval(() => {
@@ -141,7 +151,8 @@ export function BotonGrabar({
         let suma = 0;
         for (const v of muestras) suma += (v - 128) ** 2;
         const nivel = Math.sqrt(suma / muestras.length) / 128;
-        volumenMaximo.current = Math.max(volumenMaximo.current, nivel);
+        // El "tic" del principio no cuenta como voz.
+        if (Date.now() - inicio.current > 250) volumenMaximo.current = Math.max(volumenMaximo.current, nivel);
         onVolumen?.(Math.min(1, nivel * 6));
 
         const transcurridos = Math.round((Date.now() - inicio.current) / 1000);
@@ -152,6 +163,9 @@ export function BotonGrabar({
       setError(
         "No pudimos usar el micrófono. Revisa los permisos, o usa el teclado de abajo."
       );
+    } finally {
+      abriendo.current = false;
+      setPreparando(false);
     }
   }, [detener, limpiar, onIniciar, onAudioListo, onDescartar, onVolumen]);
 
@@ -184,7 +198,7 @@ export function BotonGrabar({
         type="button"
         onClick={grabando ? detener : empezar}
         disabled={deshabilitado || estado === "procesando" || estado === "hablando"}
-        aria-label={grabando ? "Detener y enviar" : "Hablar con Allison"}
+        aria-label={grabando ? "Detener y enviar" : preparando ? "Preparando el micrófono" : "Hablar con Allison"}
         className={`relative flex size-20 items-center justify-center rounded-full transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40 ${
           grabando
             ? "bg-error text-white shadow-lg"
@@ -198,6 +212,10 @@ export function BotonGrabar({
             style={{ animation: "onda-grabacion 1.5s ease-out infinite" }}
           />
         )}
+        <AnilloMicrofono
+          estado={preparando ? "preparando" : grabando ? "grabando" : null}
+          colores={{ preparando: "var(--hablar)", grabando: "var(--error)" }}
+        />
 
         <span className="relative">
           {grabando ? (
@@ -214,10 +232,10 @@ export function BotonGrabar({
       </button>
 
       <p className="text-sm text-texto-suave">
-        {estado === "grabando" && "Toca para enviar"}
+        {estado === "grabando" && "¡Habla ahora! Toca para enviar"}
         {estado === "procesando" && "Allison está pensando…"}
         {estado === "hablando" && "Allison está hablando"}
-        {estado === "inactivo" && "Toca y habla en inglés"}
+        {estado === "inactivo" && (preparando ? "Preparando el micrófono…" : "Toca y habla en inglés")}
       </p>
     </div>
   );

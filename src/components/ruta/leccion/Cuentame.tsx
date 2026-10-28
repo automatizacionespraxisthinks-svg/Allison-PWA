@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { avisarMicrofonoListo } from "@/components/AnilloMicrofono";
 import { fijarVolumen } from "@/lib/volumen";
 import { desbloquearVoz, detenerVoz } from "@/lib/voz";
 import type { Cuentame as Datos } from "@/lib/ruta/tipos";
@@ -67,6 +68,10 @@ export function Cuentame({
   const [aviso, setAviso] = useState<string | null>(null);
 
   const grabadora = useRef<MediaRecorder | null>(null);
+  /** El micrófono se está abriendo: todavía no graba (el anillo se llena en azul). */
+  const [preparando, setPreparando] = useState(false);
+  /** Un segundo toque mientras se abre no abre otro micrófono. */
+  const abriendo = useRef(false);
   const trozos = useRef<Blob[]>([]);
   /** Milisegundos grabados antes del tramo actual (se puede pausar). */
   const antes = useRef(0);
@@ -138,7 +143,9 @@ export function Cuentame({
   }
 
   const empezar = useCallback(async () => {
-    if (grabadora.current) return;
+    if (grabadora.current || abriendo.current) return;
+    abriendo.current = true;
+    setPreparando(true);
     setAviso(null);
     setGuia(null);
     desbloquearVoz();
@@ -177,6 +184,8 @@ export function Cuentame({
       mr.start(250);
       setMs(0);
       setFase("grabando");
+      setPreparando(false);
+      avisarMicrofonoListo();
       reloj.current = setInterval(() => {
         if (mr.state !== "recording") return;
         analizador.getByteTimeDomainData(muestras);
@@ -201,6 +210,9 @@ export function Cuentame({
       grabadora.current = null;
       setAviso("No pudimos usar el micrófono. Revisa los permisos, o escribe tu relato.");
       setEscribiendo(true);
+    } finally {
+      abriendo.current = false;
+      setPreparando(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [a.guias.length, a.segundos, limite, soltar]);
@@ -330,7 +342,7 @@ export function Cuentame({
         </form>
       ) : (
         <div className="flex flex-col items-center gap-2 text-[13px] font-bold text-texto-suave">
-          <Reloj fraccion={ms / limite} activo={fase === "grabando"}>
+          <Reloj fraccion={ms / limite} activo={fase === "grabando"} preparando={preparando}>
             {fase === "enviando" ? (
               <span className="relative flex gap-1" aria-hidden>
                 {[0, 1, 2].map((i) => (
@@ -380,7 +392,9 @@ export function Cuentame({
                 ? "Allison está escuchando tu relato…"
                 : fase === "grabando"
                   ? "Habla sin parar. Toca para terminar."
-                  : "Toca y empieza a contar"}
+                  : preparando
+                    ? "Preparando el micrófono…"
+                    : "Toca y empieza a contar"}
             </span>
           )}
 
@@ -407,25 +421,40 @@ export function Cuentame({
 }
 
 /** El reloj de 30 segundos alrededor del micrófono. */
-export function Reloj({ fraccion, activo, children }: { fraccion: number; activo: boolean; children: React.ReactNode }) {
+export function Reloj({
+  fraccion,
+  activo,
+  preparando = false,
+  children,
+}: {
+  fraccion: number;
+  activo: boolean;
+  /** El micrófono se está abriendo: el anillo se llena en azul (AnilloMicrofono). */
+  preparando?: boolean;
+  children: React.ReactNode;
+}) {
   const r = 46;
   const largo = 2 * Math.PI * r;
   return (
     <span className="relative grid size-28 place-items-center">
       <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90" aria-hidden>
         <circle cx="50" cy="50" r={r} fill="none" stroke="var(--superficie-2)" strokeWidth="6" />
-        <circle
-          cx="50"
-          cy="50"
-          r={r}
-          fill="none"
-          stroke="var(--menta)"
-          strokeWidth="6"
-          strokeLinecap="round"
-          strokeDasharray={largo}
-          strokeDashoffset={largo * (1 - Math.min(1, fraccion))}
-          style={{ transition: "stroke-dashoffset 0.1s linear" }}
-        />
+        {preparando ? (
+          <circle cx="50" cy="50" r={r} fill="none" strokeWidth="6" strokeLinecap="round" pathLength={100} strokeDasharray="100" className="anillo-prepara" />
+        ) : (
+          <circle
+            cx="50"
+            cy="50"
+            r={r}
+            fill="none"
+            stroke="var(--menta)"
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeDasharray={largo}
+            strokeDashoffset={largo * (1 - Math.min(1, fraccion))}
+            style={{ transition: "stroke-dashoffset 0.1s linear" }}
+          />
+        )}
       </svg>
       <span
         className={`relative grid size-20 place-items-center rounded-full text-white ${

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { AnilloMicrofono, avisarMicrofonoListo } from "@/components/AnilloMicrofono";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { sonar } from "@/lib/sonidos";
 import { fijarVolumen, useVolumenGrabacion } from "@/lib/volumen";
@@ -242,6 +243,8 @@ export function Grabador({
   izquierda?: React.ReactNode;
 }) {
   const [grabando, setGrabando] = useState(false);
+  /** El micrófono se está abriendo: todavía no graba (el anillo se llena). */
+  const [preparando, setPreparando] = useState(false);
   const [escribiendo, setEscribiendo] = useState(false);
   const [texto, setTexto] = useState("");
   const [aviso, setAviso] = useState<string | null>(null);
@@ -287,6 +290,7 @@ export function Grabador({
     if (arrancando.current || grabadora.current) return;
     arrancando.current = true;
     setAviso(null);
+    setPreparando(true);
     desbloquearVoz();
     detenerVoz();
     alEmpezar?.();
@@ -333,13 +337,16 @@ export function Grabador({
       inicio.current = Date.now();
       mr.start();
       setGrabando(true);
+      setPreparando(false);
+      avisarMicrofonoListo();
       reloj.current = setInterval(() => {
         if (c.state === "running") midiendo = true;
         analizador.getByteTimeDomainData(muestras);
         let suma = 0;
         for (const v of muestras) suma += (v - 128) ** 2;
         const nivel = Math.sqrt(suma / muestras.length) / 128;
-        pico.current = Math.max(pico.current, nivel);
+        // El "tic" del principio no cuenta como voz.
+        if (Date.now() - inicio.current > 250) pico.current = Math.max(pico.current, nivel);
         const v = Math.min(1, nivel * 6);
         avisar.current?.(v);
         fijarVolumen(v);
@@ -354,6 +361,7 @@ export function Grabador({
       setEscribiendo(true);
     } finally {
       arrancando.current = false;
+      setPreparando(false);
     }
   }, [alEmpezar, limpiar]);
 
@@ -442,7 +450,7 @@ export function Grabador({
           type="button"
           onClick={grabando ? detener : empezar}
           disabled={deshabilitado || ocupado}
-          aria-label={grabando ? "Terminar y enviar" : "Hablar"}
+          aria-label={grabando ? "Terminar y enviar" : preparando ? "Preparando el micrófono" : "Hablar"}
           className={`relative grid size-16 place-items-center rounded-full text-white transition disabled:opacity-40 ${
             grabando ? "bg-menta" : "bg-primario shadow-[0_0_0_6px_var(--primario-suave)] hover:brightness-110 active:scale-95"
           }`}
@@ -450,6 +458,7 @@ export function Grabador({
           {grabando && (
             <span aria-hidden className="absolute inset-0 rounded-full bg-menta" style={{ animation: "onda-grabacion 1.5s ease-out infinite" }} />
           )}
+          <AnilloMicrofono estado={preparando ? "preparando" : grabando ? "grabando" : null} />
           {ocupado ? (
             <span className="relative flex gap-1" aria-hidden>
               {[0, 1, 2].map((i) => (
@@ -483,7 +492,15 @@ export function Grabador({
         )}
       </div>
       {!soloVoz && formulario}
-      <span aria-live="polite">{ocupado ? "Allison está escuchando lo que dijiste…" : grabando ? "Toca para terminar" : ayuda}</span>
+      <span aria-live="polite">
+        {ocupado
+          ? "Allison está escuchando lo que dijiste…"
+          : preparando
+            ? "Preparando el micrófono…"
+            : grabando
+              ? "¡Habla ahora! Toca para terminar"
+              : ayuda}
+      </span>
       {!soloVoz && (
         <span className="hidden text-[11.5px] font-semibold lg:block">Espacio: mantener para hablar · Enter: enviar lo escrito</span>
       )}
