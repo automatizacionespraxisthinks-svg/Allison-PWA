@@ -10,18 +10,18 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
-| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Mañana · Mediodía · Noche |
+| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Morning (Mañana) · Noon (Mediodía) · Night (Noche) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | vocabulario armado desde las actividades |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Good morning" → "Buenos días" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Son las 7 de la mañana y ves a tu vecino. ¿Qué le dices? |
-| Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Muchacho · Muchacha · Profesora |
+| Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Orange T-shirt (Camiseta naranja) · Green hoodie (Saco verde) · Yellow T-shirt (Camiseta amarilla) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
-| Lección 2, paso 1 (Escucha y elige) | Nota | audio: «A girl in yellow» y «A boy in green» en vez de «Sarah» y «Tom», para que Tom se identifique por lo que se oye (muchacho o muchacha, y el color de la ropa del dibujo); antes solo se adivinaba porque Tom es nombre de hombre. Los colores se enseñan en la Parada 9: aquí son una pista de más, no hace falta saberlos para acertar (cambio del 19 de octubre de 2026) |
-| Lección 2, paso 1 (Escucha y elige) | Traducción | "A girl in yellow says: "Hi, I'm Sarah. What's your name?"" → "Una muchacha de amarillo dice: "Hola, soy Sarah. ¿Cómo te llamas?"" |
-| Lección 2, paso 1 (Escucha y elige) | Traducción | "A boy in green says: "My name is Tom. Nice to meet you."" → "Un muchacho de verde dice: "Me llamo Tom. Mucho gusto."" |
-| Lección 2, paso 1 (Escucha y elige) | Nota | opciones: el documento no dice cuáles son las tres imágenes; se usaron a-tom, a-sarah y a-profesor |
-| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Canadá · Colombia · México |
+| Lección 2, paso 1 (Escucha y elige) | Nota | audio: Allison describe a Tom («This is Tom. He is a happy boy in a green hoodie.») y cita su saludo, con el verbo to be y los pronombres de la parada; antes contaba un diálogo entre Sarah y Tom. Para acertar hay que oír green: los colores se enseñan en la Parada 9, pero el dibujo muestra lo que significa y la etiqueta se traduce con un toque (cambio del 28 de octubre de 2026) |
+| Lección 2, paso 1 (Escucha y elige) | Traducción | "This is Tom. He is a happy boy in a green hoodie." → "Este es Tom. Es un muchacho alegre con un saco verde." |
+| Lección 2, paso 1 (Escucha y elige) | Traducción | "He says: "Hi! My name is Tom."" → "Dice: "¡Hola! Me llamo Tom."" |
+| Lección 2, paso 1 (Escucha y elige) | Nota | opciones: dos muchachos (f-nino y a-tom) y una muchacha (a-sarah), para que no baste saber que Tom es nombre de hombre; el documento no dice cuáles son las tres imágenes (cambio del 28 de octubre de 2026) |
+| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Canada (Canadá) · Colombia (Colombia) · Mexico (México) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "A girl asks: "Where are you from?"" → "Una muchacha pregunta: "¿De dónde eres?"" |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "A boy says: "I'm from Colombia. And you?"" → "Un muchacho dice: "Soy de Colombia. ¿Y tú?"" |
@@ -31,7 +31,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 3, paso 2 (Describe la imagen) | Nota | plantillas: la tabla de la parada no la da; "I see a ___." sale de la sección 6 y no sirve para music (se dice "I see music") |
 | Lección 3, paso 2 (Describe la imagen) | Nota | palabrasAyuda: el documento no las nombra; se pusieron las tres cosas de la respuesta |
 | Lección 3, paso 3 (Responde rápido) | Nota | aceptadas: el documento no da ejemplos; se pusieron frases completas que ya están en la parada |
-| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Decir adiós · Calendario · Hora de dormir |
+| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Say goodbye (Decir adiós) · Calendar (Calendario) · Bedtime (Hora de dormir) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "See you tomorrow" → "Nos vemos mañana" |
 | Lección 4, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Te vas de la casa de un amigo y estás en la puerta. ¿Qué le dices? |
@@ -46,17 +46,17 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
-| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Abuela · Mamá · Hermanita |
+| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Grandma (Abuela) · Mom (Mamá) · Little sister (Hermanita) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Sarah says: "This is my grandma."" → "Sarah dice: "Esta es mi abuela."" |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Sarah te muestra la foto de su familia. ¿Quién es la persona de la flecha? Completa la frase. |
-| Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Niña · Niño · Señor mayor |
+| Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Girl (Niña) · Boy (Niño) · Older man (Señor mayor) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Tom says: "This is my sister. Her name is Emma."" → "Tom dice: "Esta es mi hermana. Se llama Emma."" |
-| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Dos niñas y un perro · Dos niños y un gato · Una niña y un perro |
+| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Two girls and a dog (Dos niñas y un perro) · Two boys and a cat (Dos niños y un gato) · A girl and a dog (Una niña y un perro) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "A boy says: "I have two sisters and a dog."" → "Un muchacho dice: "Tengo dos hermanas y un perro."" |
-| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Gata · Perro · Pájaro |
+| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Cat (Gata) · Dog (Perro) · Bird (Pájaro) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "This is my cat. Her name is Luna." → "Esta es mi gata. Se llama Luna." |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Sarah te muestra la foto de su familia. ¿Quién es la persona de la flecha? Completa la frase. |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | Do you have any brothers or sisters? → "Yes, I have a sister." |
@@ -69,7 +69,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
-| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Profesora · Niña · Señor mayor |
+| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Teacher (Profesora) · Girl (Niña) · Older man (Señor mayor) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "A boy asks: "Who is she?"" → "Un muchacho pregunta: "¿Quién es ella?"" |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "A girl says: "She's my teacher. Her name is Ms. Lee."" → "Una muchacha dice: "Es mi profesora. Se llama Ms. Lee."" |
@@ -79,12 +79,12 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "A girl says: "My name is Amy. A-M-Y."" → "Una muchacha dice: "Me llamo Amy. A-M-Y."" |
 | Lección 2, paso 2 (Tu turno en el diálogo) | Nota | plantilla: el documento no la escribe; dice que en pantalla va el nombre del alumno con un espacio por letra |
 | Lección 2, paso 2 (Tu turno en el diálogo) | Nota | dialogo: en el documento el alumno dice su nombre entre las dos líneas de Sarah; aquí quedan seguidas y el modelo responde las dos |
-| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Chicago · Miami · Nueva York |
+| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Chicago (Chicago) · Miami (Miami) · New York (Nueva York) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "A boy asks: "Where do you live?"" → "Un muchacho pregunta: "¿Dónde vives?"" |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "A girl says: "I live in Chicago."" → "Una muchacha dice: "Vivo en Chicago."" |
 | Lección 3, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quiénes hablan |
-| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Fútbol · Baloncesto · Béisbol |
+| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Soccer (Fútbol) · Basketball (Baloncesto) · Baseball (Béisbol) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "My favorite sport is soccer." → "Mi deporte favorito es el fútbol." |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿Qué deporte se juega con este balón? Dilo en inglés. |
 
@@ -106,7 +106,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
-| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Levantarse · Desayunar · Subir al bus |
+| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Get up (Levantarse) · Have breakfast (Desayunar) · Take the bus (Subir al bus) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Leo says: "I get up at six."" → "Leo dice: "Me levanto a las seis."" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Leo, el muchacho de las imágenes |
@@ -115,10 +115,10 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Leo says: "I usually go to bed at ten."" → "Leo dice: "Casi siempre me acuesto a las diez."" |
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Leo, el muchacho de la rutina |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: el documento dice "con una luna al lado" sin aclarar si va junto a cada reloj; aquí va en los tres |
-| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Levantarse · Desayunar · Subir al bus |
+| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Get up (Levantarse) · Have breakfast (Desayunar) · Take the bus (Subir al bus) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "Leo takes the bus to school." → "Leo va al colegio en bus." |
 | Lección 3, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison, porque la frase habla de Leo |
-| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Tomar café · Caminar en el parque · Cocinar |
+| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Have coffee (Tomar café) · Walk in the park (Caminar en el parque) · Cook (Cocinar) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "On Saturdays, I visit my sister." → "Los sábados visito a mi hermana." |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Son las 10 de la noche. ¿Qué haces tú a esa hora? Responde en inglés. |
 
@@ -126,21 +126,21 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
-| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Nadar · Surfear · Bailar |
+| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Swim (Nadar) · Surf (Surfear) · Dance (Bailar) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla ("Oye:"); se puso una muchacha |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "A girl says: "I can swim."" → "Una muchacha dice: "Sé nadar."" |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Mira lo que toca el muchacho. ¿Qué instrumento sabe tocar? Completa la frase. |
-| Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Cantar · Bailar · Nadar |
+| Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Sing (Cantar) · Dance (Bailar) · Swim (Nadar) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién le pregunta a Sarah |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Tom asks: "Can you dance, Sarah?"" → "Tom pregunta: "¿Sabes bailar, Sarah?"" |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Sarah says: "No, I can't. But I can sing!"" → "Sarah dice: "No, no sé. ¡Pero sé cantar!"" |
 | Lección 2, paso 2 (Tu turno en el diálogo) | Nota | dialogo: la segunda pregunta de Sarah ("Can you cook?") no cabe en el tipo, que tiene una sola línea del alumno; queda solo en queAparece |
-| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Surfear · Nadar · Tocar guitarra |
+| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Surf (Surfear) · Swim (Nadar) · Play the guitar (Tocar guitarra) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "Leo says: "I can't surf. Can I try?"" → "Leo dice: "No sé surfear. ¿Puedo probar?"" |
-| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Cocinar · Bailar · Cantar |
+| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Cook (Cocinar) · Dance (Bailar) · Sing (Cantar) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "I can cook and I can dance, but I can't sing!" → "¡Sé cocinar y sé bailar, pero no sé cantar!" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿En qué puedes montar? Dilo en inglés. |
 
@@ -148,21 +148,21 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
-| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Pizza · Hamburguesa · Ensalada |
+| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Pizza (Pizza) · Hamburger (Hamburguesa) · Salad (Ensalada) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "A boy says: "I'd like a pizza, please."" → "Un muchacho dice: "Me gustaría una pizza, por favor."" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | ¿Qué comida es esta? Dilo en inglés. |
-| Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Pizza · Hamburguesa · Ensalada |
+| Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Pizza (Pizza) · Hamburger (Hamburguesa) · Salad (Ensalada) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Sarah says: "I like pizza, but today I'd like a salad."" → "Sarah dice: "Me gusta la pizza, pero hoy quiero una ensalada."" |
 | Lección 2, paso 2 (Tu turno en el diálogo) | Nota | dialogo: después de la línea del alumno la mesera pregunta "Would you like some ice?" y el alumno responde "Yes, please." / "No, thank you."; el tipo solo guarda las líneas antes de la del alumno |
-| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Sopa · Papas a la francesa · Ensalada |
+| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Soup (Sopa) · French fries (Papas a la francesa) · Salad (Ensalada) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "The waitress asks: "Would you like some fries?"" → "La mesera pregunta: "¿Quieres unas papas a la francesa?"" |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "Tom says: "No, thank you. I'd like some soup."" → "Tom dice: "No, gracias. Me gustaría una sopa."" |
 | Lección 3, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quiénes hablan |
-| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Beignets · Helado · Pizza |
+| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Beignets (Beignets) · Ice cream (Helado) · Pizza (Pizza) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "In New Orleans, I always have beignets and a coffee!" → "¡En Nueva Orleans siempre como beignets y me tomo un café!" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿Qué postre es este? Dilo en inglés. |
 
@@ -170,17 +170,17 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
-| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Cuarto · Cocina · Baño |
+| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Bedroom (Cuarto) · Kitchen (Cocina) · Bathroom (Baño) |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "There is a bed and a desk in my bedroom." → "Hay una cama y un escritorio en mi cuarto." |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | ¿Qué parte de la casa es esta? Dilo en inglés. |
-| Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Debajo de la cama · Encima de la cama · Al lado de la cama |
+| Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Under the bed (Debajo de la cama) · On the bed (Encima de la cama) · Next to the bed (Al lado de la cama) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "The cat is under the bed." → "El gato está debajo de la cama." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
-| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Droguería · Supermercado · Banco |
+| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Drugstore (Droguería) · Supermarket (Supermercado) · Bank (Banco) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "Tom says: "There's a drugstore next to my school."" → "Tom dice: "Hay una droguería al lado de mi colegio."" |
-| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Patio · Cocina · Cuarto |
+| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Yard (Patio) · Kitchen (Cocina) · Bedroom (Cuarto) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "In my apartment, there's a small kitchen, but there isn't a yard." → "En mi apartamento hay una cocina pequeña, pero no hay patio." |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿Dónde está tu ropa? Completa la frase. |
 
@@ -188,20 +188,20 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
-| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Impermeable amarillo · Gorro y chaqueta café · Vestido verde |
+| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Yellow raincoat (Impermeable amarillo) · Hat and brown jacket (Gorro y chaqueta café) · Green dress (Vestido verde) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "She's wearing a yellow raincoat." → "Ella tiene puesto un impermeable amarillo." |
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: el documento solo describe a la del impermeable; el señor y la mujer se describieron mirando f-tres-personas-ropa |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | ¿Qué son estos? Dilo en inglés. |
-| Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Levantarse · Desayunar · Subir al bus |
+| Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Get up (Levantarse) · Have breakfast (Desayunar) · Take the bus (Subir al bus) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Leo is having breakfast." → "Leo está desayunando." |
-| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Vende pescado · Compra flores · Come helado |
+| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Selling fish (Vende pescado) · Buying flowers (Compra flores) · Eating ice cream (Come helado) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "A boy is eating ice cream." → "Un niño está comiendo un helado." |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: el documento no dice cuáles tres personas se ofrecen; se tomaron las tres primeras de la escena, en el orden del paso 2 |
 | Lección 3, paso 2 (Describe la imagen) | Nota | cosas: son las palabras de ayuda más "eating" (el niño con el helado también está en la escena) |
-| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Cocinar · Caminar en el parque · Tomar café |
+| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Cook (Cocinar) · Walk in the park (Caminar en el parque) · Have coffee (Tomar café) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "I'm cooking right now!" → "¡Estoy cocinando en este momento!" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Está lloviendo en Seattle. ¿Qué necesitas? Responde en inglés. |
 
@@ -217,7 +217,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "Go straight two blocks and turn left. The museum is on the right." → "Sigue derecho dos cuadras y gira a la izquierda. El museo está a la derecha." |
 | Lección 3, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: el documento no dice dónde están los tres edificios del mapa; las posiciones de los dos incorrectos son una propuesta |
-| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Metro · Taxi · Bicicleta |
+| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Subway (Metro) · Taxi (Taxi) · Bike (Bicicleta) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "In New York, take the subway. Don't take a taxi. It's expensive!" → "En Nueva York, toma el metro. No tomes taxi. ¡Es caro!" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿En qué puedes montar en San Francisco? Completa la frase. |
 
@@ -225,7 +225,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
-| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Papá · Abuelo · Mamá |
+| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Dad (Papá) · Grandpa (Abuelo) · Mom (Mamá) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Sarah says: "This is my dad. His name is Mark. He is 45."" → "Sarah dice: "Este es mi papá. Se llama Mark. Tiene 45 años."" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento solo dice "Oye:"; se puso Sarah porque es su foto y dice "my dad" |
@@ -241,10 +241,10 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 3 (Tu turno en el diálogo) | Nota | plantilla: el documento no la escribe; dice "Su nombre, deletreado, y su cumpleaños con on" |
 | Lección 2, paso 3 (Tu turno en el diálogo) | Nota | modelo: el documento no lo escribe; sale de las paradas 3 y 4 |
 | Lección 2, paso 3 (Tu turno en el diálogo) | Nota | dialogo: Mia hace una pregunta a la vez; aquí quedan seguidas y el modelo responde las tres |
-| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Levantarse · Desayunar · Subir al bus |
+| Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Get up (Levantarse) · Have breakfast (Desayunar) · Take the bus (Subir al bus) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "Leo always has breakfast at seven." → "Leo siempre desayuna a las siete." |
 | Lección 3, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison, porque la frase habla de Leo |
-| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Gata · Perro · Pájaro |
+| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Cat (Gata) · Dog (Perro) · Bird (Pájaro) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "My cat is three. Her name is…" → "Mi gata tiene tres años. Se llama…" |
 | Lección 4, paso 2 (Responde rápido) | Respuesta modelo | What time do you get up? → "I get up at six." |
 | Lección 4, paso 2 (Responde rápido) | Respuesta modelo | How do you go to school? → "I take the bus." |
@@ -261,7 +261,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
-| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Sopa · Pizza · Ensalada |
+| Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Soup (Sopa) · Pizza (Pizza) · Salad (Ensalada) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Leo says: "I can't cook, but I'd like some soup."" → "Leo dice: "No sé cocinar, pero me gustaría una sopa."" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento solo dice "Oye:"; no se puso Allison porque ella sí sabe cocinar (su ficha) |
@@ -270,7 +270,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 3 (Responde rápido) | Respuesta modelo | Do you like pizza? → "Yes, I do." |
 | Lección 1, paso 3 (Responde rápido) | Respuesta modelo | Can your dad cook? → "Yes, he can." |
 | Lección 1, paso 3 (Responde rápido) | Respuesta modelo | Would you like some ice cream? → "Yes, please." |
-| Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Debajo de la cama · Encima de la cama · Al lado de la cama |
+| Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Under the bed (Debajo de la cama) · On the bed (Encima de la cama) · Next to the bed (Al lado de la cama) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "The cat is next to the bed." → "El gato está al lado de la cama." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento solo dice "Oye:"; se puso Allison |
 | Lección 2, paso 2 (Describe la imagen) | Nota | modelo: el documento pide tres frases y da dos de ejemplo ("There are two people. They're dancing."); la tercera ("A man is selling fish.") sale de la parada 9, con la misma imagen |
@@ -286,7 +286,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 3, paso 3 (Responde rápido) | Respuesta modelo | When is your birthday? → "It's on March 3rd." |
 | Lección 3, paso 3 (Responde rápido) | Respuesta modelo | What time do you get up? → "I get up at six." |
 | Lección 3, paso 3 (Responde rápido) | Respuesta modelo | What are you doing now? → "I'm studying English." |
-| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Metro · Taxi · Tranvía |
+| Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Subway (Metro) · Taxi (Taxi) · Streetcar (Tranvía) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "Take the subway. Don't take a taxi!" → "Toma el metro. ¡No tomes taxi!" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿Quién es ella? Di tres cosas de ella en inglés: cómo se llama, de quién es y cuántos años tiene. |
 | Lección 4, paso 2 (¿Qué es esto?) | Nota | respuesta: la actividad pide 3 cosas, pero ¿Qué es esto? evalúa una sola frase: con las aceptadas tal cual, basta con decir una de ellas |

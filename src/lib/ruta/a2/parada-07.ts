@@ -80,9 +80,9 @@ export const PARADA_07: Parada = {
           traduccion: ['Priya pregunta: "¿Te gustaría jugar tenis el martes después del colegio?"', 'Ben dice: "Lo siento, no puedo. Estoy estudiando para un examen."'],
           pregunta: "¿Qué hace Ben el martes?",
           opciones: [
-            { imagen: "f-ben-estudiando", descripcion: "Ben estudiando", etiqueta: "Estudiar" },
-            { imagen: "f-ben-computador", descripcion: "Ben frente a su computador", etiqueta: "Usar el computador" },
-            { imagen: "f-plan-torta", descripcion: "Ben horneando con su abuela", etiqueta: "Hornear una torta" },
+            { imagen: "f-ben-estudiando", descripcion: "Ben estudiando", etiqueta: "Study", etiquetaEs: "Estudiar" },
+            { imagen: "f-ben-computador", descripcion: "Ben frente a su computador", etiqueta: "Use the computer", etiquetaEs: "Usar el computador" },
+            { imagen: "f-plan-torta", descripcion: "Ben horneando con su abuela", etiqueta: "Bake a cake", etiquetaEs: "Hornear una torta" },
           ],
           correcta: 0,
           porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
@@ -130,9 +130,9 @@ export const PARADA_07: Parada = {
           traduccion: ['Priya pregunta: "¿Qué tal si vamos al parque?"', 'Ben dice: "¡Buena idea! Llevemos nuestras bicicletas."'],
           pregunta: "¿Adónde van Priya y Ben?",
           opciones: [
-            { imagen: "f-parque-corredor-bici", descripcion: "Un parque con una bicicleta", etiqueta: "Parque" },
-            { imagen: "f-cine", descripcion: "Un cine", etiqueta: "Cine" },
-            { imagen: "a1/f-metro", descripcion: "Un vagón de metro", etiqueta: "Metro" },
+            { imagen: "f-parque-corredor-bici", descripcion: "Un parque con una bicicleta", etiqueta: "Park", etiquetaEs: "Parque" },
+            { imagen: "f-cine", descripcion: "Un cine", etiqueta: "Movie theater", etiquetaEs: "Cine" },
+            { imagen: "a1/f-metro", descripcion: "Un vagón de metro", etiqueta: "Subway", etiquetaEs: "Metro" },
           ],
           correcta: 0,
           porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca el parque con la bicicleta"'],
@@ -248,9 +248,9 @@ export const PARADA_07: Parada = {
           traduccion: ["La semana pasada Emily me invitó a un picnic.", "Le dije: ¡Me encantaría!"],
           pregunta: "¿A qué la invitó Emily?",
           opciones: [
-            { imagen: "f-parque-picnic", descripcion: "Un picnic en un parque", etiqueta: "Picnic" },
-            { imagen: "f-plan-museo", descripcion: "Un museo", etiqueta: "Museo" },
-            { imagen: "f-cine", descripcion: "Un cine", etiqueta: "Cine" },
+            { imagen: "f-parque-picnic", descripcion: "Un picnic en un parque", etiqueta: "Picnic", etiquetaEs: "Picnic" },
+            { imagen: "f-plan-museo", descripcion: "Un museo", etiqueta: "Museum", etiquetaEs: "Museo" },
+            { imagen: "f-cine", descripcion: "Un cine", etiqueta: "Movie theater", etiquetaEs: "Cine" },
           ],
           correcta: 0,
           porRevisar: [

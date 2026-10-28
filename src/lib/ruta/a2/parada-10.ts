@@ -79,9 +79,9 @@ export const PARADA_10: Parada = {
           // Sin nombres en el dibujo (decidido el 17 de octubre de 2026): con
           // los nombres debajo se elegía leyendo, sin entender "taller".
           opciones: [
-            { imagen: "f-muchacho-mediano", descripcion: "Un muchacho de estatura media junto a la regla", etiqueta: "Mediano" },
-            { imagen: "f-muchacho-alto", descripcion: "Un muchacho alto junto a la regla", etiqueta: "Alto" },
-            { imagen: "f-muchacho-bajo", descripcion: "Un muchacho bajo junto a la regla", etiqueta: "Bajo" },
+            { imagen: "f-muchacho-mediano", descripcion: "Un muchacho de estatura media junto a la regla", etiqueta: "Average height", etiquetaEs: "Mediano" },
+            { imagen: "f-muchacho-alto", descripcion: "Un muchacho alto junto a la regla", etiqueta: "Tall", etiquetaEs: "Alto" },
+            { imagen: "f-muchacho-bajo", descripcion: "Un muchacho bajo junto a la regla", etiqueta: "Short", etiquetaEs: "Bajo" },
           ],
           correcta: 1,
           porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a Noah, el más alto"'],
@@ -132,9 +132,9 @@ export const PARADA_10: Parada = {
           traduccion: ["Priya ha visitado muchas ciudades del Reino Unido.", "¡Para ella, Edimburgo es la más bonita!"],
           pregunta: "¿Cuál es la ciudad más bonita para Priya?",
           opciones: [
-            { imagen: "edimburgo", descripcion: "La portada de Edimburgo", etiqueta: "Edimburgo" },
-            { imagen: "oxford", descripcion: "La portada de Oxford", etiqueta: "Oxford" },
-            { imagen: "manchester", descripcion: "La portada de Manchester", etiqueta: "Manchester" },
+            { imagen: "edimburgo", descripcion: "La portada de Edimburgo", etiqueta: "Edinburgh", etiquetaEs: "Edimburgo" },
+            { imagen: "oxford", descripcion: "La portada de Oxford", etiqueta: "Oxford", etiquetaEs: "Oxford" },
+            { imagen: "manchester", descripcion: "La portada de Manchester", etiqueta: "Manchester", etiquetaEs: "Manchester" },
           ],
           correcta: 0,
           porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca Edimburgo"'],
@@ -195,9 +195,9 @@ export const PARADA_10: Parada = {
           traduccion: ["El tren es más rápido que el bus, y es más cómodo.", "Pero el bus es más barato."],
           pregunta: "¿Cuál es más barato?",
           opciones: [
-            { imagen: "f-tren", descripcion: "Un tren", etiqueta: "Tren" },
-            { imagen: "f-avion", descripcion: "Un avión", etiqueta: "Avión" },
-            { imagen: "a1/c-bus", descripcion: "Un bus", etiqueta: "Bus" },
+            { imagen: "f-tren", descripcion: "Un tren", etiqueta: "Train", etiquetaEs: "Tren" },
+            { imagen: "f-avion", descripcion: "Un avión", etiqueta: "Plane", etiquetaEs: "Avión" },
+            { imagen: "a1/c-bus", descripcion: "Un bus", etiqueta: "Bus", etiquetaEs: "Bus" },
           ],
           correcta: 2,
           porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
@@ -256,9 +256,9 @@ export const PARADA_10: Parada = {
           traduccion: ["Mi apartamento es pequeño, pero queda frente a un parque.", "El apartamento de mi hermana es más grande."],
           pregunta: "¿Dónde está el apartamento de Allison?",
           opciones: [
-            { imagen: "a1/f-barrio", descripcion: "Una calle con un parque al lado", etiqueta: "Calle con parque" },
-            { imagen: "a1/f-playa-la", descripcion: "Una playa", etiqueta: "Playa" },
-            { imagen: "f-granjero-vacas", descripcion: "Una granja", etiqueta: "Granja" },
+            { imagen: "a1/f-barrio", descripcion: "Una calle con un parque al lado", etiqueta: "Street with a park", etiquetaEs: "Calle con parque" },
+            { imagen: "a1/f-playa-la", descripcion: "Una playa", etiqueta: "Beach", etiquetaEs: "Playa" },
+            { imagen: "f-granjero-vacas", descripcion: "Una granja", etiqueta: "Farm", etiquetaEs: "Granja" },
           ],
           correcta: 0,
           porRevisar: ["traduccion"],

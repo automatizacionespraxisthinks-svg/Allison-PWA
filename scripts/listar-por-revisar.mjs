@@ -59,7 +59,9 @@ for (const archivo of archivos) {
       // Las palabras debajo de los dibujos y la situación en español se
       // escribieron para la app (octubre de 2026): se revisan todas.
       if (a.tipo === "escucha-elige" && a.opciones?.some((o) => o.etiqueta)) {
-        filas.push(`| ${donde} | Palabras debajo de los dibujos | ${a.opciones.map((o) => o.etiqueta).join(" · ")} |`);
+        filas.push(
+          `| ${donde} | Palabras debajo de los dibujos | ${a.opciones.map((o) => `${o.etiqueta} (${o.etiquetaEs ?? "sin traducción"})`).join(" · ")} |`,
+        );
       }
       if (a.tipo === "que-es-esto" && a.contexto) filas.push(`| ${donde} | Situación en español | ${a.contexto} |`);
       for (const nota of a.porRevisar ?? []) {

@@ -178,7 +178,14 @@ function revisarActividad(a, donde, imagenes) {
       {
         const conEtiqueta = (a.opciones ?? []).filter((o) => o.etiqueta?.trim()).length;
         if (conEtiqueta && conEtiqueta !== a.opciones.length) fallo(donde, "la etiqueta va en las tres opciones o en ninguna");
-        if ((a.opciones ?? []).some((o) => (o.etiqueta?.length ?? 0) > 22)) aviso(donde, "una etiqueta de más de dos líneas no cabe debajo del dibujo");
+        if ((a.opciones ?? []).some((o) => Math.max(o.etiqueta?.length ?? 0, o.etiquetaEs?.length ?? 0) > 22))
+          aviso(donde, "una etiqueta de más de dos líneas no cabe debajo del dibujo");
+        // La etiqueta va en inglés y se traduce con un toque (28 de octubre de 2026).
+        for (const o of a.opciones ?? []) {
+          if (!o.etiqueta?.trim()) continue;
+          if (!o.etiquetaEs?.trim()) fallo(donde, `la etiqueta "${o.etiqueta}" no tiene traducción (etiquetaEs)`);
+          if (/[áéíóúñ¿¡]/i.test(o.etiqueta)) fallo(donde, `la etiqueta "${o.etiqueta}" parece en español: va en inglés`);
+        }
         if (conEtiqueta && desdeB1()) aviso(donde, "B1 no lleva texto a la vista (etiqueta)");
       }
       break;

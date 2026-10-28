@@ -95,11 +95,11 @@ export interface EscuchaElige extends ActividadBase {
    * Tres opciones. Si son personas de una misma foto, la misma imagen con
    * su zona. Si la app las dibuja (tarjetas con una hora, un mapa), no
    * llevan imagen sino `texto`. `etiqueta` (A1 y A2) es una palabra en
-   * español que se ve debajo del dibujo y nombra lo que muestra
-   * ("Mañana", "Noche"): no delata la respuesta, porque para elegir igual
-   * hay que entender la frase. Va en las tres opciones o en ninguna.
+   * inglés que se ve debajo del dibujo y nombra lo que muestra
+   * ("Morning", "Green hoodie"); `etiquetaEs` es su traducción, que
+   * aparece con un toque. Va en las tres opciones o en ninguna.
    */
-  opciones: { imagen?: Ilustracion; texto?: string; descripcion: string; zona?: Zona; etiqueta?: string }[];
+  opciones: { imagen?: Ilustracion; texto?: string; descripcion: string; zona?: Zona; etiqueta?: string; etiquetaEs?: string }[];
   /** Índice de la opción correcta. */
   correcta: number;
 }

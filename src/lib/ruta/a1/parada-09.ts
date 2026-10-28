@@ -45,9 +45,9 @@ export const PARADA_09: Parada = {
           audio: ["She's wearing a yellow raincoat."],
           traduccion: ["Ella tiene puesto un impermeable amarillo."],
           opciones: [
-            { imagen: "f-tres-personas-ropa", descripcion: "La muchacha del impermeable amarillo", zona: { x: 27, y: 52, ancho: 40 }, etiqueta: "Impermeable amarillo" },
-            { imagen: "f-tres-personas-ropa", descripcion: "El señor del gorro y la chaqueta café", zona: { x: 50, y: 50, ancho: 40 }, etiqueta: "Gorro y chaqueta café" },
-            { imagen: "f-tres-personas-ropa", descripcion: "La mujer del vestido verde y el suéter blanco", zona: { x: 74, y: 52, ancho: 40 }, etiqueta: "Vestido verde" },
+            { imagen: "f-tres-personas-ropa", descripcion: "La muchacha del impermeable amarillo", zona: { x: 27, y: 52, ancho: 40 }, etiqueta: "Yellow raincoat", etiquetaEs: "Impermeable amarillo" },
+            { imagen: "f-tres-personas-ropa", descripcion: "El señor del gorro y la chaqueta café", zona: { x: 50, y: 50, ancho: 40 }, etiqueta: "Hat and brown jacket", etiquetaEs: "Gorro y chaqueta café" },
+            { imagen: "f-tres-personas-ropa", descripcion: "La mujer del vestido verde y el suéter blanco", zona: { x: 74, y: 52, ancho: 40 }, etiqueta: "Green dress", etiquetaEs: "Vestido verde" },
           ],
           correcta: 0,
           porRevisar: [
@@ -95,9 +95,9 @@ export const PARADA_09: Parada = {
           audio: ["Leo is having breakfast."],
           traduccion: ["Leo está desayunando."],
           opciones: [
-            { imagen: "f-rutina-levantarse", descripcion: "Leo se levanta", etiqueta: "Levantarse" },
-            { imagen: "f-rutina-desayuno", descripcion: "Leo desayuna", etiqueta: "Desayunar" },
-            { imagen: "f-rutina-bus", descripcion: "Leo sube al bus", etiqueta: "Subir al bus" },
+            { imagen: "f-rutina-levantarse", descripcion: "Leo se levanta", etiqueta: "Get up", etiquetaEs: "Levantarse" },
+            { imagen: "f-rutina-desayuno", descripcion: "Leo desayuna", etiqueta: "Have breakfast", etiquetaEs: "Desayunar" },
+            { imagen: "f-rutina-bus", descripcion: "Leo sube al bus", etiqueta: "Take the bus", etiquetaEs: "Subir al bus" },
           ],
           correcta: 1,
           porRevisar: ["quienHabla: el documento no dice quién habla; se puso Allison", "traduccion"],
@@ -147,9 +147,9 @@ export const PARADA_09: Parada = {
           audio: ["A boy is eating ice cream."],
           traduccion: ["Un niño está comiendo un helado."],
           opciones: [
-            { imagen: "f-mercado-escena", descripcion: "El señor que vende pescado", zona: { x: 22, y: 26, ancho: 38 }, etiqueta: "Vende pescado" },
-            { imagen: "f-mercado-escena", descripcion: "La mujer que compra flores", zona: { x: 40, y: 70, ancho: 38 }, etiqueta: "Compra flores" },
-            { imagen: "f-mercado-escena", descripcion: "El niño con el helado", zona: { x: 70, y: 40, ancho: 38 }, etiqueta: "Come helado" },
+            { imagen: "f-mercado-escena", descripcion: "El señor que vende pescado", zona: { x: 22, y: 26, ancho: 38 }, etiqueta: "Selling fish", etiquetaEs: "Vende pescado" },
+            { imagen: "f-mercado-escena", descripcion: "La mujer que compra flores", zona: { x: 40, y: 70, ancho: 38 }, etiqueta: "Buying flowers", etiquetaEs: "Compra flores" },
+            { imagen: "f-mercado-escena", descripcion: "El niño con el helado", zona: { x: 70, y: 40, ancho: 38 }, etiqueta: "Eating ice cream", etiquetaEs: "Come helado" },
           ],
           correcta: 2,
           porRevisar: [
@@ -210,9 +210,9 @@ export const PARADA_09: Parada = {
           audio: ["I'm cooking right now!"],
           traduccion: ["¡Estoy cocinando en este momento!"],
           opciones: [
-            { imagen: "f-mujer-cocina", descripcion: "La mujer cocinando", etiqueta: "Cocinar" },
-            { imagen: "f-mujer-parque", descripcion: "La mujer que camina en el parque", etiqueta: "Caminar en el parque" },
-            { imagen: "f-amigas-cafe", descripcion: "Las dos amigas tomando café", etiqueta: "Tomar café" },
+            { imagen: "f-mujer-cocina", descripcion: "La mujer cocinando", etiqueta: "Cook", etiquetaEs: "Cocinar" },
+            { imagen: "f-mujer-parque", descripcion: "La mujer que camina en el parque", etiqueta: "Walk in the park", etiquetaEs: "Caminar en el parque" },
+            { imagen: "f-amigas-cafe", descripcion: "Las dos amigas tomando café", etiqueta: "Have coffee", etiquetaEs: "Tomar café" },
           ],
           correcta: 0,
           porRevisar: ["traduccion"],

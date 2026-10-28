@@ -217,9 +217,9 @@ export const PARADA_10: Parada = {
           traduccion: ["En Nueva York, toma el metro. No tomes taxi. ¡Es caro!"],
           pregunta: "¿Qué recomienda Allison?",
           opciones: [
-            { imagen: "f-metro", descripcion: "El metro", etiqueta: "Metro" },
-            { imagen: "f-taxi", descripcion: "El taxi", etiqueta: "Taxi" },
-            { imagen: "f-bicicleta", descripcion: "La bicicleta", etiqueta: "Bicicleta" },
+            { imagen: "f-metro", descripcion: "El metro", etiqueta: "Subway", etiquetaEs: "Metro" },
+            { imagen: "f-taxi", descripcion: "El taxi", etiqueta: "Taxi", etiquetaEs: "Taxi" },
+            { imagen: "f-bicicleta", descripcion: "La bicicleta", etiqueta: "Bike", etiquetaEs: "Bicicleta" },
           ],
           correcta: 0,
           porRevisar: ["traduccion"],

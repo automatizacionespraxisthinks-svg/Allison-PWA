@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { encuadreZona, escalaZona, srcIlustracion } from "@/lib/ruta/ilustracion";
 import type { EscuchaElige as Datos, Zona } from "@/lib/ruta/tipos";
 import { desdeB1, type Nivel } from "@/lib/tipos";
+import { desbloquearVoz } from "@/lib/voz";
 import { Icono } from "../Iconos";
 import type { Contexto, FinActividad } from "./api";
 import { AllisonAro, BotonOir, Hoja, useVoz } from "./comun";
@@ -12,12 +13,21 @@ import { AllisonAro, BotonOir, Hoja, useVoz } from "./comun";
 /**
  * Escucha y elige (pantallas 1 y 2): oye la frase, que no está escrita,
  * y elige entre tres imágenes. Gratis: no usa IA. Si falla, la frase
- * vuelve a sonar despacio y elige otra vez, sin límite. En A1, al acertar
- * aparece la frase con su traducción; desde A2 la traducción queda a un
- * toque, no aparece sola (Contenido A2, "Qué cambia en A2"). "Ver la
- * frase" la muestra con su traducción, con esa misma regla. Desde B1 es
- * una historia de tres o cuatro frases sin traducción ni texto a la vista:
- * se puede oír otra vez y, una sola vez, más despacio (Contenido B1).
+ * vuelve a sonar despacio y elige otra vez, sin límite.
+ *
+ * "Ver la frase" está desde el comienzo y cuenta como ayuda. La muestra en
+ * inglés; la traducción queda a otro toque (28 de octubre de 2026): antes
+ * en A1 traía la traducción de una vez y se acertaba leyendo en español,
+ * sin oír nada.
+ *
+ * Al acertar aparece la frase con la etiqueta de la respuesta resaltada
+ * ("a green hoodie"): se ve qué palabras la daban. En A1 trae su
+ * traducción; desde A2 la traducción queda a un toque, no aparece sola
+ * (Contenido A2, "Qué cambia en A2"). En A1 y A2 cada dibujo lleva su
+ * etiqueta en inglés: un toque la dice en voz alta y muestra su
+ * traducción. Desde B1 es una historia de tres o cuatro frases sin
+ * traducción ni texto a la vista: se puede oír otra vez y, una sola vez,
+ * más despacio (Contenido B1).
  */
 export function EscuchaElige({
   a,
@@ -33,7 +43,9 @@ export function EscuchaElige({
   const [verFrase, setVerFrase] = useState(false);
   const [acierto, setAcierto] = useState(false);
   const [fallidas, setFallidas] = useState<number[]>([]);
-  const [verTraduccion, setVerTraduccion] = useState(ctx.nivel === "A1");
+  const [verTraduccion, setVerTraduccion] = useState(false);
+  /** Las etiquetas que el alumno tocó: ya se ven en español. */
+  const [traducidas, setTraducidas] = useState<number[]>([]);
   const b1 = desdeB1(ctx.nivel);
   /** B1: la versión más despacio suena una sola vez (al pedirla o al fallar). */
   const [lentoUsado, setLentoUsado] = useState(false);
@@ -53,6 +65,7 @@ export function EscuchaElige({
     if (elegida === null) return;
     if (elegida === a.correcta) {
       setAcierto(true);
+      if (ctx.nivel === "A1") setVerTraduccion(true);
       void decir(frase);
     } else {
       primerIntento.current = false;
@@ -87,12 +100,12 @@ export function EscuchaElige({
               lento
             />
           )}
-          {!b1 && (
+          {!b1 && !verFrase && (
             <button
               type="button"
               onClick={() => {
-                // Con la frase (y su traducción) a la vista ya no es acertar
-                // solo de oído: cuenta como ayuda, como las letras en ¿Qué es esto?
+                // Con la frase a la vista ya no es acertar solo de oído:
+                // cuenta como ayuda, como las letras en ¿Qué es esto?
                 primerIntento.current = false;
                 setVerFrase(true);
               }}
@@ -103,7 +116,7 @@ export function EscuchaElige({
           )}
         </div>
       )}
-      {/* La frase con su traducción, para aprenderla (en A2, la traducción a un toque). */}
+      {/* La frase en inglés; su traducción, a otro toque. */}
       {verFrase && !acierto && (
         <div className="flex flex-col items-center gap-2 text-center">
           {/* Un diálogo va línea por línea, cada una con su traducción. */}
@@ -131,19 +144,18 @@ export function EscuchaElige({
           const ok = acierto && i === a.correcta;
           const sel = elegida === i;
           const descartada = fallidas.includes(i);
+          const color = ok ? "text-menta" : sel ? "text-primario" : "text-texto-suave";
+          // "Pizza" o "Chicago" se dicen igual en español: no hay nada que traducir.
+          const traducible = !!o.etiquetaEs && o.etiquetaEs.toLowerCase() !== o.etiqueta?.toLowerCase();
+          const traducida = traducidas.includes(i);
           return (
-            <button
-              key={i}
-              type="button"
-              disabled={acierto || descartada}
-              onClick={() => setElegida(i)}
-              aria-pressed={sel}
-              className={`flex min-w-0 flex-col items-center gap-1.5 rounded-2xl text-center text-xs font-extrabold transition disabled:cursor-default ${
-                ok ? "text-menta" : sel ? "text-primario" : "text-texto-suave"
-              } ${descartada ? "opacity-40" : ""}`}
-            >
-              <span
-                className={`relative grid aspect-square w-full place-items-center overflow-hidden rounded-2xl border-2 bg-superficie-2 ${
+            <div key={i} className={`flex min-w-0 flex-col items-center gap-1 text-center ${descartada ? "opacity-40" : ""}`}>
+              <button
+                type="button"
+                disabled={acierto || descartada}
+                onClick={() => setElegida(i)}
+                aria-pressed={sel}
+                className={`relative grid aspect-square w-full place-items-center overflow-hidden rounded-2xl border-2 bg-superficie-2 transition disabled:cursor-default ${
                   ok ? "border-menta" : sel ? "border-primario" : "border-transparent"
                 }`}
               >
@@ -153,17 +165,31 @@ export function EscuchaElige({
                     <Icono nombre="check" className="size-4 stroke-[3]" />
                   </span>
                 )}
-              </span>
-              {/* La descripción delata la respuesta ("Tom, un muchacho…"): solo se
-                  muestra cuando dos opciones usan la misma foto y no tienen zona
-                  (con zona, cada tarjeta ya muestra ampliada a su persona). La
-                  etiqueta sí se muestra siempre: no la delata. */}
+              </button>
+              {/* La etiqueta va en inglés: un toque la dice en voz alta y muestra
+                  su traducción, sin contar como ayuda. Nombra lo que muestra el
+                  dibujo, sin decir cuál es la respuesta. La descripción sí la
+                  delata ("Tom, un muchacho…"): solo se muestra cuando dos
+                  opciones usan la misma foto y no tienen zona (con zona, cada
+                  tarjeta ya muestra ampliada a su persona). */}
               {o.etiqueta ? (
-                <span className="text-[13px] leading-tight text-balance">{o.etiqueta}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    desbloquearVoz();
+                    void decir(o.etiqueta ?? "");
+                    if (traducible && !traducida) setTraducidas((t) => [...t, i]);
+                  }}
+                  className={`px-1 py-0.5 text-[13px] leading-tight font-extrabold text-balance ${color}`}
+                >
+                  <Icono nombre="play" className="mr-0.5 inline size-3 align-[-1px]" />
+                  <span className="underline decoration-dotted underline-offset-[3px]">{o.etiqueta}</span>
+                  {traducida && <span className="block pt-0.5 text-xs font-bold text-texto-suave">{o.etiquetaEs}</span>}
+                </button>
               ) : (
-                sinDistinguir(o) && <span className="line-clamp-2">{o.descripcion}</span>
+                sinDistinguir(o) && <span className={`line-clamp-2 text-xs font-extrabold ${color}`}>{o.descripcion}</span>
               )}
-            </button>
+            </div>
           );
         })}
       </div>
@@ -179,8 +205,10 @@ export function EscuchaElige({
             <span key={i} className="flex items-center gap-2 text-texto">
               <BotonOir tam="chico" onClick={() => void decir(linea)} />
               <span>
-                <b className="font-extrabold">{linea}</b>
-                {verTraduccion && a.traduccion[i] && <span className="block text-texto-suave">{a.traduccion[i]}</span>}
+                <b className="font-extrabold">{conResaltado(linea, a.opciones[a.correcta]?.etiqueta)}</b>
+                {verTraduccion && a.traduccion[i] && (
+                  <span className="block text-texto-suave">{conResaltado(a.traduccion[i], a.opciones[a.correcta]?.etiquetaEs)}</span>
+                )}
               </span>
             </span>
           ))}
@@ -202,6 +230,31 @@ export function EscuchaElige({
       )}
     </div>
   );
+}
+
+const LETRA = /\p{L}/u;
+
+/**
+ * La etiqueta de la respuesta resaltada dentro de la frase ("a green
+ * hoodie", "un saco verde"), cuando está como palabras enteras. Si la
+ * frase la dice de otra forma ("having breakfast" para "Have breakfast"),
+ * va sin resaltar.
+ */
+function conResaltado(texto: string, etiqueta?: string): ReactNode {
+  if (!etiqueta) return texto;
+  const t = texto.toLowerCase();
+  const e = etiqueta.toLowerCase();
+  for (let i = t.indexOf(e); i >= 0; i = t.indexOf(e, i + 1)) {
+    if (LETRA.test(t[i - 1] ?? "") || LETRA.test(t[i + e.length] ?? "")) continue;
+    return (
+      <>
+        {texto.slice(0, i)}
+        <mark className="rounded-md bg-menta px-1 text-superficie">{texto.slice(i, i + e.length)}</mark>
+        {texto.slice(i + e.length)}
+      </>
+    );
+  }
+  return texto;
 }
 
 /** Las barras de onda junto a la foto de Allison mientras habla. */
