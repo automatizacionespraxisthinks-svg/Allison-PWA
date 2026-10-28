@@ -32,7 +32,8 @@ import { segmentosParaVoz } from "./voz-idiomas.ts";
  *     vez para todos sus clientes. Aquí no se le lanza más que eso; lo
  *     que sobra espera un poco y, si no hay turno, falla rápido para
  *     que la app caiga a la voz del navegador en vez de dejar al alumno
- *     mirando la pantalla.
+ *     mirando la pantalla. Lo que el alumno deja de esperar (tocó otro
+ *     audio) sale de la fila y suelta su turno (octubre de 2026).
  *
  * La velocidad la pone la API (speed): la base del nivel (A1 0,8; A2
  * 0,9), la preferencia del alumno y el botón "lento". Hasta octubre de
@@ -116,7 +117,11 @@ export function turnosEnCurso(): number {
   return turnosOcupados;
 }
 
-function ocuparTurno(): Promise<() => void> {
+/** El alumno ya no espera este audio: tocó otro botón o cerró la pantalla. */
+const cancelado = () => new ErrorTts("cancelado", 499, false, "El alumno ya no espera este audio.");
+
+function ocuparTurno(cancelar?: AbortSignal): Promise<() => void> {
+  if (cancelar?.aborted) return Promise.reject(cancelado());
   const liberar = (() => {
     let liberado = false;
     return () => {
@@ -133,18 +138,28 @@ function ocuparTurno(): Promise<() => void> {
   }
 
   return new Promise((resolver, rechazar) => {
-    const tope = setTimeout(() => {
+    const salir = (error: ErrorTts) => {
+      clearTimeout(tope);
+      cancelar?.removeEventListener("abort", alCancelar);
       const i = fila.indexOf(entrar);
       if (i >= 0) fila.splice(i, 1);
-      rechazar(
-        new ErrorTts("ocupado", 503, true, "Demasiadas voces a la vez; no hubo turno a tiempo.")
-      );
-    }, esperaTurnoMs());
+      rechazar(error);
+    };
+    const tope = setTimeout(
+      () => salir(new ErrorTts("ocupado", 503, true, "Demasiadas voces a la vez; no hubo turno a tiempo.")),
+      esperaTurnoMs()
+    );
+    // Quien ya no espera sale de la fila: si se quedara, le quitaría el
+    // turno a lo que el alumno sí quiere oír (tocar tres etiquetas
+    // seguidas dejaba dos audios que nadie iba a oír delante del último).
+    const alCancelar = () => salir(cancelado());
     const entrar = () => {
       clearTimeout(tope);
+      cancelar?.removeEventListener("abort", alCancelar);
       turnosOcupados++;
       resolver(liberar);
     };
+    cancelar?.addEventListener("abort", alCancelar, { once: true });
     fila.push(entrar);
   });
 }
@@ -177,7 +192,18 @@ function conLiberacion(
   });
 }
 
-const dormir = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** Espera ms, o menos si el alumno deja de esperar el audio. */
+const dormir = (ms: number, cancelar?: AbortSignal) =>
+  new Promise<void>((r) => {
+    if (cancelar?.aborted) return r();
+    const fin = () => {
+      clearTimeout(t);
+      cancelar?.removeEventListener("abort", fin);
+      r();
+    };
+    const t = setTimeout(fin, ms);
+    cancelar?.addEventListener("abort", fin, { once: true });
+  });
 
 async function leerError(respuesta: Response): Promise<{ code: string; message: string }> {
   const datos = (await respuesta.json().catch(() => null)) as {
@@ -201,6 +227,12 @@ export async function sintetizar(opciones: {
   /** Entre 0,5 y 2; sin ella, 1. */
   velocidad?: number;
   idPeticion?: string;
+  /**
+   * Se dispara cuando el alumno ya no espera el audio (request.signal: el
+   * navegador cortó la descarga porque tocó otro botón). Lo que todavía
+   * no empezó a llegar se abandona con 'cancelado' y suelta su turno.
+   */
+  cancelar?: AbortSignal;
 }): Promise<AudioTts> {
   const cfg = configTts();
 
@@ -227,12 +259,14 @@ export async function sintetizar(opciones: {
       : { text: segmentos[0]?.texto ?? texto, lang: lang(segmentos[0]?.idioma ?? base), ...comun }
   );
 
-  const liberar = await ocuparTurno();
+  const { cancelar } = opciones;
+  const liberar = await ocuparTurno(cancelar);
   try {
     let espera = 1_000;
     for (let intento = 1; ; intento++) {
       let respuesta: Response;
       try {
+        const tope = AbortSignal.timeout(tiempoDeEsperaMs(texto, speed));
         respuesta = await fetch(`${cfg.url}/v1/tts`, {
           method: "POST",
           headers: {
@@ -242,9 +276,10 @@ export async function sintetizar(opciones: {
             "X-Request-ID": idPeticion,
           },
           body: cuerpo,
-          signal: AbortSignal.timeout(tiempoDeEsperaMs(texto, speed)),
+          signal: cancelar ? AbortSignal.any([tope, cancelar]) : tope,
         });
       } catch (e) {
+        if (cancelar?.aborted) throw cancelado();
         const agotado = (e as { name?: string })?.name === "TimeoutError";
         throw new ErrorTts(
           agotado ? "tiempo_agotado" : "sin_conexion",
@@ -264,6 +299,7 @@ export async function sintetizar(opciones: {
       }
 
       const error = await leerError(respuesta);
+      if (cancelar?.aborted) throw cancelado();
       const reintentable = REINTENTABLES.has(respuesta.status);
       if (!reintentable || intento >= INTENTOS) {
         throw new ErrorTts(error.code, respuesta.status, reintentable, error.message);
@@ -274,7 +310,8 @@ export async function sintetizar(opciones: {
       // de azar, para que varios reintentos no lleguen a la vez.
       const retryAfter = Number(respuesta.headers.get("retry-after"));
       const base = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : espera;
-      await dormir(Math.min(ESPERA_REINTENTO_MAX_MS, base + Math.random() * 300));
+      await dormir(Math.min(ESPERA_REINTENTO_MAX_MS, base + Math.random() * 300), cancelar);
+      if (cancelar?.aborted) throw cancelado();
       espera = Math.min(espera * 2, ESPERA_REINTENTO_MAX_MS);
     }
   } catch (e) {

@@ -18,7 +18,7 @@ const Id = z.string().uuid();
  * dispositivo. El motivo y el X-Request-ID quedan en el log.
  */
 export async function GET(
-  _peticion: Request,
+  peticion: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const alumno = await alumnoActual();
@@ -39,7 +39,14 @@ export async function GET(
   }
 
   try {
-    const audio = await sintetizar({ texto: pedido.texto, idioma: pedido.idioma, velocidad: pedido.velocidad });
+    // Si el alumno toca otro audio, el navegador corta esta descarga y
+    // request.signal avisa: lo que esperaba turno lo suelta para el nuevo.
+    const audio = await sintetizar({
+      texto: pedido.texto,
+      idioma: pedido.idioma,
+      velocidad: pedido.velocidad,
+      cancelar: peticion.signal,
+    });
     return new Response(audio.cuerpo, {
       headers: {
         "Content-Type": audio.tipo,
@@ -53,6 +60,10 @@ export async function GET(
       },
     });
   } catch (e) {
+    // Nadie va a leer la respuesta: no es un fallo de la voz.
+    if (e instanceof ErrorTts && e.codigo === "cancelado") {
+      return new Response(null, { status: e.estado, headers: { "Cache-Control": "no-store" } });
+    }
     if (e instanceof ErrorTts) {
       console.warn(`Voz no disponible (${e.codigo}, HTTP ${e.estado}): ${e.message}`);
       return NextResponse.json(

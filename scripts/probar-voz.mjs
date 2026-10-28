@@ -10,6 +10,7 @@
  *     con tope de intentos; un 400 no se repite;
  *   · los turnos: nunca más de dos síntesis a la vez, y quien no
  *     consigue turno falla rápido (para caer a la voz del navegador);
+ *     lo que el alumno deja de esperar suelta su turno;
  *   · lo pedido y no reproducido: solo lo abre su dueño y vence.
  *
  *   node scripts/probar-voz.mjs
@@ -84,6 +85,7 @@ const falla = async (fn) => {
     return e;
   }
 };
+const dormirPrueba = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ---------------------------------------------------------------------
 console.log("Configuración:");
@@ -317,6 +319,83 @@ console.log("\nTurnos (el servicio solo sintetiza dos a la vez):");
   abiertos[2].cerrarFlujo();
   await leerTodo(cuatro.cuerpo);
   probar("todo libre al final", turnosEnCurso() === 0);
+}
+
+// ---------------------------------------------------------------------
+console.log("\nLo que el alumno deja de esperar (tocó otro audio):");
+{
+  const abiertos = [];
+  responder = () => {
+    const r = audio(["parte"], { abierta: true });
+    abiertos.push(r);
+    return r;
+  };
+  const uno = await sintetizar({ texto: "one" });
+  const dos = await sintetizar({ texto: "two" });
+  const antes = llamadas.length;
+  // Llegan dos más: la primera el alumno la deja (tocó otra etiqueta).
+  const corte = new AbortController();
+  const t0 = Date.now();
+  const dejada = falla(() => sintetizar({ texto: "Orange T-shirt", cancelar: corte.signal }));
+  const querida = sintetizar({ texto: "Green hoodie" });
+  await dormirPrueba(20);
+  corte.abort();
+  const e = await dejada;
+  probar(
+    "la que ya nadie espera sale de la fila al momento con 'cancelado'",
+    e instanceof ErrorTts && e.codigo === "cancelado" && !e.reintentable && Date.now() - t0 < 200,
+    `${e?.codigo} tras ${Date.now() - t0} ms`
+  );
+  abiertos[0].cerrarFlujo();
+  await leerTodo(uno.cuerpo);
+  const g = await querida;
+  probar(
+    "y el turno que se libera es para la que sí se espera",
+    llamadas.length - antes === 1 && JSON.parse(ultima().opciones.body).text === "Green hoodie",
+    `${llamadas.length - antes} llamada(s)`
+  );
+  await dos.cuerpo.cancel();
+  await g.cuerpo.cancel();
+  probar("sin turnos ocupados después", turnosEnCurso() === 0, String(turnosEnCurso()));
+
+  const ya = new AbortController();
+  ya.abort();
+  const n = llamadas.length;
+  const e2 = await falla(() => sintetizar({ texto: "Yellow T-shirt", cancelar: ya.signal }));
+  probar(
+    "si ya se había ido, ni toma turno ni llama a la API",
+    e2?.codigo === "cancelado" && llamadas.length === n && turnosEnCurso() === 0
+  );
+
+  // La API tarda en dar el primer byte y el alumno se va.
+  responder = (_url, opciones) =>
+    new Promise((_, rechazar) => opciones.signal.addEventListener("abort", () => rechazar(opciones.signal.reason)));
+  const corte3 = new AbortController();
+  const lenta = falla(() => sintetizar({ texto: "Slow one", cancelar: corte3.signal }));
+  await dormirPrueba(20);
+  probar("mientras la API responde, ocupa su turno", turnosEnCurso() === 1);
+  corte3.abort();
+  const e3 = await lenta;
+  probar(
+    "si el alumno se va, se corta la petición a la API y suelta el turno",
+    e3?.codigo === "cancelado" && turnosEnCurso() === 0,
+    `${e3?.codigo}, ${turnosEnCurso()} turno(s)`
+  );
+
+  // Entre reintentos (un 429 con Retry-After) tampoco se queda esperando.
+  responder = () => errorApi(429, "rate_limited", { "Retry-After": "2" });
+  const corte4 = new AbortController();
+  const n4 = llamadas.length;
+  const t4 = Date.now();
+  const reintento = falla(() => sintetizar({ texto: "Busy one", cancelar: corte4.signal }));
+  await dormirPrueba(50);
+  corte4.abort();
+  const e4 = await reintento;
+  probar(
+    "entre reintentos, deja de esperar y no vuelve a llamar",
+    e4?.codigo === "cancelado" && llamadas.length - n4 === 1 && Date.now() - t4 < 500 && turnosEnCurso() === 0,
+    `${e4?.codigo}, ${llamadas.length - n4} llamada(s) en ${Date.now() - t4} ms`
+  );
 }
 
 // ---------------------------------------------------------------------
