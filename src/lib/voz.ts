@@ -129,8 +129,27 @@ export function desbloquearVoz(): void {
   }
 }
 
-/** Corta lo que esté sonando, venga de la API o del navegador. */
+/** "Oír mi voz": la grabación del propio alumno, que también se corta. */
+let grabacionPropia: HTMLAudioElement | null = null;
+
+/** Reproduce una grabación del alumno; detenerVoz la corta como a Allison. */
+export function reproducirGrabacion(url: string): void {
+  detenerVoz();
+  grabacionPropia = new Audio(url);
+  void grabacionPropia.play().catch(() => {});
+}
+
+/**
+ * Corta lo que esté sonando, venga de la API o del navegador, y lo que
+ * todavía se estaba pidiendo: subir el turno invalida la frase que
+ * esperaba respuesta de /api/voz (antes sonaba igual cuando llegaba,
+ * encima de la grabación o en la pantalla siguiente; auditoría, 28 de
+ * octubre de 2026).
+ */
 export function detenerVoz(): void {
+  turno++;
+  grabacionPropia?.pause();
+  grabacionPropia = null;
   detenerVozNavegador();
   const cortar = cortarEnCurso;
   cortarEnCurso = null;

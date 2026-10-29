@@ -16,13 +16,14 @@ const {
   actividadPrincipal,
 } = await import("../src/lib/ruta/estado.ts");
 const { RUTA_A1 } = await import("../src/lib/ruta/index.ts");
-const { esCorreccionDe, tareasObvias, respuestaDeEntrevista } = await import("../src/lib/ruta/escena.ts");
+const { esCorreccionDe, tareasObvias, respuestaDeEntrevista, tareasDelTurno } = await import("../src/lib/ruta/escena.ts");
 const { PARADA_01 } = await import("../src/lib/ruta/a1/parada-01.ts");
+const { PARADA_02 } = await import("../src/lib/ruta/a1/parada-02.ts");
 const { PARADA_07 } = await import("../src/lib/ruta/a1/parada-07.ts");
 const { PARADA_01: A2_P01 } = await import("../src/lib/ruta/a2/parada-01.ts");
 const { PARADA_09: A2_P09 } = await import("../src/lib/ruta/a2/parada-09.ts");
 const { respuestaCorta, respuestaDeAdivina, preguntaDeEjemplo, barajarRondas } = await import("../src/lib/ruta/adivina.ts");
-const { estaEnLoDicho, palabrasDeRepite } = await import("../src/lib/evaluacion.ts");
+const { estaEnLoDicho, palabrasDeRepite, comentarioVerificado, dibujosContados } = await import("../src/lib/evaluacion.ts");
 const { palabrasDeFrase, lugaresDeLetra, respuestaCompleta, letraDicha } = await import("../src/lib/ruta/rayas.ts");
 const { citaDe, frasesDe } = await import("../src/lib/ruta/frases.ts");
 const { EXPRESIONES, expresionDelDia } = await import("../src/lib/expresiones.ts");
@@ -217,8 +218,52 @@ const ent = PARADA_01.lecciones[3].actividades.find((a) => a.tipo === "entrevist
   ok("entrevista: en español, sin mezclar en una oración", es.respuestaVoz.startsWith("[es]") && es.respuestaVoz.includes("[en-US] Where are you from?"), es.respuestaVoz);
   const otro = respuestaDeEntrevista({ entrevista: ent, clasificacion: { tipo: "otro", dato: 0, espanol: false }, descubiertos: [1], turno: 3 });
   ok("entrevista: no se entiende → la pregunta que sigue", otro.respuesta.endsWith("Where are you from?"), otro.respuesta);
+  // "I'm from Colombia. How old are you?": contesta el "And you?" y pregunta.
+  const ambas = respuestaDeEntrevista({ entrevista: ent, clasificacion: { tipo: "pregunta", dato: 3, responde: true, espanol: false }, descubiertos: [1, 2], turno: 3 });
+  ok(
+    "entrevista: responde y pregunta → reacciona, contesta y devuelve",
+    ambas.respuesta === "Oh, nice! I'm 28. And you?" && ambas.descubierto === 3 && ambas.devuelta === "How old are you?",
+    ambas.respuesta
+  );
+  // Auditoría del 28 de octubre de 2026.
+  const bucle = respuestaDeEntrevista({ entrevista: ent, clasificacion: { tipo: "pregunta", dato: 1, responde: true, espanol: false }, descubiertos: [1], turno: 1 });
+  ok("entrevista: \"My name is Diego. And you?\" no repite su nombre en bucle", bucle.descubierto === null && bucle.devuelta === null && /Ask me another question/.test(bucle.respuesta), bucle.respuesta);
+  const dos = respuestaDeEntrevista({ entrevista: ent, clasificacion: { tipo: "pregunta", dato: 2, otroDato: 3, responde: false, espanol: false }, descubiertos: [1], turno: 0 });
+  ok("entrevista: dos preguntas en un turno → contesta las dos", dos.descubierto === 2 && dos.otroDescubierto === 3 && dos.respuesta.includes("New York") && dos.respuesta.includes("I'm 28"), dos.respuesta);
+  const social = respuestaDeEntrevista({ entrevista: ent, clasificacion: { tipo: "social", dato: 0, responde: false, espanol: false }, descubiertos: [], turno: 0 });
+  ok("entrevista: un saludo no es ayuda ni da la pregunta en español", social.respuesta === "OK! Ask me a question!", social.respuesta);
+  const completa = respuestaDeEntrevista({ entrevista: ent, clasificacion: { tipo: "otro", dato: 0, responde: false, espanol: false }, descubiertos: [1, 2, 3, 4, 5], turno: 0 });
+  ok("entrevista: con la ficha completa sigue la charla en inglés y le pregunta ella", completa.devuelta && !/Pregúntame/.test(completa.respuesta), completa.respuesta);
+  const cierra = respuestaDeEntrevista({ entrevista: ent, clasificacion: { tipo: "pregunta", dato: 5, responde: false, espanol: false }, descubiertos: [1, 2, 3, 4], turno: 9, alcanzaMinimo: true });
+  ok("entrevista: el último dato con el mínimo cumplido cierra sin devolver", cierra.devuelta === null && /Thank you for your questions/.test(cierra.respuesta), cierra.respuesta);
+  const ent2 = PARADA_02.lecciones[3].actividades.find((a) => a.tipo === "entrevista");
+  const ajeno = ent2.datos.findIndex((d) => /^her name/i.test(d.respuesta)) + 1;
+  if (ajeno) {
+    const r2 = respuestaDeEntrevista({ entrevista: ent2, clasificacion: { tipo: "pregunta", dato: ajeno, responde: false, espanol: false }, descubiertos: [], turno: 0 });
+    ok("entrevista: \"Her name is…\" no se devuelve con \"And you?\"", r2.devuelta === null && !/And you\?/.test(r2.respuesta), r2.respuesta);
+  }
 }
 ok("actividad principal", actividadPrincipal(PARADA_01.lecciones[0].actividades) === "que-es-esto");
+
+// --- Escenarios: lo que el código cuenta o descarta (verificación del 28 de octubre de 2026) ---
+{
+  const { PARADA_04: A2_P04 } = await import("../src/lib/ruta/a2/parada-04.ts");
+  const { PARADA_08: A2_P08 } = await import("../src/lib/ruta/a2/parada-08.ts");
+  const { PARADA_10: A2_P10 } = await import("../src/lib/ruta/a2/parada-10.ts");
+  const { PARADA_07: B1_P07 } = await import("../src/lib/ruta/b1/parada-07.ts");
+  const turno = (e, pendientes, dicho, tareas = [], antes = []) =>
+    tareasDelTurno({ e, pendientes: new Set(pendientes), dicho, modelo: { tareas, aMedias: [] }, antes, despidioAntes: false });
+  ok("escena: la frase del ejemplo cuenta aunque el modelo no la cuente", turno(A2_P04.escenario, [4, 5], "No, I've never eaten haggis. Is it good?").tareas.includes(4));
+  ok("escena: solo preguntar no es pagar", !turno(A2_P08.escenario, [5], "How much are the cough drops?", [5]).tareas.includes(5));
+  ok("escena: pagar con \"Here you go\" sí", turno(A2_P08.escenario, [5], "Here you go. Thank you so much!", [5]).tareas.includes(5));
+  ok("escena: preguntar el precio no es comparar", !turno(A2_P10.escenario, [3], "We need two bedrooms. How much is the park apartment?", [3]).tareas.includes(3));
+  ok("escena: \"cheaper than\" sí compara", turno(A2_P10.escenario, [3], "The park one is cheaper than the other one.", [3]).tareas.includes(3));
+  const primera = turno(B1_P07.escenario, [4], "Oh no! Then you should see Blue River. It's a movie that was made here in Quebec.");
+  const segunda = turno(B1_P07.escenario, [4], "No, it isn't. It's about a boy who loves hockey. It's funny and very interesting.", [], primera.aMedias);
+  ok("escena: una tarea de dos líneas, dichas en dos turnos, se cumple", primera.aMedias.some((a) => a.tarea === 4) && segunda.tareas.includes(4), JSON.stringify([primera, segunda]));
+  ok("escena: a medias, la respuesta afirmativa que sigue la completa (\"Since yesterday.\")", turno(A2_P08.escenario, [2, 3], "Since yesterday.", [], [{ tarea: 2, falta: "since when" }]).tareas.includes(2));
+  ok("escena: a medias por la despedida, otra frase no la completa", !turno(A2_P04.escenario, [5], "I like Scotland a lot.", [], [{ tarea: 5, falta: "say goodbye" }]).tareas.includes(5));
+}
 
 // --- Adivina (A2) --------------------------------------------------------
 ok("respuesta corta: do", respuestaCorta("Do you cook?", true) === "Yes, I do." && respuestaCorta("Do you cook?", false) === "No, I don't.");
@@ -261,6 +306,71 @@ const adv = A2_P01.lecciones[3].actividades.find((a) => a.tipo === "adivina");
 // --- Cuéntame y A2 ---------------------------------------------------------
 ok("relato: la cita está en lo dicho", estaEnLoDicho("I study math.", "I go to school at seven. I study math and art."));
 ok("relato: una frase inventada no", !estaEnLoDicho("I play soccer.", "I go to school at seven."));
+// El comentario de Cuéntame y Narra, con lo que devolvería el modelo
+// (auditoría, 28 de octubre de 2026): cuántas frases, qué mejora y qué
+// elogio se muestran, y en qué orden contó los dibujos.
+{
+  const cv = (d, t, extra) => comentarioVerificado(d, t, "A2", extra);
+  const tirada = "I go to school at six and I study math and English and after school I do my homework and I play soccer with my friends";
+  ok("relato: cada idea con su verbo es una frase", cv({ frases: ["I go to school at six", "I study math and English", "after school I do my homework", "I play soccer with my friends"] }, tirada).frases === 4);
+  const cuatro = "I go to school. I go to school. I go to school. I go to school.";
+  ok("relato: la misma frase cuatro veces es una", cv({ frases: Array(4).fill("I go to school.") }, cuatro).frases === 1);
+  ok("relato: una frase que no dijo no cuenta", cv({ frases: ["I go to school.", "I play soccer."] }, cuatro).frases === 1);
+  ok("relato: una palabra suelta no es frase", cv({ frases: ["I go to school.", "Math."] }, "I go to school. Math.").frases === 1);
+  const mixto = "After school I play fútbol with my friends. Estudio matemáticas y inglés. Luego voló a Vancouver.";
+  ok("relato: lo dicho en español no cuenta", cv({ frases: mixto.split(/(?<=\.) /) }, mixto).frases === 1);
+  const mejora = (dijo, mejor, t = dijo, extra) => cv({ mejorDijo: dijo, mejorFrase: mejor }, t, extra).mejora;
+  const inventadas = [
+    ["First Zoe checked her bag in Toronto.", "Zoe checked her bag in Toronto."],
+    ["Now her bag hasn't arrived.", "Now her bag has not arrived."],
+    ["I go to school at six.", "I go to school at six o'clock."],
+    ["I go to school at six.", "I go to school at 6 AM."],
+    ["Math.", "I like math."],
+    ["first she flew to Vancouver and then she waited", "First, she flew to Vancouver, then she waited."],
+  ];
+  for (const [dijo, mejor] of inventadas) ok(`relato: "${dijo}" → "${mejor}" no se muestra`, !mejora(dijo, mejor), JSON.stringify(mejora(dijo, mejor)));
+  ok(
+    "relato: una frase del modelo de Allison no se corrige",
+    !mejora("sent to Canada by plane.", "it was sent to Canada by plane.", "Then it was put in a box and sent to Canada by plane.", { modelo: "Then it was put in a box and sent to Canada by plane." })
+  );
+  ok("relato: una frase en español no se corrige", !mejora("Luego voló a Vancouver.", "Then she flew to Vancouver."));
+  const reales = [
+    ["I happy.", "I am happy."],
+    ["I study in the school.", "I study at school."],
+    ["In my opinion is better live in a big city.", "In my opinion, it is better to live in a big city."],
+    ["The bag no arrive.", "The bag didn't arrive."],
+    ["Although they didn't agree, but they found a solution.", "Although they didn't agree, they found a solution."],
+    ["Because it was raining, so we stayed home.", "Because it was raining, we stayed home."],
+  ];
+  for (const [dijo, mejor] of reales) ok(`relato: "${dijo}" sí se corrige`, !!mejora(dijo, mejor));
+  const conMaleta = "Zoe checked her maleta. Then she flew to Vancouver.";
+  ok("relato: lo bien hecho no es la frase que se corrige", !cv({ bienFrase: "Zoe checked her maleta.", mejorDijo: "Zoe checked her maleta.", mejorFrase: "Zoe checked her suitcase." }, conMaleta).bien);
+  ok("relato: lo bien hecho puede ser otra frase", !!cv({ bienFrase: "Then she flew to Vancouver.", mejorDijo: "Zoe checked her maleta.", mejorFrase: "Zoe checked her suitcase." }, conMaleta).bien);
+  ok(
+    "relato: lo bien hecho no es un error previsto",
+    !cv({ bienFrase: "When the police arrived, the thief left." }, "He rode away. When the police arrived, the thief left.", { previstas: ["When the police arrived, the thief left"] }).bien
+  );
+  const media = "Zoe checked her maleta. Then she flew to Vancouver. Después esperó una hora. Her bag is lost.";
+  ok("relato: una frase en español no vuelve español todo el relato", !cv({ espanol: true, frases: ["Zoe checked her maleta.", "Then she flew to Vancouver.", "Her bag is lost."] }, media).espanol);
+  ok("relato: en español sí", cv({ espanol: true, frases: [] }, "Yo voy al colegio a las seis. Juego fútbol.").espanol);
+  const alReves = "Her bag hasn't arrived. She waited for one hour. She flew to Vancouver. She checked her bag in Toronto.";
+  const citas = [
+    { dibujo: 1, cita: "She checked her bag in Toronto." },
+    { dibujo: 2, cita: "She flew to Vancouver." },
+    { dibujo: 3, cita: "She waited for one hour." },
+    { dibujo: 4, cita: "Her bag hasn't arrived." },
+  ];
+  ok("narra: los dibujos en el orden en que los contó", dibujosContados(citas, 4, alReves).join() === "4,3,2,1", dibujosContados(citas, 4, alReves).join());
+  const mitad = "Zoe checked her bag in Toronto. Luego voló a Vancouver. Esperó una hora por la maleta. Her bag hasn't arrived.";
+  const citasMitad = [
+    { dibujo: 1, cita: "Zoe checked her bag in Toronto." },
+    { dibujo: 2, cita: "Luego voló a Vancouver." },
+    { dibujo: 3, cita: "She waited an hour for the bag." },
+    { dibujo: 4, cita: "Her bag hasn't arrived." },
+  ];
+  ok("narra: un dibujo contado en español o traducido no cuenta", dibujosContados(citasMitad, 4, mitad).join() === "1,4", dibujosContados(citasMitad, 4, mitad).join());
+  ok("narra: una cita con una palabra corregida sí cuenta", dibujosContados([{ dibujo: 1, cita: "Zoe gave her bag in the airport" }], 4, "Zoe give her bag in the airport. She fly.").join() === "1");
+}
 ok("ilustración: la del nivel y la reutilizada", srcIlustracion("f-chef-cocina", "A2") === "/ilustraciones/a2/f-chef-cocina.webp" && srcIlustracion("a1/a-profesor", "A2") === "/ilustraciones/a1/a-profesor.webp");
 ok("A2: sin RUTA_A2 sigue la ruta provisional", process.env.RUTA_A2 === "1" || rutaDe("A2") === null);
 

@@ -163,6 +163,8 @@ export function Escenario({
     setLinea({ texto: r.respuesta, voz: r.respuestaVoz });
     setCumplidas(r.estado.cumplidas);
     setIntervenciones(r.estado.intervenciones);
+    // Las ayudas que lleva según el servidor (las estrellas salen de ahí).
+    setAyudas((n) => Math.max(n, r.estado.ayudas ?? 0));
     // Si falla la misma tarea dos veces seguidas, se ilumina la ayuda.
     setSinAvanzar((n) => (r.nuevas.length ? 0 : n + 1));
     setMeta(r.metaCumplida);
@@ -176,10 +178,14 @@ export function Escenario({
     const mio = turnos.current;
     const r = await ayudaEscena(conversacion);
     pidiendo.current = false;
+    if (!r) return setMensaje("No pudimos traer la ayuda. Intenta otra vez.");
+    // El contador, como lo lleva el servidor: si la ayuda se cobró y no se
+    // muestra (llegó después de otro turno), las estrellas de arriba lo
+    // dicen igual; antes quedaban en 3 y el resumen daba 2 (auditoría, 28
+    // de octubre de 2026).
+    setAyudas((n) => Math.max(n, r.ayudas || n + (r.cobrada ? 1 : 0)));
     // Si mientras llegaba ya respondió, la ayuda es de la línea anterior.
     if (mio !== turnos.current) return;
-    if (!r) return setMensaje("No pudimos traer la ayuda. Intenta otra vez.");
-    setAyudas((n) => n + 1);
     // Desde B1 la escena no muestra español (Contenido B1).
     setAyuda({ frase: r.frase, es: desdeB1(ctx.nivel) ? "" : r.es, explicacion: r.explicacion });
     void decir(r.frase);
@@ -344,7 +350,8 @@ export function Escenario({
               <BotonOir tam="chico" onClick={() => void decir(ayuda.frase)} className="!bg-oro" />
               <div className="leading-tight">
                 <small className="text-[11.5px] font-extrabold tracking-wide uppercase">
-                  {ayuda.frase.includes("___") ? "Ayuda · empieza así" : "Ayuda · puedes decir"}
+                  {/* Desde B1 la ayuda es una indicación ("Say what happened to your bag."), no una frase para decir. */}
+                  {ayuda.frase.includes("___") ? "Ayuda · empieza así" : desdeB1(ctx.nivel) ? "Ayuda · idea" : "Ayuda · puedes decir"}
                 </small>
                 <b className="block text-lg font-extrabold text-texto">{ayuda.frase}</b>
                 {ayuda.es && <span className="block text-[13px] font-semibold text-texto-suave">{ayuda.es}</span>}
@@ -629,7 +636,7 @@ function Resumen({
   siguiente: { href: string; texto: string };
   ctx: { nivel: Nivel; nombre: string };
   conversacion: string | null;
-  decir: (t: string) => Promise<void>;
+  decir: (t: string) => Promise<unknown>;
 }) {
   const primerNombre = ctx.nombre.split(" ")[0];
   useEffect(() => {
@@ -710,7 +717,7 @@ function Resumen({
       {salto && logrado && salto.saltadas[0] && (
         <div className="flex flex-col gap-1 rounded-3xl bg-morado-suave px-4 py-3.5 text-morado">
           <b className="text-[15px] font-black">
-            {salto.saltadas[0]} {/^La parada d+$/.test(salto.saltadas[0]) ? "quedó hecha" : "quedaron hechas"}
+            {salto.saltadas[0]} {/^La parada \d+$/.test(salto.saltadas[0]) ? "quedó hecha" : "quedaron hechas"}
           </b>
           <span className="text-sm font-semibold">
             Sigues en: {siguiente.texto.replace(/^Ir a /, "")}. Para subir de nivel tendrás que completar sus actividades.

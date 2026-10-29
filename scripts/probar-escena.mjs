@@ -1,6 +1,6 @@
 /**
  * El escenario de cierre, un viaje, un escenario del catálogo, la
- * Entrevista a Allison, Adivina y el comentario de Cuéntame contra el
+ * Entrevista a Allison, Adivina y el comentario de Cuéntame y Narra contra el
  * modelo real (src/lib/ruta/escena.ts, src/lib/evaluacion.ts). Turnos ESCRITOS para que sea barato y
  * repetible; el audio usa el mismo prompt. Llama a Gemini: gasta
  * créditos y por eso no está en "npm run revisar".
@@ -8,15 +8,19 @@
  *   node --env-file=.env scripts/probar-escena.mjs [repeticiones]
  *   VER=1 ...   muestra cada respuesta
  */
-const { turnoDeEscenario, clasificarEntrevista, respuestaDeEntrevista, preguntaDeLaTarea, clasificarAdivina, EN_INGLES } = await import(
+const { turnoDeEscenario, clasificarEntrevista, respuestaDeEntrevista, preguntaDeLaTarea, llevaPregunta, clasificarAdivina, EN_INGLES } = await import(
   "../src/lib/ruta/escena.ts"
 );
-const { comentarRelato, estaEnLoDicho } = await import("../src/lib/evaluacion.ts");
+const { comentarRelato, comentarNarracion, estaEnLoDicho } = await import("../src/lib/evaluacion.ts");
 const { PARADA_01: A2_P01 } = await import("../src/lib/ruta/a2/parada-01.ts");
+const { PARADA_01: B1_P01 } = await import("../src/lib/ruta/b1/parada-01.ts");
+const ZOE = B1_P01.lecciones.flatMap((l) => l.actividades).find((a) => a.tipo === "narra");
 const { esEspanolClaro, separarIdiomas } = await import("../src/lib/allison.ts");
 const { PARADA_01 } = await import("../src/lib/ruta/a1/parada-01.ts");
 const { PARADA_04 } = await import("../src/lib/ruta/a1/parada-04.ts");
 const { PARADA_07 } = await import("../src/lib/ruta/a1/parada-07.ts");
+const { PARADA_08: A1_P08 } = await import("../src/lib/ruta/a1/parada-08.ts");
+const { PARADA_08: A2_P08 } = await import("../src/lib/ruta/a2/parada-08.ts");
 const { VIAJES } = await import("../src/lib/ruta/viajes.ts");
 const { escenarioDeViaje, reglasDeViaje } = await import("../src/lib/ruta/viaje.ts");
 const { CATALOGO } = await import("../src/lib/escenarios/datos.ts");
@@ -140,6 +144,8 @@ for (let rep = 0; rep < reps; rep++) {
     console.log(`${nombre} (vuelta ${rep + 1})`);
     const historial = [{ rol: "allison", texto: escenario.dialogo[0].dice }];
     let cumplidas = [];
+    // Las tareas de dos partes hechas a medias, como las guarda la escena.
+    let aMedias = [];
     let turno = 0;
     for (const [dice, esperadas, op = {}] of turnos) {
       turno++;
@@ -149,12 +155,14 @@ for (let rep = 0; rep < reps; rep++) {
         nombre: "Diego",
         historial,
         cumplidas,
+        aMedias,
         ultimo: false,
         turno,
         minimo: escenario.minimoIntervenciones,
         extra,
         texto: dice,
       });
+      aMedias = r.aMedias;
       // Antes del mínimo de intervenciones la escena no se cierra: Allison
       // termina con una pregunta para que siga.
       // (La despedida natural del ejemplo, sin pregunta, también vale.)
@@ -204,6 +212,74 @@ for (let rep = 0; rep < reps; rep++) {
   revisarRespuesta("Último turno", cierre);
   revisar("Último turno · sin pregunta", !/\?\s*$/.test(cierre.respuesta), cierre.respuesta);
 
+  // Lo que encontró la auditoría de los escenarios (28 de octubre de 2026).
+  console.log(`Escenarios · auditoría (vuelta ${rep + 1})`);
+  const turnoA1 = (o) => turnoDeEscenario({ nivel: "A1", nombre: "Diego", ultimo: false, minimo: o.escenario.minimoIntervenciones, ...o });
+  const conversacion = (...l) => l.map((texto, i) => ({ rol: i % 2 === 0 ? "allison" : "alumno", texto }));
+  // Contesta y pregunta en el mismo turno: Allison contesta primero, en su
+  // papel ("Oh, you're from Colombia! Why are you here?" no contestaba).
+  const ambas = await turnoA1({
+    escenario: AEROPUERTO,
+    historial: conversacion(AEROPUERTO.dialogo[0].dice, "Good morning! My name is Diego.", "Nice to meet you! Where are you from?"),
+    cumplidas: [1],
+    turno: 2,
+    texto: "I'm from Colombia. And you, where are you from?",
+  });
+  revisar("Responde y pregunta · Allison contesta", /\bI'?m from|\bI am from|\bfrom (here|Miami|Florida|the (US|USA|United States))\b/i.test(ambas.respuesta), ambas.respuesta);
+  revisar("Responde y pregunta · tareas", JSON.stringify(ambas.tareas) === "[2]", JSON.stringify(ambas.tareas));
+  revisarRespuesta("Responde y pregunta", ambas);
+  // Tarea doble ("Cuenta qué te duele y desde cuándo"): con una parte no
+  // cuenta y Allison no cambia su pregunta por "Do you have any questions?";
+  // con la otra, en el turno siguiente, sí.
+  const enBrighton = conversacion(A2_P08.escenario.dialogo[0].dice, "Good morning. I don't feel well.", "Oh, I'm sorry. What's wrong?");
+  const mitad = await turnoA1({ escenario: A2_P08.escenario, nivel: "A2", historial: enBrighton, cumplidas: [1], turno: 2, texto: "I have a sore throat and a headache." });
+  revisar("Tarea doble · una parte no cuenta", !mitad.tareas.includes(2), `${JSON.stringify(mitad.tareas)} ${JSON.stringify(mitad.aMedias)}`);
+  revisar("Tarea doble · sigue con su pregunta", llevaPregunta(mitad.respuesta) && !/any questions/i.test(mitad.respuesta), mitad.respuesta);
+  const otraParte = await turnoA1({
+    escenario: A2_P08.escenario,
+    nivel: "A2",
+    historial: [...enBrighton, { rol: "alumno", texto: "I have a sore throat and a headache." }, { rol: "allison", texto: mitad.respuesta }],
+    cumplidas: [1, ...mitad.tareas],
+    aMedias: mitad.aMedias,
+    turno: 3,
+    texto: "Since yesterday.",
+  });
+  revisar("Tarea doble · la otra parte la completa", otraParte.tareas.includes(2), JSON.stringify(otraParte.tareas));
+  // Antes del mínimo, Allison no se despide: la tarea cuenta y la escena sigue con una pregunta.
+  const temprano = await turnoA1({
+    escenario: PARADA_01.escenario,
+    historial: conversacion("Good morning!", "Good morning.", "How are you?", "I'm fine, thanks. And you?", "I'm fine, thank you! What's your name?", "My name is Diego.", "Nice to meet you, Diego! How old are you?", "I'm 15.", "Where are you from, Diego?", "I am from Colombia.", "Oh, you're from Colombia! Nice.", "And you? Where are you from?", "I'm from Miami. Welcome!"),
+    cumplidas: [1, 2, 3, 4, 5, 6],
+    turno: 7,
+    texto: "Thank you. Goodbye!",
+  });
+  revisar("Despedida antes del mínimo · cuenta la tarea", temprano.tareas.includes(7), JSON.stringify(temprano.tareas));
+  revisar(
+    "Despedida antes del mínimo · no se despide y pregunta",
+    !/\b(bye|goodbye|have a (nice|good) day|see you)\b/i.test(temprano.respuesta) && llevaPregunta(temprano.respuesta),
+    temprano.respuesta
+  );
+  // La despedida del último turno sale del cierre aprobado: sin "Ms. Patel:"
+  // ni comillas (B1) y sin el "Vamos a repasar…" en español (A1 P8).
+  for (const [nombre, e, nivel] of [["B1 Toronto", B1_P01.escenario, "B1"], ["A1 Boston", A1_P08.escenario, "A1"]]) {
+    const fin = await turnoDeEscenario({
+      escenario: e,
+      nivel,
+      nombre: "Diego",
+      historial: [{ rol: "allison", texto: e.dialogo[0].dice }],
+      cumplidas: [1],
+      ultimo: true,
+      turno: e.maximoIntervenciones,
+      minimo: e.minimoIntervenciones,
+      texto: "no sé qué decir, gracias",
+    });
+    revisar(
+      `Despedida final ${nombre} · sin etiqueta ni mezcla`,
+      !/[:"“”]|vamos|repasar|pantalla/i.test(fin.respuesta) && !separarIdiomas(fin.respuesta).espanol.trim() && !/\?\s*$/.test(fin.respuesta),
+      fin.respuesta
+    );
+  }
+
   // La entrevista: el modelo clasifica, el código responde.
   console.log(`Entrevista (vuelta ${rep + 1})`);
   const entrevista = PARADA_01.lecciones[3].actividades.find((a) => a.tipo === "entrevista");
@@ -223,6 +299,17 @@ for (let rep = 0; rep < reps; rep++) {
   }
   const devuelta = await clasificarEntrevista({ entrevista, transcripcion: "I'm from Colombia.", devuelta: "Where are you from?" });
   revisar('"I\'m from Colombia." · respuesta', devuelta.tipo === "respuesta", JSON.stringify(devuelta));
+  // Contesta el "And you?" y pregunta en el mismo turno: antes la respuesta
+  // se comía la pregunta y Allison pedía otra (28 de octubre de 2026).
+  const AMBAS = [
+    ["My name is Andres. Where are you from?", "What's your name?", 2],
+    ["I am from Colombia. Who old are you?", "Where are you from?", 3],
+    ["I'm 15. Do you have a pet?", "How old are you?", 4],
+  ];
+  for (const [dice, devuelta, dato] of AMBAS) {
+    const c = await clasificarEntrevista({ entrevista, transcripcion: dice, devuelta });
+    revisar(`"${dice}" · responde y pregunta ${dato}`, c.tipo === "pregunta" && c.dato === dato && c.responde, JSON.stringify(c));
+  }
   const a = respuestaDeEntrevista({ entrevista, clasificacion: { tipo: "pregunta", dato: 2, espanol: false }, descubiertos: [], turno: 0 });
   revisar("Allison contesta y devuelve", a.respuesta.endsWith("And you?") && a.descubierto === 2, a.respuesta);
 
@@ -261,6 +348,34 @@ for (let rep = 0; rep < reps; rep++) {
   revisar("Relato con errores · una mejora", !!c2.mejora && estaEnLoDicho(c2.mejora.dijo, conErrores), JSON.stringify(c2.mejora));
   const c3 = await comentarRelato({ tema, transcripcion: "Voy al colegio a las siete y estudio matemáticas.", nivel: "A2" });
   revisar("Relato en español · no cuenta", c3.espanol, JSON.stringify({ frases: c3.frases, espanol: c3.espanol }));
+  // Auditoría del 28 de octubre de 2026: una tirada con "and" contaba 2
+  // frases, y una frase bien dicha salía corregida ("at six o'clock").
+  const tirada = "I go to school at six and I study math and English and after school I do my homework and I play soccer with my friends";
+  const c4 = await comentarRelato({ tema, transcripcion: tirada, nivel: "A2" });
+  revisar("Relato en una tirada · 4 frases", c4.frases >= 4, JSON.stringify({ frases: c4.frases }));
+  const bienDicho = "I go to school at six. I study math and science. After school I play soccer.";
+  const c5 = await comentarRelato({ tema, transcripcion: bienDicho, nivel: "A2" });
+  revisar("Relato bien dicho · sin corrección", !c5.mejora, JSON.stringify(c5.mejora));
+
+  // Narra la secuencia (B1): el orden lo pone el código y lo contado en
+  // español no cuenta.
+  console.log(`Narra (vuelta ${rep + 1})`);
+  const narra = { pregunta: ZOE.pregunta, dibujos: ZOE.dibujos, gramatica: ZOE.gramatica, nivel: "B1", modelo: ZOE.modelo };
+  const n1 = await comentarNarracion({
+    ...narra,
+    transcripcion: "Her bag hasn't arrived. She waited for one hour. She flew to Vancouver. She checked her bag in Toronto.",
+  });
+  revisar("Narra al revés · no va en orden", n1.enOrden < 3, JSON.stringify({ dibujos: n1.dibujos, enOrden: n1.enOrden }));
+  const n2 = await comentarNarracion({
+    ...narra,
+    transcripcion: "Zoe checked her bag in Toronto. Luego voló a Vancouver. Esperó una hora por la maleta. Her bag hasn't arrived.",
+  });
+  revisar("Narra mitad en español · solo los dibujos en inglés", n2.enOrden < 3 && !n2.dibujos.includes(2) && !n2.dibujos.includes(3), JSON.stringify({ dibujos: n2.dibujos }));
+  const n3 = await comentarNarracion({
+    ...narra,
+    transcripcion: "First Zoe checked her bag in Toronto. Then she flew to Vancouver. After that she waited for one hour. Now her bag hasn't arrived.",
+  });
+  revisar("Narra bien contada · 4 en orden, sin corrección", n3.enOrden === 4 && !n3.mejora, JSON.stringify({ dibujos: n3.dibujos, mejora: n3.mejora }));
 }
 
 console.log(

@@ -196,7 +196,16 @@ export async function terminarRepaso(
      where id = ${repasoId} and user_id = ${userId} and completado_en is null
     returning items
   `;
-  if (!r) return { ok: false };
+  if (!r) {
+    // Ya estaba guardado: la respuesta se perdió y el alumno reintentó.
+    // Antes era un 404 y "No se guardó tu repaso" para siempre
+    // (auditoría, 28 de octubre de 2026). No se vuelve a sumar nada.
+    const [hecho] = await sql`
+      select 1 from repasos_sorpresa
+       where id = ${repasoId} and user_id = ${userId} and completado_en is not null
+    `;
+    return hecho ? { ok: true, estrellas: 1, ...(await sumarTiempo(userId, 0)) } : { ok: false };
+  }
   const items = r.items as ItemRepaso[];
   for (const [k, i] of items.entries()) {
     const hecha = resultados.find((x) => x.n === k);

@@ -186,8 +186,9 @@ export async function terminarActividad(
   }
 
   // La primera estrella de la primera sesión: solo en la primera actividad
-  // de la primera lección (a1-p01, lección 1).
-  if (fin.primera && fin.paso === 1 && fin.parada === "a1-p01" && fin.leccion === 1) {
+  // de la primera lección de la ruta del nivel (a1-p01, a2-p01 o b1-p01,
+  // lección 1). Antes solo A1: en A2 y B1 se prometía y no se daba.
+  if (fin.primera && fin.paso === 1 && /^[a-c][12]-p01$/.test(fin.parada) && fin.leccion === 1) {
     await sql`
       update ruta_lecciones set estrellas = greatest(estrellas, 1)
        where user_id = ${userId} and parada = ${fin.parada} and leccion = ${fin.leccion}

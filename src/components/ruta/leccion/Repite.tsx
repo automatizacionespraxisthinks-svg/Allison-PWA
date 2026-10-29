@@ -77,6 +77,12 @@ export function Repite({
   }
 
   const claras = palabras?.filter((p) => p.estado === "bien").length ?? 0;
+  /**
+   * "Falta una palabra" solo si falta una (antes lo decía aunque fuera
+   * otra frase). Desde A2 solo cuenta la palabra difícil ("Pequeñas
+   * fallas en el resto de la frase"): esa es la que falta.
+   */
+  const porMejorar = /pequeñas fallas/i.test(a.tambienSeAcepta ?? "") ? 1 : (palabras?.length ?? 0) - claras;
   // Desde B1 Allison habla en inglés: sin la línea en español debajo.
   const b1 = desdeB1(ctx.nivel);
   const listo = escrita || (palabras !== null && (!mejorar || intentos >= 2));
@@ -92,6 +98,11 @@ export function Repite({
             <>
               Listen and repeat.
               {!b1 && <small className="block font-semibold text-texto-suave">Escucha y repite.</small>}
+            </>
+          ) : mejorar && porMejorar > 1 ? (
+            <>
+              Almost! Try it again.
+              {!b1 && <small className="block font-semibold text-texto-suave">¡Casi! Inténtalo otra vez.</small>}
             </>
           ) : mejorar ? (
             <>
@@ -153,7 +164,8 @@ export function Repite({
         </p>
       )}
       {mensaje && <p className="text-center text-sm font-bold text-oro">{mensaje}</p>}
-      {oido && mejorar && <NoDijeEso oido={oido.texto} escrito={false} onClick={noDijeEso} />}
+      {/* Mientras revisa otro intento no se deshace: la respuesta que llega lo pisaría. */}
+      {oido && mejorar && !ocupado && <NoDijeEso oido={oido.texto} escrito={false} onClick={noDijeEso} />}
 
       {listo ? (
         <Hoja

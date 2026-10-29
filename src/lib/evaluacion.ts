@@ -2,6 +2,8 @@ import { GoogleGenAI, Type } from "@google/genai";
 import type { Nivel } from "./tipos.ts";
 import { palabrasDeFrase } from "./ruta/rayas.ts";
 import { limpiarTranscripcion } from "./transcripcion.ts";
+import { hablaEspanol, mezclaEspanol } from "./ruta/escena.ts";
+import { esInglesClaro } from "./allison.ts";
 
 /**
  * La "evaluación corta" del plan de mejoras (sección 6): comprobar UNA
@@ -22,7 +24,12 @@ import { limpiarTranscripcion } from "./transcripcion.ts";
  *     sin saber cuál era la frase, la entendió. Es la definición del
  *     plan: "la misma frase, entendible; no tiene que sonar perfecta".
  *   · Responde rápido: aquí vale cualquier respuesta con sentido, así
- *     que decide el modelo -- con la pregunta, que no es la respuesta.
+ *     que decide el modelo -- con la pregunta, que no es la respuesta, y
+ *     sobre lo ya transcrito a ciegas (en dos llamadas: en una sola,
+ *     traducía lo dicho en español y lo daba por bueno).
+ *   · ¿Qué es esto? con respuesta abierta ("Cualquier consejo con
+ *     should"): si no es una frase de ejemplo, el modelo juzga lo
+ *     transcrito con la regla aprobada.
  *
  * El comentario de Allison (el globo, la tarjeta de la palabra por
  * mejorar) NO lo escribe el modelo: lo arma la pantalla con frases
@@ -50,6 +57,25 @@ export interface PedidoEvaluacion {
   mimeType?: string;
   /** Para pruebas o si el micrófono no da: la respuesta escrita. */
   texto?: string;
+  /**
+   * ¿Qué es esto? con respuesta abierta: la regla aprobada de "También se
+   * acepta" ("Cualquier consejo con should…"). Si no dijo una forma
+   * aceptada, el modelo juzga lo transcrito con esta regla.
+   */
+  regla?: string;
+  /** La situación en español de ¿Qué es esto?, para juzgar con la regla. */
+  contexto?: string;
+  /**
+   * Dilo en inglés: lo que había que decir, en español. Si no dijo una de
+   * las frases aprobadas, el modelo juzga si dijo lo mismo con otras
+   * palabras ("exam" por "test", "What about" por "How about").
+   */
+  espanol?: string;
+  /**
+   * Repite desde A2 ("Pequeñas fallas en el resto de la frase"): solo
+   * cuenta la palabra difícil; las demás se marcan pero no hacen fallar.
+   */
+  clave?: string;
 }
 
 export type EstadoPalabra = "bien" | "mejorar";
@@ -83,7 +109,7 @@ const juzgarRespuesta = (pregunta: string, nivel: Nivel) => `
   English, even with small mistakes. false if it does not answer the
   question, is in Spanish, or is empty.`;
 
-function esquemaDe(tipo: TipoActividad) {
+function esquemaTranscripcion() {
   // "hayVoz" va primero: decidir antes si hay alguien hablando evita que
   // el modelo invente una frase sobre un audio en silencio (lo hizo).
   const properties: Record<string, unknown> = {
@@ -91,10 +117,6 @@ function esquemaDe(tipo: TipoActividad) {
     transcripcion: { type: Type.STRING, description: "Exactly what was heard, never corrected or completed. Empty if hayVoz is false." },
   };
   const required = ["hayVoz", "transcripcion"];
-  if (tipo === "responde") {
-    properties.correcto = { type: Type.BOOLEAN };
-    required.push("correcto");
-  }
   return { type: Type.OBJECT, properties, required, propertyOrdering: Object.keys(properties) };
 }
 
@@ -120,33 +142,90 @@ const NUMEROS: Record<string, string> = {
   eight: "8", nine: "9", ten: "10", eleven: "11", twelve: "12", thirteen: "13",
   fourteen: "14", fifteen: "15", sixteen: "16", seventeen: "17", eighteen: "18",
   nineteen: "19", twenty: "20",
+  // "It's 9:30" llega en cifras: "thirty" también (antes "thirty" nunca
+  // coincidía y Repite lo marcaba aunque se dijera bien).
+  thirty: "30", forty: "40", fifty: "50", sixty: "60", seventy: "70", eighty: "80", ninety: "90",
 };
+
+/** Quién puede llevar "'s" de "is"/"has" (el resto es posesivo: "Allison's cat"). */
+const SUJETOS_S = new Set([
+  "he", "she", "it", "what", "that", "there", "here", "who", "where", "how", "when", "this",
+  "name", "everyone", "everybody", "someone", "somebody", "nobody", "nothing", "everything",
+]);
+/** Lo que sigue a "'s"/"'d" cuando es "has"/"had": "He's been…", "She'd already left". */
+const PIDE_HAS = new Set(["been", "got", "gotten", "gone", "done", "had", "already", "never", "just", "ever", "seen", "eaten", "left", "lost", "finished"]);
+const PIDE_HAD = new Set([...PIDE_HAS, "better", "made", "taken", "given", "written", "found", "bought", "brought", "told", "said", "come", "become", "begun", "felt", "kept", "met", "known"]);
+
+/**
+ * Una palabra con su contracción abierta. La siguiente decide las que
+ * tienen dos lecturas: "he's been" es "he has been" y "he's tired", "he
+ * is tired"; "I'd like" es "I would like" y "she'd already left", "she
+ * had already left". Abrir solo unas pocas (como antes) marcaba mal
+ * respuestas correctas: "I have been studying…" no coincidía con "I've
+ * been studying…" (auditoría, 28 de octubre de 2026).
+ */
+function abrirContraccion(p: string, siguiente = ""): string[] {
+  if (p === "cannot" || p === "can't") return ["can", "not"];
+  if (p === "won't") return ["will", "not"];
+  if (p === "shan't") return ["shall", "not"];
+  if (p === "let's") return ["let", "us"];
+  const negada = /^([a-z]+)n't$/.exec(p);
+  if (negada) return [negada[1], "not"];
+  const m = /^([a-z]+)'(m|re|ve|ll|d|s)$/.exec(p);
+  if (!m) return [p];
+  const [, base, fin] = m;
+  if (fin === "m") return [base, "am"];
+  if (fin === "re") return [base, "are"];
+  if (fin === "ve") return [base, "have"];
+  if (fin === "ll") return [base, "will"];
+  if (fin === "d") return [base, PIDE_HAD.has(siguiente) || /ed$/.test(siguiente) ? "had" : "would"];
+  return SUJETOS_S.has(base) ? [base, PIDE_HAS.has(siguiente) ? "has" : "is"] : [p];
+}
+
+/** Las palabras de un texto, en minúsculas y sin tildes ni signos (con su apóstrofo). */
+function palabrasCrudas(texto: string): string[] {
+  return (
+    texto
+      .toLowerCase()
+      // Sin tildes: "café" y "cafe" son la misma palabra (antes la tilde
+      // se borraba con la letra y "café" quedaba "caf").
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[’‘`´]/g, "'")
+      // "ten o'clock" nombra el reloj del dibujo: cuenta como "clock".
+      .replace(/\bo'clock\b/g, "o clock")
+      .replace(/[^a-z0-9' ]+/g, " ")
+      .split(/\s+/)
+      // Comillas simples alrededor de una palabra ('played'), no apóstrofos.
+      .map((p) => p.replace(/^'+|'+$/g, ""))
+      .filter(Boolean)
+  );
+}
+
+/** En cifras, y "twenty five" como "25" (la transcripción escribe "25"). */
+function enCifras(palabras: string[]): string[] {
+  const salida: string[] = [];
+  for (const p of palabras.map((x) => NUMEROS[x] ?? x)) {
+    const antes = salida[salida.length - 1] ?? "";
+    if (/^[2-9]0$/.test(antes) && /^[1-9]$/.test(p)) salida[salida.length - 1] = String(Number(antes) + Number(p));
+    else salida.push(p);
+  }
+  // "oh" es cero solo entre números ("three one oh five"); suelto es
+  // una exclamación ("Oh, nice!").
+  return salida.map((p, i, todas) => (p === "oh" && (/^\d+$/.test(todas[i - 1] ?? "") || /^\d+$/.test(todas[i + 1] ?? "")) ? "0" : p));
+}
 
 /** Minúsculas, sin puntuación, con contracciones abiertas y números en cifras. */
 export function normalizar(texto: string): string {
-  return ` ${texto
-    .toLowerCase()
-    // Sin tildes: "café" y "cafe" son la misma palabra (antes la tilde
-    // se borraba con la letra y "café" quedaba "caf").
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[’‘]/g, "'")
-    // "ten o'clock" nombra el reloj del dibujo: cuenta como "clock".
-    .replace(/\bo'clock\b/g, "o clock")
-    .replace(/\b(i)'m\b/g, "$1 am")
-    .replace(/\b(it|what|that|he|she|there)'s\b/g, "$1 is")
-    .replace(/\b(you|they|we)'re\b/g, "$1 are")
-    .replace(/\b(do|does|did|is|are|was|were)n't\b/g, "$1 not")
-    .replace(/\bcan't\b/g, "cannot")
-    .replace(/[^a-z0-9' ]+/g, " ")
-    .split(/\s+/)
-    .map((p) => NUMEROS[p] ?? p)
-    // "oh" es cero solo entre números ("three one oh five"); suelto es
-    // una exclamación ("Oh, nice!").
-    .map((p, i, todas) => (p === "oh" && (/^\d+$/.test(todas[i - 1] ?? "") || /^\d+$/.test(todas[i + 1] ?? "")) ? "0" : p))
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .trim()} `;
+  const crudas = palabrasCrudas(texto);
+  const abiertas = crudas.flatMap((p, i) => abrirContraccion(p, crudas[i + 1]));
+  return ` ${enCifras(abiertas).join(" ")} `;
+}
+
+/** Una palabra de la frase, abierta como en la frase ("she'd" antes de "already" es "she had"). */
+function palabraNormalizada(palabra: string, siguiente?: string): string[] {
+  const [p = "", sig] = palabrasCrudas(`${palabra} ${siguiente ?? ""}`);
+  return enCifras(palabrasCrudas(palabra).length > 1 ? palabrasDe(palabra) : abrirContraccion(p, sig));
 }
 
 /** Cuántas letras hay que cambiar, poner o quitar para pasar de a a b. */
@@ -164,41 +243,68 @@ function distancia(a: string, b: string): number {
   return fila[b.length];
 }
 
+const VOCAL = /[aeiou]/;
+
 /**
  * ¿Es la misma palabra, oída con acento? En palabras de 6 letras o más
- * se tolera UNA letra de diferencia: "mornin" por "morning", "please"
- * por "pleased" (al oído casi no se distinguen). En las cortas no: "God"
- * no es "Good", "might" no es "night" ni "mouse" es "house".
+ * se tolera UNA letra de más o de menos ("mornin" por "morning", "please"
+ * por "pleased": al oído casi no se distinguen) o una vocal por otra
+ * ("Columbia"). Una consonante cambiada ya es otra palabra: "grandpa" no
+ * es "grandma", "watches" no es "watched" (justo lo que se practica) ni
+ * "fridge" es "bridge" (auditoría, 28 de octubre de 2026). En las cortas,
+ * nada: "God" no es "Good", "might" no es "night".
  */
 export function mismaPalabra(oida: string, esperada: string): boolean {
   if (oida === esperada) return true;
-  return Math.min(oida.length, esperada.length) >= 6 && distancia(oida, esperada) <= 1;
+  if (Math.min(oida.length, esperada.length) < 6 || distancia(oida, esperada) > 1) return false;
+  if (oida.length !== esperada.length) return true;
+  const i = [...oida].findIndex((c, k) => c !== esperada[k]);
+  return VOCAL.test(oida[i]) && VOCAL.test(esperada[i]);
 }
 
 const palabrasDe = (texto: string) => normalizar(texto).trim().split(" ").filter(Boolean);
+
+/**
+ * ¿Están las palabras de la forma, seguidas, en lo dicho? También juntas
+ * o separadas: la transcripción escribe "stomach ache" por "stomachache"
+ * y "ice cream" se oye igual que "icecream".
+ */
+function estaEn(d: string[], n: string[]): boolean {
+  for (let i = 0; i + n.length <= d.length; i++) {
+    if (n.every((w, k) => mismaPalabra(d[i + k], w))) return true;
+  }
+  const junta = n.join("");
+  for (let i = 0; i < d.length; i++) {
+    let pegado = "";
+    for (let j = i; j < d.length && pegado.length < junta.length; j++) {
+      pegado += d[j];
+      if (pegado === junta) return true;
+    }
+  }
+  return false;
+}
 
 /** ¿Lo dicho contiene alguna de las formas que valen, como frase completa? */
 export function contieneAlguna(dicho: string, formas: string[]): boolean {
   const d = palabrasDe(dicho);
   return formas.some((f) => {
     const n = palabrasDe(f);
-    if (n.length === 0) return false;
-    for (let i = 0; i + n.length <= d.length; i++) {
-      if (n.every((w, k) => mismaPalabra(d[i + k], w))) return true;
-    }
-    return false;
+    return n.length > 0 && estaEn(d, n);
   });
 }
 
 /**
  * Describe la imagen: qué cosas del dibujo nombró. Vale con el artículo
- * o sin él, en singular o en plural.
+ * o sin él, en singular o en plural, y una acción con -ing ("cook" en
+ * "Her mom is cooking", "swim" en "He is swimming", "dance" en "They're
+ * dancing"; antes no contaban, auditoría del 28 de octubre de 2026).
  */
 export function cosasNombradas(dicho: string, cosas: string[]): string[] {
   const d = normalizar(dicho);
   return cosas.filter((c) => {
     const n = normalizar(c).trim();
-    return d.includes(` ${n} `) || d.includes(` ${n}s `) || d.includes(` ${n}es `);
+    const formas = [n, `${n}s`, `${n}es`, `${n}ing`, `${n.replace(/e$/, "")}ing`, `${n}${n.at(-1)}ing`];
+    return formas.some((f) => d.includes(` ${f} `));
   });
 }
 
@@ -209,13 +315,22 @@ export function cosasNombradas(dicho: string, cosas: string[]): string[] {
  */
 export function palabrasDeRepite(frase: string, transcripcion: string): { palabra: string; estado: EstadoPalabra }[] {
   const disponibles = palabrasDe(transcripcion);
-  return palabrasDeFrase(frase).map((palabra) => {
-    // Una contracción ("I'm") son dos palabras normalizadas: valen las dos.
-    const partes = palabrasDe(palabra);
+  const deLaFrase = palabrasDeFrase(frase);
+  return deLaFrase.map((palabra, n) => {
+    // Una contracción ("I'm") son dos palabras normalizadas: valen las
+    // dos. La siguiente decide "she'd already" (had) o "I'd like" (would).
+    const partes = palabraNormalizada(palabra, deLaFrase[n + 1]);
     const posiciones = partes.map((p) => disponibles.findIndex((d) => mismaPalabra(d, p)));
-    const todas = posiciones.every((i) => i >= 0);
+    let todas = posiciones.every((i) => i >= 0);
     if (todas) {
       for (const i of [...posiciones].sort((a, b) => b - a)) disponibles.splice(i, 1);
+    } else if (partes.length === 1) {
+      // Escrita en dos: "stomach ache" por "stomachache".
+      const i = disponibles.findIndex((d, k) => d + (disponibles[k + 1] ?? "") === partes[0]);
+      if (i >= 0) {
+        disponibles.splice(i, 2);
+        todas = true;
+      }
     }
     return { palabra, estado: todas ? ("bien" as const) : ("mejorar" as const) };
   });
@@ -254,7 +369,7 @@ export async function transcribirACiegas(
   role-play (in Spanish) may help: ${escena}`
         : TRANSCRIBIR,
       responseMimeType: "application/json",
-      responseSchema: esquemaDe("que-es-esto"),
+      responseSchema: esquemaTranscripcion(),
       temperature: 0,
       maxOutputTokens: largo ? 1000 : 400,
       abortSignal: AbortSignal.timeout(largo ? 20_000 : 12_000),
@@ -268,57 +383,105 @@ export async function transcribirACiegas(
   };
 }
 
+/**
+ * Juzga con el modelo un texto YA transcrito: se le da la pregunta o la
+ * regla, nunca el audio. Antes Responde rápido transcribía y juzgaba en
+ * la misma llamada, y con la pregunta a la vista traducía lo dicho en
+ * español ("Tengo quince años" salía "I have fifteen years", correcto) y
+ * le arreglaba los errores al alumno (auditoría, 28 de octubre de 2026).
+ */
+async function juzgar(dicho: string, criterio: string): Promise<{ correcto: boolean; tokensEntrada: number; tokensSalida: number }> {
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  const r = await ai.models.generateContent({
+    model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
+    contents: [{ role: "user", parts: [{ text: `The student said: ${dicho}` }] }],
+    config: {
+      systemInstruction: `You check one short answer of a Spanish-speaking student learning English. Judge only what is written, as it is.${criterio}`,
+      responseMimeType: "application/json",
+      responseSchema: { type: Type.OBJECT, properties: { correcto: { type: Type.BOOLEAN } }, required: ["correcto"] },
+      temperature: 0,
+      maxOutputTokens: 40,
+      // Una evaluación tarda 1-3 s; en la prueba hubo una de 24 s por
+      // la red. Mejor cortar y que la ruta devuelva la intervención que
+      // dejar al alumno mirando la pantalla.
+      abortSignal: AbortSignal.timeout(12_000),
+    },
+  });
+  return {
+    correcto: jsonDelModelo<{ correcto?: boolean }>(r).correcto === true,
+    tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
+    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+  };
+}
+
+/** ¿Qué es esto? abierta: la regla aprobada de "También se acepta". */
+const juzgarConRegla = (p: PedidoEvaluacion) => `
+- "correcto": the student (CEFR ${p.nivel}) was in this situation (in Spanish): "${p.contexto ?? ""}".
+  The teacher accepts (in Spanish): "${p.regla}". Good answers look like:
+  ${[p.esperado, ...(p.aceptadas ?? [])].map((x) => `"${x}"`).join(", ")}. true if what they
+  said follows that rule and makes sense in the situation, in English,
+  even with small mistakes. false if it does not, is in Spanish, or is empty.`;
+
+/**
+ * Dilo en inglés con otras palabras: vale si es inglés correcto, dice lo
+ * mismo y usa la gramática de la frase aprobada. Antes solo valían las
+ * frases fijas y "I'm 15 years old and I have a sister." salía mal
+ * (auditoría, 28 de octubre de 2026).
+ */
+const juzgarDilo = (p: PedidoEvaluacion) => `
+- "correcto": the student (CEFR ${p.nivel}) had to say this in English: "${p.espanol}" (in Spanish).
+  Approved answers: ${[p.esperado, ...(p.aceptadas ?? [])].map((x) => `"${x}"`).join(", ")}.
+  true if what they said is correct English that says the same thing, with
+  the same grammar as the approved answers. Other words with the same
+  meaning are fine ("exam" for "test", "What about" for "How about", "15"
+  for "15 years old"). false if it has a grammar mistake, leaves out part
+  of the meaning, changes the tense or the structure, is in Spanish, or
+  is unfinished.`;
+
+/** Repite desde A2: ¿la palabra difícil salió bien? Busca su lugar en la frase. */
+function claveMal(palabras: { palabra: string; estado: EstadoPalabra }[], clave: string): boolean | null {
+  const frase = palabras.map((w) => normalizar(w.palabra).trim());
+  const buscada = palabrasDeFrase(clave).map((c) => normalizar(c).trim());
+  for (let i = 0; i + buscada.length <= frase.length; i++) {
+    if (buscada.every((c, k) => frase[i + k] === c)) return palabras.slice(i, i + buscada.length).some((w) => w.estado === "mejorar");
+  }
+  return null;
+}
+
 export async function evaluarRespuestaCorta(p: PedidoEvaluacion): Promise<ResultadoEvaluacion> {
   if (!p.texto && !p.audioBase64) throw new Error("Hace falta el audio o el texto del alumno");
 
-  let datos: { hayVoz?: boolean; transcripcion?: string; correcto?: boolean } = {};
-  let uso: { promptTokenCount?: number; candidatesTokenCount?: number } | undefined;
-
-  // Un texto escrito no se transcribe: solo Responde rápido necesita al
-  // modelo en ese caso, para juzgar si la respuesta tiene sentido.
-  if (p.audioBase64 || p.tipo === "responde") {
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const r = await ai.models.generateContent({
-      model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
-      contents: [
-        {
-          role: "user",
-          parts: p.audioBase64
-            ? [{ inlineData: { mimeType: p.mimeType ?? "audio/webm", data: p.audioBase64 } }]
-            : [{ text: `The student typed: ${p.texto}` }],
-        },
-      ],
-      config: {
-        systemInstruction:
-          (p.audioBase64 ? TRANSCRIBIR : 'Copy the student\'s typed answer into "transcripcion".') +
-          (p.tipo === "responde" ? juzgarRespuesta(p.esperado, p.nivel) : ""),
-        responseMimeType: "application/json",
-        responseSchema: esquemaDe(p.tipo),
-        temperature: 0,
-        maxOutputTokens: 400,
-        // Una evaluación tarda 1-3 s; en la prueba hubo una de 24 s por
-        // la red. Mejor cortar y que la ruta devuelva la intervención que
-        // dejar al alumno mirando la pantalla.
-        abortSignal: AbortSignal.timeout(12_000),
-      },
-    });
-    uso = r.usageMetadata;
-    datos = jsonDelModelo<typeof datos>(r);
+  // Primero, a ciegas: el modelo no sabe la respuesta ni la pregunta.
+  // Lo escrito no se transcribe.
+  let transcripcion = p.texto?.trim() ?? "";
+  let tokensEntrada = 0;
+  let tokensSalida = 0;
+  if (!transcripcion && p.audioBase64) {
+    const tr = await transcribirACiegas(p.audioBase64, p.mimeType ?? "audio/webm");
+    transcripcion = tr.transcripcion.trim();
+    tokensEntrada += tr.tokensEntrada;
+    tokensSalida += tr.tokensSalida;
   }
-
-  const transcripcion = (p.texto?.trim() || (datos.hayVoz === false ? "" : limpiarTranscripcion(datos.transcripcion ?? "")) || "").trim();
-  const resultado: ResultadoEvaluacion = {
-    transcripcion,
-    correcto: false,
-    palabras: [],
-    tokensEntrada: uso?.promptTokenCount ?? 0,
-    tokensSalida: uso?.candidatesTokenCount ?? 0,
+  const resultado: ResultadoEvaluacion = { transcripcion, correcto: false, palabras: [], tokensEntrada, tokensSalida };
+  // Lo dicho en español no se juzga: nunca vale, y sería otra llamada.
+  const juzgable = !!transcripcion && !hablaEspanol(transcripcion);
+  const conModelo = async (criterio: string) => {
+    const j = await juzgar(transcripcion, criterio);
+    resultado.tokensEntrada += j.tokensEntrada;
+    resultado.tokensSalida += j.tokensSalida;
+    return j.correcto;
   };
 
   switch (p.tipo) {
     case "que-es-esto":
     case "dilo":
       resultado.correcto = contieneAlguna(transcripcion, [p.esperado, ...(p.aceptadas ?? [])]);
+      // Respuesta abierta ("Cualquier consejo con should"): si no es una de
+      // las frases de ejemplo, la juzga el modelo con la regla aprobada.
+      // Antes se calificaba contra las frases fijas y "You should drink
+      // water." salía mal.
+      if (!resultado.correcto && p.regla && juzgable) resultado.correcto = await conModelo(juzgarConRegla(p));
+      else if (!resultado.correcto && p.tipo === "dilo" && p.espanol && juzgable) resultado.correcto = await conModelo(juzgarDilo(p));
       // ¿Qué es esto?: las palabras de la respuesta que ya dijo van llenando las rayas.
       if (p.tipo === "que-es-esto") resultado.palabras = palabrasDeRepite(p.esperado, transcripcion);
       break;
@@ -327,13 +490,26 @@ export async function evaluarRespuestaCorta(p: PedidoEvaluacion): Promise<Result
       resultado.correcto = cosasNombradas(transcripcion, p.aceptadas ?? []).length >= 3;
       break;
     case "responde":
-      resultado.correcto = transcripcion.length > 0 && datos.correcto === true;
+      resultado.correcto = juzgable && (await conModelo(juzgarRespuesta(p.esperado, p.nivel)));
       break;
-    case "repite":
+    case "repite": {
       resultado.palabras = palabrasDeRepite(p.esperado, transcripcion);
-      resultado.palabraAMejorar = resultado.palabras.find((w) => w.estado === "mejorar")?.palabra;
-      resultado.correcto = !resultado.palabraAMejorar;
+      const mal = resultado.palabras.filter((w) => w.estado === "mejorar");
+      const dificilMal = p.clave ? claveMal(resultado.palabras, p.clave) : null;
+      if (dificilMal !== null) {
+        // "Pequeñas fallas en el resto de la frase": solo hace fallar la
+        // palabra difícil, o no haber dicho casi nada de la frase.
+        const casiNada = mal.length * 2 > resultado.palabras.length;
+        resultado.correcto = !dificilMal && !casiNada;
+        resultado.palabraAMejorar = dificilMal ? p.clave : casiNada ? mal[0]?.palabra : undefined;
+        // Si pasó, las pequeñas fallas no salen como errores debajo de "Great!".
+        if (resultado.correcto) resultado.palabras = resultado.palabras.map((w) => ({ ...w, estado: "bien" as const }));
+      } else {
+        resultado.palabraAMejorar = mal[0]?.palabra;
+        resultado.correcto = !resultado.palabraAMejorar;
+      }
       break;
+    }
   }
   return resultado;
 }
@@ -343,9 +519,10 @@ export async function evaluarRespuestaCorta(p: PedidoEvaluacion): Promise<Result
 //
 //  El relato se transcribe primero a ciegas (transcribirACiegas, largo):
 //  quien transcribe no sabe de qué tema se habló. Después, con el texto
-//  ya fijo, el modelo cuenta las frases que se entienden y elige una cosa
-//  bien hecha y una sola por mejorar. El código verifica que las frases
-//  que cita estén de verdad en lo que dijo el alumno.
+//  ya fijo, el modelo copia las frases que se entienden y elige una sola
+//  por mejorar y una cosa bien hecha. El código verifica que lo que cita
+//  esté de verdad en lo que dijo el alumno, cuenta las frases y descarta
+//  las correcciones que no corrigen nada.
 //
 //  Desde B1 Allison explica en inglés sencillo: el "porqué" sale en
 //  inglés y su traducción va aparte, para «En español» (Contenido B1).
@@ -366,53 +543,82 @@ export interface ComentarioRelato {
 
 const enIngles = (nivel: Nivel) => nivel !== "A1" && nivel !== "A2";
 
-/** Los campos del comentario: los "porqué" en español, o desde B1 en inglés y en español. */
-function camposComentario(nivel: Nivel): Record<string, { type: Type }> {
+/**
+ * Los campos del comentario: las frases, la mejora y lo bien hecho (los
+ * "porqué" en español, o desde B1 en inglés y en español). La mejora va
+ * antes que lo bien hecho: con la frase del error ya elegida, el modelo
+ * no la elogia (antes elogiaba la misma frase que corregía).
+ */
+function camposComentario(nivel: Nivel) {
   const b1 = enIngles(nivel);
   return {
-    frases: { type: Type.INTEGER },
+    frases: { type: Type.ARRAY, items: { type: Type.STRING } },
     espanol: { type: Type.BOOLEAN },
-    bienFrase: { type: Type.STRING },
-    bienPorque: { type: Type.STRING },
-    ...(b1 ? { bienPorqueEs: { type: Type.STRING } } : {}),
     mejorDijo: { type: Type.STRING },
     mejorFrase: { type: Type.STRING },
     mejorPorque: { type: Type.STRING },
     ...(b1 ? { mejorPorqueEs: { type: Type.STRING } } : {}),
+    bienFrase: { type: Type.STRING },
+    bienPorque: { type: Type.STRING },
+    ...(b1 ? { bienPorqueEs: { type: Type.STRING } } : {}),
   };
 }
 
-/** Cómo se pide el comentario (bien y mejora), en el idioma del nivel. */
+/**
+ * Las frases se piden copiadas, no contadas: así el código no cuenta dos
+ * veces la misma ("I go to school." cuatro veces eran 4 frases) ni las
+ * que no dijo. Cada idea con su verbo es una frase aunque vaya unida con
+ * "and": un relato de cuatro ideas en una sola tirada contaba 2 (auditoría,
+ * 28 de octubre de 2026).
+ */
+const PEDIDO_FRASES = `- "frases": each understandable sentence in English they said, copied
+  exactly from the message, once. Every idea with its own verb is one
+  sentence, even when it is joined to the next one with "and", "then" or
+  "but", or said without periods: "I get up and I eat breakfast" is two.
+  A sentence counts if an English speaker understands it, even with
+  mistakes. Spanish sentences, lone words and broken pieces do not count.`;
+
+/**
+ * Lo que no es un error, dicho al modelo: corregía frases bien dichas
+ * (quitaba el "First" que pide la actividad, "at six" → "at six o'clock",
+ * "hasn't" → "has not", el modelo mismo de Allison).
+ */
+const NO_ES_ERROR = `These are correct, never mistakes: contractions (I'm, hasn't, don't),
+  sequence words (first, then, after that, now, so, finally), a time
+  said with just the number ("at six"), punctuation and capital letters.`;
+
+/** Cómo se pide el comentario (mejora y bien), en el idioma del nivel. */
 function pedidoComentario(nivel: Nivel): string {
+  const comun = `- "mejorDijo": the whole sentence with their most important real mistake
+  in grammar or vocabulary, copied exactly from the message. ${NO_ES_ERROR}
+  "" if every sentence is correct: never correct a sentence that is right.
+- "mejorFrase": that sentence with only the mistake fixed, in simple US
+  English (soccer, apartment, vacation, math). Keep their words and ideas:
+  add nothing new.`;
+  const bien = `- "bienFrase": a sentence with no mistakes at all, copied exactly from
+  the message, not the one in "mejorDijo". "" if every sentence has a
+  mistake.`;
   if (!enIngles(nivel)) {
-    return `- "bienFrase": one sentence they said well, copied exactly from the
-  message. "" if there is none.
-- "bienPorque": in Spanish, at most 8 words: what they did well in it
-  ("Usaste bien el presente simple.").
-- "mejorDijo": their exact words, copied from the message, with the most
-  important grammar or word mistake. "" if there are no mistakes.
-- "mejorFrase": that same sentence said correctly, in simple US English
-  (soccer, apartment, vacation, math).
+    return `${comun}
 - "mejorPorque": in Spanish, at most 10 words: the rule ("Para un lugar
-  se dice at school.").`;
+  se dice at school.").
+${bien}
+- "bienPorque": in Spanish, at most 8 words: what they did well in it
+  ("Usaste bien el presente simple.").`;
   }
-  return `- "bienFrase": one sentence they said well, copied exactly from the
-  message. "" if there is none.
-- "bienPorque": in very simple English, at most 8 words: what they did
-  well in it ("You used the past perfect well.").
-- "bienPorqueEs": the same, in Spanish ("Usaste bien el pasado perfecto.").
-- "mejorDijo": their exact words, copied from the message, with the most
-  important grammar or word mistake. "" if there are no mistakes.
-- "mejorFrase": that same sentence said correctly, in simple US English
-  (soccer, apartment, vacation, math).
+  return `${comun}
 - "mejorPorque": in very simple English, at most 10 words: the rule
   ("After if, no will: if it rains.").
 - "mejorPorqueEs": the same rule, in Spanish ("Después de if no va will:
-  if it rains.").`;
+  if it rains.").
+${bien}
+- "bienPorque": in very simple English, at most 8 words: what they did
+  well in it ("You used the past perfect well.").
+- "bienPorqueEs": the same, in Spanish ("Usaste bien el pasado perfecto.").`;
 }
 
 type DatosComentario = {
-  frases?: number;
+  frases?: unknown;
   espanol?: boolean;
   bienFrase?: string;
   bienPorque?: string;
@@ -423,27 +629,178 @@ type DatosComentario = {
   mejorPorqueEs?: string;
 };
 
-/** Arma el comentario verificado: solo lo que de verdad dijo. */
-function comentarioVerificado(d: DatosComentario, transcripcion: string, nivel: Nivel) {
+/** Muletillas del habla: no son palabras de la frase ("Eh... I go to school"). */
+const MULETILLAS = new Set(["eh", "em", "um", "umm", "uh", "uhm", "ah", "mm", "mmm", "hmm", "er", "erm"]);
+
+/** Las palabras de una frase como las compara el código: normalizadas y sin muletillas. */
+const palabrasDelRelato = (t: string) =>
+  normalizar(t)
+    .trim()
+    .split(" ")
+    .filter((p) => p && !MULETILLAS.has(p));
+
+/** Las palabras que ordenan la historia (las pide Narra: first, then, after that, now). */
+const CONECTORES = new Set(["first", "then", "next", "now", "finally", "later"]);
+
+/**
+ * Sin los conectores de orden, ni el "and" o el "so" que los acompañan o
+ * abren la frase: "First Zoe checked her bag" y "Zoe checked her bag"
+ * dicen lo mismo, y "and then she flew" y "then she flew", también. El
+ * "so" de en medio se queda: "Because it rained, so we stayed" sí es un
+ * error que vale corregir.
+ */
+function sinConectores(palabras: string[]): string[] {
+  const salida: string[] = [];
+  for (let i = 0; i < palabras.length; i++) {
+    const [p, sig, tras] = [palabras[i], palabras[i + 1] ?? "", palabras[i + 2] ?? ""];
+    if (CONECTORES.has(p)) continue;
+    if (p === "after" && (sig === "that" || sig === "this")) {
+      i++;
+      continue;
+    }
+    if (p === "in" && sig === "the" && tras === "end") {
+      i += 2;
+      continue;
+    }
+    if ((p === "and" || p === "so") && (!salida.length || CONECTORES.has(sig) || (sig === "after" && tras === "that"))) continue;
+    salida.push(p);
+  }
+  return salida;
+}
+
+/** Lo que agrega una corrección de gramática: artículos, preposiciones, auxiliares, pronombres. */
+const DE_GRAMATICA = new Set([
+  "a", "an", "the", "to", "at", "in", "on", "for", "of", "with", "from", "by", "about", "into",
+  "am", "is", "are", "was", "were", "be", "been", "being", "do", "does", "did", "not",
+  "have", "has", "had", "will", "would", "can", "could", "should", "must",
+  "it", "there", "i", "you", "he", "she", "we", "they", "me", "him", "her", "us", "them",
+  "my", "your", "his", "its", "our", "their", "that", "this", "these", "those", "some", "any", "than", "as",
+]);
+
+/**
+ * ¿La frase mejor agrega contenido? Si lo dicho está entero y en orden
+ * dentro de la mejor, la mejor solo agrega palabras, y si alguna no es de
+ * gramática, inventa: "Math." → "I like math.", "at six" → "at six
+ * o'clock" o "at 6 AM" (auditoría, 28 de octubre de 2026). "I happy" →
+ * "I am happy" sí corrige.
+ */
+function agregaContenido(dijo: string[], mejor: string[]): boolean {
+  let i = 0;
+  const nuevas: string[] = [];
+  mejor.forEach((p, k) => {
+    if (i < dijo.length && p === dijo[i]) i++;
+    // El "AM" de una hora no es el verbo "am".
+    else nuevas.push(p === "am" && /^\d+$/.test(mejor[k - 1] ?? "") ? "a.m." : p);
+  });
+  return i === dijo.length && nuevas.some((p) => !DE_GRAMATICA.has(p));
+}
+
+/** ¿Una frase contiene a la otra (las dos con palabras)? */
+function seTocan(a: string[], b: string[]): boolean {
+  if (!a.length || !b.length) return false;
+  const [x, y] = [` ${a.join(" ")} `, ` ${b.join(" ")} `];
+  return x.includes(y) || y.includes(x);
+}
+
+/**
+ * Dónde dijo el alumno lo citado (en palabras desde el principio), o -1
+ * si no lo dijo. Si el modelo lo copió con un cambio pequeño (una palabra
+ * corregida), basta un tramo de tres palabras seguidas; lo traducido del
+ * español no aparece y no cuenta.
+ */
+function posicionEnLoDicho(cita: string, dicho: string): number {
+  const d = palabrasDelRelato(dicho);
+  const c = palabrasDelRelato(cita);
+  const busca = (n: string[]) => {
+    for (let i = 0; n.length && i + n.length <= d.length; i++) if (n.every((w, k) => d[i + k] === w)) return i;
+    return -1;
+  };
+  const exacta = busca(c);
+  if (exacta >= 0 || c.length <= 3) return exacta;
+  for (let i = 0; i + 3 <= c.length; i++) {
+    const tramo = busca(c.slice(i, i + 3));
+    if (tramo >= 0) return Math.max(0, tramo - i);
+  }
+  return -1;
+}
+
+/** Una palabra con tilde o eñe: en un relato en inglés solo va en un nombre ("Bogotá"). */
+const TILDADA = /[a-záéíóúüñ]*[áéíóúñ][a-záéíóúüñ]*/gi;
+
+/**
+ * ¿Está en español una cita o una frase? Respaldo del modelo, frase por
+ * frase: contaba los dibujos contados en español. "Luego voló a
+ * Vancouver" no tiene palabras de las listas de hablaEspanol y
+ * mezclaEspanol; la delata la tilde, si sin las palabras con tilde no
+ * queda inglés claro ("I play fútbol with my friends" sigue en inglés).
+ */
+const enEspanol = (t: string) =>
+  hablaEspanol(t) || mezclaEspanol(t) || (/[áéíóúñ]/i.test(t) && !esInglesClaro(t.replace(TILDADA, " ")));
+
+/**
+ * Cuántas frases distintas en inglés dijo: las que el modelo copió, si
+ * están en lo dicho, no son español y tienen al menos dos palabras. La
+ * misma frase dos veces (o con otro conector) cuenta una.
+ */
+function frasesContadas(frases: unknown, transcripcion: string): number {
+  const vistas = new Set<string>();
+  for (const f of Array.isArray(frases) ? frases : []) {
+    if (typeof f !== "string" || enEspanol(f) || posicionEnLoDicho(f, transcripcion) < 0) continue;
+    const palabras = sinConectores(palabrasDelRelato(f));
+    if (palabras.length >= 2) vistas.add(palabras.join(" "));
+  }
+  return Math.min(30, vistas.size);
+}
+
+/**
+ * Arma el comentario verificado: solo lo que de verdad dijo, y una mejora
+ * solo si corrige algo. Se descarta si lo dicho y lo mejor son lo mismo
+ * sin signos, contracciones ni conectores; si la mejor agrega contenido;
+ * o si lo dicho es una frase del modelo de Allison, que está bien por
+ * definición. Lo bien hecho no puede ser la frase que se corrige ni un
+ * error previsto de la actividad (`previstas`, los "siDice" de Narra).
+ */
+export function comentarioVerificado(
+  d: DatosComentario,
+  transcripcion: string,
+  nivel: Nivel,
+  extra: { modelo?: string; previstas?: string[] } = {}
+) {
   const corto = (t: string | undefined, max: number) => (t ?? "").trim().split(/\s+/).slice(0, max).join(" ");
   const b1 = enIngles(nivel);
   const bienFrase = (d.bienFrase ?? "").trim();
   const dijo = (d.mejorDijo ?? "").trim();
   const mejor = (d.mejorFrase ?? "").trim();
-  const misma = normalizar(dijo) === normalizar(mejor);
+  const [dijoP, mejorP] = [sinConectores(palabrasDelRelato(dijo)), sinConectores(palabrasDelRelato(mejor))];
+  const modeloP = sinConectores(palabrasDelRelato(extra.modelo ?? ""));
+  const delModelo = dijoP.length >= 3 && ` ${modeloP.join(" ")} `.includes(` ${dijoP.join(" ")} `);
+  // Una frase en español no se corrige: se traduce, y eso no es una regla.
+  const corrige =
+    dijoP.length > 0 &&
+    mejorP.length > 0 &&
+    dijoP.join(" ") !== mejorP.join(" ") &&
+    !agregaContenido(dijoP, mejorP) &&
+    !delModelo &&
+    !enEspanol(dijo);
   const conEs = (es: string | undefined, max: number) => (b1 && es?.trim() ? { porqueEs: corto(es, max) } : {});
+  const mejora = corrige && estaEnLoDicho(dijo, transcripcion) ? { dijo, mejor, porque: corto(d.mejorPorque, 14), ...conEs(d.mejorPorqueEs, 16) } : null;
+  const bienP = palabrasDelRelato(bienFrase);
+  const bienConError =
+    (mejora && seTocan(bienP, palabrasDelRelato(mejora.dijo))) || (extra.previstas ?? []).some((s) => seTocan(bienP, palabrasDelRelato(s)));
+  const frases = frasesContadas(d.frases, transcripcion);
+  // "La mayor parte en español" no, si dijo más frases en inglés que en
+  // español: con una sola en español, el modelo daba por no contada una
+  // historia de tres frases en inglés (pruebas, 28 de octubre de 2026).
+  const enEspanolDichas = (transcripcion.match(/[^.!?]+[.!?]*/g) ?? []).filter((o) => o.trim() && enEspanol(o)).length;
   return {
-    frases: Math.max(0, Math.min(30, Math.round(Number(d.frases) || 0))),
-    espanol: d.espanol === true,
+    frases,
+    espanol: d.espanol === true && frases <= enEspanolDichas,
     // Solo lo que de verdad dijo: una frase inventada no se muestra.
     bien:
-      bienFrase && estaEnLoDicho(bienFrase, transcripcion)
+      bienFrase && !bienConError && estaEnLoDicho(bienFrase, transcripcion)
         ? { frase: bienFrase, porque: corto(d.bienPorque, 12), ...conEs(d.bienPorqueEs, 14) }
         : null,
-    mejora:
-      dijo && mejor && !misma && estaEnLoDicho(dijo, transcripcion)
-        ? { dijo, mejor, porque: corto(d.mejorPorque, 14), ...conEs(d.mejorPorqueEs, 16) }
-        : null,
+    mejora,
   };
 }
 
@@ -459,6 +816,8 @@ export async function comentarRelato(p: {
   nivel: Nivel;
   /** El reloj de la actividad: 30 (A2) o 60 (B1). */
   segundos?: number;
+  /** El relato modelo de Allison: no va al prompt; una frase suya nunca se corrige. */
+  modelo?: string;
 }): Promise<ComentarioRelato> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const props = camposComentario(p.nivel);
@@ -467,9 +826,7 @@ for up to ${p.segundos ?? 30} seconds about this topic: "${p.tema}". The message
 exactly what they said (or wrote), with their mistakes.
 
 Return:
-- "frases": how many understandable sentences in English they said. A
-  sentence counts if an English speaker understands it, even with
-  mistakes. Spanish sentences, lone words and broken pieces do not count.
+${PEDIDO_FRASES}
 - "espanol": true if most of it is in Spanish.
 ${pedidoComentario(p.nivel)}
 Never invent sentences they did not say. A wrong fact is not a mistake.`;
@@ -487,13 +844,14 @@ Never invent sentences they did not say. A wrong fact is not a mistake.`;
         propertyOrdering: Object.keys(props),
       },
       temperature: 0,
-      maxOutputTokens: 700,
+      // Las frases van copiadas: un relato de un minuto ocupa más.
+      maxOutputTokens: 1000,
       abortSignal: AbortSignal.timeout(15_000),
     },
   });
   const d = jsonDelModelo<DatosComentario>(r);
   return {
-    ...comentarioVerificado(d, p.transcripcion, p.nivel),
+    ...comentarioVerificado(d, p.transcripcion, p.nivel, { modelo: p.modelo }),
     tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
     tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
   };
@@ -522,9 +880,30 @@ function dibujosEnOrden(contados: number[]): number {
 }
 
 /**
+ * Los dibujos que contó, en el orden en que los contó: el de cada cita en
+ * lo dicho. Sin los de cita en español ni los que no dijo (una cita
+ * traducida no aparece en lo dicho).
+ */
+export function dibujosContados(citas: unknown, total: number, transcripcion: string): number[] {
+  const citados = (Array.isArray(citas) ? citas : [])
+    .map((x) => ({ n: Number(x?.dibujo), cita: String(x?.cita ?? "").trim() }))
+    .filter((x) => Number.isInteger(x.n) && x.n >= 1 && x.n <= total && x.cita && !enEspanol(x.cita))
+    .map((x) => ({ ...x, donde: posicionEnLoDicho(x.cita, transcripcion) }))
+    .filter((x) => x.donde >= 0)
+    .sort((a, b) => a.donde - b.donde || a.n - b.n);
+  return [...new Set(citados.map((x) => x.n))];
+}
+
+/**
  * Narra la secuencia (B1): con el texto ya transcrito a ciegas, el modelo
- * dice qué dibujos contó (le damos qué muestra cada uno) y elige una cosa
- * bien hecha y una por mejorar. La cuenta del orden la hace el código.
+ * dice qué dibujos contó (le damos qué muestra cada uno), con las palabras
+ * con que contó cada uno, y elige una cosa por mejorar y una bien hecha.
+ *
+ * El orden lo pone el código, por dónde está cada cita en lo dicho: el
+ * modelo devolvía [1, 2, 3, 4] aunque lo contara al revés. Y un dibujo
+ * contado en español no cuenta, aunque el modelo lo dé (lo daba): la cita
+ * en español, o traducida (no está en lo dicho), se cae (auditoría, 28
+ * de octubre de 2026).
  */
 export async function comentarNarracion(p: {
   /** Lo que pidió Allison ("Tell me Zoe's story."). */
@@ -535,9 +914,24 @@ export async function comentarNarracion(p: {
   gramatica: string;
   transcripcion: string;
   nivel: Nivel;
+  /** La narración modelo de Allison: no va al prompt; una frase suya nunca se corrige. */
+  modelo?: string;
+  /** Los errores previstos de la actividad ("siDice"): no van al prompt; nunca son lo bien hecho. */
+  previstas?: string[];
 }): Promise<ComentarioNarracion> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  const props = { contados: { type: Type.ARRAY, items: { type: Type.INTEGER } }, ...camposComentario(p.nivel) };
+  const props = {
+    dibujos: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: { dibujo: { type: Type.INTEGER }, cita: { type: Type.STRING } },
+        required: ["dibujo", "cita"],
+        propertyOrdering: ["dibujo", "cita"],
+      },
+    },
+    ...camposComentario(p.nivel),
+  };
   const lista = p.dibujos.map((x, i) => `  ${i + 1}. ${x}`).join("\n");
   const instruccion = `A Spanish-speaking teenager from Colombia (English level ${p.nivel}) is
 telling a story from four pictures, in English. Their teacher asked:
@@ -547,11 +941,13 @@ ${lista}
 The message is exactly what they said (or wrote), with their mistakes.
 
 Return:
-- "contados": the numbers of the pictures they told about, in the order
-  they told them (for example [1, 2, 4]). A picture counts if an English
-  speaker would understand that part of the story, even with mistakes or
-  other words. Do not count a picture they did not talk about.
-- "frases": how many understandable sentences in English they said.
+- "dibujos": one item for each picture they told about in English:
+  "dibujo" is its number and "cita" the words where they tell it, copied
+  exactly from the message. A picture counts if an English speaker would
+  understand that part of the story, even with mistakes or other words.
+  A picture told in Spanish does not count. Leave out a picture they did
+  not talk about.
+${PEDIDO_FRASES}
 - "espanol": true if most of it is in Spanish.
 ${pedidoComentario(p.nivel)}
 Never invent sentences they did not say.`;
@@ -569,16 +965,17 @@ Never invent sentences they did not say.`;
         propertyOrdering: Object.keys(props),
       },
       temperature: 0,
-      maxOutputTokens: 800,
+      // Las citas y las frases van copiadas: una historia de un minuto ocupa más.
+      maxOutputTokens: 1200,
       abortSignal: AbortSignal.timeout(15_000),
     },
   });
-  const d = jsonDelModelo<DatosComentario & { contados?: number[] }>(r);
+  const d = jsonDelModelo<DatosComentario & { dibujos?: unknown }>(r);
   const total = p.dibujos.length;
-  const dibujos = [...new Set((d.contados ?? []).filter((n) => Number.isInteger(n) && n >= 1 && n <= total))];
+  const dibujos = dibujosContados(d.dibujos, total, p.transcripcion);
   const faltante = Array.from({ length: total }, (_, i) => i + 1).find((n) => !dibujos.includes(n)) ?? null;
   return {
-    ...comentarioVerificado(d, p.transcripcion, p.nivel),
+    ...comentarioVerificado(d, p.transcripcion, p.nivel, { modelo: p.modelo, previstas: p.previstas }),
     dibujos,
     enOrden: dibujosEnOrden(dibujos),
     faltante,

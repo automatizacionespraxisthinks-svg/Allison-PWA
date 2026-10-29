@@ -29,10 +29,16 @@ const coincide = (ayuda: string, cosa: string) => {
  * "I see a man.").
  */
 function fraseModelo(modelo: string, plantilla?: string): string {
-  if (/[.!?]$/.test(modelo.trim()) || modelo.trim().split(/\s+/).length >= 3) return modelo.trim();
-  if (plantilla?.includes("___")) return plantilla.replace(/\ba ___/, "___").replace("___", modelo.trim());
-  return `I see ${modelo.trim()}.`;
+  const m = modelo.trim();
+  if (/[.!?]$/.test(m) || m.split(/\s+/).length >= 3) return m;
+  // "a man" ya trae su artículo; "people" o "friends" no lo llevan; "party", sí.
+  const sinArticulo = /^(a|an|the|some)\s/i.test(m) || /s$/i.test(m) || /^people$/i.test(m);
+  if (plantilla?.includes("___")) return (sinArticulo ? plantilla.replace(/\ba ___/, "___") : plantilla).replace("___", m);
+  return `I see ${sinArticulo ? m : `a ${m}`}.`;
 }
+
+/** La consigna que no es la de siempre ("Tell me 3 things people are doing."): sin traducción a mano. */
+const consignaGenerica = (pregunta: string) => /^(tell me \d+ things\.?|what do you see\?)$/i.test(pregunta.trim());
 
 /**
  * Describe la imagen (pantalla 7): "Tell me 3 things you see". Completa
@@ -63,8 +69,14 @@ export function Describe({
   const [oido, setOido] = useState<{ texto: string; escrito: boolean; antes: { sugerida: string | null; fallos: number } } | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [dichas, setDichas] = useState<string[]>([]);
+  /** Las frases que Allison ya sugirió: no se repiten (antes podía pedir la misma en bucle). */
+  const [dadas, setDadas] = useState<string[]>([]);
 
-  const meta = `Tell me ${a.minimo} things you see.`;
+  // La consigna de la actividad: en A2 cambia ("Invite me to 3 things in
+  // the picture.", "Tell me 3 rules at this pool."); antes siempre decía
+  // "Tell me 3 things you see." (auditoría, 28 de octubre de 2026).
+  const generica = consignaGenerica(a.pregunta);
+  const meta = generica ? `Tell me ${a.minimo} things you see.` : a.pregunta;
   useEffect(() => {
     const t = setTimeout(() => void decir(meta), 400);
     return () => clearTimeout(t);
@@ -73,13 +85,23 @@ export function Describe({
   /** Las cosas del dibujo que nombra una frase modelo. */
   const cosasDe = (frase: string) => a.cosas.filter((c) => ` ${norm(frase)} `.includes(` ${norm(c)}`));
 
-  /** La primera frase modelo con una cosa que todavía no nombró. */
+  /**
+   * La frase que sugiere Allison: una de las modelo (o aceptadas) que no
+   * dio todavía y que nombra algo nuevo; si no queda ninguna, una cosa del
+   * dibujo que no nombró; si tampoco, cualquier frase que no dio. Antes, en
+   * la parada 10 (las tres modelo nombran "bank") o con una frase sin
+   * cosas ("They're dancing."), no quedaba ninguna o se repetía la misma.
+   */
   function sugerencia(ya: string[]): string | null {
-    const m = a.modelo.find((x) => {
-      const cs = cosasDe(fraseModelo(x, a.plantillas[0]));
-      return cs.length === 0 || cs.every((c) => !ya.includes(c));
-    });
-    return m ? fraseModelo(m, a.plantillas[0]) : null;
+    const libres = [...a.modelo, ...a.aceptadas].map((x) => fraseModelo(x, a.plantillas[0])).filter((f) => !dadas.includes(f));
+    const conNueva = libres.find((f) => cosasDe(f).some((c) => !ya.includes(c)));
+    if (conNueva) return conNueva;
+    const cosa = a.cosas.find((c) => !ya.includes(c));
+    if (cosa) {
+      const f = fraseModelo(cosa, a.plantillas.find((p) => (p.match(/___/g) ?? []).length === 1));
+      if (!dadas.includes(f)) return f;
+    }
+    return libres[0] ?? null;
   }
 
   async function responder(e: Entrada) {
@@ -92,7 +114,9 @@ export function Describe({
     if (r.sinVoz) return setMensaje("No te oí. Inténtalo otra vez.");
     setOido({ texto: r.transcripcion, escrito: "texto" in e, antes: { sugerida, fallos: fallosSeguidos } });
 
-    const nuevas = r.nombradas.filter((c) => !nombradas.includes(c));
+    // Una cosa nueva por frase: la actividad pide decirlo tres veces, y
+    // "A woman was reading a book." contaba tres de una vez.
+    const nuevas = r.nombradas.filter((c) => !nombradas.includes(c)).slice(0, 1);
     if (nuevas.length) {
       const todas = [...nombradas, ...nuevas];
       setNombradas(todas);
@@ -106,9 +130,11 @@ export function Describe({
     const n = fallosSeguidos + 1;
     setFallosSeguidos(n);
     if (n >= 2 && sugerida) {
-      // Lo que no sepa, Allison se lo dice y sigue: cuenta como nombrada con ayuda.
-      const cs = cosasDe(sugerida);
-      setNombradas((x) => [...new Set([...x, ...(cs.length ? cs : [sugerida])])]);
+      // Lo que no sepa, Allison se lo dice y sigue: cuenta como nombrada
+      // con ayuda, siempre una más (si la frase no nombra una cosa nueva,
+      // cuenta ella misma; antes el contador podía no moverse).
+      const nueva = cosasDe(sugerida).find((c) => !nombradas.includes(c)) ?? sugerida;
+      setNombradas((x) => [...new Set([...x, nueva])]);
       setDichas((d) => [...d, sugerida]);
       setAyudadas((x) => [...x, sugerida]);
       setSugerida(null);
@@ -116,9 +142,10 @@ export function Describe({
       return;
     }
     const s = sugerencia(nombradas);
-    if (r.espanol) setMensaje("¡Eso es! Ahora dilo en inglés.");
+    if (r.espanol) setMensaje("Lo dijiste en español. Ahora dilo en inglés.");
     if (s) {
       setSugerida(s);
+      setDadas((d) => [...d, s]);
       void decir(`Look! ${conPunto(s)} Say it.`);
     }
   }
@@ -133,7 +160,9 @@ export function Describe({
   }
 
   const listo = nombradas.length >= a.minimo;
-  const plantilla = a.plantillas[Math.min(nombradas.length, a.plantillas.length - 1)] ?? "I see a ___.";
+  // Sin plantillas, "I see a ___." solo en A1: en A2 empujaba al presente
+  // cuando la consigna pide el pasado ("people were doing").
+  const plantilla = a.plantillas[Math.min(nombradas.length, a.plantillas.length - 1)] ?? (ctx.nivel === "A1" ? "I see a ___." : null);
 
   return (
     <div className="flex flex-col gap-3.5">
@@ -143,13 +172,15 @@ export function Describe({
         <Ondas activas={hablando} />
       </div>
       <div className="text-center">
-        <h2 className="text-[21px] font-black">{meta}</h2>
-        <p className="text-sm font-semibold text-texto-suave">Dime {a.minimo} cosas que ves en la imagen</p>
+        <h2 className="text-[21px] font-black text-balance">{meta}</h2>
+        <p className="text-sm font-semibold text-texto-suave">
+          {generica ? `Dime ${a.minimo} cosas que ves en la imagen` : `Mira la imagen y dime ${a.minimo} cosas, en inglés`}
+        </p>
       </div>
 
       <IlustracionCompleta nombre={a.imagen} alt="La imagen para describir" alto="h-56" nivel={ctx.nivel} />
 
-      {!listo && (
+      {!listo && (sugerida || plantilla) && (
         <div className="flex flex-col gap-1 rounded-2xl border-2 border-dashed border-primario bg-primario-suave px-4 py-3">
           <small className="text-[11.5px] font-extrabold tracking-[0.06em] text-primario uppercase">
             {sugerida ? "Allison te ayuda · dilo así" : "Tu frase"}

@@ -20,6 +20,8 @@ export interface EstadoEscena {
   };
   /** Enséñale: la pregunta de Allison en curso (desde 0) y los intentos que no sirvieron en ella. */
   ensenale?: { actual: number; intentos: number };
+  /** Entrevista: la pregunta que Allison le devolvió al alumno ("And you?"), si espera su respuesta. */
+  devuelta?: string | null;
 }
 
 export interface TurnoEscena {
@@ -110,12 +112,20 @@ export async function turnoEscena(conversacion: string, e: Entrada): Promise<Tur
   return { ...vacio, ...(r.datos as Partial<TurnoEscena>) };
 }
 
-/** La frase sugerida de la tarea actual. Apaga una estrella. */
+/**
+ * La frase sugerida de la tarea actual. Apaga una estrella, solo si trae
+ * frase (`cobrada`). Sin frase (viajes y propios sin idea), la pantalla la
+ * pide a /api/ayuda y, si la va a mostrar, llama otra vez con `sugerida`
+ * para que se cobre. `ayudas`: las que lleva la escena, para el contador.
+ */
 export async function ayudaEscena(
-  conversacion: string
-): Promise<{ tarea: number; frase: string; es: string; explicacion: string } | null> {
-  const r = await enviar({ accion: "ayuda", conversacion });
-  return r.ok ? (r.datos as { tarea: number; frase: string; es: string; explicacion: string }) : null;
+  conversacion: string,
+  sugerida = false
+): Promise<{ tarea: number; frase: string; es: string; explicacion: string; cobrada: boolean; ayudas: number } | null> {
+  const r = await enviar({ accion: "ayuda", conversacion, ...(sugerida ? { sugerida: "1" } : {}) });
+  if (!r.ok) return null;
+  const d = r.datos as { tarea: number; frase: string; es: string; explicacion: string; cobrada?: boolean; estado?: EstadoEscena };
+  return { ...d, cobrada: d.cobrada !== false, ayudas: Number(d.estado?.ayudas ?? 0) };
 }
 
 /** Cierra el escenario: estrellas y estampilla. */

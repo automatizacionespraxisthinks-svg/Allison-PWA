@@ -140,6 +140,8 @@ export async function POST(peticion: Request) {
         tokensEntrada += tr.tokensEntrada;
         tokensSalida += tr.tokensSalida;
       }
+      // El modelo de Allison y los errores previstos no van al prompt: el
+      // código los usa para no corregir lo que está bien ni elogiar un error.
       if (transcripcion && actividad.tipo === "narra") {
         narracion = await comentarNarracion({
           pregunta: actividad.pregunta,
@@ -147,10 +149,18 @@ export async function POST(peticion: Request) {
           gramatica: actividad.gramatica,
           transcripcion,
           nivel,
+          modelo: actividad.modelo,
+          previstas: (actividad.explicaciones ?? []).map((x) => x.siDice),
         });
         comentario = narracion;
       } else if (transcripcion && actividad.tipo === "cuentame") {
-        comentario = await comentarRelato({ tema: actividad.tema, transcripcion, nivel, segundos: actividad.segundos });
+        comentario = await comentarRelato({
+          tema: actividad.tema,
+          transcripcion,
+          nivel,
+          segundos: actividad.segundos,
+          modelo: actividad.modelo,
+        });
       }
       if (comentario) {
         tokensEntrada += comentario.tokensEntrada;
@@ -167,14 +177,20 @@ export async function POST(peticion: Request) {
         { status: 502 },
       );
     }
+    // No se oyó voz (el micrófono silenciado, solo ruido): no se cobra,
+    // como una falla de la IA. Antes se cobraba un relato en silencio
+    // (auditoría, 28 de octubre de 2026); el navegador ya no envía un audio
+    // sin voz, y esto cubre el que pase. Los tokens sí se anotan, sin turno.
+    const oido = !!transcripcion && !!comentario;
+    if (!oido) await sql`select devolver_mensaje(${alumno.id}, ${bolsaRelato}::bolsa_credito)`.catch(() => {});
     try {
       await sql`
         select registrar_uso(${alumno.id}, 'conversar', ${tokensEntrada},
-                             ${tokensSalida}, ${Math.round(duracion)}, true, false)
+                             ${tokensSalida}, ${Math.round(duracion)}, ${oido}, false)
       `;
-      await sql`select registrar_parte(${alumno.id}, 'ruta')`;
-      if (paradaDelGasto) {
-        await sql`select registrar_consumo_parada(${alumno.id}, ${paradaDelGasto}, ${!transcripcion})`;
+      if (oido) {
+        await sql`select registrar_parte(${alumno.id}, 'ruta')`;
+        if (paradaDelGasto) await sql`select registrar_consumo_parada(${alumno.id}, ${paradaDelGasto}, false)`;
       }
     } catch (e) {
       console.error("No se pudo anotar el relato:", e instanceof Error ? e.message : e);
@@ -186,7 +202,7 @@ export async function POST(peticion: Request) {
     if (!transcripcion || !comentario) {
       return NextResponse.json({
         sinVoz: true,
-        mensaje: "No te oí. Inténtalo otra vez.",
+        mensaje: "No te oí. Revisa que el micrófono no esté silenciado e inténtalo otra vez. No te cobramos.",
         restantes: restantesRelato,
       });
     }
@@ -213,7 +229,9 @@ export async function POST(peticion: Request) {
         segundos,
         bien: espanol ? null : comentario.bien,
         mejora: espanol ? null : comentario.mejora,
-        ...(narracion ? { dibujos: narracion.dibujos, faltante: narracion.faltante } : {}),
+        // Narra: también cuántos van en orden, para que la pantalla diga por
+        // qué no fue un acierto (los dibujos o, escrito, las frases).
+        ...(narracion ? { dibujos: narracion.dibujos, enOrden: narracion.enOrden, faltante: narracion.faltante } : {}),
       },
       restantes: restantesRelato,
     });
@@ -230,16 +248,38 @@ export async function POST(peticion: Request) {
         tipo: actividad.tipo,
         esperado: actividad.respuesta,
         aceptadas: actividad.aceptadas,
+        // Dilo: lo que había que decir, para juzgar otra forma de decirlo.
+        ...(actividad.tipo === "dilo" ? { espanol: actividad.espanol } : {}),
+        // "Cualquier consejo con should…": la regla aprobada, para juzgar
+        // lo que no sea una frase de ejemplo.
+        ...(/^cualquier/i.test(actividad.tambienSeAcepta ?? "")
+          ? {
+              regla: actividad.tambienSeAcepta,
+              contexto: "contexto" in actividad ? actividad.contexto : undefined,
+            }
+          : {}),
       };
       break;
     case "repite":
-      pedido = { tipo: "repite", esperado: actividad.frase };
+      pedido = {
+        tipo: "repite",
+        esperado: actividad.frase,
+        // Desde A2: "Pequeñas fallas en el resto de la frase".
+        ...(/pequeñas fallas/i.test(actividad.tambienSeAcepta ?? "")
+          ? { clave: actividad.palabraDificil }
+          : {}),
+      };
       break;
     case "describe":
       pedido = {
         tipo: "describe",
         esperado: actividad.pregunta,
-        aceptadas: actividad.cosas,
+        // También las aceptadas que son cosas sueltas ("flag" en la
+        // parada 1): antes "I see a flag." no contaba.
+        aceptadas: [
+          ...actividad.cosas,
+          ...actividad.aceptadas.filter((x) => x.trim().split(/\s+/).length <= 2),
+        ],
       };
       break;
     case "responde": {
@@ -270,9 +310,11 @@ export async function POST(peticion: Request) {
     }
   }
 
-  // Lo escrito se compara en el código, sin prompt: no es una
-  // intervención. Solo Responde rápido necesita al modelo para juzgar si
-  // la respuesta tiene sentido, escrita o hablada.
+  // Lo escrito no es una intervención (la pantalla lo promete: "escritas
+  // no gastan intervenciones"), salvo en Responde rápido, que siempre
+  // necesita al modelo. Una respuesta escrita de Dilo o de ¿Qué es esto?
+  // abierta que no es una frase aprobada la juzga el modelo igual, sin
+  // cobrarla (auditoría, 28 de octubre de 2026): es una llamada corta.
   const usaIA = !texto || pedido.tipo === "responde";
 
   let bolsa: string | null = null;

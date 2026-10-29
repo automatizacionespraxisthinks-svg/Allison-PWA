@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AnilloMicrofono, avisarMicrofonoListo } from "@/components/AnilloMicrofono";
+import { AnilloMicrofono, COLA_GRABACION_MS, avisarMicrofonoListo } from "@/components/AnilloMicrofono";
 import { AUDIO_MAX_SEGUNDOS, type EstadoConversacion } from "@/lib/tipos";
 
 /**
@@ -50,11 +50,18 @@ export function BotonGrabar({
   const [preparando, setPreparando] = useState(false);
   /** Un segundo toque mientras se abre no abre otro micrófono. */
   const abriendo = useRef(false);
+  /** Ya tocó para enviar: graba un momento más (COLA_GRABACION_MS). */
+  const [terminando, setTerminando] = useState(false);
 
   const grabadora = useRef<MediaRecorder | null>(null);
   const trozos = useRef<Blob[]>([]);
   const intervalo = useRef<ReturnType<typeof setInterval> | null>(null);
   const inicio = useRef<number>(0);
+  /** Cuándo tocó para enviar (la duración no cuenta lo que se graba de más). */
+  const fin = useRef(0);
+  const cola = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** El botón sigue en pantalla: lo grabado después de salir no se envía. */
+  const vivo = useRef(true);
   const audioCtx = useRef<AudioContext | null>(null);
   const volumenMaximo = useRef<number>(0);
 
@@ -65,6 +72,8 @@ export function BotonGrabar({
       clearInterval(intervalo.current);
       intervalo.current = null;
     }
+    if (cola.current) clearTimeout(cola.current);
+    cola.current = null;
     grabadora.current?.stream.getTracks().forEach((t) => t.stop());
     grabadora.current = null;
     void audioCtx.current?.close();
@@ -73,10 +82,18 @@ export function BotonGrabar({
   }, [onVolumen]);
 
   const detener = useCallback(() => {
-    if (grabadora.current?.state === "recording") {
-      grabadora.current.stop();
-    }
-  }, []);
+    const mr = grabadora.current;
+    if (mr?.state !== "recording" || cola.current) return;
+    // Sigue grabando un momento: si el audio termina justo con la última
+    // palabra, la transcripción la pierde (COLA_GRABACION_MS).
+    fin.current = Date.now();
+    setTerminando(true);
+    onVolumen?.(null);
+    cola.current = setTimeout(() => {
+      cola.current = null;
+      if (mr.state === "recording") mr.stop();
+    }, COLA_GRABACION_MS);
+  }, [onVolumen]);
 
   const empezar = useCallback(async () => {
     if (abriendo.current || grabadora.current) return;
@@ -102,12 +119,16 @@ export function BotonGrabar({
       mr.onstop = () => {
         const duracion = Math.min(
           AUDIO_MAX_SEGUNDOS,
-          Math.round((Date.now() - inicio.current) / 1000)
+          Math.round(((fin.current || Date.now()) - inicio.current) / 1000)
         );
         const audio = new Blob(trozos.current, { type: mr.mimeType || "audio/webm" });
         const pico = volumenMaximo.current;
         limpiar();
+        // Salió de la pantalla mientras grababa: no se envía (se cobraba y
+        // Allison respondía fuera de la página).
+        if (!vivo.current) return;
         setSegundos(0);
+        setTerminando(false);
 
         if (duracion < 1) {
           onDescartar();
@@ -140,6 +161,7 @@ export function BotonGrabar({
 
       grabadora.current = mr;
       inicio.current = Date.now();
+      fin.current = 0;
       mr.start();
       onIniciar();
       setPreparando(false);
@@ -147,6 +169,8 @@ export function BotonGrabar({
 
       setSegundos(0);
       intervalo.current = setInterval(() => {
+        // Lo que se graba de más al enviar no mueve el volumen ni el reloj.
+        if (cola.current) return;
         analizador.getByteTimeDomainData(muestras);
         let suma = 0;
         for (const v of muestras) suma += (v - 128) ** 2;
@@ -170,6 +194,12 @@ export function BotonGrabar({
   }, [detener, limpiar, onIniciar, onAudioListo, onDescartar, onVolumen]);
 
   useEffect(() => limpiar, [limpiar]);
+  useEffect(() => {
+    vivo.current = true;
+    return () => {
+      vivo.current = false;
+    };
+  }, []);
 
   const restantes = AUDIO_MAX_SEGUNDOS - segundos;
   const porAcabarse = restantes <= 10;
@@ -197,7 +227,7 @@ export function BotonGrabar({
       <button
         type="button"
         onClick={grabando ? detener : empezar}
-        disabled={deshabilitado || estado === "procesando" || estado === "hablando"}
+        disabled={deshabilitado || terminando || estado === "procesando" || estado === "hablando"}
         aria-label={grabando ? "Detener y enviar" : preparando ? "Preparando el micrófono" : "Hablar con Allison"}
         className={`relative flex size-20 items-center justify-center rounded-full transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40 ${
           grabando
@@ -205,7 +235,7 @@ export function BotonGrabar({
             : "degradado-hablar sombra-hablar text-white hover:brightness-110 active:scale-95"
         }`}
       >
-        {grabando && (
+        {grabando && !terminando && (
           <span
             aria-hidden
             className="absolute inset-0 rounded-full bg-error"
@@ -213,7 +243,7 @@ export function BotonGrabar({
           />
         )}
         <AnilloMicrofono
-          estado={preparando ? "preparando" : grabando ? "grabando" : null}
+          estado={preparando ? "preparando" : grabando && !terminando ? "grabando" : null}
           colores={{ preparando: "var(--hablar)", grabando: "var(--error)" }}
         />
 
@@ -232,7 +262,7 @@ export function BotonGrabar({
       </button>
 
       <p className="text-sm text-texto-suave">
-        {estado === "grabando" && "¡Habla ahora! Toca para enviar"}
+        {estado === "grabando" && (terminando ? "Enviando…" : "¡Habla ahora! Toca para enviar")}
         {estado === "procesando" && "Allison está pensando…"}
         {estado === "hablando" && "Allison está hablando"}
         {estado === "inactivo" && (preparando ? "Preparando el micrófono…" : "Toca y habla en inglés")}

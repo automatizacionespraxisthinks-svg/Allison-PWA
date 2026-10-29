@@ -40,6 +40,8 @@ export interface ResultadoEvaluacion {
     mejora: { dijo: string; mejor: string; porque: string; porqueEs?: string } | null;
     /** Narra la secuencia: los dibujos que contó (desde 1, en el orden en que los contó) y el primero que faltó. */
     dibujos?: number[];
+    /** Narra: cuántos de los que contó van en el orden de la historia. */
+    enOrden?: number;
     faltante?: number | null;
   };
   /** No se oyó voz: no cuenta como intento ni se cobra. */
@@ -94,11 +96,18 @@ export async function terminar(
   paso: number,
   fin: FinActividad & { segundos: number; primera?: boolean }
 ): Promise<{ leccionCompleta: boolean; estrellas: number; nuevas: number; racha: number; minutosHoy: number } | null> {
+  // El servidor acepta hasta 20 calificadas: Adivina puede pasar de 20
+  // preguntas (24 intervenciones) y entonces no se guardaba nunca. Se
+  // escala a 20 con la misma proporción de aciertos (auditoría, 28 de
+  // octubre de 2026).
+  const escala = fin.calificadas > 20 ? 20 / fin.calificadas : 1;
+  const calificadas = Math.round(fin.calificadas * escala);
+  const aciertos = Math.min(calificadas, Math.round(fin.aciertos * escala));
   try {
     const r = await fetch("/api/ruta/actividad", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ parada: ctx.parada, leccion: ctx.leccion, paso, ...fin }),
+      body: JSON.stringify({ parada: ctx.parada, leccion: ctx.leccion, paso, ...fin, calificadas, aciertos }),
       signal: AbortSignal.timeout(20_000),
     });
     return r.ok ? await r.json() : null;

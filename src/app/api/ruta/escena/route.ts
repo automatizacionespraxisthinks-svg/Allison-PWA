@@ -26,7 +26,8 @@ const error = (e: string) => NextResponse.json({ error: e, mensaje: MENSAJES[e] 
  *   · turno: lo que dice el alumno. Una intervención: se devuelve si algo
  *     falla (la IA, un choque con otra acción); si no se oyó nada, se
  *     cobra (la IA ya trabajó) pero no cuenta como intento.
- *   · ayuda: la frase sugerida de la tarea actual. Gratis, apaga una estrella.
+ *   · ayuda: la frase sugerida de la tarea actual. Gratis, apaga una
+ *     estrella solo si hay algo que mostrar (o con "sugerida").
  *   · fin: cierra el escenario y entrega estrellas y estampilla.
  */
 export async function POST(peticion: Request) {
@@ -56,7 +57,9 @@ export async function POST(peticion: Request) {
   }
 
   if (accion === "ayuda") {
-    const r = await pedirAyuda(alumno.id, conversacion);
+    // "sugerida": la pantalla ya trajo la frase de /api/ayuda (viajes y
+    // escenarios propios sin idea) y la va a mostrar: ahora se cobra.
+    const r = await pedirAyuda(alumno.id, conversacion, { sugerida: f.get("sugerida") === "1" });
     if (!r.ok) return error(r.error);
     return NextResponse.json(r);
   }

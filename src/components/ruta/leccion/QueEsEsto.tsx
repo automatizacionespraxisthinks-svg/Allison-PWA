@@ -26,6 +26,9 @@ import { Ondas, Reloj } from "./EscuchaElige";
  */
 type Fase = "pregunta" | "pista" | "bien" | "ensena" | "repetida";
 
+/** "Yes! It's ten o'clock!": sin ".!" ni "?!" (salía en 37 de las 57; auditoría, 28 de octubre de 2026). */
+const conExclamacion = (t: string) => (/\?\s*$/.test(t) ? t.trim() : `${t.trim().replace(/[.!]+$/, "")}!`);
+
 export function QueEsEsto({
   a,
   ctx,
@@ -58,6 +61,10 @@ export function QueEsEsto({
   const [conLetras, setConLetras] = useState(false);
   /** Lo que ya va bien ("¡Sí! Tiene la O."). */
   const [logro, setLogro] = useState<string | null>(null);
+  /** Respuesta abierta ("Cualquier consejo con should…"): vale otra que no es la del ejemplo. */
+  const abierta = /^cualquier/i.test(a.tambienSeAcepta ?? "");
+  /** Acertó con otra respuesta buena, no con la del ejemplo. */
+  const [otraBuena, setOtraBuena] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => void decir(a.pregunta), 400);
@@ -72,7 +79,8 @@ export function QueEsEsto({
     setPistas(n);
     setFase("pista");
     void (async () => {
-      if (antes) await decir(antes, { espanol: !b1 });
+      // Si cortó la explicación (tocó el micrófono o "No sé", salió), no sigue.
+      if (antes && !(await decir(antes, { espanol: !b1 }))) return;
       await decir(a.pistas[n - 1]);
     })();
   }
@@ -80,7 +88,7 @@ export function QueEsEsto({
   function ensenar(antes?: string) {
     setFase("ensena");
     void (async () => {
-      if (antes) await decir(antes, { espanol: !b1 });
+      if (antes && !(await decir(antes, { espanol: !b1 }))) return;
       await decir(`${conPunto(a.respuesta)} Say it: ${conPunto(a.respuesta)}`);
     })();
   }
@@ -128,8 +136,11 @@ export function QueEsEsto({
 
     setIntentos((n) => n + 1);
     if (r.correcto) {
+      // Una respuesta abierta ("Cualquier consejo con should") puede ser
+      // otra buena: no se celebra la del ejemplo como si fuera la suya.
+      if (abierta && !r.transcripcion.toLowerCase().includes(a.respuesta.toLowerCase().replace(/[.!?]+$/, ""))) setOtraBuena(true);
       setFase("bien");
-      void decir(`Yes! ${a.respuesta}!`);
+      void decir(abierta ? "Yes! Good answer!" : `Yes! ${conExclamacion(a.respuesta)}`);
       return;
     }
     if (rellenar) {
@@ -162,9 +173,10 @@ export function QueEsEsto({
     setOido({ texto: r.transcripcion, pistaAntes: pistas, escrito: "texto" in e });
     if (r.espanol) {
       // Lo entendió: se acepta como comprensión y se pide en inglés. Cuenta como pista.
-      setMensaje(b1 ? "That's it! And in English?" : "¡Eso es! ¿Y en inglés?");
+      // Sin "¡Eso es!": lo dicho en español no se comprueba (auditoría, 28 de octubre de 2026).
+      setMensaje(b1 ? "In English, please!" : "Lo dijiste en español. ¿Y en inglés?");
     }
-    const exp = explicacionPara(a.explicaciones, r.transcripcion);
+    const exp = explicacionPara(a.explicaciones, r.transcripcion, a.respuesta);
     setExplicacion(exp ? { en: exp.explicacion, es: exp.es } : null);
     abrirPista(pistas + 1, exp?.explicacion);
   }
@@ -196,7 +208,9 @@ export function QueEsEsto({
           className={`text-[22px] font-black text-balance ${fase === "bien" ? "text-menta" : fase === "pista" ? "text-oro" : ""}`}
         >
           {fase === "bien"
-            ? `Yes! ${a.respuesta}!`
+            ? otraBuena
+              ? "Yes! Good answer!"
+              : `Yes! ${conExclamacion(a.respuesta)}`
             : fase === "pista"
               ? "Almost! Here is a clue."
               : fase === "ensena" || fase === "repetida"
@@ -277,7 +291,9 @@ export function QueEsEsto({
         </div>
       )}
       {(fase === "ensena" || fase === "repetida") && (
-        <p className="text-center text-[13px] font-semibold text-texto-suave">Esta palabra vuelve a salir más adelante.</p>
+        <p className="text-center text-[13px] font-semibold text-texto-suave">
+          {palabras.length > 1 ? "Esta frase vuelve a salir más adelante." : "Esta palabra vuelve a salir más adelante."}
+        </p>
       )}
 
       {terminado ? (

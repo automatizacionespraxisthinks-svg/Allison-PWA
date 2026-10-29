@@ -44,6 +44,10 @@ export function Entrevista({
   const [fallosDato, setFallosDato] = useState(0);
   const [ultimo, setUltimo] = useState<{ yo: string; url?: string; allison: string } | null>(null);
   const [meta, setMeta] = useState(false);
+  /** Allison le devolvió una pregunta y espera su respuesta ("And you?" o una suya). */
+  const [esperaRespuesta, setEsperaRespuesta] = useState(false);
+  /** Se acabaron las intervenciones sin completar la ficha. */
+  const [cerradaSinCompletar, setCerradaSinCompletar] = useState(false);
   const [ocupado, setOcupado] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
   const empezo = useRef(false);
@@ -94,7 +98,9 @@ export function Entrevista({
     setIntervenciones(r.estado.intervenciones);
     setAyudas(r.estado.ayudas);
     setUltimo({ yo: r.transcripcion, url: "url" in e ? e.url : undefined, allison: r.respuesta });
+    setEsperaRespuesta(!!r.estado.devuelta);
     setMeta(r.metaCumplida || r.cerrada);
+    setCerradaSinCompletar(r.cerrada && !r.metaCumplida && r.estado.cumplidas.length < a.datos.length);
     void decir(r.respuestaVoz);
   }
 
@@ -212,10 +218,12 @@ export function Entrevista({
 
       {meta ? (
         <Hoja
-          tono="bien"
-          titulo="¡Ficha completa! Ya conoces a Allison."
+          tono={cerradaSinCompletar ? "pista" : "bien"}
+          titulo={cerradaSinCompletar ? "¡Buen intento! Ya conoces un poco a Allison." : "¡Ficha completa! Ya conoces a Allison."}
           boton="Continuar"
-          onBoton={() => onTerminar({ calificadas: total, aciertos: Math.max(0, total - ayudas - ayudasBoton), fallos: [] })}
+          // Los datos sin descubrir tampoco cuentan como aciertos (antes, al
+          // cerrar por el tope, salía "¡Ficha completa!" con todo bien).
+          onBoton={() => onTerminar({ calificadas: total, aciertos: Math.max(0, descubiertos.length - ayudas - ayudasBoton), fallos: [] })}
         />
       ) : (
         <Grabador
@@ -223,7 +231,7 @@ export function Entrevista({
           ocupado={ocupado}
           deshabilitado={!conversacion}
           ayuda={
-            ultimo && /And you\?$/.test(ultimo.allison)
+            esperaRespuesta
               ? "Toca y respóndele"
               : completa
                 ? "Sigue hablando con Allison"

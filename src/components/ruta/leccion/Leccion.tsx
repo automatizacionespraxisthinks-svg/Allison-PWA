@@ -71,6 +71,8 @@ export function Leccion({
   const [sinGuardar, setSinGuardar] = useState<{ f: FinActividad; segundos: number } | null>(null);
   const desde = useRef(0);
   const ultimoFin = useRef<FinLeccion | null>(null);
+  /** Ya se está guardando una actividad. */
+  const guardandoAhora = useRef(false);
 
   // El tiempo de cada actividad cuenta para la meta de hoy.
   useEffect(() => {
@@ -104,9 +106,16 @@ export function Leccion({
   );
 
   async function guardar(f: FinActividad, segundos: number) {
+    // Un segundo Enter sobre "Continuar" (o un doble toque en "Reintentar")
+    // mientras se guarda no guarda dos veces: sumaba los aciertos dos
+    // veces (auditoría, 28 de octubre de 2026).
+    if (guardandoAhora.current) return;
+    guardandoAhora.current = true;
     setGuardando(true);
     setSinGuardar(null);
-    const r = await terminar(contexto, a.paso, { ...f, segundos, primera });
+    const r = await terminar(contexto, a.paso, { ...f, segundos, primera }).finally(() => {
+      guardandoAhora.current = false;
+    });
     setGuardando(false);
     if (!r) {
       // Sin guardar no se sigue: la lección no puede parecer completa si

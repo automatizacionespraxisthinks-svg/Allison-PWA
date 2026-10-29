@@ -44,15 +44,19 @@ export function TuTurno({ a, ctx, onTerminar }: { a: Datos; ctx: Contexto; onTer
   }
 
   function responder(e: Entrada) {
+    // Lo grabado no se transcribe (es gratis): la burbuja no puede decir
+    // qué dijo. Antes mostraba la frase modelo como si fuera suya.
     if ("texto" in e) setDicha({ texto: e.texto });
-    else setDicha({ texto: a.modelo, url: e.url });
+    else setDicha({ texto: "Tu grabación", url: e.url });
     void decir("Great job!");
   }
 
   async function oirTodo() {
-    for (const l of a.dialogo) await decir(l.dice);
+    // Si se corta (Continuar, otro audio), el resto del diálogo no sigue
+    // sonando en la actividad siguiente.
+    for (const l of a.dialogo) if (!(await decir(l.dice))) return;
     if (dicha?.url) oirGrabacion(dicha.url);
-    else await decir(a.modelo);
+    else if (dicha) await decir(dicha.texto);
   }
 
   const inicial = (quien: string) => quien.trim().charAt(0).toUpperCase() || "?";

@@ -85,6 +85,9 @@ export function Responde({
     parar();
     setRestante(a.segundos);
     setVerEjemplo(false);
+    // Lo oído es de la pregunta anterior: su "¿No dijiste eso?" ya no
+    // aplica (deshacía el tiempo agotado de esta y la daba por acertada).
+    setOido(null);
     await decir(pregunta.pregunta);
     if (mia !== generacion.current) return;
     parar();
@@ -147,7 +150,8 @@ export function Responde({
     falladas.current.add(actual.i);
     if (r.espanol) {
       // Lo entendió: cuenta como pista y se le pide en inglés (plan, sección 5).
-      setMensaje("¡Eso es! ¿Y en inglés?");
+      // Sin "¡Eso es!": lo dicho en español no se comprueba (auditoría, 28 de octubre de 2026).
+      setMensaje("Lo dijiste en español. ¿Y en inglés?");
       void preguntar();
       return;
     }

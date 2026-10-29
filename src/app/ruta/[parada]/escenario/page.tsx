@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import type { LugarSello } from "@/components/ruta/Estampilla";
 import { Escenario } from "@/components/ruta/Escenario";
-import { separarIdiomas } from "@/lib/allison";
 import { sql } from "@/lib/db";
 import { estadoRutaDe } from "@/lib/ruta/avance";
+import { cierreDelEscenario } from "@/lib/ruta/escena";
 import { contenidoDe, pasoDe } from "@/lib/ruta/estado";
 import { selloDe } from "@/lib/ruta/sellos";
 import { alumnoActual } from "@/lib/sesion";
@@ -55,9 +55,9 @@ export default async function PaginaEscenario({
           texto: `${ibaEn.nombre} · ${typeof estado.siguiente.leccion === "number" ? `lección ${estado.siguiente.leccion}` : "escenario"}`,
         }
       : { href: "/ruta", texto: "Mi ruta" };
-  // El cierre cuando no lo logra: la parte en español del ejemplo aprobado ("Vamos a repasar…").
-  const cierre = e.siSeAtasca.find((s) => /intervenciones/i.test(s.situacion));
-  const repaso = cierre ? separarIdiomas(cierre.ejemplo).espanol.trim() : "";
+  // El cierre cuando no lo logra: la parte en español del ejemplo aprobado
+  // ("Vamos a repasar…"), sin el "En pantalla:" de B1 ni la despedida.
+  const repaso = cierreDelEscenario(e).repaso;
 
   const [saldo] = await sql`
     select coalesce(mensajes_plan, 0) + coalesce(mensajes_recarga, 0) as total from saldos where user_id = ${alumno.id}

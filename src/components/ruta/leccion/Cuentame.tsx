@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { avisarMicrofonoListo } from "@/components/AnilloMicrofono";
+import { COLA_GRABACION_MS, avisarMicrofonoListo } from "@/components/AnilloMicrofono";
 import { fijarVolumen } from "@/lib/volumen";
 import { desbloquearVoz, detenerVoz } from "@/lib/voz";
 import type { Cuentame as Datos } from "@/lib/ruta/tipos";
@@ -22,6 +22,11 @@ export function formatoReloj(segundos: number): string {
   return `${Math.floor(segundos / 60)}:${String(segundos % 60).padStart(2, "0")}`;
 }
 
+/** "1 frase que se entiende", "3 frases que se entienden". */
+export function frasesQueSeEntienden(frases: number): string {
+  return frases === 1 ? "1 frase que se entiende" : `${frases} frases que se entienden`;
+}
+
 /** "30 segundos", "1 minuto". */
 function duracionEnTexto(segundos: number): string {
   if (segundos % 60) return `${segundos} segundos`;
@@ -30,6 +35,13 @@ function duracionEnTexto(segundos: number): string {
 /** Un silencio así de largo mientras graba: se ilumina la pregunta guía siguiente. */
 const SILENCIO_MS = 3_500;
 const UMBRAL_SILENCIO = 0.03;
+/**
+ * Si el volumen nunca pasó de aquí, no hubo voz (el micrófono silenciado):
+ * no se envía ni se cobra. El mismo umbral del Grabador (comun.tsx).
+ */
+export const UMBRAL_VOZ = 0.015;
+/** Lo que se dice cuando no entró voz. */
+export const SIN_VOZ = "No te oí. Revisa que el micrófono no esté silenciado, o escribe.";
 
 /**
  * Cuéntame (A2, "Actividades nuevas" de Contenido A2): habla sin
@@ -66,6 +78,8 @@ export function Cuentame({
   const [logrado, setLogrado] = useState(false);
   const [verModelo, setVerModelo] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
+  /** Lo grabado que no se pudo enviar (red, IA, tiempo): se envía otra vez sin grabar de nuevo. */
+  const [pendiente, setPendiente] = useState<Entrada | null>(null);
 
   const grabadora = useRef<MediaRecorder | null>(null);
   /** El micrófono se está abriendo: todavía no graba (el anillo se llena en azul). */
@@ -78,6 +92,14 @@ export function Cuentame({
   const desde = useRef(0);
   const ultimoSonido = useRef(0);
   const reloj = useRef<ReturnType<typeof setInterval> | null>(null);
+  /** Ya tocó "Terminar": graba un momento más (COLA_GRABACION_MS) y se envía. */
+  const cola = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Tocó "Terminar" antes del mínimo: graba un momento más (COLA_GRABACION_MS) y pausa. */
+  const pausando = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** El volumen más alto de la grabación (sin el "tic" del principio). */
+  const pico = useRef(0);
+  /** Eligió escribir mientras se abría el micrófono: ya no se graba. */
+  const eligioEscribir = useRef(false);
   const audioCtx = useRef<AudioContext | null>(null);
   const vivo = useRef(true);
   const empezo = useRef(false);
@@ -90,11 +112,17 @@ export function Cuentame({
     void decir(a.tema);
   }, [a.tema, decir]);
 
-  const transcurrido = () => antes.current + (grabadora.current?.state === "recording" ? Date.now() - desde.current : 0);
+  // Lo que se graba de más al terminar o al pausar no cuenta como tiempo hablado.
+  const transcurrido = () =>
+    antes.current + (grabadora.current?.state === "recording" && !cola.current && !pausando.current ? Date.now() - desde.current : 0);
 
   const soltar = useCallback(() => {
     if (reloj.current) clearInterval(reloj.current);
     reloj.current = null;
+    if (cola.current) clearTimeout(cola.current);
+    cola.current = null;
+    if (pausando.current) clearTimeout(pausando.current);
+    pausando.current = null;
     grabadora.current?.stream.getTracks().forEach((t) => t.stop());
     void audioCtx.current?.close().catch(() => {});
     audioCtx.current = null;
@@ -113,15 +141,25 @@ export function Cuentame({
   async function enviar(e: Entrada) {
     setFase("enviando");
     setAviso(null);
+    setPendiente(null);
     const r = await evaluar(ctx, a.paso, e);
     if (!vivo.current) return;
     if (r.sinSaldo) {
       setFase("listo");
       return onSinSaldo();
     }
-    if (r.error || r.sinVoz) {
+    // Falló el envío (red, IA, tiempo): no se cobró y lo grabado no se
+    // pierde. Antes había que volver a contar todo (auditoría, 28 de
+    // octubre de 2026).
+    if (r.error) {
       setFase("listo");
-      setAviso(r.error ?? "No te oí. Revisa el micrófono e inténtalo otra vez, o escribe.");
+      setPendiente(e);
+      setAviso(r.error);
+      return;
+    }
+    if (r.sinVoz) {
+      setFase("listo");
+      setAviso(SIN_VOZ);
       return;
     }
     // En español no cuenta como intento: se le da una frase para empezar.
@@ -134,26 +172,43 @@ export function Cuentame({
     void decir(r.espanol ? "Tell me in English!" : r.correcto ? "Great story! I understood you." : "Good try!");
   }
 
-  /** Termina y envía. En pausa, lo grabado ya está sumado. */
+  /** Termina y envía. En pausa (o mientras se pausa), lo grabado ya está sumado. */
   function terminarGrabacion() {
     const mr = grabadora.current;
-    if (!mr || mr.state === "inactive") return;
-    if (mr.state === "recording") antes.current += Date.now() - desde.current;
-    mr.stop();
+    if (!mr || mr.state === "inactive" || cola.current) return;
+    const yaSumado = mr.state !== "recording" || !!pausando.current;
+    if (pausando.current) clearTimeout(pausando.current);
+    pausando.current = null;
+    if (mr.state !== "recording") {
+      mr.stop();
+      return;
+    }
+    if (!yaSumado) antes.current += Date.now() - desde.current;
+    // Sigue grabando un momento: si el audio termina justo con la última
+    // palabra, la transcripción la pierde (COLA_GRABACION_MS).
+    setFase("enviando");
+    fijarVolumen(null);
+    cola.current = setTimeout(() => {
+      cola.current = null;
+      if (mr.state !== "inactive") mr.stop();
+    }, COLA_GRABACION_MS);
   }
 
   const empezar = useCallback(async () => {
     if (grabadora.current || abriendo.current) return;
     abriendo.current = true;
+    eligioEscribir.current = false;
     setPreparando(true);
     setAviso(null);
+    setPendiente(null);
     setGuia(null);
     desbloquearVoz();
     detenerVoz();
     let stream: MediaStream | null = null;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
-      if (!vivo.current) {
+      // Se fue, o eligió escribir mientras se abría: no se graba.
+      if (!vivo.current || eligioEscribir.current) {
         stream.getTracks().forEach((t) => t.stop());
         return;
       }
@@ -161,13 +216,25 @@ export function Cuentame({
       const mr = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
       trozos.current = [];
       antes.current = 0;
+      pico.current = 0;
       mr.ondataavailable = (ev) => ev.data.size > 0 && trozos.current.push(ev.data);
+      // Si el analizador no corre (contexto suspendido), no se sabe el
+      // volumen: se envía igual, como en el Grabador.
+      let midiendo = false;
       mr.onstop = () => {
         const duracion = Math.min(a.segundos, Math.round(antes.current / 1000));
         const audio = new Blob(trozos.current, { type: mr.mimeType || "audio/webm" });
         soltar();
         grabadora.current = null;
         if (!vivo.current) return;
+        // Sin voz (el micrófono silenciado) no se envía: se cobraba un relato
+        // en silencio (auditoría, 28 de octubre de 2026).
+        if (midiendo && pico.current < UMBRAL_VOZ) {
+          setFase("listo");
+          setMs(0);
+          setAviso(SIN_VOZ);
+          return;
+        }
         void enviar({ audio, duracion, url: URL.createObjectURL(audio) });
       };
       const c = new AudioContext();
@@ -181,19 +248,24 @@ export function Cuentame({
       grabadora.current = mr;
       desde.current = Date.now();
       ultimoSonido.current = Date.now();
+      const inicio = Date.now();
       mr.start(250);
       setMs(0);
       setFase("grabando");
       setPreparando(false);
       avisarMicrofonoListo();
       reloj.current = setInterval(() => {
-        if (mr.state !== "recording") return;
+        if (c.state === "running") midiendo = true;
+        // Lo que se graba de más al terminar o al pausar no mueve el volumen.
+        if (mr.state !== "recording" || cola.current || pausando.current) return;
         analizador.getByteTimeDomainData(muestras);
         let suma = 0;
         for (const v of muestras) suma += (v - 128) ** 2;
         const nivel = Math.sqrt(suma / muestras.length) / 128;
         fijarVolumen(Math.min(1, nivel * 6));
         const ahora = Date.now();
+        // El "tic" del principio no cuenta como voz.
+        if (ahora - inicio > 250) pico.current = Math.max(pico.current, nivel);
         if (nivel > UMBRAL_SILENCIO) ultimoSonido.current = ahora;
         const t = transcurrido();
         setMs(t);
@@ -220,15 +292,21 @@ export function Cuentame({
   /** "Terminar": antes de 10 segundos, pausa y Allison lo anima a seguir. */
   function tocarTerminar() {
     const mr = grabadora.current;
-    if (!mr) return;
+    if (!mr || cola.current || pausando.current) return;
     if (transcurrido() < minimoParaEnviar(a.segundos) && mr.state === "recording") {
       antes.current += Date.now() - desde.current;
-      mr.pause();
       fijarVolumen(null);
       const g = ((guia ?? -1) + 1) % a.guias.length;
       setGuia(g);
       setFase("pausa");
-      void decir(`Keep going! ${a.guias[g]}`);
+      // Pausa un momento después del toque, como al terminar
+      // (COLA_GRABACION_MS): pausaba en el mismo toque y la última palabra
+      // se cortaba. Allison habla ya en pausa, para no quedar grabada.
+      pausando.current = setTimeout(() => {
+        pausando.current = null;
+        if (mr.state === "recording") mr.pause();
+        void decir(`Keep going! ${a.guias[g]}`);
+      }, COLA_GRABACION_MS);
       return;
     }
     terminarGrabacion();
@@ -236,12 +314,23 @@ export function Cuentame({
 
   function seguir() {
     const mr = grabadora.current;
-    if (!mr || mr.state !== "paused") return;
+    if (!mr) return;
     detenerVoz();
+    // Todavía no había pausado: sigue la misma grabación.
+    if (pausando.current) {
+      clearTimeout(pausando.current);
+      pausando.current = null;
+    } else if (mr.state === "paused") mr.resume();
+    else return;
     ultimoSonido.current = Date.now();
     desde.current = Date.now();
-    mr.resume();
     setFase("grabando");
+  }
+
+  /** Escribir en vez de hablar: si el micrófono se está abriendo, ya no graba. */
+  function elegirEscribir() {
+    eligioEscribir.current = true;
+    setEscribiendo(true);
   }
 
   function otraVez() {
@@ -295,6 +384,7 @@ export function Cuentame({
           inicio={inicio}
           logrado={!!r.correcto}
           quedan={quedan}
+          sugerencia={a.guias[guia ?? Math.max(0, intentos - 1) % a.guias.length]}
           verModelo={verModelo}
           onVerModelo={() => setVerModelo(true)}
           onOir={(t) => void decir(t)}
@@ -398,10 +488,11 @@ export function Cuentame({
             </span>
           )}
 
-          {fase === "listo" && (
+          {/* Mientras se abre el micrófono no: escribir ahí dejaba grabando por detrás. */}
+          {fase === "listo" && !preparando && (
             <button
               type="button"
-              onClick={() => setEscribiendo(true)}
+              onClick={elegirEscribir}
               className="inline-flex items-center gap-1.5 rounded-full border border-borde px-3.5 py-2 text-[13px] font-extrabold text-texto"
             >
               <Icono nombre="teclado" className="size-4" />
@@ -416,7 +507,26 @@ export function Cuentame({
           {aviso}
         </p>
       )}
+      {pendiente && "audio" in pendiente && fase === "listo" && !escribiendo && (
+        <BotonEnviarOtraVez onClick={() => void enviar(pendiente)} />
+      )}
     </div>
+  );
+}
+
+/** Lo grabado no se pudo enviar (red, IA, tiempo): se envía otra vez, sin grabar de nuevo. */
+export function BotonEnviarOtraVez({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        desbloquearVoz();
+        onClick();
+      }}
+      className="degradado-primario self-center rounded-2xl px-5 py-2.5 font-extrabold text-white"
+    >
+      Enviar otra vez
+    </button>
   );
 }
 
@@ -476,6 +586,7 @@ function Resultado({
   inicio,
   logrado,
   quedan,
+  sugerencia,
   verModelo,
   onVerModelo,
   onOir,
@@ -489,6 +600,11 @@ function Resultado({
   inicio: string;
   logrado: boolean;
   quedan: number;
+  /**
+   * La pregunta guía para el próximo intento: la iluminada, o si no hubo,
+   * una distinta en cada intento (antes siempre la primera).
+   */
+  sugerencia: string;
   verModelo: boolean;
   onVerModelo: () => void;
   onOir: (t: string) => void;
@@ -528,12 +644,10 @@ function Resultado({
           )}
           {!escrito && (
             <span className={faltaTiempo ? "text-oro" : "text-menta"}>
-              Hablaste {segundosHablados} segundos
+              Hablaste {segundosHablados} {segundosHablados === 1 ? "segundo" : "segundos"}
             </span>
           )}
-          <span className={faltanFrases ? "text-oro" : "text-menta"}>
-            {frases === 1 ? "1 frase" : `${frases} frases`} que se entienden
-          </span>
+          <span className={faltanFrases ? "text-oro" : "text-menta"}>{frasesQueSeEntienden(frases)}</span>
         </div>
       </div>
 
@@ -580,7 +694,7 @@ function Resultado({
       )}
 
       <Hoja tono={logrado ? "bien" : "pista"} titulo={titulo} boton="Continuar" onBoton={onContinuar}>
-        {!logrado && <span>Prueba con: {a.guias[0]}</span>}
+        {!logrado && <span>Prueba con: {sugerencia}</span>}
         {quedan > 0 && (
           <button type="button" onClick={onOtraVez} className="self-start font-extrabold underline">
             Intentarlo una vez más

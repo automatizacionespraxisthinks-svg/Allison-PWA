@@ -1,14 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { encuadreZona, escalaZona, srcIlustracion } from "@/lib/ruta/ilustracion";
 import type { EscuchaElige as Datos, Zona } from "@/lib/ruta/tipos";
 import { desdeB1, type Nivel } from "@/lib/tipos";
 import { desbloquearVoz } from "@/lib/voz";
 import { Icono } from "../Iconos";
 import type { Contexto, FinActividad } from "./api";
-import { AllisonAro, BotonOir, Hoja, useVoz } from "./comun";
+import { AllisonAro, BotonOir, Hoja, desordenar, useVoz } from "./comun";
 
 /**
  * Escucha y elige (pantallas 1 y 2): oye la frase, que no está escrita,
@@ -51,6 +51,12 @@ export function EscuchaElige({
   const [lentoUsado, setLentoUsado] = useState(false);
   const primerIntento = useRef(true);
   const frase = a.audio.join(" ");
+  /**
+   * El orden en pantalla, mezclado y estable para cada frase: en los
+   * datos la correcta va primero en 38 de las 48 de A1, y tocar siempre
+   * el primer dibujo acertaba (auditoría, 28 de octubre de 2026).
+   */
+  const orden = useMemo(() => desordenar(a.opciones.map((_, i) => i), frase), [a.opciones, frase]);
   /** Dos opciones con la misma foto y sin su zona marcada: solo se distinguen por la descripción. */
   const sinDistinguir = (o: Datos["opciones"][number]) =>
     !!o.imagen && !o.zona && a.opciones.filter((x) => x.imagen === o.imagen).length > 1;
@@ -140,7 +146,8 @@ export function EscuchaElige({
       )}
 
       <div className="grid grid-cols-3 gap-2">
-        {a.opciones.map((o, i) => {
+        {orden.map((i, posicion) => {
+          const o = a.opciones[i];
           const ok = acierto && i === a.correcta;
           const sel = elegida === i;
           const descartada = fallidas.includes(i);
@@ -159,7 +166,8 @@ export function EscuchaElige({
                   ok ? "border-menta" : sel ? "border-primario" : "border-transparent"
                 }`}
               >
-                <Opcion o={o} nivel={ctx.nivel} />
+                {/* La descripción delata la respuesta ("Tom, un muchacho…"): no va de texto alternativo. */}
+                <Opcion o={o} nivel={ctx.nivel} alt={o.etiqueta ?? `Opción ${posicion + 1}`} />
                 {ok && (
                   <span className="absolute top-1.5 right-1.5 grid size-7 place-items-center rounded-full bg-menta text-white">
                     <Icono nombre="check" className="size-4 stroke-[3]" />
@@ -197,7 +205,8 @@ export function EscuchaElige({
       {acierto ? (
         <Hoja
           tono="bien"
-          titulo={frase}
+          // La frase va abajo, línea por línea: de título salía dos veces.
+          titulo="¡Muy bien!"
           boton="Continuar"
           onBoton={() => onTerminar({ calificadas: 1, aciertos: primerIntento.current ? 1 : 0, fallos: [] })}
         >
@@ -278,14 +287,22 @@ export function Ondas({ activas }: { activas: boolean }) {
 }
 
 /** Una opción: la ilustración, o lo que la app dibuja (un reloj, una tarjeta). */
-function Opcion({ o, nivel }: { o: { imagen?: string; texto?: string; descripcion: string; zona?: Zona }; nivel: Nivel }) {
+function Opcion({
+  o,
+  nivel,
+  alt,
+}: {
+  o: { imagen?: string; texto?: string; descripcion: string; zona?: Zona };
+  nivel: Nivel;
+  alt: string;
+}) {
   const [sinImagen, setSinImagen] = useState(false);
   if (o.imagen && !sinImagen) {
     const escala = o.zona ? escalaZona(o.zona) : 1;
     const dibujo = (
       <Image
         src={srcIlustracion(o.imagen, nivel)}
-        alt={o.descripcion}
+        alt={alt}
         fill
         sizes={`(max-width: 640px) ${Math.round(33 * escala)}vw, ${Math.round(170 * escala)}px`}
         className="object-cover"

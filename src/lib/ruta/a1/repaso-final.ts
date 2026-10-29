@@ -101,11 +101,11 @@ export const REPASO_FINAL: Repaso = {
           modelo: ["There are two people.", "They're dancing.", "A man is selling fish."],
           aceptadas: [],
           tambienSeAcepta: "Cualquier frase correcta sobre la imagen",
-          cosas: ["man", "woman", "boy", "people", "fish", "flower", "ice cream", "guitar"],
+          cosas: ["man", "woman", "boy", "people", "fish", "flower", "ice cream", "guitar", "dance"],
           minimo: 3,
           porRevisar: [
             'modelo: el documento pide tres frases y da dos de ejemplo ("There are two people. They\'re dancing."); la tercera ("A man is selling fish.") sale de la parada 9, con la misma imagen',
-            "cosas: el documento no las nombra; salen de la imagen f-mercado-escena",
+            'cosas: el documento no las nombra; salen de la imagen f-mercado-escena. "dance" desde el 28 de octubre de 2026: la frase modelo "They\'re dancing." no contaba',
           ],
         },
         {

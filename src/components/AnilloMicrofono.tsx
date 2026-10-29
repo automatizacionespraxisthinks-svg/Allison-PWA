@@ -3,6 +3,17 @@
 import { sonar } from "@/lib/sonidos";
 
 /**
+ * Lo que se sigue grabando después de tocar "terminar". Si el audio se
+ * corta justo con la última palabra, la transcripción pierde el final:
+ * "I am from Colombia. Who old are you?" salía "I am from Colombia who
+ * you", y "Do you have a pet?", "do you know?". Con 0,7 s más salieron
+ * completas las seis frases de prueba; con 0,3 s todavía se perdían
+ * palabras (28 de octubre de 2026). De paso guarda la última palabra de
+ * quien toca antes de terminar de decirla.
+ */
+export const COLA_GRABACION_MS = 700;
+
+/**
  * El anillo alrededor del micrófono (opción A, elegida el 28 de octubre
  * de 2026): mientras el micrófono se abre, se llena en azul; cuando de
  * verdad empieza a grabar, se completa en verde y suena un "tic" con una

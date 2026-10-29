@@ -14,6 +14,7 @@ import {
   soloIngles,
   tareasVisibles,
   turnoDeEscenario,
+  type TareaAMedias,
 } from "./escena";
 import { contenidoDe, estrellasDeEscenario, pasaElSalto, pasoDe } from "./estado";
 import { ayudasDe } from "./index";
@@ -90,6 +91,13 @@ export interface EstadoEscena {
   tareasClave?: string;
   /** Escenario: qué responderle a la última línea de Allison (la ayuda la muestra). */
   idea?: { en: string; es: string; tarea: number } | null;
+  /**
+   * Escenario: las tareas de dos partes hechas a medias, con lo que les
+   * falta. Una tarea así se completa en otro turno ("I have a headache" y
+   * después "Since yesterday"); sin esto, o contaba con una sola parte o
+   * no contaba nunca (auditoría, 28 de octubre de 2026).
+   */
+  aMedias?: TareaAMedias[];
   terminada?: boolean;
 }
 
@@ -469,6 +477,7 @@ export async function turnoDeEscena(
       turno: estado.intervenciones + 1,
       minimo: u.minimo,
       extra: u.extra,
+      aMedias: estado.aMedias ?? [],
       texto,
     });
     tokensEntrada += t.tokensEntrada;
@@ -487,6 +496,7 @@ export async function turnoDeEscena(
     };
     if (t.error) estado.errores = [...(estado.errores ?? []), t.error].slice(-5);
     estado.idea = t.idea ?? null;
+    estado.aMedias = t.aMedias;
   } else if (u.adivina) {
     const juego = estado.adivina;
     if (!juego || juego.ronda >= juego.rondas.length) return { ok: false, error: "terminada" };
@@ -521,7 +531,10 @@ export async function turnoDeEscena(
       juego.calificadas += 1;
       if (juego.fallosSeguidos === 0) juego.aciertos += 1;
     }
-    juego.fallosSeguidos = a.fallo ? juego.fallosSeguidos + 1 : a.entendida ? 0 : juego.fallosSeguidos;
+    // Una pregunta que no está en la tabla tampoco avanza: cuenta para
+    // iluminar la ayuda, sin ser ayuda (antes, preguntando así una y otra
+    // vez, la ayuda no se encendía nunca).
+    juego.fallosSeguidos = a.fallo || l.tipo === "otra" ? juego.fallosSeguidos + 1 : a.entendida ? 0 : juego.fallosSeguidos;
     if (a.fallo) estado.ayudas += 1;
     juego.descartadas = [...new Set([...juego.descartadas, ...a.descartar])];
     if (a.preguntada) juego.preguntadas = [...new Set([...juego.preguntadas, a.preguntada])];
@@ -587,23 +600,27 @@ export async function turnoDeEscena(
     const c = await clasificarEntrevista({ entrevista: u.entrevista!, transcripcion, devuelta: estado.devuelta ?? undefined });
     tokensEntrada += c.tokensEntrada;
     tokensSalida += c.tokensSalida;
+    const fichaCompleta = estado.cumplidas.length >= u.entrevista!.datos.length;
     const a = respuestaDeEntrevista({
       entrevista: u.entrevista!,
       clasificacion: c,
       descubiertos: estado.cumplidas,
       turno: estado.intervenciones,
       nivel: u.nivel,
+      alcanzaMinimo: estado.intervenciones + 1 >= u.minimo,
+      devueltaAntes: estado.devuelta,
     });
     // Si Allison tuvo que darle la pregunta, cuenta como pista. Contestar
-    // su "And you?" en español no es pedir ayuda.
-    if (c.tipo !== "respuesta" && (c.espanol || c.tipo === "otro")) estado.ayudas += 1;
+    // su "And you?" en español no es pedir ayuda, ni hablar con ella con
+    // la ficha ya completa (antes cada "Thank you!" restaba un acierto).
+    if (!fichaCompleta && c.tipo !== "respuesta" && (c.espanol || c.tipo === "otro")) estado.ayudas += 1;
     estado.devuelta = a.devuelta;
     r = {
       ...vacio,
       transcripcion,
       respuesta: a.respuesta,
       respuestaVoz: a.respuestaVoz,
-      nuevas: a.descubierto && !estado.cumplidas.includes(a.descubierto) ? [a.descubierto] : [],
+      nuevas: [a.descubierto, a.otroDescubierto].filter((n): n is number => !!n && !estado.cumplidas.includes(n)),
       tokensEntrada,
       tokensSalida,
     };
@@ -656,12 +673,20 @@ const RESPONDE_SU_PREGUNTA = "Responde su pregunta.";
  * el comienzo de la frase); la idea solo cuando hace una pregunta de más.
  * En el catálogo, los viajes y los escenarios propios, siempre la idea.
  * Sin idea (el primer turno), la frase de la tarea que sigue.
+ *
+ * Se cobra (apaga una estrella) solo si hay algo que mostrar. Sin frase
+ * (un viaje o un propio sin idea), la pantalla la pide a /api/ayuda y,
+ * si llega y todavía sirve, vuelve con `sugerida` para que se cobre: antes
+ * se cobraba aunque /api/ayuda fallara (auditoría, 28 de octubre de 2026).
+ * `cobrada` dice si esta llamada la cobró; `estado.ayudas`, cuántas lleva.
  */
 export async function pedirAyuda(
   userId: string,
-  conversacionId: string
+  conversacionId: string,
+  opciones: { sugerida?: boolean } = {}
 ): Promise<
-  { ok: true; tarea: number; frase: string; es: string; explicacion: string; estado: EstadoEscena } | { ok: false; error: ErrorEscena }
+  | { ok: true; tarea: number; frase: string; es: string; explicacion: string; cobrada: boolean; estado: EstadoEscena }
+  | { ok: false; error: ErrorEscena }
 > {
   const leida = await leerEscena(userId, conversacionId);
   if (!leida) return { ok: false, error: "no_existe" };
@@ -671,38 +696,38 @@ export async function pedirAyuda(
   if (estado.terminada) return { ok: false, error: "terminada" };
   if (desactualizada(estado, u)) return { ok: false, error: "desactualizada" };
   const tarea = tareasVisibles(u.escenario, estado.cumplidas).find((n) => !estado.cumplidas.includes(n)) ?? u.escenario.tareas.length;
-  // Solo se suma la ayuda, sin reescribir el resto: un turno que esté en
-  // camino guarda después sus tareas sin borrar esta ayuda.
-  const [fila] = await sql`
-    update conversaciones
-       set ruta = jsonb_set(ruta, '{ayudas}', to_jsonb(coalesce((ruta->>'ayudas')::int, 0) + 1)),
-           ultima_actividad_en = now()
-     where id = ${conversacionId}
-    returning (ruta->>'ayudas')::int as ayudas
-  `;
-  estado.ayudas = fila?.ayudas ?? estado.ayudas + 1;
   const deParada = !estado.clave && !estado.viaje;
   const idea = estado.idea;
-  if (idea?.en && (!deParada || idea.tarea === 0)) {
-    return {
-      ok: true,
-      tarea: idea.tarea || tarea,
-      frase: idea.en,
-      es: idea.es,
-      explicacion: idea.tarea ? (u.escenario.tareas[idea.tarea - 1] ?? "") : RESPONDE_SU_PREGUNTA,
-      estado: estadoPublico(estado),
-    };
+  const respuesta =
+    idea?.en && (!deParada || idea.tarea === 0)
+      ? {
+          tarea: idea.tarea || tarea,
+          frase: idea.en,
+          es: idea.es,
+          explicacion: idea.tarea ? (u.escenario.tareas[idea.tarea - 1] ?? "") : RESPONDE_SU_PREGUNTA,
+        }
+      : {
+          tarea,
+          // Los viajes y los escenarios propios no tienen diálogo de ejemplo: la
+          // frase la sugiere la ayuda de siempre (/api/ayuda) en la pantalla.
+          frase: ayudasDe(u.escenario)[tarea - 1] ?? "",
+          es: "",
+          explicacion: u.escenario.tareas[tarea - 1] ?? "",
+        };
+  const cobrar = !!respuesta.frase || !!opciones.sugerida;
+  if (cobrar) {
+    // Solo se suma la ayuda, sin reescribir el resto: un turno que esté en
+    // camino guarda después sus tareas sin borrar esta ayuda.
+    const [fila] = await sql`
+      update conversaciones
+         set ruta = jsonb_set(ruta, '{ayudas}', to_jsonb(coalesce((ruta->>'ayudas')::int, 0) + 1)),
+             ultima_actividad_en = now()
+       where id = ${conversacionId}
+      returning (ruta->>'ayudas')::int as ayudas
+    `;
+    estado.ayudas = fila?.ayudas ?? estado.ayudas + 1;
   }
-  return {
-    ok: true,
-    tarea,
-    // Los viajes y los escenarios propios no tienen diálogo de ejemplo: la
-    // frase la sugiere la ayuda de siempre (/api/ayuda) en la pantalla.
-    frase: ayudasDe(u.escenario)[tarea - 1] ?? "",
-    es: "",
-    explicacion: u.escenario.tareas[tarea - 1] ?? "",
-    estado: estadoPublico(estado),
-  };
+  return { ok: true, ...respuesta, cobrada: cobrar, estado: estadoPublico(estado) };
 }
 
 export interface FinDeEscena {

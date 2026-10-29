@@ -127,14 +127,15 @@ export function Dilo({
     setOido({ texto: r.transcripcion, escrito: "texto" in e, antes: { fase, fallos, enLinea, explicacion, empieza } });
     const n = fallos + 1;
     setFallos(n);
-    const exp = explicacionPara(a.explicaciones, r.transcripcion);
+    const exp = explicacionPara(a.explicaciones, r.transcripcion, a.respuesta);
     setExplicacion(
       exp
         ? { en: exp.explicacion, es: exp.es }
         : r.espanol
-          ? b1
-            ? { en: "That's it! Now say it in English.", es: "¡Eso es! Ahora dilo en inglés." }
-            : { en: "¡Eso es! Ahora dilo en inglés." }
+          ? // Sin "¡Eso es!": lo dicho en español no se comprueba (auditoría, 28 de octubre de 2026).
+            b1
+            ? { en: "You said it in Spanish. Now say it in English.", es: "Lo dijiste en español. Ahora dilo en inglés." }
+            : { en: "Lo dijiste en español. Ahora dilo en inglés." }
           : null
     );
     if (n >= 2) {
@@ -144,7 +145,8 @@ export function Dilo({
       // La explicación va primero, entera; después Allison enseña la frase
       // (una sola voz a la vez, sin cortarse).
       void (async () => {
-        if (exp) await decirExplicacion(exp.explicacion);
+        // Si cortó la explicación (tocó el micrófono, salió), no sigue.
+        if (exp && !(await decirExplicacion(exp.explicacion))) return;
         await decir(`${conPunto(a.respuesta)} Say it: ${conPunto(a.respuesta)}`);
       })();
     } else {
@@ -155,7 +157,7 @@ export function Dilo({
         const palabra = primeraDeLaParte(a.partes, r.transcripcion);
         setEmpieza(palabra);
         void (async () => {
-          if (exp) await decirExplicacion(exp.explicacion);
+          if (exp && !(await decirExplicacion(exp.explicacion))) return;
           await decir(`Start with: ${palabra}…`);
         })();
       } else if (exp) void decirExplicacion(exp.explicacion);
@@ -249,7 +251,8 @@ export function Dilo({
                     usada ? "border-[1.5px] border-dashed border-borde text-borde" : "bg-superficie-2"
                   }`}
                 >
-                  {w}
+                  {/* Sin el signo pegado ("you.", "name?"): delataba qué palabra va al final. */}
+                  {w.replace(/[.,!?;:]+$/, "")}
                 </span>
               );
             })}

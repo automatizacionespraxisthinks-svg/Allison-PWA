@@ -1,12 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { AnilloMicrofono, avisarMicrofonoListo } from "@/components/AnilloMicrofono";
+import { AnilloMicrofono, COLA_GRABACION_MS, avisarMicrofonoListo } from "@/components/AnilloMicrofono";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { sonar } from "@/lib/sonidos";
 import { fijarVolumen, useVolumenGrabacion } from "@/lib/volumen";
 import { estimarSegundos } from "@/lib/habla";
-import { desbloquearVoz, detenerVoz, hablarEspanol, hablarIngles, hablarInglesLento } from "@/lib/voz";
+import { desbloquearVoz, detenerVoz, hablarEspanol, hablarIngles, hablarInglesLento, reproducirGrabacion } from "@/lib/voz";
 import { srcIlustracion } from "@/lib/ruta/ilustracion";
 import type { Zona } from "@/lib/ruta/tipos";
 import type { Nivel } from "@/lib/tipos";
@@ -70,8 +70,18 @@ export function AllisonAro({ aro = "pregunta", tam = 72, hablando = false }: { a
 export function useVoz(nivel: Nivel) {
   const [hablando, setHablando] = useState(false);
   const turno = useRef(0);
+  /** La actividad sigue en pantalla: después de salir, Allison no habla. */
+  const montado = useRef(true);
+  /**
+   * Dice un texto. Devuelve true si sonó entero: una frase que se cortó
+   * (otro audio, el micrófono, salir) da false, y lo que venía después en
+   * la misma secuencia no debe sonar (antes la pista seguía a la
+   * explicación cortada y sonaba encima de la grabación).
+   */
   const decir = useCallback(
-    async (texto: string, opciones: { lento?: boolean; espanol?: boolean } = {}) => {
+    async (texto: string, opciones: { lento?: boolean; espanol?: boolean } = {}): Promise<boolean> => {
+      // Una respuesta del servidor que llega después de salir no habla.
+      if (!montado.current) return false;
       const mio = ++turno.current;
       setHablando(true);
       try {
@@ -82,15 +92,22 @@ export function useVoz(nivel: Nivel) {
             : hablarIngles(texto, nivel);
         const limite = 8000 + estimarSegundos(texto) * 2500;
         let vencio = false;
-        await Promise.race([habla, new Promise((r) => setTimeout(() => ((vencio = true), r(null)), limite))]);
+        const sono = await Promise.race([habla, new Promise<false>((r) => setTimeout(() => ((vencio = true), r(false)), limite))]);
         if (vencio && mio === turno.current) detenerVoz();
+        return sono === true && mio === turno.current && montado.current;
       } finally {
-        if (mio === turno.current) setHablando(false);
+        if (mio === turno.current && montado.current) setHablando(false);
       }
     },
     [nivel]
   );
-  useEffect(() => () => detenerVoz(), []);
+  useEffect(() => {
+    montado.current = true;
+    return () => {
+      montado.current = false;
+      detenerVoz();
+    };
+  }, []);
   return { decir, hablando };
 }
 
@@ -199,10 +216,44 @@ export function Explicado({ en, es, className = "" }: { en: string; es?: string;
   );
 }
 
-/** La explicación prevista para lo que dijo el alumno, si la hay. */
-export function explicacionPara<T extends { siDice: string }>(lista: T[] | undefined, dicho: string): T | undefined {
-  const d = dicho.toLowerCase();
-  return lista?.find((x) => d.includes(x.siDice.toLowerCase()));
+/** Minúsculas, sin tildes ni signos, con espacios a los lados (para buscar palabras enteras). */
+const enPalabras = (t: string) =>
+  ` ${t
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[’‘]/g, "'")
+    .replace(/[^a-z0-9' ]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()} `;
+
+/**
+ * La explicación prevista para lo que dijo el alumno, si la hay. Busca
+ * palabras enteras y sin signos ("drink" no está en "drinks", "Do you
+ * have thirst?" sí está aunque no haya dicho el signo), y "…" vale por
+ * lo que sea ("although… but"). Si lo previsto es parte de la respuesta
+ * buena ("Is a lamp" en "There is a lamp…") y dijo la forma buena, no es
+ * el error. Antes "My mom never drinks coffee" recibía "lleva -s: drinks"
+ * (auditoría, 28 de octubre de 2026).
+ */
+export function explicacionPara<T extends { siDice: string }>(lista: T[] | undefined, dicho: string, correcta?: string): T | undefined {
+  const d = enPalabras(dicho);
+  const buena = correcta ? enPalabras(correcta) : "";
+  return lista?.find((x) => {
+    const partes = x.siDice.split(/…|\.\.\./).map((p) => enPalabras(p).trim()).filter(Boolean);
+    let desde = 0;
+    for (const p of partes) {
+      const i = d.indexOf(` ${p} `, desde);
+      if (i < 0) return false;
+      desde = i + p.length + 1;
+    }
+    if (partes.length !== 1 || !buena) return true;
+    // Con la palabra de antes en la respuesta buena ("there is a lamp"): si eso dijo, está bien.
+    const i = buena.indexOf(` ${partes[0]} `);
+    if (i < 0) return true;
+    const antes = buena.slice(0, i).trim().split(" ").pop();
+    return !antes || !d.includes(` ${antes} ${partes[0]} `);
+  });
 }
 
 /** Lo que entrega el micrófono o el teclado. */
@@ -243,6 +294,8 @@ export function Grabador({
   izquierda?: React.ReactNode;
 }) {
   const [grabando, setGrabando] = useState(false);
+  /** Ya tocó "terminar": graba un momento más (COLA_GRABACION_MS) y se envía. */
+  const [terminando, setTerminando] = useState(false);
   /** El micrófono se está abriendo: todavía no graba (el anillo se llena). */
   const [preparando, setPreparando] = useState(false);
   const [escribiendo, setEscribiendo] = useState(false);
@@ -251,6 +304,9 @@ export function Grabador({
   const grabadora = useRef<MediaRecorder | null>(null);
   const trozos = useRef<Blob[]>([]);
   const inicio = useRef(0);
+  /** Cuándo tocó "terminar" (la duración no cuenta lo que se graba de más). */
+  const fin = useRef(0);
+  const cola = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pico = useRef(0);
   const ctx = useRef<AudioContext | null>(null);
   const reloj = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -269,6 +325,8 @@ export function Grabador({
   const limpiar = useCallback(() => {
     if (reloj.current) clearInterval(reloj.current);
     reloj.current = null;
+    if (cola.current) clearTimeout(cola.current);
+    cola.current = null;
     grabadora.current?.stream.getTracks().forEach((t) => t.stop());
     grabadora.current = null;
     void ctx.current?.close().catch(() => {});
@@ -310,12 +368,13 @@ export function Grabador({
       // saber el volumen: se envía igual en vez de decir "no te oí" siempre.
       let midiendo = false;
       mr.onstop = () => {
-        const duracion = Math.min(30, (Date.now() - inicio.current) / 1000);
+        const duracion = Math.min(30, ((fin.current || Date.now()) - inicio.current) / 1000);
         const audio = new Blob(trozos.current, { type: mr.mimeType || "audio/webm" });
         const volumen = pico.current;
         limpiar();
         if (!vivo.current) return;
         setGrabando(false);
+        setTerminando(false);
         if (duracion < 0.6) {
           setAviso("Mantén el micrófono un poco más: toca, habla y vuelve a tocar.");
           return;
@@ -335,12 +394,15 @@ export function Grabador({
       const muestras = new Uint8Array(analizador.fftSize);
       grabadora.current = mr;
       inicio.current = Date.now();
+      fin.current = 0;
       mr.start();
       setGrabando(true);
       setPreparando(false);
       avisarMicrofonoListo();
       reloj.current = setInterval(() => {
         if (c.state === "running") midiendo = true;
+        // Lo que se graba de más al terminar no mueve el volumen.
+        if (cola.current) return;
         analizador.getByteTimeDomainData(muestras);
         let suma = 0;
         for (const v of muestras) suma += (v - 128) ** 2;
@@ -365,7 +427,28 @@ export function Grabador({
     }
   }, [alEmpezar, limpiar]);
 
-  const detener = () => grabadora.current?.state === "recording" && grabadora.current.stop();
+  const grabandoAhora = grabando && !terminando;
+  const enviando = ocupado || terminando;
+
+  const detener = () => {
+    const mr = grabadora.current;
+    if (mr?.state !== "recording" || cola.current) return;
+    fin.current = Date.now();
+    // Un toque de menos de 0,6 s no se envía ("Mantén el micrófono…"): sin cola.
+    if (fin.current - inicio.current < 600) {
+      mr.stop();
+      return;
+    }
+    // Sigue grabando un momento: si el audio termina justo con la última
+    // palabra, la transcripción la pierde (COLA_GRABACION_MS).
+    setTerminando(true);
+    avisar.current?.(null);
+    fijarVolumen(null);
+    cola.current = setTimeout(() => {
+      cola.current = null;
+      if (mr.state === "recording") mr.stop();
+    }, COLA_GRABACION_MS);
+  };
 
   // El campo de texto está siempre montado (en el computador se ve
   // siempre): al cambiar al teclado en el celular, el foco va ahí.
@@ -396,7 +479,8 @@ export function Grabador({
   function enviarTexto(e: React.FormEvent) {
     e.preventDefault();
     const t = texto.trim();
-    if (!t || deshabilitado || ocupado) return;
+    // Mientras graba, lo escrito no se envía: salían dos evaluaciones.
+    if (!t || deshabilitado || ocupado || grabando) return;
     desbloquearVoz();
     setTexto("");
     onEntrada({ texto: t });
@@ -420,7 +504,7 @@ export function Grabador({
       />
       <button
         type="submit"
-        disabled={deshabilitado || ocupado || !texto.trim()}
+        disabled={deshabilitado || ocupado || grabando || !texto.trim()}
         aria-label="Enviar"
         className="grid size-12 flex-none place-items-center rounded-full bg-primario text-white disabled:opacity-40"
       >
@@ -448,18 +532,21 @@ export function Grabador({
         {izquierda ? <span className="mr-4 justify-self-end">{izquierda}</span> : <span />}
         <button
           type="button"
-          onClick={grabando ? detener : empezar}
-          disabled={deshabilitado || ocupado}
-          aria-label={grabando ? "Terminar y enviar" : preparando ? "Preparando el micrófono" : "Hablar"}
+          onClick={grabandoAhora ? detener : empezar}
+          // Mientras graba siempre se puede terminar: en Responde rápido,
+          // tocar en el primer segundo dejaba el botón deshabilitado y
+          // grababa hasta los 30 s (auditoría, 28 de octubre de 2026).
+          disabled={(deshabilitado && !grabandoAhora) || enviando}
+          aria-label={grabandoAhora ? "Terminar y enviar" : preparando ? "Preparando el micrófono" : "Hablar"}
           className={`relative grid size-16 place-items-center rounded-full text-white transition disabled:opacity-40 ${
-            grabando ? "bg-menta" : "bg-primario shadow-[0_0_0_6px_var(--primario-suave)] hover:brightness-110 active:scale-95"
+            grabandoAhora ? "bg-menta" : "bg-primario shadow-[0_0_0_6px_var(--primario-suave)] hover:brightness-110 active:scale-95"
           }`}
         >
-          {grabando && (
+          {grabandoAhora && (
             <span aria-hidden className="absolute inset-0 rounded-full bg-menta" style={{ animation: "onda-grabacion 1.5s ease-out infinite" }} />
           )}
-          <AnilloMicrofono estado={preparando ? "preparando" : grabando ? "grabando" : null} />
-          {ocupado ? (
+          <AnilloMicrofono estado={preparando ? "preparando" : grabandoAhora ? "grabando" : null} />
+          {enviando ? (
             <span className="relative flex gap-1" aria-hidden>
               {[0, 1, 2].map((i) => (
                 <span
@@ -469,7 +556,7 @@ export function Grabador({
                 />
               ))}
             </span>
-          ) : grabando ? (
+          ) : grabandoAhora ? (
             <svg viewBox="0 0 24 24" className="relative size-6" fill="currentColor" aria-hidden>
               <rect x="6" y="6" width="12" height="12" rx="2" />
             </svg>
@@ -493,11 +580,11 @@ export function Grabador({
       </div>
       {!soloVoz && formulario}
       <span aria-live="polite">
-        {ocupado
+        {enviando
           ? "Allison está escuchando lo que dijiste…"
           : preparando
             ? "Preparando el micrófono…"
-            : grabando
+            : grabandoAhora
               ? "¡Habla ahora! Toca para terminar"
               : ayuda}
       </span>
@@ -543,10 +630,13 @@ export function desordenar<T>(lista: T[], semilla: string): T[] {
   return copia;
 }
 
-/** Reproduce una grabación del propio alumno ("Oír mi voz"). */
+/**
+ * Reproduce una grabación del propio alumno ("Oír mi voz"). detenerVoz
+ * la corta: antes seguía sonando al continuar, al salir o al grabar otra
+ * vez, y quedaba dentro de la grabación nueva.
+ */
 export function oirGrabacion(url: string) {
-  detenerVoz();
-  void new Audio(url).play().catch(() => {});
+  reproducirGrabacion(url);
 }
 
 /**

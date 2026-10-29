@@ -25,6 +25,8 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const { contieneAlguna, cosasNombradas, normalizar } = await import("../src/lib/evaluacion.ts");
+/** Las palabras tal como están escritas: minúsculas, sin signos, con sus apóstrofos. */
+const tal = (t) => ` ${t.toLowerCase().replace(/[’‘]/g, "'").replace(/[^a-z0-9' ]+/g, " ").replace(/\s+/g, " ").trim()} `;
 const { respuestaCorta } = await import("../src/lib/ruta/adivina.ts");
 
 const NIVELES = [
@@ -200,7 +202,9 @@ function revisarActividad(a, donde, imagenes) {
       break;
     case "repite":
       if (!a.frase?.trim()) fallo(donde, "sin frase");
-      if (a.palabraDificil && !normalizar(a.frase).includes(` ${normalizar(a.palabraDificil).trim()} `))
+      // Como está escrita: abierta sola, "she'd" sería "she would", y en la
+      // frase ("she'd already left") es "she had".
+      if (a.palabraDificil && !tal(a.frase).includes(tal(a.palabraDificil)))
         fallo(donde, `la palabra difícil "${a.palabraDificil}" no está en la frase`);
       break;
     case "tu-turno":

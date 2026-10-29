@@ -180,6 +180,8 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
     agregar("allison", r.respuesta, r.respuestaVoz);
     setCumplidas(r.estado.cumplidas);
     setIntervenciones(r.estado.intervenciones);
+    // Las ideas que lleva según el servidor (las estrellas salen de ahí).
+    setAyudas((n) => Math.max(n, r.estado.ayudas ?? 0));
     if (r.nuevas.length) sonar("acierto");
     setMeta(r.metaCumplida);
     await decir(r.respuestaVoz);
@@ -189,7 +191,10 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
   /**
    * La idea: qué decir para la tarea de ahora. Cuenta como ayuda (como en
    * los escenarios, deja el máximo en 2 estrellas). Si la escena no trae
-   * una frase de ejemplo, la sugiere la ayuda de siempre (gratis).
+   * una frase de ejemplo, la sugiere la ayuda de siempre (gratis), y la
+   * idea se cobra solo si llega y todavía sirve: antes se cobraba aunque
+   * /api/ayuda fallara o la idea llegara tarde (auditoría, 28 de octubre de
+   * 2026).
    */
   async function pedirIdea() {
     if (!conversacion || pidiendo.current) return;
@@ -202,7 +207,8 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
     try {
       const r = await ayudaEscena(conversacion);
       if (!r) return setMensaje("No pudimos traer la idea. Intenta otra vez.");
-      setAyudas((n) => n + 1);
+      // El contador, como lo lleva el servidor (las estrellas salen de ahí).
+      setAyudas((n) => Math.max(n, r.ayudas));
       let frase = r.frase;
       let es = r.es ?? "";
       if (!frase) {
@@ -217,6 +223,12 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
           .catch(() => null);
         frase = a?.sugerencia ?? "";
         es = a?.sugerenciaEs ?? "";
+        if (mio !== turnos.current) return;
+        if (!frase) return setMensaje("No pudimos traer la idea. Intenta otra vez.");
+        // Ahora sí se va a mostrar: se cobra.
+        const cobro = await ayudaEscena(conversacion, true);
+        if (!cobro) return setMensaje("No pudimos traer la idea. Intenta otra vez.");
+        setAyudas((n) => Math.max(n, cobro.ayudas));
       }
       if (mio !== turnos.current) return;
       if (!frase) return setMensaje("No pudimos traer la idea. Intenta otra vez.");
@@ -515,7 +527,7 @@ function Resumen({
   ayudas: number;
   ctx: { nivel: Nivel; nombre: string };
   conversacion: string | null;
-  decir: (t: string) => Promise<void>;
+  decir: (t: string) => Promise<unknown>;
 }) {
   const primerNombre = ctx.nombre.split(" ")[0];
   const logrado = fin.estrellas >= 1;
