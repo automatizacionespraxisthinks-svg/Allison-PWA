@@ -360,18 +360,22 @@ export async function POST(peticion: Request) {
     );
   }
 
-  // Desde aquí la IA ya trabajó: la comprobación se cobra aunque no se
-  // haya oído voz (no cuenta como intento, pero consumió IA; plan,
-  // secciones 6 y 22), y un error al anotar no la devuelve.
+  // Desde aquí la IA ya trabajó y un error al anotar no la devuelve. Si no
+  // se oyó voz (un toque sin querer, el micrófono silenciado) no se cobra,
+  // igual que en Cuéntame y Narra: decisión del usuario del 29 de octubre
+  // de 2026. Antes se cobraba (plan, secciones 6 y 22). Los tokens sí se
+  // anotan, sin turno.
+  const oido = !!resultado.transcripcion;
+  if (bolsa && !oido) await devolver().catch(() => {});
   if (usaIA) {
     try {
       await sql`
         select registrar_uso(${alumno.id}, 'conversar', ${resultado.tokensEntrada},
-                             ${resultado.tokensSalida}, ${Math.round(duracion)}, true, false)
+                             ${resultado.tokensSalida}, ${Math.round(duracion)}, ${oido}, false)
       `;
-      await sql`select registrar_parte(${alumno.id}, 'ruta')`;
-      if (paradaDelGasto) {
-        await sql`select registrar_consumo_parada(${alumno.id}, ${paradaDelGasto}, ${!resultado.transcripcion})`;
+      if (oido) {
+        await sql`select registrar_parte(${alumno.id}, 'ruta')`;
+        if (paradaDelGasto) await sql`select registrar_consumo_parada(${alumno.id}, ${paradaDelGasto}, false)`;
       }
     } catch (e) {
       console.error(

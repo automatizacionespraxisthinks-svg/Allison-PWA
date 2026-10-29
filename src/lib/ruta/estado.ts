@@ -288,11 +288,19 @@ export function estrellasDeLeccion(aciertos: number, total: number): number {
 }
 
 /**
- * Estrellas de un escenario: 3 si cumplió todas las tareas sin ayuda, 2
- * si usó la ayuda, 1 si completó al menos la mitad, 0 si no llegó.
+ * Estrellas de un escenario: 3 si cumplió todas las tareas sin ayuda y
+ * llegó al mínimo de intervenciones, 2 si usó la ayuda o terminó antes
+ * del mínimo, 1 si completó al menos la mitad, 0 si no llegó. El mínimo
+ * cuenta desde el 29 de octubre de 2026 (decisión del usuario): antes,
+ * "Terminar ahora" daba 3 aunque la pantalla pidiera 10 intervenciones.
  */
-export function estrellasDeEscenario(cumplidas: number, total: number, ayudas: number): number {
-  if (total > 0 && cumplidas >= total) return ayudas > 0 ? 2 : 3;
+export function estrellasDeEscenario(
+  cumplidas: number,
+  total: number,
+  ayudas: number,
+  llegoAlMinimo = true
+): number {
+  if (total > 0 && cumplidas >= total) return ayudas > 0 || !llegoAlMinimo ? 2 : 3;
   return cumplidas * 2 >= total && total > 0 ? 1 : 0;
 }
 

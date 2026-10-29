@@ -739,6 +739,8 @@ export interface FinDeEscena {
   saltoLogrado?: boolean;
   /** Lo que se le muestra para mejorar (máximo un punto). */
   mejora: { dijo: string; mejor: string } | null;
+  /** Terminó antes del mínimo de intervenciones: el mínimo, para avisarle. */
+  sinMinimo?: number;
 }
 
 /** Cierra un escenario, un viaje o un escenario del catálogo: estrellas y estampilla. */
@@ -757,7 +759,8 @@ export async function terminarEscenario(
   }
 
   const total = u.escenario.tareas.length;
-  const estrellas = estrellasDeEscenario(estado.cumplidas.length, total, estado.ayudas);
+  const llegoAlMinimo = estado.intervenciones >= u.minimo;
+  const estrellas = estrellasDeEscenario(estado.cumplidas.length, total, estado.ayudas, llegoAlMinimo);
   const mejora = estado.errores?.[0] ?? null;
 
   let sello = false;
@@ -835,5 +838,7 @@ export async function terminarEscenario(
     }
   }
 
-  return { ok: true, fin: { estrellas, cumplidas: estado.cumplidas, total, sello, saltoLogrado, mejora } };
+  // Solo se avisa cuando el mínimo fue lo que le quitó la tercera estrella.
+  const sinMinimo = !llegoAlMinimo && estado.cumplidas.length >= total && estado.ayudas === 0 ? u.minimo : undefined;
+  return { ok: true, fin: { estrellas, cumplidas: estado.cumplidas, total, sello, saltoLogrado, mejora, sinMinimo } };
 }

@@ -389,14 +389,21 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
               <Grabador onEntrada={responder} ocupado={ocupado} deshabilitado={sinSaldo} ayuda="Toca y respóndele" izquierda={botonIdea} />
             )}
             {fase === "charla" && !meta && intervenciones > 0 && (
-              <button
-                type="button"
-                onClick={() => void cerrar()}
-                disabled={ocupado}
-                className="self-center text-[12.5px] font-bold text-texto-suave underline disabled:opacity-40"
-              >
-                Terminar ahora
-              </button>
+              <>
+                {todas && ayudas === 0 && (
+                  <p className="text-center text-[12.5px] font-semibold text-texto-suave">
+                    Si terminas ahora ganas 2 estrellas. Llega a {d.minimo} intervenciones para las 3.
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => void cerrar()}
+                  disabled={ocupado}
+                  className="self-center text-[12.5px] font-bold text-texto-suave underline disabled:opacity-40"
+                >
+                  Terminar ahora
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -589,6 +596,12 @@ function Resumen({
       {ayudas > 0 && logrado && (
         <p className="text-center text-[13px] font-semibold text-texto-suave">
           Usaste la idea {ayudas === 1 ? "1 vez" : `${ayudas} veces`}: sin ella puedes ganar 3 estrellas.
+        </p>
+      )}
+
+      {fin.sinMinimo && (
+        <p className="text-center text-[13px] font-semibold text-texto-suave">
+          Terminaste antes de la meta: con {fin.sinMinimo} intervenciones ganas 3 estrellas.
         </p>
       )}
 

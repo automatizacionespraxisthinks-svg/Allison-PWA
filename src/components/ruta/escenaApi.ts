@@ -45,6 +45,8 @@ export interface FinEscena {
   sello: boolean;
   saltoLogrado?: boolean;
   mejora: { dijo: string; mejor: string } | null;
+  /** Terminó antes del mínimo: el mínimo, para decirle cómo ganar la tercera estrella. */
+  sinMinimo?: number;
 }
 
 async function enviar(campos: Record<string, string | Blob>): Promise<{ ok: boolean; status: number; datos: Record<string, unknown> }> {
