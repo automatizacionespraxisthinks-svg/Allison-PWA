@@ -49,9 +49,9 @@ export const PARADA_10: Parada = {
           audio: ["Turn left."],
           traduccion: ["Gira a la izquierda."],
           opciones: [
-            { texto: "←", descripcion: "Flecha a la izquierda" },
-            { texto: "→", descripcion: "Flecha a la derecha" },
-            { texto: "↑", descripcion: "Flecha derecho" },
+            { dibujo: { flecha: "izquierda" }, descripcion: "Flecha a la izquierda" },
+            { dibujo: { flecha: "derecha" }, descripcion: "Flecha a la derecha" },
+            { dibujo: { flecha: "derecho" }, descripcion: "Flecha derecho" },
           ],
           correcta: 0,
           porRevisar: ["traduccion", "quienHabla: el documento no dice quién habla"],
@@ -113,6 +113,20 @@ export const PARADA_10: Parada = {
           plantilla: "Go straight. It's next to the ___.",
           modelo: "Go straight. It's next to the bank.",
           aceptadas: ["It's next to the bank. Go straight two blocks."],
+          // El mapa muestra lo del modelo (derecho dos cuadras, la parada junto
+          // al banco) y un café enfrente, que no es la respuesta.
+          mapa: {
+            meta: "bus stop",
+            indicaciones: [
+              "Go straight two blocks.",
+              "The bus stop is on the right.",
+              "There's a bank next to the bus stop.",
+              "There's a café across from the bank.",
+            ],
+          },
+          porRevisar: [
+            "mapa: el documento no dice qué más hay en el mapa; el café enfrente del banco es una propuesta",
+          ],
         },
         {
           paso: 3,
@@ -356,6 +370,9 @@ export const PARADA_10: Parada = {
     ],
     minimoIntervenciones: 10,
     maximoIntervenciones: 18,
+    // "La app muestra un mapa sencillo que se va dibujando con lo que ella
+    // dice": el camino a la parada del bus y, lejos, el puente.
+    mapa: { meta: "bus stop", destino: "Golden Gate Bridge" },
   },
   ilustraciones: [
     { archivos: ["f-metro"], muestra: "Un vagón de metro en la estación", uso: "Lección 4 (paso 1)" },

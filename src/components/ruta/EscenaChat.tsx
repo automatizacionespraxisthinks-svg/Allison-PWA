@@ -7,6 +7,7 @@ import { Transcripcion } from "@/components/Transcripcion";
 import { sonar } from "@/lib/sonidos";
 import { desdeB1, type Mensaje, type Nivel } from "@/lib/tipos";
 import { desbloquearVoz } from "@/lib/voz";
+import { pedirAyudaIA } from "@/lib/ayudaCliente";
 import { Estampilla, type LugarSello } from "./Estampilla";
 import { Estrellas, Icono, type NombreIcono } from "./Iconos";
 import { ayudaEscena, iniciarEscena, terminarEscena, turnoEscena, type FinEscena } from "./escenaApi";
@@ -213,16 +214,11 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
       let es = r.es ?? "";
       if (!frase) {
         const ultima = [...mensajes].reverse().find((m) => m.rol === "allison")?.texto ?? "";
-        const a = await fetch("/api/ayuda", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ texto: ultima || r.explicacion, nivel: ctx.nivel, tarea: r.explicacion }),
-          signal: AbortSignal.timeout(20_000),
-        })
-          .then((x) => (x.ok ? x.json() : null))
-          .catch(() => null);
-        frase = a?.sugerencia ?? "";
-        es = a?.sugerenciaEs ?? "";
+        // Usa la IA: cuesta una intervención (29 de octubre de 2026).
+        const a = await pedirAyudaIA(ultima || r.explicacion, ctx.nivel, r.explicacion, AbortSignal.timeout(20_000));
+        if (!a.ok && a.sinSaldo) return setSinSaldo(true);
+        frase = a.ok ? a.ayuda.sugerencia : "";
+        es = a.ok ? a.ayuda.sugerenciaEs : "";
         if (mio !== turnos.current) return;
         if (!frase) return setMensaje("No pudimos traer la idea. Intenta otra vez.");
         // Ahora sí se va a mostrar: se cobra.
@@ -329,7 +325,7 @@ export function EscenaChat({ d, ctx }: { d: DatosEscenaChat; ctx: { nivel: Nivel
                   </span>
                 </div>
               )}
-              <Transcripcion mensajes={mensajes} nivel={ctx.nivel} />
+              <Transcripcion mensajes={mensajes} nivel={ctx.nivel} alCobrar={(n) => n === 0 && setSinSaldo(true)} />
             </>
           )}
 

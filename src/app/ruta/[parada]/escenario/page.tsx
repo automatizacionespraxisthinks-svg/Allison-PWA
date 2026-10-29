@@ -86,6 +86,7 @@ export default async function PaginaEscenario({
         momentos: e.momentos ?? [],
         ayudaDesdeSegundoFallo: !!e.ayudaDesdeSegundoFallo,
         imprevisto: e.imprevisto ? { despuesDeTarea: e.imprevisto.despuesDeTarea, tarea: e.imprevisto.tarea } : null,
+        mapa: e.mapa ?? null,
       }}
       salto={salto ? { saltadas, saldo: Number(saldo?.total ?? 0), hoy: p.saltoHoy, donde } : null}
       siguiente={

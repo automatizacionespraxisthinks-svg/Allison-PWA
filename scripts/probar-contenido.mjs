@@ -28,6 +28,10 @@ const { contieneAlguna, cosasNombradas, normalizar } = await import("../src/lib/
 /** Las palabras tal como están escritas: minúsculas, sin signos, con sus apóstrofos. */
 const tal = (t) => ` ${t.toLowerCase().replace(/[’‘]/g, "'").replace(/[^a-z0-9' ]+/g, " ").replace(/\s+/g, " ").trim()} `;
 const { respuestaCorta } = await import("../src/lib/ruta/adivina.ts");
+const { LUGARES, MAPA_VACIO, mapaDe, sumarLinea, trazarMapa } = await import("../src/lib/ruta/indicaciones.ts");
+/** Lo que la app sabe dibujar: los colores de las tarjetas y las horas ("7:30"). */
+const COLORES = ["negro", "azul", "rojo", "verde", "amarillo", "blanco"];
+const HORA = /^(?:[1-9]|1[0-2]):[0-5]\d$/;
 
 const NIVELES = [
   { nivel: "A1", dir: "src/lib/ruta/a1" },
@@ -178,6 +182,10 @@ function revisarActividad(a, donde, imagenes) {
         else if (!o.texto?.trim() && !o.dibujo && !o.descripcion?.trim()) fallo(donde, "una opción sin imagen ni texto");
         if (o.dibujo && "semaforo" in o.dibujo && !["mano", "caminando", "apagado"].includes(o.dibujo.semaforo))
           fallo(donde, `semáforo desconocido: "${o.dibujo.semaforo}"`);
+        if (o.dibujo && "flecha" in o.dibujo && !["izquierda", "derecha", "derecho"].includes(o.dibujo.flecha))
+          fallo(donde, `flecha desconocida: "${o.dibujo.flecha}"`);
+        if (o.dibujo && "color" in o.dibujo && !COLORES.includes(o.dibujo.color)) fallo(donde, `color desconocido: "${o.dibujo.color}"`);
+        if (o.dibujo && "reloj" in o.dibujo && !HORA.test(o.dibujo.reloj)) fallo(donde, `hora mal escrita: "${o.dibujo.reloj}"`);
       });
       {
         // El mapa: las tres opciones son edificios, cada uno en su lugar.
@@ -216,6 +224,11 @@ function revisarActividad(a, donde, imagenes) {
       if (desdeB1() && a.pistas?.length !== 1) aviso(donde, `tiene ${a.pistas?.length} pistas (B1: una sola)`);
       if (a.imagen) imagenes.push(a.imagen);
       else if (!a.texto?.trim()) fallo(donde, "sin imagen ni texto de lo que dibuja la app");
+      for (const r of a.relojes ?? []) {
+        if (!HORA.test(r.hora)) fallo(donde, `reloj con la hora mal escrita: "${r.hora}"`);
+        if (!r.etiqueta?.trim()) fallo(donde, "reloj sin etiqueta");
+        if (desdeB1() && /[áéíóúñ¿¡]/i.test(r.etiqueta)) fallo(donde, `la etiqueta del reloj va en inglés: "${r.etiqueta}"`);
+      }
       break;
     case "repite":
       if (!a.frase?.trim()) fallo(donde, "sin frase");
@@ -228,6 +241,14 @@ function revisarActividad(a, donde, imagenes) {
       if (!a.dialogo?.length) fallo(donde, "sin diálogo");
       if (!a.plantilla?.includes("___") && !a.plantilla?.trim()) fallo(donde, "sin plantilla");
       if (!a.modelo?.trim()) fallo(donde, "sin modelo");
+      if (a.mapa) {
+        // Lo que el mapa muestra tiene que verse: la meta y los lugares dichos, cada uno en su lugar.
+        const t = trazarMapa(mapaDe(a.mapa.indicaciones ?? [], a.mapa.meta), a.mapa);
+        const dichos = mapaDe(a.mapa.indicaciones ?? [], a.mapa.meta).lugares.map((l) => l.nombre);
+        const faltan = dichos.filter((n) => !t.lugares.some((l) => l.nombre === n));
+        if (!t.lugares.some((l) => l.nombre === a.mapa.meta)) fallo(donde, `el mapa no muestra "${a.mapa.meta}"`);
+        if (faltan.length) fallo(donde, `el mapa no puede ubicar: ${faltan.join(", ")}`);
+      }
       break;
     case "dilo": {
       if (!a.espanol?.trim() || !a.respuesta?.trim()) fallo(donde, "falta espanol o respuesta");
@@ -410,6 +431,13 @@ function revisarLeccionesYEscenario(p, d, imagenes, { conObjetivo }) {
     }
   }
   if (!(e.maximoIntervenciones > e.minimoIntervenciones)) fallo(de, "máximo de intervenciones");
+  if (e.mapa) {
+    // El mapa de la escena se dibuja con el diálogo de ejemplo: tiene que llevar a la meta.
+    const m = (e.dialogo ?? []).filter((l) => l.quien === "personaje").reduce((x, l) => sumarLinea(x, l.dice, e.mapa.meta), MAPA_VACIO);
+    if (!LUGARES[e.mapa.meta]) fallo(de, `el mapa no reconoce la meta "${e.mapa.meta}"`);
+    if (!m.pasos.length) fallo(de, "el diálogo de ejemplo no da indicaciones para el mapa");
+    else if (!trazarMapa(m, e.mapa).lugares.some((l) => l.nombre === e.mapa.meta)) fallo(de, "el mapa no llega a la meta");
+  }
   for (const l of e.dialogo ?? []) if (esBritanico(l.dice)) fallo(de, `inglés británico: "${l.dice}"`);
   if (!e.siSeAtasca?.length && !e.siSeAtascaTexto?.trim()) fallo(de, "sin qué hacer si se atasca");
   // A2: la ayuda da el comienzo de la frase de cada tarea ("I usually ___").

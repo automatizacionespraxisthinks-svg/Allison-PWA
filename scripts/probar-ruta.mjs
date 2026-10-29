@@ -572,5 +572,49 @@ ok("A2: sin RUTA_A2 sigue la ruta provisional", process.env.RUTA_A2 === "1" || r
   ok("expresión del día: desde B1, las de B1", EXPRESIONES.B1.some((e) => e.en === expresionDelDia("C1", "2026-10-24").en));
 }
 
+// --- El mapa que se dibuja con las indicaciones (A1, parada 10) -------------
+{
+  const { leerIndicaciones, sumarLinea, mapaDe, trazarMapa, MAPA_VACIO } = await import("../src/lib/ruta/indicaciones.ts");
+  const { PARADA_10 } = await import("../src/lib/ruta/a1/parada-10.ts");
+  const META = "bus stop";
+  const pasos = (t) => JSON.stringify(leerIndicaciones(t, META).pasos);
+  ok("mapa: derecho una cuadra y a la derecha", pasos("Go straight one block and turn right.") === '[{"derecho":1},{"gira":"derecha"}]');
+  ok("mapa: dicho despacio, igual", pasos("Go straight… one block… and turn right.") === '[{"derecho":1},{"gira":"derecha"}]');
+  ok("mapa: walk two blocks and take a left", pasos("Walk two blocks and take a left.") === '[{"derecho":2},{"gira":"izquierda"}]');
+  ok("mapa: las cuadras sueltas son las del derecho", pasos("Go straight. It's two blocks.") === '[{"derecho":2}]');
+  ok("mapa: sin indicaciones, nada", pasos("It's twenty minutes by bus. Don't walk, it's very far!") === "[]");
+  const esquina = leerIndicaciones("Yes! The bus stop is on the corner, across from a café.", META).lugares[0];
+  ok("mapa: la parada en la esquina, frente a un café", esquina?.nombre === META && esquina.esquina && esquina.frente === "café", JSON.stringify(esquina));
+  const junto = leerIndicaciones("There's a drugstore next to the bus stop.", META).lugares[0];
+  ok("mapa: la droguería junto a la parada", junto?.nombre === "drugstore" && junto.junto === META, JSON.stringify(junto));
+  const ella = leerIndicaciones("It's on your left, next to the bank.", META).lugares[0];
+  ok('mapa: "it" es la meta', ella?.nombre === META && ella.lado === "izquierda" && ella.junto === "bank", JSON.stringify(ella));
+
+  // El diálogo de ejemplo de la escena: el camino, la parada, el café y la droguería.
+  const lineas = PARADA_10.escenario.dialogo.filter((d) => d.quien === "personaje").map((d) => d.dice);
+  const e = lineas.reduce((m, l) => sumarLinea(m, l, META), MAPA_VACIO);
+  const t = trazarMapa(e, PARADA_10.escenario.mapa);
+  const lugar = (n) => t.lugares.find((l) => l.nombre === n);
+  ok("mapa de la escena: una cuadra y a la derecha", JSON.stringify(e.pasos) === '[{"derecho":1},{"gira":"derecha"}]', JSON.stringify(e.pasos));
+  ok("mapa de la escena: el camino termina frente a la parada", t.camino.at(-1).x === lugar(META)?.calle.x, JSON.stringify(t.camino));
+  ok("mapa de la escena: el café, al otro lado de la calle", lugar("café") && Math.sign(lugar("café").y - t.camino.at(-1).y) === -Math.sign(lugar(META).y - t.camino.at(-1).y));
+  ok("mapa de la escena: la droguería, del mismo lado que la parada", lugar("drugstore") && lugar("drugstore").y === lugar(META).y && lugar("drugstore").x !== lugar(META).x);
+  ok("mapa de la escena: el bus llega al puente", t.bus && t.destino && t.bus.at(-1).x === t.destino.x && t.bus.at(-1).y > t.destino.y);
+  ok("mapa de la escena: una línea sin indicaciones no lo cambia", sumarLinea(e, "Are you a tourist?", META) === e);
+  const repetida = sumarLinea(e, "Go straight… one block… and turn right.", META);
+  ok("mapa de la escena: repetido, se vuelve a dibujar sin agregar", JSON.stringify(repetida.pasos) === JSON.stringify(e.pasos) && repetida.nuevoDesde === 0 && repetida.vuelta > e.vuelta);
+  ok("mapa de la escena: then turn left, se agrega", sumarLinea(e, "Then turn left.", META).pasos.length === 3);
+  ok("mapa de la escena: otro camino lo reemplaza", JSON.stringify(sumarLinea(e, "Sorry! Go straight two blocks and turn left.", META).pasos) === '[{"derecho":2},{"gira":"izquierda"}]');
+
+  // Tu turno: lo que se ve es la respuesta (la parada, junto al banco).
+  const tt = PARADA_10.lecciones[1].actividades.find((a) => a.tipo === "tu-turno");
+  const m = trazarMapa(mapaDe(tt.mapa.indicaciones, tt.mapa.meta), tt.mapa);
+  const [parada, banco, cafe] = ["bus stop", "bank", "café"].map((n) => m.lugares.find((l) => l.nombre === n));
+  ok("Tu turno: el mapa muestra la parada, el banco y el café", parada && banco && cafe);
+  ok("Tu turno: la parada queda junto al banco", parada && banco && parada.x === banco.x && Math.abs(parada.y - banco.y) < 50);
+  ok("Tu turno: el café no queda junto a la parada", cafe && parada && cafe.x !== parada.x);
+  ok("Tu turno: la respuesta del modelo es la del mapa", /next to the bank/i.test(tt.modelo));
+}
+
 console.log(`${total - fallos}/${total} comprobaciones de la ruta bien.`);
 process.exit(fallos ? 1 : 0);

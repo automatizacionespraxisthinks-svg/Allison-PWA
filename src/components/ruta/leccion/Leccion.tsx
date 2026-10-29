@@ -239,7 +239,7 @@ function SinSaldo({ onCerrar, tipo, salir }: { onCerrar: () => void; tipo: Activ
         <p className="text-sm text-texto-suave">
           {conversa
             ? conversa
-            : "Comprobar lo que dices con la voz usa intervenciones. Puedes recargar, o escribir tus respuestas con el teclado: escritas no gastan intervenciones (menos en Responde rápido)."}
+            : "Comprobar lo que dices con la voz usa intervenciones. Puedes recargar, o escribir tus respuestas con el teclado: una respuesta escrita solo gasta si Allison tiene que revisarla (en Responde rápido, siempre)."}
         </p>
         <Link href="/recargar" className="degradado-primario rounded-2xl px-5 py-3 text-center font-extrabold text-white">
           Recargar intervenciones

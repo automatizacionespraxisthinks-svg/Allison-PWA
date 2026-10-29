@@ -2,11 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { MAPA_VACIO, sumarLinea, trazarMapa, type EstadoMapa, type MapaDeLaApp } from "@/lib/ruta/indicaciones";
 import type { Momento } from "@/lib/ruta/tipos";
 import { desdeB1, type Nivel } from "@/lib/tipos";
 import { sonar } from "@/lib/sonidos";
 import { Estampilla, type LugarSello } from "./Estampilla";
+import { MapaCiudad } from "./MapaCiudad";
 import { Estrella, Estrellas, Icono } from "./Iconos";
 import { ayudaEscena, iniciarEscena, terminarEscena, turnoEscena, type FinEscena } from "./escenaApi";
 import { Practicarla } from "./Practicarla";
@@ -31,6 +33,8 @@ interface Datos {
   ayudaDesdeSegundoFallo: boolean;
   /** B1: la tarea del imprevisto no se ve hasta cumplir la tarea después de la cual pasa. */
   imprevisto: { despuesDeTarea: number; tarea: number } | null;
+  /** El mapa que se va dibujando con las indicaciones de Allison (A1, parada 10). */
+  mapa: MapaDeLaApp | null;
 }
 
 /** La tarea que todavía no se ve (la del imprevisto), o 0. */
@@ -96,6 +100,20 @@ export function Escenario({
   const pidiendo = useRef(false);
   /** Cuántos turnos lleva: una ayuda que llega después de otro turno ya no sirve. */
   const turnos = useRef(0);
+  const [mapa, setMapa] = useState<EstadoMapa>(MAPA_VACIO);
+  const trazo = useMemo(() => (e.mapa ? trazarMapa(mapa, e.mapa) : null), [mapa, e.mapa]);
+  const conMapa = !!trazo && (mapa.pasos.length > 0 || mapa.lugares.length > 0);
+
+  /**
+   * Lo que Allison dice en su papel se dibuja en el mapa (sin el modelo:
+   * indicaciones.ts lee "Go straight one block and turn right"). Cuando le
+   * da al alumno su frase en inglés (habló en español), no es una indicación.
+   */
+  function dibujar(texto: string, voz: string) {
+    if (!e.mapa || texto !== voz || /^en inglés/i.test(texto)) return;
+    const meta = e.mapa.meta;
+    setMapa((m) => sumarLinea(m, texto, meta));
+  }
 
   const primerNombre = ctx.nombre.split(" ")[0];
   const oculta = tareaOculta(e, cumplidas);
@@ -127,7 +145,10 @@ export function Escenario({
     // solo la pista "Empiezas tú".
     setLinea(r.apertura ? { texto: r.apertura, voz: r.apertura } : null);
     setFase("escena");
-    if (r.apertura) void decir(r.apertura);
+    if (r.apertura) {
+      dibujar(r.apertura, r.apertura);
+      void decir(r.apertura);
+    }
   }
 
   async function cerrar() {
@@ -161,6 +182,7 @@ export function Escenario({
     }
     setUltimo({ texto: r.transcripcion, url: "url" in entrada ? entrada.url : undefined });
     setLinea({ texto: r.respuesta, voz: r.respuestaVoz });
+    dibujar(r.respuesta, r.respuestaVoz);
     setCumplidas(r.estado.cumplidas);
     setIntervenciones(r.estado.intervenciones);
     // Las ayudas que lleva según el servidor (las estrellas salen de ahí).
@@ -298,11 +320,21 @@ export function Escenario({
       {/* En el computador, dos columnas: el lugar y la misión a la izquierda, la conversación a la derecha. */}
       <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start lg:gap-8">
         <div className="flex flex-col gap-3 lg:sticky lg:top-4">
-          <Imagen
-            src={srcIlustracion(imagen, ctx.nivel)}
-            lugar={momento ? `${parada.ciudad} · ${momento.nombre}` : parada.ciudad}
-            alto={ayuda ? "h-28 lg:h-72" : "h-36 lg:h-72"}
-          />
+          {conMapa && trazo ? (
+            // El mapa toma el lugar de la foto desde la primera indicación.
+            <MapaCiudad
+              trazo={trazo}
+              vuelta={mapa.vuelta}
+              etiqueta={`Mapa de ${parada.ciudad} con las indicaciones: tú estás abajo; el camino lleva a la parada del bus y el bus, al puente.`}
+              className={`w-full ${ayuda ? "h-52" : "h-72"} lg:h-80`}
+            />
+          ) : (
+            <Imagen
+              src={srcIlustracion(imagen, ctx.nivel)}
+              lugar={momento ? `${parada.ciudad} · ${momento.nombre}` : parada.ciudad}
+              alto={ayuda ? "h-28 lg:h-72" : "h-36 lg:h-72"}
+            />
+          )}
 
           <Mision tareas={e.tareas} cumplidas={cumplidas} compacta oculta={oculta} imprevisto={e.imprevisto?.tarea} />
           <p className="text-center text-[13px] font-extrabold text-texto-suave">

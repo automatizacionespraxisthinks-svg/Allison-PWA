@@ -56,6 +56,31 @@ probar("una palabra repetida en la frase tiene que oírse dos veces", mejorar("I
 probar("I'm en la frase vale con I am", mejorar("I'm fine", "I am fine") === "");
 probar("vacío: todo por mejorar", mejorar("Good morning", "") === "Good,morning");
 
+// Lo escrito cobra solo si hace falta el modelo (decisión del 29 de
+// octubre de 2026: todo lo que usa la IA cuesta). Sin red: el cobro dice
+// que no hay saldo, así que el modelo nunca se llama.
+console.log("\nCobro de lo escrito:");
+const { evaluarRespuestaCorta } = await import("../src/lib/evaluacion.ts");
+const sinSaldoNunca = () => {
+  const c = { veces: 0 };
+  c.cobrar = async () => (c.veces++, false);
+  return c;
+};
+const dilo = { tipo: "dilo", nivel: "A2", esperado: "How about Saturday?", aceptadas: ["What about Saturday?"], espanol: "¿Qué tal el sábado?" };
+let c = sinSaldoNunca();
+let r = await evaluarRespuestaCorta({ ...dilo, texto: "What about Saturday?", antesDelModelo: c.cobrar });
+probar("una frase aprobada escrita no cobra", r.correcto && !r.sinSaldo && c.veces === 0, JSON.stringify({ r, veces: c.veces }));
+c = sinSaldoNunca();
+r = await evaluarRespuestaCorta({ ...dilo, texto: "Maybe on Saturday?", antesDelModelo: c.cobrar });
+probar("otra forma escrita pide cobrar una vez; sin saldo no se califica", !r.correcto && r.sinSaldo && c.veces === 1, JSON.stringify({ r, veces: c.veces }));
+c = sinSaldoNunca();
+r = await evaluarRespuestaCorta({ ...dilo, texto: "El sábado", antesDelModelo: c.cobrar });
+probar("en español no se juzga: no cobra", !r.correcto && !r.sinSaldo && c.veces === 0, JSON.stringify({ r, veces: c.veces }));
+const describe = { tipo: "describe", nivel: "A2", esperado: "Tell me 3 things Priya has done.", aceptadas: ["dog", "car"] };
+c = sinSaldoNunca();
+r = await evaluarRespuestaCorta({ ...describe, texto: "He wash the car.", antesDelModelo: c.cobrar });
+probar("Describe escrito sin saldo: no se revisa y la cosa cuenta", !r.sinSaldo && !r.mejora && c.veces === 1, JSON.stringify({ r, veces: c.veces }));
+
 if (fallos > 0) {
   console.error(`\n${fallos} fallo(s).`);
   process.exit(1);

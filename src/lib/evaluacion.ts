@@ -76,6 +76,14 @@ export interface PedidoEvaluacion {
    * cuenta la palabra difícil; las demás se marcan pero no hacen fallar.
    */
   clave?: string;
+  /**
+   * Lo escrito: se llama una vez, antes de la primera llamada al modelo
+   * (juzgar o revisar la gramática), y cobra la intervención. Si devuelve
+   * false (sin saldo), no se llama al modelo. Lo que el código resuelve
+   * solo (una frase aprobada) sigue gratis: todo lo que usa la IA cuesta,
+   * porque los tokens se pagan (decisión del usuario, 29 de octubre de 2026).
+   */
+  antesDelModelo?: () => Promise<boolean>;
 }
 
 export type EstadoPalabra = "bien" | "mejorar";
@@ -93,6 +101,8 @@ export interface ResultadoEvaluacion {
    * gramática; `mejor` es la misma frase bien dicha, para repetirla.
    */
   mejora?: { dijo: string; mejor: string };
+  /** Lo escrito necesitaba al modelo y no había saldo: no se calificó. */
+  sinSaldo?: boolean;
   tokensEntrada: number;
   tokensSalida: number;
 }
@@ -522,7 +532,17 @@ export async function evaluarRespuestaCorta(p: PedidoEvaluacion): Promise<Result
   const resultado: ResultadoEvaluacion = { transcripcion, correcto: false, palabras: [], tokensEntrada, tokensSalida };
   // Lo dicho en español no se juzga: nunca vale, y sería otra llamada.
   const juzgable = !!transcripcion && !hablaEspanol(transcripcion);
+  // Lo escrito paga la primera vez que hace falta el modelo (antesDelModelo).
+  let permitido: boolean | null = p.antesDelModelo ? null : true;
+  const puedeUsarModelo = async () => {
+    if (permitido === null) permitido = await p.antesDelModelo!();
+    return permitido;
+  };
   const conModelo = async (criterio: string) => {
+    if (!(await puedeUsarModelo())) {
+      resultado.sinSaldo = true;
+      return false;
+    }
     const j = await juzgar(transcripcion, criterio);
     resultado.tokensEntrada += j.tokensEntrada;
     resultado.tokensSalida += j.tokensSalida;
@@ -549,7 +569,8 @@ export async function evaluarRespuestaCorta(p: PedidoEvaluacion): Promise<Result
       // Desde A2, una frase que nombra algo se revisa: con un error,
       // Allison la dice bien y el alumno la repite (tanda 1, 29 de octubre de 2026).
       // Si la revisión falla, la frase cuenta igual: lo que nombró ya se sabe.
-      if ((p.nivel ?? "A1") !== "A1" && cosas.length && juzgable) {
+      // Escrita y sin saldo, no se revisa (no se usa el modelo) y cuenta.
+      if ((p.nivel ?? "A1") !== "A1" && cosas.length && juzgable && (await puedeUsarModelo())) {
         const c = await corregirFrase(transcripcion, p.esperado, p.nivel).catch(() => null);
         if (c) {
           resultado.tokensEntrada += c.tokensEntrada;

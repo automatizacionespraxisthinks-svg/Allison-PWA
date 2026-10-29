@@ -6,6 +6,10 @@ import type { Mensaje, Nivel, TipoCorreccion } from "@/lib/tipos";
 import { fijarVelocidad, useVelocidad, VELOCIDADES } from "@/lib/velocidad";
 import { desbloquearVoz, detenerVoz, hablarIngles } from "@/lib/voz";
 import { pedir } from "@/lib/pedir";
+import { pedirAyudaIA } from "@/lib/ayudaCliente";
+
+/** Traducir usa la IA y gasta una intervención (29 de octubre de 2026). */
+const SIN_SALDO = "Te quedaste sin intervenciones: traducir gasta una.";
 
 const ETIQUETA: Record<TipoCorreccion, string> = {
   pronunciacion: "Pronunciación",
@@ -35,11 +39,14 @@ export function Transcripcion({
   mensajes,
   nivel = "B1",
   reportadas = [],
+  alCobrar,
 }: {
   mensajes: Mensaje[];
   nivel?: Nivel;
   /** Correcciones que el alumno ya reportó, como "mensajeId:indice". */
   reportadas?: string[];
+  /** Traducir cuesta una intervención: las que quedan (0 si no alcanzó). */
+  alCobrar?: (restantes: number) => void;
 }) {
   const velocidad = useVelocidad();
   const [reportes, setReportes] = useState<Record<string, "enviando" | "listo" | "error">>(() =>
@@ -108,24 +115,27 @@ export function Transcripcion({
       setAbiertas((a) => ({ ...a, [m.id]: false }));
       return;
     }
-    if (traducciones[m.id]) {
+    // El aviso de sin saldo no se guarda como traducción: al recargar, se pide otra vez.
+    if (traducciones[m.id] && traducciones[m.id] !== SIN_SALDO) {
       setAbiertas((a) => ({ ...a, [m.id]: true }));
       return;
     }
 
     setTraduciendo(m.id);
     try {
-      const r = await pedir("/api/ayuda", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ texto: m.texto, nivel }),
-      });
-      if (r?.ok) {
-        const d = await r.json().catch(() => null);
-        if (!d) return;
-        setTraducciones((t) => ({ ...t, [m.id]: d.traduccion || "—" }));
-        setAbiertas((a) => ({ ...a, [m.id]: true }));
+      const r = await pedirAyudaIA(m.texto, nivel);
+      if (!r.ok) {
+        if (r.sinSaldo) {
+          alCobrar?.(0);
+          // Se dice ahí mismo: traducir usa la IA y gasta una intervención.
+          setTraducciones((t) => ({ ...t, [m.id]: SIN_SALDO }));
+          setAbiertas((a) => ({ ...a, [m.id]: true }));
+        }
+        return;
       }
+      if (r.cobrada && r.ayuda.restantes !== undefined) alCobrar?.(r.ayuda.restantes);
+      setTraducciones((t) => ({ ...t, [m.id]: r.ayuda.traduccion || "—" }));
+      setAbiertas((a) => ({ ...a, [m.id]: true }));
     } finally {
       setTraduciendo(null);
     }
@@ -194,6 +204,7 @@ export function Transcripcion({
                   onClick={() => traducir(m)}
                   disabled={traduciendo === m.id}
                   aria-expanded={Boolean(abiertas[m.id])}
+                  title={traducciones[m.id] && traducciones[m.id] !== SIN_SALDO ? undefined : "Traducir usa una intervención"}
                   className="shrink-0 text-xs font-semibold text-primario transition hover:opacity-75 disabled:opacity-40"
                 >
                   {traduciendo === m.id

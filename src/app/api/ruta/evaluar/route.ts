@@ -32,9 +32,10 @@ const MAX_BYTES = 4 * 1024 * 1024;
  * se espera lo busca el servidor en el contenido. Así nadie puede pedir
  * que se califique contra una respuesta inventada.
  *
- * Cada comprobación es una intervención, porque pasa por un prompt. Si
- * no se oyó voz no se cobra: "no se entiende el audio o hay silencio"
- * no cuenta como intento (plan, sección 5).
+ * Cada comprobación que usa la IA es una intervención, porque sus tokens
+ * se pagan; también si no se oyó voz, que no cuenta como intento (plan,
+ * sección 5). Lo escrito que el código resuelve solo es gratis. Si la IA
+ * falla, se devuelve.
  */
 export async function POST(peticion: Request) {
   const alumno = await alumnoActual();
@@ -185,21 +186,19 @@ export async function POST(peticion: Request) {
         { status: 502 },
       );
     }
-    // No se oyó voz (el micrófono silenciado, solo ruido): no se cobra,
-    // como una falla de la IA. Antes se cobraba un relato en silencio
-    // (auditoría, 28 de octubre de 2026); el navegador ya no envía un audio
-    // sin voz, y esto cubre el que pase. Los tokens sí se anotan, sin turno.
+    // No se oyó voz (el micrófono silenciado, solo ruido): se cobra igual,
+    // porque la transcripción ya usó la IA y sus tokens se pagan (decisión
+    // del usuario, 29 de octubre de 2026: todo lo que usa la IA cuesta). No
+    // cuenta como intento. El navegador ya no envía un audio sin voz, así
+    // que esto solo cubre el que pase.
     const oido = !!transcripcion && !!comentario;
-    if (!oido) await sql`select devolver_mensaje(${alumno.id}, ${bolsaRelato}::bolsa_credito)`.catch(() => {});
     try {
       await sql`
         select registrar_uso(${alumno.id}, 'conversar', ${tokensEntrada},
-                             ${tokensSalida}, ${Math.round(duracion)}, ${oido}, false)
+                             ${tokensSalida}, ${Math.round(duracion)}, true, false)
       `;
-      if (oido) {
-        await sql`select registrar_parte(${alumno.id}, 'ruta')`;
-        if (paradaDelGasto) await sql`select registrar_consumo_parada(${alumno.id}, ${paradaDelGasto}, false)`;
-      }
+      await sql`select registrar_parte(${alumno.id}, 'ruta')`;
+      if (paradaDelGasto) await sql`select registrar_consumo_parada(${alumno.id}, ${paradaDelGasto}, ${!oido})`;
     } catch (e) {
       console.error("No se pudo anotar el relato:", e instanceof Error ? e.message : e);
     }
@@ -210,7 +209,7 @@ export async function POST(peticion: Request) {
     if (!transcripcion || !comentario) {
       return NextResponse.json({
         sinVoz: true,
-        mensaje: "No te oí. Revisa que el micrófono no esté silenciado e inténtalo otra vez. No te cobramos.",
+        mensaje: "No te oí. Revisa que el micrófono no esté silenciado e inténtalo otra vez.",
         restantes: restantesRelato,
       });
     }
@@ -325,24 +324,26 @@ export async function POST(peticion: Request) {
     }
   }
 
-  // Lo escrito no es una intervención (la pantalla lo promete: "escritas
-  // no gastan intervenciones"), salvo en Responde rápido, que siempre
-  // necesita al modelo. Una respuesta escrita de Dilo o de ¿Qué es esto?
-  // abierta que no es una frase aprobada la juzga el modelo igual, sin
-  // cobrarla (auditoría, 28 de octubre de 2026): es una llamada corta.
-  const usaIA = !texto || pedido.tipo === "responde";
-
+  // Todo lo que usa la IA cuesta, porque sus tokens se pagan (decisión del
+  // usuario, 29 de octubre de 2026). Lo hablado se transcribe: siempre
+  // cobra. Lo escrito cobra solo si hace falta el modelo: Responde rápido
+  // siempre; Dilo y ¿Qué es esto? abiertas cuando no es una frase
+  // aprobada; Describe desde A2 al revisar la gramática. Una frase
+  // aprobada la resuelve el código y es gratis.
+  const sinSaldo = () =>
+    NextResponse.json(
+      { error: "sin_mensajes", mensaje: "Te quedaste sin intervenciones." },
+      { status: 402 },
+    );
   let bolsa: string | null = null;
-  if (usaIA) {
-    [{ consumir_mensaje: bolsa }] =
-      await sql`select consumir_mensaje(${alumno.id}, null)`;
-    if (!bolsa) {
-      return NextResponse.json(
-        { error: "sin_mensajes", mensaje: "Te quedaste sin intervenciones." },
-        { status: 402 },
-      );
-    }
-  }
+  const cobrar = async () => {
+    if (!bolsa)
+      [{ consumir_mensaje: bolsa }] =
+        await sql`select consumir_mensaje(${alumno.id}, null)`;
+    return !!bolsa;
+  };
+  const alComienzo = !texto || pedido.tipo === "responde";
+  if (alComienzo && !(await cobrar())) return sinSaldo();
   const devolver = async () => {
     if (bolsa)
       await sql`select devolver_mensaje(${alumno.id}, ${bolsa}::bolsa_credito)`;
@@ -354,7 +355,7 @@ export async function POST(peticion: Request) {
       ...pedido,
       nivel,
       ...(texto
-        ? { texto }
+        ? { texto, ...(alComienzo ? {} : { antesDelModelo: cobrar }) }
         : {
             audioBase64: Buffer.from(
               await (audio as Blob).arrayBuffer(),
@@ -375,22 +376,21 @@ export async function POST(peticion: Request) {
     );
   }
 
-  // Desde aquí la IA ya trabajó y un error al anotar no la devuelve. Si no
-  // se oyó voz (un toque sin querer, el micrófono silenciado) no se cobra,
-  // igual que en Cuéntame y Narra: decisión del usuario del 29 de octubre
-  // de 2026. Antes se cobraba (plan, secciones 6 y 22). Los tokens sí se
-  // anotan, sin turno.
-  const oido = !!resultado.transcripcion;
-  if (bolsa && !oido) await devolver().catch(() => {});
-  if (usaIA) {
+  // Escrito, hacía falta el modelo y no había saldo: no se calificó.
+  if (resultado.sinSaldo) return sinSaldo();
+
+  // Desde aquí la IA ya trabajó: se cobra aunque no se haya oído voz (no
+  // cuenta como intento, pero la transcripción usó la IA; plan, secciones
+  // 6 y 22), y un error al anotar no la devuelve.
+  if (bolsa) {
     try {
       await sql`
         select registrar_uso(${alumno.id}, 'conversar', ${resultado.tokensEntrada},
-                             ${resultado.tokensSalida}, ${Math.round(duracion)}, ${oido}, false)
+                             ${resultado.tokensSalida}, ${Math.round(duracion)}, true, false)
       `;
-      if (oido) {
-        await sql`select registrar_parte(${alumno.id}, 'ruta')`;
-        if (paradaDelGasto) await sql`select registrar_consumo_parada(${alumno.id}, ${paradaDelGasto}, false)`;
+      await sql`select registrar_parte(${alumno.id}, 'ruta')`;
+      if (paradaDelGasto) {
+        await sql`select registrar_consumo_parada(${alumno.id}, ${paradaDelGasto}, ${!resultado.transcripcion})`;
       }
     } catch (e) {
       console.error(

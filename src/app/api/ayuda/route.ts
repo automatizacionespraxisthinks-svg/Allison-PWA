@@ -18,11 +18,14 @@ const Peticion = z.object({
 /**
  * Ayuda de rescate: traducción y respuesta sugerida.
  *
- * Va aparte de la conversación y NO cuesta un mensaje. Cobrarle a un
- * alumno por no haber entendido sería castigarlo justo cuando más
- * necesita seguir.
+ * Cuesta una intervención: todo lo que usa la IA cuesta, porque sus
+ * tokens se pagan (decisión del usuario, 29 de octubre de 2026). Antes
+ * era gratis, "para no castigar a quien no entendió". Una sola llamada
+ * trae la traducción y la idea: la pantalla guarda las dos, así que
+ * traducir y pedir la idea del mismo mensaje cobra una vez. Si la IA
+ * falla, se devuelve.
  *
- * Tampoco entra en la ruta principal: la mayoría de turnos no la usan, y
+ * No entra en la ruta principal: la mayoría de turnos no la usan, y
  * meterla ahí retrasaría cada respuesta para todos.
  */
 export async function POST(peticion: Request) {
@@ -31,9 +34,8 @@ export async function POST(peticion: Request) {
     return NextResponse.json({ error: "Sin sesión" }, { status: 401 });
   }
 
-  // Es gratis, así que tiene dos topes: el de ráfaga y uno por día que
-  // ningún alumno de verdad alcanza (unas 300 ayudas es más de lo que se
-  // conversa en un día entero).
+  // Dos topes: el de ráfaga y uno por día que ningún alumno de verdad
+  // alcanza (unas 300 ayudas es más de lo que se conversa en un día entero).
   const limite = limitar(`ayuda:${alumno.id}`, 60, 300);
   const porDia = limitar(`ayuda-dia:${alumno.id}`, 300, 86400);
   if (!limite.permitido || !porDia.permitido) {
@@ -46,12 +48,20 @@ export async function POST(peticion: Request) {
   }
   const { texto, nivel, tarea } = datos.data;
 
+  const [{ consumir_mensaje: bolsa }] = await sql`select consumir_mensaje(${alumno.id}, null)`;
+  if (!bolsa) {
+    return NextResponse.json({ error: "sin_mensajes", mensaje: "Te quedaste sin intervenciones." }, { status: 402 });
+  }
+
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
   // Una llamada colgada o un JSON roto no puede tumbar la ruta (antes daba
-  // un 500 sin mensaje): se responde un error que la pantalla sabe mostrar.
-  const fallo = () =>
-    NextResponse.json({ error: "fallo_ia", mensaje: "No pudimos traer la ayuda. Intenta otra vez." }, { status: 502 });
+  // un 500 sin mensaje): se responde un error que la pantalla sabe mostrar,
+  // y la intervención se devuelve.
+  const fallo = async () => {
+    await sql`select devolver_mensaje(${alumno.id}, ${bolsa}::bolsa_credito)`.catch(() => {});
+    return NextResponse.json({ error: "fallo_ia", mensaje: "No pudimos traer la ayuda. No te cobramos. Intenta otra vez." }, { status: 502 });
+  };
   const instruccion = `A Colombian student at CEFR level ${nivel} just heard
 this from their English teacher and needs help. Return:
 
@@ -109,27 +119,25 @@ this from their English teacher and needs help. Return:
   }
 
   /**
-   * Esta llamada también cuesta dinero, y hasta ahora no quedaba
-   * registrada en ninguna parte: era el único gasto ciego del sistema.
-   * Se anota aparte de la conversación para poder saber cuánto pesan
-   * de verdad las traducciones y las ideas.
-   *
-   * No se espera (`void`): el alumno no tiene por qué esperar a que se
-   * anote una estadística, y si la anotación falla, la traducción se
-   * entrega igual.
+   * Se anota aparte de la conversación ('ayuda') para saber cuánto pesan
+   * de verdad las traducciones y las ideas. No se espera (`void`): si la
+   * anotación falla, la traducción se entrega igual.
    */
   void sql`
     select registrar_uso(
       ${alumno.id}, 'ayuda',
       ${r.usageMetadata?.promptTokenCount ?? 0},
       ${r.usageMetadata?.candidatesTokenCount ?? 0},
-      0, false, false
+      0, true, false
     )
   `.catch(() => {});
 
+  // El contador de la pantalla baja con lo que se cobró.
+  const [saldo] = await sql`select mensajes_plan, mensajes_recarga from saldos where user_id = ${alumno.id}`.catch(() => []);
   return NextResponse.json({
     traduccion: d.traduccion ?? "",
     sugerencia: d.sugerencia ?? "",
     sugerenciaEs: d.sugerenciaEs ?? "",
+    ...(saldo ? { restantes: saldo.mensajes_plan + saldo.mensajes_recarga } : {}),
   });
 }

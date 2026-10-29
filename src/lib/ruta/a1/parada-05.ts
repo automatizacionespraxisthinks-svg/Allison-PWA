@@ -86,9 +86,9 @@ export const PARADA_05: Parada = {
           audio: ['Leo says: "I usually go to bed at ten."'],
           traduccion: ['Leo dice: "Casi siempre me acuesto a las diez."'],
           opciones: [
-            { texto: "10:00", descripcion: "Un reloj que marca las 10:00, con una luna al lado" },
-            { texto: "2:00", descripcion: "Un reloj que marca las 2:00, con una luna al lado" },
-            { texto: "6:00", descripcion: "Un reloj que marca las 6:00, con una luna al lado" },
+            { dibujo: { reloj: "10:00", luna: true }, descripcion: "Un reloj que marca las 10:00, con una luna al lado" },
+            { dibujo: { reloj: "2:00", luna: true }, descripcion: "Un reloj que marca las 2:00, con una luna al lado" },
+            { dibujo: { reloj: "6:00", luna: true }, descripcion: "Un reloj que marca las 6:00, con una luna al lado" },
           ],
           correcta: 0,
           porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", 

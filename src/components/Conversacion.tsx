@@ -16,7 +16,7 @@ import type { EstadoConversacion, Mensaje, Nivel } from "@/lib/tipos";
 import { fijarModoTexto, useModoTexto } from "@/lib/entrada";
 import { useVelocidad } from "@/lib/velocidad";
 import { desbloquearVoz, hablarIngles } from "@/lib/voz";
-import { pedir } from "@/lib/pedir";
+import { pedirAyudaIA } from "@/lib/ayudaCliente";
 import { pesos } from "@/lib/precios";
 
 interface Props {
@@ -200,6 +200,8 @@ export function Conversacion({
           if (parte.tipo === "error") {
             setError(parte.mensaje ?? "Algo salió mal.");
             if (parte.error === "sin_mensajes") setMensajesRestantes(0);
+            // Sin voz se cobra igual (la IA escuchó el audio): baja el contador.
+            else if (typeof parte.mensajesRestantes === "number") setMensajesRestantes(parte.mensajesRestantes);
             setDichoAhora(null);
             setEstado("inactivo");
             return;
@@ -248,17 +250,19 @@ export function Conversacion({
 
     setIdeaCargando(true);
     try {
-      const r = await pedir("/api/ayuda", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ texto: ultimo.texto, nivel }),
-      });
-      if (r?.ok) {
-        const d = await r.json().catch(() => null);
-        if (!d) return;
-        setIdea({ en: d.sugerencia, es: d.sugerenciaEs });
-        setIdeaVisible(true);
+      // Cuesta una intervención, salvo que ya haya traducido este mensaje
+      // (la misma llamada trajo la idea).
+      const r = await pedirAyudaIA(ultimo.texto, nivel);
+      if (!r.ok) {
+        if (r.sinSaldo) {
+          setMensajesRestantes(0);
+          setError("Te quedaste sin mensajes.");
+        }
+        return;
       }
+      if (r.cobrada && r.ayuda.restantes !== undefined) setMensajesRestantes(r.ayuda.restantes);
+      setIdea({ en: r.ayuda.sugerencia, es: r.ayuda.sugerenciaEs });
+      setIdeaVisible(true);
     } finally {
       setIdeaCargando(false);
     }
@@ -479,7 +483,7 @@ export function Conversacion({
           </div>
         ) : (
           <>
-            <Transcripcion mensajes={mensajes} nivel={nivel} reportadas={reportadas} />
+            <Transcripcion mensajes={mensajes} nivel={nivel} reportadas={reportadas} alCobrar={setMensajesRestantes} />
 
             {dichoAhora && (
               <div className="mt-4 flex justify-end">
@@ -602,9 +606,9 @@ export function Conversacion({
             type="button"
             onClick={pedirIdea}
             disabled={ideaCargando || !hayUltimoDeAllison || estado === "grabando"}
-            aria-label="No sé qué decir: dame una idea"
+            aria-label="No sé qué decir: dame una idea (usa una intervención)"
             aria-expanded={ideaVisible}
-            title="No sé qué decir"
+            title="No sé qué decir · usa una intervención"
             className="flex size-12 flex-col items-center justify-center rounded-full border border-borde bg-superficie text-texto-suave transition hover:bg-superficie-2 hover:text-texto disabled:opacity-40"
           >
             {ideaCargando ? (

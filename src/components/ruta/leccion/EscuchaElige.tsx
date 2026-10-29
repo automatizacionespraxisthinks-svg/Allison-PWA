@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { encuadreZona, escalaZona, srcIlustracion } from "@/lib/ruta/ilustracion";
-import type { EscuchaElige as Datos, DibujoOpcion, Zona } from "@/lib/ruta/tipos";
+import type { ColorDeTarjeta, EscuchaElige as Datos, DibujoOpcion, Zona } from "@/lib/ruta/tipos";
 import { desdeB1, type Nivel } from "@/lib/tipos";
 import { desbloquearVoz } from "@/lib/voz";
 import { Icono } from "../Iconos";
@@ -343,6 +343,20 @@ function Opcion({
   }
   if (o.imagen) return <span className="px-2 text-[12px] leading-tight font-extrabold text-texto-suave">{o.descripcion}</span>;
   if (o.dibujo && "semaforo" in o.dibujo) return <Semaforo estado={o.dibujo.semaforo} />;
+  if (o.dibujo && "flecha" in o.dibujo) return <Flecha hacia={o.dibujo.flecha} />;
+  if (o.dibujo && "color" in o.dibujo) return <TarjetaDeColor color={o.dibujo.color} />;
+  if (o.dibujo && "reloj" in o.dibujo) {
+    const [h, m] = o.dibujo.reloj.split(":").map(Number);
+    return (
+      <span className="relative grid size-full place-items-center">
+        <Reloj horas={h} minutos={m} etiqueta={o.descripcion} />
+        {/* De noche: la luna al lado del reloj. */}
+        <svg viewBox="0 0 20 20" className="absolute top-[7%] right-[7%] size-[26%]" aria-hidden>
+          <path d="M13.5 2.5a7.5 7.5 0 1 0 4 13.6A8 8 0 0 1 13.5 2.5Z" fill="var(--estrella)" />
+        </svg>
+      </span>
+    );
+  }
   const hora = o.texto?.match(/^(\d{1,2}):(\d{2})$/);
   if (hora) return <Reloj horas={Number(hora[1])} minutos={Number(hora[2])} etiqueta={o.descripcion} />;
   // Las tarjetas de B1 llevan frases ("He made a thank-you card."): letra más chica.
@@ -350,6 +364,35 @@ function Opcion({
     return <span className="px-1.5 text-[13px] leading-tight font-extrabold text-texto sm:text-[15px]">{o.texto}</span>;
   }
   return <span className="px-1 text-lg font-black tracking-wide text-texto sm:text-xl">{o.texto}</span>;
+}
+
+/** Una flecha gruesa: izquierda, derecha o derecho (hacia arriba). */
+function Flecha({ hacia }: { hacia: "izquierda" | "derecha" | "derecho" }) {
+  const giro = hacia === "izquierda" ? -90 : hacia === "derecha" ? 90 : 0;
+  return (
+    <svg viewBox="0 0 100 100" role="img" aria-label={hacia === "derecho" ? "Flecha derecho" : `Flecha a la ${hacia}`} className="size-[70%]">
+      <path d="M50 12 L82 46 H62 V88 H38 V46 H18 Z" fill="var(--primario)" strokeLinejoin="round" transform={`rotate(${giro} 50 50)`} />
+    </svg>
+  );
+}
+
+const COLORES: Record<ColorDeTarjeta, { fondo: string; nombre: string }> = {
+  negro: { fondo: "#151515", nombre: "negra" },
+  azul: { fondo: "#2563eb", nombre: "azul" },
+  rojo: { fondo: "#dc2626", nombre: "roja" },
+  verde: { fondo: "#16a34a", nombre: "verde" },
+  amarillo: { fondo: "#facc15", nombre: "amarilla" },
+  blanco: { fondo: "#ffffff", nombre: "blanca" },
+};
+
+/** Una tarjeta del color, sin la palabra: hay que oír el color para elegirla. */
+function TarjetaDeColor({ color }: { color: ColorDeTarjeta }) {
+  const c = COLORES[color];
+  return (
+    <svg viewBox="0 0 100 100" role="img" aria-label={`Tarjeta ${c.nombre}`} className="size-[72%]">
+      <rect x="8" y="8" width="84" height="84" rx="16" fill={c.fondo} stroke="var(--borde)" strokeWidth="3" />
+    </svg>
+  );
 }
 
 const SEMAFORO = { mano: "la mano roja", caminando: "la figura caminando", apagado: "apagado" } as const;

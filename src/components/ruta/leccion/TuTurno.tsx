@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { mapaDe, trazarMapa } from "@/lib/ruta/indicaciones";
 import type { TuTurno as Datos } from "@/lib/ruta/tipos";
 import { detenerVoz } from "@/lib/voz";
 import { Icono } from "../Iconos";
+import { MapaCiudad } from "../MapaCiudad";
 import type { Contexto, FinActividad } from "./api";
 import { AllisonAro, BotonOir, Grabador, Hoja, oirGrabacion, useVoz, type Entrada } from "./comun";
 
@@ -60,9 +62,19 @@ export function TuTurno({ a, ctx, onTerminar }: { a: Datos; ctx: Contexto; onTer
   }
 
   const inicial = (quien: string) => quien.trim().charAt(0).toUpperCase() || "?";
+  // El mapa de la app (A1 P10): lo que hay que decir se ve en él.
+  const trazo = useMemo(() => (a.mapa ? trazarMapa(mapaDe(a.mapa.indicaciones ?? [], a.mapa.meta), a.mapa) : null), [a.mapa]);
 
   return (
     <div className="flex flex-col gap-3">
+      {trazo && (
+        <MapaCiudad
+          trazo={trazo}
+          conCamino={false}
+          etiqueta="Mapa: tú estás abajo, en la calle que sube. Arriba están los lugares con su nombre."
+          className="mx-auto w-full max-w-sm"
+        />
+      )}
       <div className="flex flex-col gap-2.5">
         {a.dialogo.slice(0, visibles).map((l, i) => (
           <div key={i} className="flex items-end gap-2.5">

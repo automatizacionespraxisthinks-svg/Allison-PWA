@@ -236,6 +236,22 @@ export function QueEsEsto({
           </span>
         )}
       </div>
+      {/* Los relojes que dibuja la app junto a la ilustración (B1: la función a las 7:00, Liam llegó a las 9:30). */}
+      {a.relojes && a.relojes.length > 0 && (
+        <div className="-mt-1 flex justify-center gap-6">
+          {a.relojes.map((r) => {
+            const [h, m] = r.hora.split(":").map(Number);
+            return (
+              <figure key={r.hora + r.etiqueta} className="flex flex-col items-center gap-1">
+                <span className="grid size-16 place-items-center rounded-2xl bg-superficie-2">
+                  <Reloj horas={h} minutos={m} etiqueta={`${r.etiqueta}: ${r.hora}`} />
+                </span>
+                <figcaption className="text-[13px] font-extrabold text-texto-suave">{r.etiqueta}</figcaption>
+              </figure>
+            );
+          })}
+        </div>
+      )}
 
       {pistas > 0 && fase !== "bien" && fase !== "ensena" && fase !== "repetida" && (
         <div className="flex items-center gap-3 rounded-2xl border-2 border-oro bg-oro-suave px-3 py-2.5 text-oro">

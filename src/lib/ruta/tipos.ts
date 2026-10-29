@@ -14,6 +14,8 @@
  * no estaban escritas en el documento van marcadas en `porRevisar`.
  */
 
+import type { MapaDeLaApp } from "./indicaciones.ts";
+
 /**
  * Nombre de una ilustración, sin extensión. Vive en la carpeta de su
  * nivel (public/ilustraciones/a1/<nombre>.webp); una de otro nivel que se
@@ -122,11 +124,18 @@ export interface EscuchaElige extends ActividadBase {
  * un mapa sencillo: desde "You are here" se sigue derecho `cuadras`
  * cuadras, se gira y el edificio queda a ese lado de la calle, en el lote
  * `lote` desde la esquina (1 si no se dice). Las tres opciones con
- * edificio van en un solo mapa y se toca el edificio.
+ * edificio van en un solo mapa y se toca el edificio. También una
+ * flecha, una tarjeta de color (sin la palabra: hay que oír el color) o
+ * un reloj con una luna al lado (de noche).
  */
 export type DibujoOpcion =
   | { semaforo: "mano" | "caminando" | "apagado" }
-  | { edificio: { cuadras: number; gira: Lado; lado: Lado; lote?: number } };
+  | { edificio: { cuadras: number; gira: Lado; lado: Lado; lote?: number } }
+  | { flecha: Lado | "derecho" }
+  | { color: ColorDeTarjeta }
+  | { reloj: string; luna: true };
+
+export type ColorDeTarjeta = "negro" | "azul" | "rojo" | "verde" | "amarillo" | "blanco";
 
 type Lado = "izquierda" | "derecha";
 
@@ -137,6 +146,12 @@ export interface QueEsEsto extends ActividadBase {
   imagen?: Ilustracion;
   /** Lo que la app dibuja cuando no hay ilustración ("un reloj que marca las 10:00"). */
   texto?: string;
+  /**
+   * Relojes que la app dibuja debajo de la ilustración, con lo que marca
+   * cada uno ("7:00" · "The movie"; "9:30" · "Liam arrived"). La etiqueta
+   * va en el idioma de la actividad.
+   */
+  relojes?: { hora: string; etiqueta: string }[];
   /** Dónde va la flecha, si la imagen tiene varias cosas. */
   flecha?: Zona;
   /** Lo que se le pregunta o se le deja a medias ("What is this?", "This is my…"). */
@@ -184,6 +199,8 @@ export interface TuTurno extends ActividadBase {
   aceptadas: string[];
   /** Las palabras de apoyo que aparecen debajo de su línea, si el documento las trae. */
   palabras?: string[];
+  /** Un mapa sencillo de la app con los lugares ya dichos (src/lib/ruta/indicaciones.ts). */
+  mapa?: MapaDeLaApp;
 }
 
 /** Ve una frase en español y la dice en inglés. Evaluación corta. */
@@ -462,6 +479,11 @@ export interface Escenario {
   minimoIntervenciones: number;
   /** Desde aquí Allison cierra la escena con amabilidad. */
   maximoIntervenciones: number;
+  /**
+   * Un mapa sencillo que se va dibujando con las indicaciones que da
+   * Allison en su papel (A1, parada 10): el camino a `meta` y, lejos, `destino`.
+   */
+  mapa?: MapaDeLaApp;
 }
 
 export interface Parada {

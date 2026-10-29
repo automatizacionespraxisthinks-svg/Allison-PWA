@@ -84,6 +84,10 @@ export const PARADA_03: Parada = {
           siRespondeMal:
             'Una sola pista en inglés: "Start with: The movie had…". Sin pista, Allison dice "The movie had already ended" y el alumno la repite. Si dice "The movie already ended": "It happened first, so use had: The movie had already ended."',
           imagen: "f-cine-vacio",
+          relojes: [
+            { hora: "7:00", etiqueta: "The movie" },
+            { hora: "9:30", etiqueta: "Liam arrived" },
+          ],
           pregunta: "Liam got to the movie theater at 9:30. What had happened?",
           respuesta: "The movie had already ended.",
           aceptadas: ["The movie had ended.", "The movie had finished.", "Everyone had left."],
@@ -97,7 +101,7 @@ export const PARADA_03: Parada = {
           ],
           porRevisar: [
             "explicaciones.es: traducción",
-            "relojes: el documento pide dos relojes dibujados por la app (la función a las 7:00; Liam llegó a las 9:30); el tipo no tiene campo para dibujarlos junto a la ilustración, quedan solo en queAparece",
+            'relojes: las etiquetas en inglés ("The movie", "Liam arrived") no están escritas en el documento',
           ],
         },
         {

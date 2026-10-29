@@ -201,16 +201,31 @@ export async function POST(peticion: Request) {
         }
 
         if (!resultado || !resultado.transcripcion.trim() || !resultado.respuesta.trim()) {
-          // No se entendió nada, o Allison no alcanzó a responder nada:
-          // no se cobra. Salvo una respuesta larga sin nada oído: eso no
-          // es un micrófono fallando ("no te escuché" es corto) sino
-          // alguien que le pidió no transcribir para que le saliera gratis.
-          const largaSinOir = !!resultado && !resultado.transcripcion.trim() && resultado.respuesta.length > 300;
-          if (!largaSinOir) await devolver();
+          // No se oyó voz: se cobra, porque la IA ya escuchó el audio y sus
+          // tokens se pagan (decisión del usuario, 29 de octubre de 2026:
+          // todo lo que usa la IA cuesta). Antes se devolvía, salvo una
+          // respuesta larga sin nada oído. Si la falla es de la IA (no
+          // terminó o no respondió nada a lo que sí se oyó), se devuelve.
+          let mensajesRestantes: number | undefined;
+          if (resultado && !resultado.transcripcion.trim()) {
+            await sql`
+              select registrar_uso(
+                ${alumno.id}, 'conversar',
+                ${resultado.tokensEntrada}, ${resultado.tokensSalida},
+                ${Math.round(duracionSeg)}, true, false
+              )
+            `.catch(() => {});
+            // El contador de la pantalla baja con lo que se cobró.
+            const [s] = await sql`select mensajes_plan, mensajes_recarga from saldos where user_id = ${alumno.id}`.catch(() => []);
+            if (s) mensajesRestantes = s.mensajes_plan + s.mensajes_recarga;
+          } else {
+            await devolver();
+          }
           enviar({
             tipo: "error",
             error: "sin_audio",
             mensaje: "No te escuchamos. Revisa el micrófono e intenta otra vez.",
+            ...(mensajesRestantes !== undefined ? { mensajesRestantes } : {}),
           });
           // El "finally" cierra el flujo: cerrarlo dos veces lanza un error.
           return;

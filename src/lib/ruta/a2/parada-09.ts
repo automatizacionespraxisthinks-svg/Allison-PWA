@@ -184,14 +184,13 @@ export const PARADA_09: Parada = {
           traduccion: ['Ben pregunta: "¿Tienen chaquetas azules?"', 'La vendedora dice: "Lo siento, no tenemos azules. Tenemos unas negras."'],
           pregunta: "¿De qué color hay chaquetas?",
           opciones: [
-            { texto: "BLACK", descripcion: "Una tarjeta de color negro" },
-            { texto: "BLUE", descripcion: "Una tarjeta de color azul" },
-            { texto: "RED", descripcion: "Una tarjeta de color rojo" },
+            { dibujo: { color: "negro" }, descripcion: "Una tarjeta de color negro" },
+            { dibujo: { color: "azul" }, descripcion: "Una tarjeta de color azul" },
+            { dibujo: { color: "rojo" }, descripcion: "Una tarjeta de color rojo" },
           ],
           correcta: 0,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", 
+          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)",
             "traduccion",
-            'opciones: el documento pide tarjetas de color dibujadas por la app; el texto de cada tarjeta ("BLACK", "BLUE", "RED") no está escrito',
           ],
         },
         {

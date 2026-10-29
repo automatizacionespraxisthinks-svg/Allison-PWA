@@ -137,8 +137,8 @@ export function RepasoSorpresa({ id, preguntas, ctx }: { id: string; preguntas: 
         <div role="alert" className="flex flex-col gap-2 rounded-2xl bg-oro-suave px-4 py-3 text-sm font-semibold text-oro">
           <b className="font-black">Te quedaste sin intervenciones</b>
           <span>
-            Comprobar lo que dices con la voz usa intervenciones. Puedes recargar, o escribir tus respuestas: escritas no gastan
-            (menos en Responde rápido).
+            Comprobar lo que dices con la voz usa intervenciones. Puedes recargar, o escribir tus respuestas: una respuesta
+            escrita solo gasta si Allison tiene que revisarla (en Responde rápido, siempre).
           </span>
           <div className="flex gap-2">
             <Link href="/recargar" className="degradado-primario flex-1 rounded-xl px-4 py-2.5 text-center font-extrabold text-white">

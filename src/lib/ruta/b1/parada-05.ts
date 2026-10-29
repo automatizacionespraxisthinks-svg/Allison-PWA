@@ -85,9 +85,11 @@ export const PARADA_05: Parada = {
             'Dibujo: Liam cansado y sudado en una cancha de tenis. Dos relojes dibujados por la app: empezó a las 4:00 y ahora son las 6:00. Allison: "Liam started playing tennis at four o\'clock. It\'s six o\'clock now. How long has he been playing?"',
           siRespondeMal:
             'Una sola pista en inglés: "Start with: He\'s been…". Sin pista, Allison dice "He\'s been playing tennis for two hours" y el alumno la repite. Si dice "He is playing tennis for two hours": "From then until now: he\'s been playing."',
-          // Los dos relojes que dibuja la app no tienen campo cuando hay
-          // ilustración (la pantalla muestra solo la imagen); las horas van en la pregunta.
           imagen: "f-liam-tenis",
+          relojes: [
+            { hora: "4:00", etiqueta: "He started" },
+            { hora: "6:00", etiqueta: "Now" },
+          ],
           pregunta: "Liam started playing tennis at four o'clock. It's six o'clock now. How long has he been playing?",
           respuesta: "He's been playing for two hours.",
           aceptadas: ["He's been playing tennis for two hours.", "He has been playing since four o'clock."],
@@ -99,7 +101,10 @@ export const PARADA_05: Parada = {
               es: "Desde entonces hasta ahora: he's been playing.",
             },
           ],
-          porRevisar: ["explicaciones.es: traducción"],
+          porRevisar: [
+            "explicaciones.es: traducción",
+            'relojes: las etiquetas en inglés ("He started", "Now") no están escritas en el documento',
+          ],
         },
         {
           paso: 3,
@@ -221,8 +226,8 @@ export const PARADA_05: Parada = {
           siRespondeMal:
             'Si dice "She is cleaning since seven": "From seven until now: she\'s been cleaning." Allison repite bien la frase y el alumno la dice. Si cuenta menos de 3 dibujos, Allison señala el que falta: "What happened next?"',
           tambienSeAcepta: "She has been cleaning since seven. She has been working all morning.",
-          // El reloj que la app dibuja en cada dibujo no tiene campo en Narra;
-          // las horas van en `dibujos`.
+          // El reloj de cada dibujo ya viene puesto en la ilustración (7:00,
+          // 8:30, 10:00 y el último); las horas también van en `dibujos`.
           imagenes: ["f-zoe-cuarto-1", "f-zoe-cuarto-2", "f-zoe-cuarto-3", "f-zoe-cuarto-4"],
           dibujos: [
             "7:00, empieza a ordenar su cuarto lleno de ropa",
