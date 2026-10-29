@@ -866,6 +866,10 @@ const ALGO_DE_PAGAR = /\b(?:here you (?:are|go)|here(?:'s| is| it is)|pay|paying
 /** Lo que dice quien compara ("cheaper", "more expensive", "than", "the same"). */
 const COMPARA = /\b(?:than|more|less|cheaper|bigger|smaller|better|worse|same|different|both|also|too|like|but|\w+er)\b/i;
 
+/** Algo contado en pasado: un tiempo pasado ("last weekend", "ago") o un verbo en pasado. */
+const PASADO =
+  /\b(?:last (?:weekend|week|year|night|month|summer|saturday|sunday)|yesterday|ago|\w{3,}ed|went|ate|saw|had|did|made|took|got|bought|met|swam|ran|came|drank|flew|rode|was|were)\b/i;
+
 /** "nothing", "none", "-": no falta nada. */
 function limpiarFalta(falta: string): string {
   const f = falta.trim().slice(0, 80);
@@ -932,6 +936,10 @@ export function tareasDelTurno(o: {
     if (!afirma || palabras(dicho).length < 5) return false;
     if (/^compara\b.*\bcolombia\b/i.test(tarea)) return /\bcolombia\b/i.test(dicho);
     if (/^planea\b/i.test(tarea)) return /\b(?:going to|gonna|will|we'll|i'll|tomorrow|first|then|after that)\b/i.test(dicho);
+    // "Cuenta qué hiciste el fin de semana (pasado)": contado en pasado. El
+    // modelo a veces no contaba "Last weekend I visited my grandparents…"
+    // (viaje 6; tanda 1, 29 de octubre de 2026).
+    if (sinEjemplo(e) && /^cuenta\b.*\(pasado\)/i.test(tarea)) return PASADO.test(dicho);
     return false;
   });
   const obvias = [...tareasObvias(e, dicho), ...conSuPregunta, ...conSuFrase, ...abiertas];
@@ -976,12 +984,27 @@ export function tareasDelTurno(o: {
     oraciones.every(
       (x) => esPregunta(x) && /^(?:and\s+|so\s+|okay,?\s+)?(?:what|where|how|who|when|why|which|whose|do|does|did|is|are|was|were|can|could|will|would|should|have|has|may)\b/i.test(x)
     );
+  // Una línea del ejemplo de otra tarea, o de ninguna, no cumple esta,
+  // salvo que también diga una suya: "I've been volunteering at a library
+  // since January…" es de "Cuenta qué has estado haciendo", y el modelo la
+  // daba también por "Di por qué quieres trabajar en el campamento"; "Yes.
+  // Are there apples?" (de ninguna) pasaba por "Pregunta cuánto cuesta
+  // algo" (tanda 1, 29 de octubre de 2026). Así pasa también con la frase
+  // que muestra la Ayuda. Las cortas ("Yes, please!") no se miran, y si
+  // agrega algo suyo ("Yes. Are there apples? How much are they?"), el
+  // modelo decide.
+  const lineasDeOtra = (n: number) => {
+    const otras = e.dialogo.filter((l, k) => l.quien === "alumno" && l.tarea !== n && palabras(l.dice).length >= 3 && dijoLaLinea(k));
+    const cubren = otras.reduce((s, l) => s + palabras(l.dice).length, 0);
+    return otras.length > 0 && cubren >= palabras(dicho).length - 1 && !lineasDeLaTarea(e, n).some(dijoLaLinea);
+  };
   for (const n of [...hechas]) {
     if (obvias.includes(n)) continue;
     const tarea = (e.tareas[n - 1] ?? "").trim();
     // Sin la situación de un imprevisto ("El hotel está lleno: escoge…").
     const accion = tarea.includes(":") ? tarea.slice(tarea.indexOf(":") + 1).trim() : tarea;
     const noHace =
+      lineasDeOtra(n) ||
       (soloPregunta && DE_AFIRMAR.test(accion) && !/pregunt/i.test(accion)) ||
       (/^paga\b/i.test(accion) && !ALGO_DE_PAGAR.test(dicho)) ||
       (/^compara\b/i.test(accion) &&
@@ -1568,8 +1591,49 @@ export interface Clasificacion {
   responde?: boolean;
   /** Lo dijo en español. */
   espanol: boolean;
+  /**
+   * Una pregunta en inglés que no está en la ficha ("When is Luna's
+   * birthday?"): Allison no la sabe, pero no es pedir ayuda.
+   */
+  fuera?: boolean;
   tokensEntrada: number;
   tokensSalida: number;
+}
+
+/**
+ * Clases de pregunta que el modelo confunde entre datos del mismo
+ * personaje: "When is Luna's birthday?" salía como "How old is Luna?" y
+ * Allison contestaba "She is three." aunque el prompt lo prohíbe
+ * (auditoría, 28 de octubre de 2026). Si lo dicho y la pregunta del dato
+ * son de clases distintas, no es ese dato.
+ */
+const CLASES_DE_PREGUNTA: [string, RegExp][] = [
+  ["cumpleaños", /\b(birthday|born)\b/i],
+  ["edad", /\b(how old|age|years old)\b/i],
+  ["nombre", /\bname\b/i],
+];
+const clasesDe = (t: string) => CLASES_DE_PREGUNTA.filter(([, re]) => re.test(t)).map(([c]) => c);
+
+/** Lo dicho pregunta otra cosa que la pregunta del dato (cumpleaños por edad, edad por nombre). */
+export function otraClaseDePregunta(dicho: string, pregunta: string): boolean {
+  const a = clasesDe(dicho);
+  const b = clasesDe(pregunta);
+  return a.length > 0 && b.length > 0 && !a.some((c) => b.includes(c));
+}
+
+/** Los nombres propios de una pregunta ("When is Emily's birthday?" → Emily), sin la primera palabra. */
+const nombresDe = (pregunta: string) =>
+  [...pregunta.matchAll(/(?<!^)\b([A-Z][a-z]+)(?:'s)?\b/g)].map((m) => m[1]).filter((n) => n !== "I");
+
+/**
+ * Lo dicho nombra a alguien de la ficha y el dato es de otro ("Luna
+ * birthday?" no es "When is Emily's birthday?"). `nombres`: los de todas
+ * las preguntas de la ficha.
+ */
+export function otraPersona(dicho: string, pregunta: string, nombres: string[]): boolean {
+  const dichos = nombres.filter((n) => new RegExp(`\\b${n}\\b`, "i").test(dicho));
+  const delDato = nombresDe(pregunta);
+  return dichos.length > 0 && delDato.length > 0 && !dichos.some((n) => delDato.includes(n));
 }
 
 const ESQUEMA_CLASIFICAR = {
@@ -1636,21 +1700,39 @@ Classify the student's message:
   } catch {
     d = {};
   }
-  const tipo = d.tipo === "pregunta" || d.tipo === "respuesta" || d.tipo === "social" ? d.tipo : "otro";
+  const tipoModelo = d.tipo === "pregunta" || d.tipo === "respuesta" || d.tipo === "social" ? d.tipo : "otro";
   const valido = (n?: number) => (Number.isInteger(n) && n! >= 1 && n! <= o.entrevista.datos.length ? n! : 0);
-  const dato = valido(d.dato);
-  const otroDato = valido(d.otroDato);
+  const nombres = [...new Set(o.entrevista.datos.flatMap((x) => nombresDe(x.pregunta)))];
+  const ajeno = (n: number) =>
+    n > 0 &&
+    (otraClaseDePregunta(o.transcripcion, o.entrevista.datos[n - 1].pregunta) ||
+      otraPersona(o.transcripcion, o.entrevista.datos[n - 1].pregunta, nombres));
+  let dato = valido(d.dato);
+  let otroDato = valido(d.otroDato);
+  if (ajeno(otroDato)) otroDato = 0;
+  if (ajeno(dato)) [dato, otroDato] = [otroDato, 0];
+  const espanol = !!d.espanol;
+  // Contestó su "And you?" y preguntó algo que no está en la ficha: es su respuesta.
+  const tipo =
+    tipoModelo === "pregunta" && !dato ? (d.responde && o.devuelta ? "respuesta" : "otro") : tipoModelo;
   return {
-    tipo: tipo === "pregunta" && !dato ? "otro" : tipo,
+    tipo,
     dato: tipo === "pregunta" ? dato : 0,
     otroDato: tipo === "pregunta" && otroDato !== dato ? otroDato : 0,
     // Solo se contesta algo si Allison había devuelto la pregunta.
     responde: tipo === "pregunta" && !!dato && !!o.devuelta && !!d.responde,
-    espanol: !!d.espanol,
+    espanol,
+    fuera: tipo === "otro" && !espanol && esPreguntaEnIngles(o.transcripcion),
     tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
     tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
   };
 }
+
+/** Una pregunta entendible en inglés: termina en "?" o empieza como pregunta, y no es español. */
+const esPreguntaEnIngles = (t: string) =>
+  !hablaEspanol(t) &&
+  /[a-z]/i.test(t) &&
+  (/\?\s*$/.test(t.trim()) || /^(what|when|where|who|how|why|which|do|does|did|is|are|can|have|has)\b/i.test(t.trim()));
 
 /** Reacciones cortas de Allison a lo que el alumno le cuenta. */
 const REACCIONES = ["Cool!", "Nice!", "Great!", "Oh, nice!", "Wow!"];
@@ -1682,7 +1764,7 @@ const deletreoParaVoz = (t: string) => t.replace(/\b[A-Za-z](?:-[A-Za-z]){2,}\b/
 
 export function respuestaDeEntrevista(o: {
   entrevista: Entrevista;
-  clasificacion: Pick<Clasificacion, "tipo" | "dato" | "espanol" | "responde"> & Partial<Pick<Clasificacion, "otroDato">>;
+  clasificacion: Pick<Clasificacion, "tipo" | "dato" | "espanol" | "responde"> & Partial<Pick<Clasificacion, "otroDato" | "fuera">>;
   descubiertos: number[];
   turno: number;
   /** Desde B1 Allison no habla en español: da la pista del dato en inglés. */
@@ -1722,6 +1804,13 @@ export function respuestaDeEntrevista(o: {
   // Saluda, agradece o dice que no sabe: no cuenta como ayuda.
   if (c.tipo === "social" && !c.espanol) {
     const respuesta = "OK! Ask me a question!";
+    return { respuesta, respuestaVoz: respuesta, ...sinDato, devuelta: null };
+  }
+
+  // Una buena pregunta que no está en la ficha ("When is Luna's
+  // birthday?"): no la sabe y no le sopla la siguiente (no es ayuda).
+  if (c.fuera) {
+    const respuesta = "Good question! But I don't know. Ask me another question!";
     return { respuesta, respuestaVoz: respuesta, ...sinDato, devuelta: null };
   }
 

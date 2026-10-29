@@ -117,6 +117,18 @@ export function Describe({
     // Una cosa nueva por frase: la actividad pide decirlo tres veces, y
     // "A woman was reading a book." contaba tres de una vez.
     const nuevas = r.nombradas.filter((c) => !nombradas.includes(c)).slice(0, 1);
+    // Desde A2, con un error de gramática ("He wash the car"): Allison la
+    // dice bien y el alumno la repite; cuenta al decirla bien (Si responde
+    // mal de A2; tanda 1, 29 de octubre de 2026). Si tampoco sale, sigue
+    // como cualquier frase que Allison le da.
+    if (nuevas.length && r.mejora?.mejor && !sugerida) {
+      const mejor = conPunto(r.mejora.mejor);
+      setSugerida(mejor);
+      setDadas((d) => [...d, mejor]);
+      setFallosSeguidos(1);
+      void decir(`Almost! ${mejor} Say it.`);
+      return;
+    }
     if (nuevas.length) {
       const todas = [...nombradas, ...nuevas];
       setNombradas(todas);

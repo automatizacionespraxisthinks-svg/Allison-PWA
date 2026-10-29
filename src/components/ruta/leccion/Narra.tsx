@@ -32,6 +32,19 @@ export function preguntaDelFaltante(siRespondeMal: string, faltante: number | nu
 }
 
 /**
+ * La parte que la actividad pide además de la historia y no dijo ("dos
+ * ideas con could o might"): solo si la historia ya está (los dibujos en
+ * orden y, escrito, las frases). Si no, primero se pide la historia.
+ */
+function parteQueFalta(r: ResultadoEvaluacion, a: Datos): { pregunta: string; que: string } | null {
+  const falta = r.relato?.falta;
+  if (!falta || r.espanol) return null;
+  const escrito = r.relato?.segundos === null;
+  const historia = (r.relato?.enOrden ?? 0) >= a.minimoDibujos && (!escrito || (r.relato?.frases ?? 0) >= a.minimoFrases);
+  return historia ? falta : null;
+}
+
+/**
  * La explicación prevista de la frase que se corrige, si la hay: lo que
  * corrige contiene el error previsto, o es un pedazo de él. Antes se
  * buscaba en todo lo dicho y salía debajo de otra corrección (auditoría,
@@ -82,6 +95,8 @@ export function Narra({
   const [aviso, setAviso] = useState<string | null>(null);
   /** Lo grabado que no se pudo enviar (red, IA, tiempo): se envía otra vez sin grabar de nuevo. */
   const [pendiente, setPendiente] = useState<Entrada | null>(null);
+  /** Se envía la respuesta a la pregunta de Allison por la parte que faltó. */
+  const [respondiendo, setRespondiendo] = useState(false);
 
   const grabadora = useRef<MediaRecorder | null>(null);
   /** El micrófono se está abriendo: todavía no graba (el anillo se llena en azul). */
@@ -138,27 +153,28 @@ export function Narra({
     };
   }, [soltar]);
 
-  async function enviar(e: Entrada) {
-    setFase("enviando");
+  /** `previo`: la historia ya contada, cuando contesta la pregunta de Allison por lo que faltó. */
+  async function enviar(e: Entrada, previo?: string) {
+    // Contestando la pregunta de Allison, la hoja de la historia se queda a la vista.
+    if (previo) setRespondiendo(true);
+    else setFase("enviando");
     setAviso(null);
     setPendiente(null);
-    const r = await evaluar(ctx, a.paso, e);
+    const r = await evaluar(ctx, a.paso, e, 0, previo);
     if (!vivo.current) return;
+    setRespondiendo(false);
     if (r.sinSaldo) {
-      setFase("listo");
+      if (!previo) setFase("listo");
       return onSinSaldo();
     }
     // Falló el envío (red, IA, tiempo): no se cobró y lo grabado no se
-    // pierde (auditoría, 28 de octubre de 2026).
-    if (r.error) {
+    // pierde (auditoría, 28 de octubre de 2026). Si contestaba la pregunta
+    // de Allison, sigue en la hoja para intentarlo otra vez.
+    if (r.error || r.sinVoz) {
+      setAviso(r.error ?? SIN_VOZ);
+      if (previo) return;
       setFase("listo");
-      setPendiente(e);
-      setAviso(r.error);
-      return;
-    }
-    if (r.sinVoz) {
-      setFase("listo");
-      setAviso(SIN_VOZ);
+      if (r.error) setPendiente(e);
       return;
     }
     if (!r.espanol) {
@@ -166,9 +182,11 @@ export function Narra({
       if (r.correcto) setLogrado(true);
     }
     setRepetida(null);
-    setResultado({ ...r, url: "url" in e ? e.url : undefined });
+    // Con la respuesta a su pregunta, "Oír mi voz" sigue siendo la historia.
+    setResultado({ ...r, url: "url" in e && !previo ? e.url : previo ? resultado?.url : undefined });
     setFase("resultado");
     const faltante = r.relato?.faltante ?? null;
+    const parte = parteQueFalta(r, a);
     void decir(
       r.espanol
         ? "Tell me the story in English!"
@@ -176,7 +194,9 @@ export function Narra({
           ? faltante
             ? `Great story! ${preguntaDelFaltante(a.siRespondeMal, faltante)}`
             : "Great story!"
-          : preguntaDelFaltante(a.siRespondeMal, faltante)
+          : parte
+            ? `Nice story! ${parte.pregunta}`
+            : preguntaDelFaltante(a.siRespondeMal, faltante)
     );
   }
 
@@ -406,6 +426,9 @@ export function Narra({
           onVerModelo={() => setVerModelo(true)}
           onOir={(t) => void decir(t)}
           onOtraVez={otraVez}
+          parte={quedan > 0 && !logrado ? parteQueFalta(r, a) : null}
+          respondiendo={respondiendo}
+          onResponder={(e) => void enviar(e, r.transcripcion)}
           onContinuar={() => onTerminar({ calificadas: 1, aciertos: logrado && !conAyuda ? 1 : 0, fallos: [] })}
         />
       ) : escribiendo ? (
@@ -592,6 +615,9 @@ function Resultado({
   onVerModelo,
   onOir,
   onOtraVez,
+  parte,
+  respondiendo,
+  onResponder,
   onContinuar,
 }: {
   r: ResultadoEvaluacion & { url?: string };
@@ -607,6 +633,10 @@ function Resultado({
   onVerModelo: () => void;
   onOir: (t: string) => void;
   onOtraVez: () => void;
+  /** La parte que faltó y la pregunta de Allison: se contesta aquí, sin volver a contar todo. */
+  parte: { pregunta: string; que: string } | null;
+  respondiendo: boolean;
+  onResponder: (e: Entrada) => void;
   onContinuar: () => void;
 }) {
   if (r.espanol) {
@@ -631,9 +661,13 @@ function Resultado({
   // octubre de 2026).
   const titulo = logrado
     ? "¡Muy bien contado!"
-    : enOrden >= a.minimoDibujos && faltanFrases
-      ? `Casi: escribe ${a.minimoFrases} frases o más`
-      : `Casi: cuenta al menos ${a.minimoDibujos} de los 4 dibujos, en orden`;
+    : parte
+      ? "Casi: contesta la pregunta de Allison"
+      : enOrden >= a.minimoDibujos && faltanFrases
+        ? `Casi: escribe ${a.minimoFrases} frases o más`
+        : enOrden >= a.minimoDibujos && r.relato?.falta
+          ? `Casi: ${/^dos /.test(r.relato.falta.que) ? "faltaron" : "faltó"} ${r.relato.falta.que}`
+          : `Casi: cuenta al menos ${a.minimoDibujos} de los 4 dibujos, en orden`;
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1.5 rounded-3xl bg-superficie-2 px-4 py-3">
@@ -653,11 +687,26 @@ function Resultado({
         </div>
       </div>
 
-      {faltante && (
-        <p className="flex items-center gap-2 rounded-3xl bg-oro-suave px-4 py-3 text-[15px] font-extrabold text-oro">
-          <BotonOir tam="chico" onClick={() => onOir(preguntaDelFaltante(a.siRespondeMal, faltante))} className="!bg-oro" />
-          Dibujo {faltante}: {preguntaDelFaltante(a.siRespondeMal, faltante)}
-        </p>
+      {parte ? (
+        <div className="flex flex-col gap-1.5 rounded-3xl bg-oro-suave px-4 py-3 text-oro">
+          <b className="flex items-center gap-2 text-[15px] font-black">
+            <BotonOir tam="chico" onClick={() => onOir(parte.pregunta)} className="!bg-oro" />
+            {parte.pregunta}
+          </b>
+          <span className="text-sm font-semibold">
+            {/^dos /.test(parte.que) ? "Te faltaron" : "Te faltó"} {parte.que}. Contéstale: no hace falta contar otra vez la historia.
+          </span>
+          <div className="mt-1">
+            <Grabador onEntrada={onResponder} ocupado={respondiendo} ayuda="Toca y contéstale" />
+          </div>
+        </div>
+      ) : (
+        faltante && (
+          <p className="flex items-center gap-2 rounded-3xl bg-oro-suave px-4 py-3 text-[15px] font-extrabold text-oro">
+            <BotonOir tam="chico" onClick={() => onOir(preguntaDelFaltante(a.siRespondeMal, faltante))} className="!bg-oro" />
+            Dibujo {faltante}: {preguntaDelFaltante(a.siRespondeMal, faltante)}
+          </p>
+        )
       )}
 
       {r.relato?.bien && (

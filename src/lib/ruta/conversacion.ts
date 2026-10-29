@@ -519,12 +519,17 @@ export async function turnoDeEscena(
     tokensEntrada += l.tokensEntrada;
     tokensSalida += l.tokensSalida;
     const secreto = juego.rondas[juego.ronda];
-    const a = respuestaDeAdivina(u.adivina, l, {
-      secreto,
-      descartadas: juego.descartadas,
-      preguntadas: juego.preguntadas,
-      ultima: juego.ronda >= juego.rondas.length - 1,
-    });
+    const a = respuestaDeAdivina(
+      u.adivina,
+      l,
+      {
+        secreto,
+        descartadas: juego.descartadas,
+        preguntadas: juego.preguntadas,
+        ultima: juego.ronda >= juego.rondas.length - 1,
+      },
+      transcripcion
+    );
     // Se califica cada pregunta o intento de adivinar que se entendió; es
     // un acierto si salió sin intentos fallidos justo antes.
     if (a.entendida) {
@@ -613,7 +618,8 @@ export async function turnoDeEscena(
     // Si Allison tuvo que darle la pregunta, cuenta como pista. Contestar
     // su "And you?" en español no es pedir ayuda, ni hablar con ella con
     // la ficha ya completa (antes cada "Thank you!" restaba un acierto).
-    if (!fichaCompleta && c.tipo !== "respuesta" && (c.espanol || c.tipo === "otro")) estado.ayudas += 1;
+    // Una pregunta buena que no está en la ficha tampoco: no se le sopla nada.
+    if (!fichaCompleta && c.tipo !== "respuesta" && !c.fuera && (c.espanol || c.tipo === "otro")) estado.ayudas += 1;
     estado.devuelta = a.devuelta;
     r = {
       ...vacio,

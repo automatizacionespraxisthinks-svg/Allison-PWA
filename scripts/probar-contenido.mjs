@@ -175,8 +175,25 @@ function revisarActividad(a, donde, imagenes) {
       if (!(a.correcta >= 0 && a.correcta < (a.opciones?.length ?? 0))) fallo(donde, "correcta fuera de rango");
       a.opciones?.forEach((o) => {
         if (o.imagen) imagenes.push(o.imagen);
-        else if (!o.texto?.trim() && !o.descripcion?.trim()) fallo(donde, "una opción sin imagen ni texto");
+        else if (!o.texto?.trim() && !o.dibujo && !o.descripcion?.trim()) fallo(donde, "una opción sin imagen ni texto");
+        if (o.dibujo && "semaforo" in o.dibujo && !["mano", "caminando", "apagado"].includes(o.dibujo.semaforo))
+          fallo(donde, `semáforo desconocido: "${o.dibujo.semaforo}"`);
       });
+      {
+        // El mapa: las tres opciones son edificios, cada uno en su lugar.
+        const edificios = (a.opciones ?? []).map((o) => o.dibujo?.edificio).filter(Boolean);
+        if (edificios.length && edificios.length !== a.opciones.length) fallo(donde, "en el mapa las tres opciones son edificios");
+        const lugar = (e) => `${e.cuadras}-${e.gira}-${e.gira === e.lado ? "abajo" : "arriba"}-${e.lote ?? 1}`;
+        if (new Set(edificios.map(lugar)).size !== edificios.length) fallo(donde, "dos edificios del mapa en el mismo lugar");
+        for (const e of edificios) {
+          const lote = e.lote ?? 1;
+          if (!(e.cuadras >= 1 && e.cuadras <= 2)) fallo(donde, `un edificio a ${e.cuadras} cuadras (el mapa dibuja 1 o 2)`);
+          if (!(lote >= 1 && lote <= 2)) fallo(donde, `un edificio en el lote ${e.lote} (1 o 2)`);
+          if (a.parque && e.cuadras > a.parque) fallo(donde, "un edificio más allá del parque, donde termina la calle");
+          if (a.parque && e.cuadras === a.parque && e.gira !== e.lado && lote === 1) fallo(donde, "un edificio encima del parque");
+        }
+        if (a.parque && !edificios.length) fallo(donde, "parque sin mapa");
+      }
       {
         const conEtiqueta = (a.opciones ?? []).filter((o) => o.etiqueta?.trim()).length;
         if (conEtiqueta && conEtiqueta !== a.opciones.length) fallo(donde, "la etiqueta va en las tres opciones o en ninguna");

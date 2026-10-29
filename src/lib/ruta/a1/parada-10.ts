@@ -96,9 +96,9 @@ export const PARADA_10: Parada = {
           audio: ["Don't cross! Wait."],
           traduccion: ["¡No cruces! Espera."],
           opciones: [
-            { texto: "mano roja", descripcion: "Semáforo peatonal con la mano roja" },
-            { texto: "figura caminando", descripcion: "Semáforo peatonal con la figura caminando" },
-            { texto: "apagado", descripcion: "Semáforo peatonal apagado" },
+            { dibujo: { semaforo: "mano" }, descripcion: "Semáforo peatonal con la mano roja" },
+            { dibujo: { semaforo: "caminando" }, descripcion: "Semáforo peatonal con la figura caminando" },
+            { dibujo: { semaforo: "apagado" }, descripcion: "Semáforo peatonal apagado" },
           ],
           correcta: 0,
           porRevisar: ["traduccion", "quienHabla: el documento no dice quién habla"],
@@ -147,15 +147,15 @@ export const PARADA_10: Parada = {
           traduccion: ["Sigue derecho dos cuadras y gira a la izquierda. El museo está a la derecha."],
           opciones: [
             {
-              texto: "2 cuadras, izquierda, a la derecha",
+              dibujo: { edificio: { cuadras: 2, gira: "izquierda", lado: "derecha" } },
               descripcion: "El edificio a la derecha después de seguir derecho dos cuadras y girar a la izquierda (el museo)",
             },
             {
-              texto: "2 cuadras, izquierda, a la izquierda",
+              dibujo: { edificio: { cuadras: 2, gira: "izquierda", lado: "izquierda" } },
               descripcion: "El edificio a la izquierda después de seguir derecho dos cuadras y girar a la izquierda",
             },
             {
-              texto: "2 cuadras, derecha, a la derecha",
+              dibujo: { edificio: { cuadras: 2, gira: "derecha", lado: "derecha" } },
               descripcion: "El edificio a la derecha después de seguir derecho dos cuadras y girar a la derecha",
             },
           ],

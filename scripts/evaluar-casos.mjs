@@ -98,7 +98,10 @@ function revisar(esperado, dice, r) {
   const tramoEs = (voz.match(/\[es\]([^[]*)/) ?? [])[1] ?? "";
   const nOraciones = (tramoEs.match(/[.!?]+/g) ?? []).length;
   const tope = c === "8" || c === "9" ? 3 : 2;
-  if (nOraciones - (/^\s*(claro|tranquilo|casi)[.,!]/i.test(tramoEs) ? 1 : 0) > tope && c !== "5") fallas.push(`español de ${nOraciones} oraciones`);
+  // Una muletilla inicial corta ("¡Claro!", "Tranquilo, Diego.") no cuenta, como en recortarOraciones.
+  const primera = (tramoEs.match(/[^.!?]+[.!?]+/) ?? [""])[0].trim();
+  const muletilla = primera && primera.split(/\s+/).length <= 3 ? 1 : 0;
+  if (nOraciones - muletilla > tope && c !== "5") fallas.push(`español de ${nOraciones} oraciones`);
   if (c === "5" && /'ed'|se dice|se escribe/i.test(voz)) fallas.push("volvió a explicar el error repetido");
   if (/\[(?!es\]|en-US\])/.test(voz)) fallas.push("marcador raro");
   return fallas;

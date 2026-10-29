@@ -88,6 +88,11 @@ export interface ResultadoEvaluacion {
   palabras: { palabra: string; estado: EstadoPalabra }[];
   /** Solo en Repite: la primera palabra por mejorar, para la tarjeta. */
   palabraAMejorar?: string;
+  /**
+   * Describe desde A2: la frase nombra algo, pero con un error de
+   * gramática; `mejor` es la misma frase bien dicha, para repetirla.
+   */
+  mejora?: { dijo: string; mejor: string };
   tokensEntrada: number;
   tokensSalida: number;
 }
@@ -438,6 +443,58 @@ const juzgarDilo = (p: PedidoEvaluacion) => `
   of the meaning, changes the tense or the structure, is in Spanish, or
   is unfinished.`;
 
+/**
+ * Describe desde A2: ¿la frase tiene un error de gramática? Y si lo
+ * tiene, la misma frase bien dicha. "Si dice 'He wash the car', Allison
+ * repite bien la frase (He washed the car.) y el alumno la dice" (Si
+ * responde mal de cada Describe de A2); antes recibía "Yes! What else?"
+ * (auditoría, 28 de octubre de 2026). Sobre el texto ya transcrito a
+ * ciegas, con la consigna a la vista para el tiempo verbal.
+ */
+export async function corregirFrase(
+  dicho: string,
+  consigna: string,
+  nivel: Nivel
+): Promise<{ mejor: string | null; tokensEntrada: number; tokensSalida: number }> {
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  const r = await ai.models.generateContent({
+    model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
+    contents: [{ role: "user", parts: [{ text: `The student said: ${dicho}` }] }],
+    config: {
+      systemInstruction: `A Spanish-speaking student (English level ${nivel}) is describing a picture.
+The teacher asked: "${consigna}". Judge only what is written, as it is.
+- "correcto": true if the sentence is correct English, with a verb form
+  that fits the teacher's request (the past for what they did, "was/were
+  + -ing" for what people were doing, "is/are + -ing" for what people are
+  doing). Short and simple sentences are fine, and so is another correct
+  way to say it ("Would you like to…?", "Do you want to…?", "Let's…").
+  ${NO_ES_ERROR} false only if it has a real grammar mistake.
+- "mejor": if "correcto" is false, the same sentence with only the
+  mistakes fixed, in simple US English, keeping their words; "" if it is
+  correct. Never reword a correct sentence.`,
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: { correcto: { type: Type.BOOLEAN }, mejor: { type: Type.STRING } },
+        required: ["correcto", "mejor"],
+        propertyOrdering: ["correcto", "mejor"],
+      },
+      temperature: 0,
+      maxOutputTokens: 80,
+      abortSignal: AbortSignal.timeout(12_000),
+    },
+  });
+  const d = jsonDelModelo<{ correcto?: boolean; mejor?: string }>(r);
+  const mejor = (d.mejor ?? "").trim();
+  // Una "mejor" que dice lo mismo (otra contracción, otro signo) no corrige nada.
+  const distinta = !!mejor && sinConectores(palabrasDelRelato(mejor)).join(" ") !== sinConectores(palabrasDelRelato(dicho)).join(" ");
+  return {
+    mejor: d.correcto === false && distinta && !agregaContenido(palabrasDelRelato(dicho), palabrasDelRelato(mejor)) ? mejor : null,
+    tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
+    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+  };
+}
+
 /** Repite desde A2: ¿la palabra difícil salió bien? Busca su lugar en la frase. */
 function claveMal(palabras: { palabra: string; estado: EstadoPalabra }[], clave: string): boolean | null {
   const frase = palabras.map((w) => normalizar(w.palabra).trim());
@@ -485,10 +542,23 @@ export async function evaluarRespuestaCorta(p: PedidoEvaluacion): Promise<Result
       // ¿Qué es esto?: las palabras de la respuesta que ya dijo van llenando las rayas.
       if (p.tipo === "que-es-esto") resultado.palabras = palabrasDeRepite(p.esperado, transcripcion);
       break;
-    case "describe":
+    case "describe": {
       // "Tell me 3 things you see": tres cosas distintas del dibujo.
-      resultado.correcto = cosasNombradas(transcripcion, p.aceptadas ?? []).length >= 3;
+      const cosas = cosasNombradas(transcripcion, p.aceptadas ?? []);
+      resultado.correcto = cosas.length >= 3;
+      // Desde A2, una frase que nombra algo se revisa: con un error,
+      // Allison la dice bien y el alumno la repite (tanda 1, 29 de octubre de 2026).
+      // Si la revisión falla, la frase cuenta igual: lo que nombró ya se sabe.
+      if ((p.nivel ?? "A1") !== "A1" && cosas.length && juzgable) {
+        const c = await corregirFrase(transcripcion, p.esperado, p.nivel).catch(() => null);
+        if (c) {
+          resultado.tokensEntrada += c.tokensEntrada;
+          resultado.tokensSalida += c.tokensSalida;
+          if (c.mejor) resultado.mejora = { dijo: transcripcion, mejor: c.mejor };
+        }
+      }
       break;
+    }
     case "responde":
       resultado.correcto = juzgable && (await conModelo(juzgarRespuesta(p.esperado, p.nivel)));
       break;
@@ -724,6 +794,17 @@ function posicionEnLoDicho(cita: string, dicho: string): number {
   return -1;
 }
 
+/**
+ * ¿Dos citas ocupan parte de las mismas palabras de lo dicho? Así se
+ * reconoce la misma frase aunque el modelo la copie con un cambio pequeño.
+ */
+function seSolapanEnLoDicho(a: string, b: string, dicho: string): boolean {
+  const [pa, pb] = [posicionEnLoDicho(a, dicho), posicionEnLoDicho(b, dicho)];
+  if (pa < 0 || pb < 0) return false;
+  const [la, lb] = [palabrasDelRelato(a).length, palabrasDelRelato(b).length];
+  return pa < pb + lb && pb < pa + la;
+}
+
 /** Una palabra con tilde o eñe: en un relato en inglés solo va en un nombre ("Bogotá"). */
 const TILDADA = /[a-záéíóúüñ]*[áéíóúñ][a-záéíóúüñ]*/gi;
 
@@ -786,7 +867,8 @@ export function comentarioVerificado(
   const mejora = corrige && estaEnLoDicho(dijo, transcripcion) ? { dijo, mejor, porque: corto(d.mejorPorque, 14), ...conEs(d.mejorPorqueEs, 16) } : null;
   const bienP = palabrasDelRelato(bienFrase);
   const bienConError =
-    (mejora && seTocan(bienP, palabrasDelRelato(mejora.dijo))) || (extra.previstas ?? []).some((s) => seTocan(bienP, palabrasDelRelato(s)));
+    (mejora && (seTocan(bienP, palabrasDelRelato(mejora.dijo)) || seSolapanEnLoDicho(bienFrase, mejora.dijo, transcripcion))) ||
+    (extra.previstas ?? []).some((s) => seTocan(bienP, palabrasDelRelato(s)));
   const frases = frasesContadas(d.frases, transcripcion);
   // "La mayor parte en español" no, si dijo más frases en inglés que en
   // español: con una sola en español, el modelo daba por no contada una
@@ -802,6 +884,36 @@ export function comentarioVerificado(
         : null,
     mejora,
   };
+}
+
+/**
+ * Lo bien hecho, revisado aparte: el modelo corrige un solo error y a
+ * veces elogia otra frase que también tiene uno ("I study mathematic and
+ * english."; 1 de cada 4 relatos con errores en la auditoría). Juzgada
+ * sola, con el tema y sin el resto, una frase con error se reconoce. Si
+ * no está bien o el juez falla, no se elogia nada (tanda 1, 29 de
+ * octubre de 2026).
+ */
+export async function bienRevisado<T extends { bien: ComentarioRelato["bien"] }>(
+  c: T,
+  tema: string
+): Promise<T & { tokensEntrada: number; tokensSalida: number }> {
+  if (!c.bien) return { ...c, tokensEntrada: 0, tokensSalida: 0 };
+  try {
+    const j = await juzgar(
+      c.bien.frase,
+      `
+- "correcto": the sentence is from what they told about: ${tema}.
+  true if an English teacher would mark it right: no grammar mistakes, no
+  wrong words, natural word order, and a verb tense that fits the topic
+  (any correct tense is fine: the past simple for what happened, the
+  present simple for routines). ${NO_ES_ERROR}
+  false if it has a real mistake.`
+    );
+    return { ...c, bien: j.correcto ? c.bien : null, tokensEntrada: j.tokensEntrada, tokensSalida: j.tokensSalida };
+  } catch {
+    return { ...c, bien: null, tokensEntrada: 0, tokensSalida: 0 };
+  }
 }
 
 /** ¿Lo citado está en lo que dijo? Las mismas palabras, en orden (sin puntuación ni mayúsculas). */
@@ -850,10 +962,11 @@ Never invent sentences they did not say. A wrong fact is not a mistake.`;
     },
   });
   const d = jsonDelModelo<DatosComentario>(r);
+  const c = await bienRevisado(comentarioVerificado(d, p.transcripcion, p.nivel, { modelo: p.modelo }), `"${p.tema}"`);
   return {
-    ...comentarioVerificado(d, p.transcripcion, p.nivel, { modelo: p.modelo }),
-    tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
-    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+    ...c,
+    tokensEntrada: (r.usageMetadata?.promptTokenCount ?? 0) + c.tokensEntrada,
+    tokensSalida: (r.usageMetadata?.candidatesTokenCount ?? 0) + c.tokensSalida,
   };
 }
 
@@ -974,12 +1087,17 @@ Never invent sentences they did not say.`;
   const total = p.dibujos.length;
   const dibujos = dibujosContados(d.dibujos, total, p.transcripcion);
   const faltante = Array.from({ length: total }, (_, i) => i + 1).find((n) => !dibujos.includes(n)) ?? null;
+  const c = await bienRevisado(
+    comentarioVerificado(d, p.transcripcion, p.nivel, { modelo: p.modelo, previstas: p.previstas }),
+    // Sin la gramática pedida: con ella, el juez rechazaba un pasado simple bien dicho.
+    `four pictures ("${p.pregunta}")`
+  );
   return {
-    ...comentarioVerificado(d, p.transcripcion, p.nivel, { modelo: p.modelo, previstas: p.previstas }),
+    ...c,
     dibujos,
     enOrden: dibujosEnOrden(dibujos),
     faltante,
-    tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
-    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+    tokensEntrada: (r.usageMetadata?.promptTokenCount ?? 0) + c.tokensEntrada,
+    tokensSalida: (r.usageMetadata?.candidatesTokenCount ?? 0) + c.tokensSalida,
   };
 }

@@ -13,6 +13,7 @@ import { CUERPO_MUY_GRANDE, cuerpoExcede, limitar } from "@/lib/limite";
 import { contenidoDe, pasoDe } from "@/lib/ruta/estado";
 import { mejoraDeEscena } from "@/lib/ruta/conversacion";
 import { itemDeRepaso, preguntaDe } from "@/lib/ruta/repaso";
+import { seguimientoDeNarra, traeLaParte } from "@/lib/ruta/seguimiento";
 import { alumnoActual } from "@/lib/sesion";
 import { AUDIO_MAX_SEGUNDOS, type Nivel } from "@/lib/tipos";
 
@@ -67,6 +68,9 @@ export async function POST(peticion: Request) {
   // Cuéntame y Narra escritos admiten un relato de varias frases; lo demás, una respuesta corta.
   const textoLargo =
     typeof textoCrudo === "string" ? textoCrudo.trim().slice(0, 1200) : "";
+  // Narra: la historia ya contada, cuando contesta la pregunta de Allison.
+  const previoCrudo = f.get("previo");
+  const previo = typeof previoCrudo === "string" ? previoCrudo.trim().slice(0, 1200) : "";
   const texto = textoLargo.slice(0, 300).trim();
   // La duración la manda el navegador: se acota antes de usarla.
   const crudo = Number(f.get("duracion") ?? 0);
@@ -140,6 +144,10 @@ export async function POST(peticion: Request) {
         tokensEntrada += tr.tokensEntrada;
         tokensSalida += tr.tokensSalida;
       }
+      // Narra: contesta la pregunta de Allison por la parte que faltó ("What
+      // could they do now?"). Se evalúa la historia que ya contó con lo
+      // que agrega ahora. Viene del navegador, como lo escrito.
+      if (transcripcion && previo && actividad.tipo === "narra") transcripcion = `${previo} ${transcripcion}`;
       // El modelo de Allison y los errores previstos no van al prompt: el
       // código los usa para no corregir lo que está bien ni elogiar un error.
       if (transcripcion && actividad.tipo === "narra") {
@@ -212,8 +220,13 @@ export async function POST(peticion: Request) {
     // 40 y 5 en B1). Escrito: las frases, sin la nota de fluidez.
     // Narra: al menos 3 de los 4 dibujos en orden; escrito, además, las
     // frases del mínimo.
+    // Narra con una parte más ("dos ideas con could o might"): sin ella no
+    // es un acierto y Allison la pregunta.
+    const seguimiento = actividad.tipo === "narra" ? seguimientoDeNarra(actividad) : null;
+    const falta = seguimiento && !espanol && !traeLaParte(transcripcion, seguimiento) ? seguimiento : null;
     const correcto =
       !espanol &&
+      !falta &&
       (actividad.tipo === "narra"
         ? (narracion?.enOrden ?? 0) >= actividad.minimoDibujos && (segundos !== null || comentario.frases >= actividad.minimoFrases)
         : comentario.frases >= actividad.minimoFrases && (segundos === null || segundos >= actividad.minimoSegundos));
@@ -232,6 +245,8 @@ export async function POST(peticion: Request) {
         // Narra: también cuántos van en orden, para que la pantalla diga por
         // qué no fue un acierto (los dibujos o, escrito, las frases).
         ...(narracion ? { dibujos: narracion.dibujos, enOrden: narracion.enOrden, faltante: narracion.faltante } : {}),
+        // La parte que faltó: lo que pregunta Allison y lo que se dice en español.
+        ...(falta ? { falta: { pregunta: falta.pregunta, que: falta.falta } } : {}),
       },
       restantes: restantesRelato,
     });
@@ -410,6 +425,8 @@ export async function POST(peticion: Request) {
       pedido.tipo === "describe"
         ? cosasNombradas(resultado.transcripcion, pedido.aceptadas ?? [])
         : [],
+    // Describe desde A2: la frase bien dicha, si tenía un error de gramática.
+    mejora: resultado.mejora ?? null,
     restantes,
   });
 }

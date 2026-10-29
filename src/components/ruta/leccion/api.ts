@@ -29,6 +29,8 @@ export interface ResultadoEvaluacion {
   palabraAMejorar: string | null;
   espanol: boolean;
   nombradas: string[];
+  /** Describe desde A2: la frase nombró algo con un error; `mejor` es como se dice, para repetirla. */
+  mejora?: { dijo: string; mejor: string } | null;
   restantes?: number;
   /** Cuéntame: cuántas frases se entendieron, cuánto habló y el comentario de Allison. */
   relato?: {
@@ -43,6 +45,8 @@ export interface ResultadoEvaluacion {
     /** Narra: cuántos de los que contó van en el orden de la historia. */
     enOrden?: number;
     faltante?: number | null;
+    /** Narra: la parte que pide además y no dijo ("dos ideas con could o might"), con la pregunta de Allison. */
+    falta?: { pregunta: string; que: string };
   };
   /** No se oyó voz: no cuenta como intento ni se cobra. */
   sinVoz?: boolean;
@@ -61,13 +65,16 @@ export async function evaluar(
   ctx: Contexto,
   paso: number,
   entrada: Entrada,
-  indice = 0
+  indice = 0,
+  /** Narra: la historia ya contada, cuando contesta la pregunta de Allison por lo que faltó. */
+  previo?: string
 ): Promise<ResultadoEvaluacion> {
   const f = new FormData();
   f.set("parada", ctx.parada);
   f.set("leccion", String(ctx.leccion));
   f.set("paso", String(paso));
   f.set("indice", String(indice));
+  if (previo) f.set("previo", previo);
   if (ctx.escena) f.set("escena", ctx.escena);
   if (ctx.repaso) {
     f.set("repaso", ctx.repaso.id);

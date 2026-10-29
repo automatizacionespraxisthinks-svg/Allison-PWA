@@ -303,8 +303,8 @@ ${ej(
    a mistake: never correct them and never talk about "do", "don't",
    "understand" or how they asked.
 ${campos(
-  '"No te preocupes," + the idea of your previous message, simpler',
-  "only the key English of that message, as tiny examples -- not the explanation again",
+  '"No te preocupes," + the idea of your previous message, simpler (the idea itself, never only "te explico otra vez")',
+  "only the key English of that message, as tiny examples -- not the explanation again, and never ask if they understand now",
   "the same idea, shorter, in tiny steps"
 )}
 ${ej(
@@ -736,9 +736,12 @@ const VACIAS = new Set([
  *     citaba ninguna, tiene que compartir al menos una palabra de
  *     contenido. Así se atrapa el error que más repetía flash-lite:
  *     copiar el tema del ejemplo ("se agrega 'ed'") en vez del suyo.
+ * "Do you understand now?" también es preguntar si entendió: con "No te
+ * preocupes, te explico otra vez." no explicaba nada (tanda 1, 29 de
+ * octubre de 2026).
  */
 export function casoNueveFallido(texto: string, anterior?: string): boolean {
-  if (/(?:n'?t|not) understand|understood|did you understand|entendiste|didn't hear|no te o[ií]|(?:could|can) you repeat|say (?:that|it) again/i.test(texto)) return true;
+  if (/(?:n'?t|not) understand|understood|(?:did|do) you understand|do you get it|entendiste|entiendes ahora|didn't hear|no te o[ií]|(?:could|can) you repeat|say (?:that|it) again/i.test(texto)) return true;
   if (!anterior) return false;
   const dicho = texto.toLowerCase();
   const nombra = (p: string) => new RegExp(`(^|[^a-z])${p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z]|$)`).test(dicho);

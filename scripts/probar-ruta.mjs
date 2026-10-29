@@ -16,13 +16,13 @@ const {
   actividadPrincipal,
 } = await import("../src/lib/ruta/estado.ts");
 const { RUTA_A1 } = await import("../src/lib/ruta/index.ts");
-const { esCorreccionDe, tareasObvias, respuestaDeEntrevista, tareasDelTurno } = await import("../src/lib/ruta/escena.ts");
+const { esCorreccionDe, tareasObvias, respuestaDeEntrevista, tareasDelTurno, otraClaseDePregunta, otraPersona } = await import("../src/lib/ruta/escena.ts");
 const { PARADA_01 } = await import("../src/lib/ruta/a1/parada-01.ts");
 const { PARADA_02 } = await import("../src/lib/ruta/a1/parada-02.ts");
 const { PARADA_07 } = await import("../src/lib/ruta/a1/parada-07.ts");
 const { PARADA_01: A2_P01 } = await import("../src/lib/ruta/a2/parada-01.ts");
 const { PARADA_09: A2_P09 } = await import("../src/lib/ruta/a2/parada-09.ts");
-const { respuestaCorta, respuestaDeAdivina, preguntaDeEjemplo, barajarRondas } = await import("../src/lib/ruta/adivina.ts");
+const { respuestaCorta, respuestaDeAdivina, preguntaDeEjemplo, barajarRondas, preguntaDelAlumno } = await import("../src/lib/ruta/adivina.ts");
 const { estaEnLoDicho, palabrasDeRepite, comentarioVerificado, dibujosContados } = await import("../src/lib/evaluacion.ts");
 const { palabrasDeFrase, lugaresDeLetra, respuestaCompleta, letraDicha } = await import("../src/lib/ruta/rayas.ts");
 const { citaDe, frasesDe } = await import("../src/lib/ruta/frases.ts");
@@ -240,6 +240,15 @@ const ent = PARADA_01.lecciones[3].actividades.find((a) => a.tipo === "entrevist
   ok("entrevista: con la ficha completa sigue la charla en inglés y le pregunta ella", completa.devuelta && !/Pregúntame/.test(completa.respuesta), completa.respuesta);
   const cierra = respuestaDeEntrevista({ entrevista: ent, clasificacion: { tipo: "pregunta", dato: 5, responde: false, espanol: false }, descubiertos: [1, 2, 3, 4], turno: 9, alcanzaMinimo: true });
   ok("entrevista: el último dato con el mínimo cumplido cierra sin devolver", cierra.devuelta === null && /Thank you for your questions/.test(cierra.respuesta), cierra.respuesta);
+  // "When is Luna's birthday?" no es "How old is Luna?" (tanda 1, 29 de octubre de 2026).
+  ok("entrevista: cumpleaños no es edad", otraClaseDePregunta("When is Luna's birthday?", "How old is Luna?"));
+  ok("entrevista: edad no es nombre", otraClaseDePregunta("How old is your mom?", "What's your mom's name?"));
+  ok("entrevista: la misma clase sí", !otraClaseDePregunta("Luna is how old?", "How old is Luna?") && !otraClaseDePregunta("Your age?", "How old are you?"));
+  ok("entrevista: sin clase no se descarta", !otraClaseDePregunta("Do you have a pet?", "Do you have a pet?") && !otraClaseDePregunta("I'm 15. When is your birthday?", "When is your birthday?"));
+  ok("entrevista: otra persona de la ficha no es ese dato", otraPersona("Luna birthday?", "When is Emily's birthday?", ["Luna", "Emily"]));
+  ok("entrevista: la misma persona, o un dato sin nombre, sí", !otraPersona("Emily birthday?", "When is Emily's birthday?", ["Luna", "Emily"]) && !otraPersona("Hi! Luna is cute. When is your birthday?", "When is your birthday?", ["Luna", "Emily"]));
+  const fuera = respuestaDeEntrevista({ entrevista: ent, clasificacion: { tipo: "otro", dato: 0, espanol: false, fuera: true }, descubiertos: [1], turno: 3 });
+  ok("entrevista: pregunta fuera de la ficha → no la sabe y no sopla", /I don't know/.test(fuera.respuesta) && !/Pregúntame/.test(fuera.respuesta) && fuera.descubierto === null, fuera.respuesta);
   const ent2 = PARADA_02.lecciones[3].actividades.find((a) => a.tipo === "entrevista");
   const ajeno = ent2.datos.findIndex((d) => /^her name/i.test(d.respuesta)) + 1;
   if (ajeno) {
@@ -258,6 +267,19 @@ ok("actividad principal", actividadPrincipal(PARADA_01.lecciones[0].actividades)
   const turno = (e, pendientes, dicho, tareas = [], antes = []) =>
     tareasDelTurno({ e, pendientes: new Set(pendientes), dicho, modelo: { tareas, aMedias: [] }, antes, despidioAntes: false });
   ok("escena: la frase del ejemplo cuenta aunque el modelo no la cuente", turno(A2_P04.escenario, [4, 5], "No, I've never eaten haggis. Is it good?").tareas.includes(4));
+  // Tanda 1 (29 de octubre de 2026): una línea del ejemplo de otra tarea no cumple esta.
+  const { PARADA_05: B1_P05 } = await import("../src/lib/ruta/b1/parada-05.ts");
+  const biblioteca = "Yes. I've been volunteering at a library since January. I read stories to children every Saturday.";
+  ok("escena: la línea de la tarea 2 no cumple la 3", !turno(B1_P05.escenario, [2, 3, 4, 5], biblioteca, [2, 3]).tareas.includes(3));
+  ok("escena: su propia línea sí", turno(B1_P05.escenario, [3, 4, 5], "Because I love being outside, and I'm good with kids. I've been helping my little cousins with their homework for two years.", [3]).tareas.includes(3));
+  const super_ = CATALOGO.find((c) => c.clave === "cat:supermercado").escenario;
+  ok("escena: una línea del ejemplo sin tarea no cumple ninguna", !turno(super_, [3, 4, 5, 6], "Yes. Are there apples?", [3]).tareas.includes(3));
+  ok("escena: con algo suyo además, decide el modelo", turno(super_, [3, 4, 5, 6], "Yes. Are there apples? How much are they?", [3]).tareas.includes(3));
+  const { VIAJES: TODOS_LOS_VIAJES } = await import("../src/lib/ruta/viajes.ts");
+  const { escenarioDeViaje: deViaje } = await import("../src/lib/ruta/viaje.ts");
+  const roma = deViaje(TODOS_LOS_VIAJES.find((v) => v.numero === 6));
+  ok("escena: en un viaje, contar en pasado cumple \"Cuenta qué hiciste… (pasado)\"", turno(roma, [5, 6], "Last weekend I visited my grandparents and we cooked pasta together.").tareas.includes(5));
+  ok("escena: en presente no", !turno(roma, [5, 6], "On weekends I visit my grandparents and we cook pasta together.").tareas.includes(5));
   ok("escena: solo preguntar no es pagar", !turno(A2_P08.escenario, [5], "How much are the cough drops?", [5]).tareas.includes(5));
   ok("escena: pagar con \"Here you go\" sí", turno(A2_P08.escenario, [5], "Here you go. Thank you so much!", [5]).tareas.includes(5));
   ok("escena: preguntar el precio no es comparar", !turno(A2_P10.escenario, [3], "We need two bedrooms. How much is the park apartment?", [3]).tareas.includes(3));
@@ -287,6 +309,15 @@ const adv = A2_P01.lecciones[3].actividades.find((a) => a.tipo === "adivina");
   ok("adivina: adivina mal", mal.respuesta === "No! Ask me more." && mal.descartar.join() === "chef" && !mal.gano);
   const bien = respuestaDeAdivina(adv, { tipo: "adivina", fila: 0, opcion: 6, espanol: false }, ronda);
   ok("adivina: adivina bien y sigue otra ronda", bien.gano && /You got it! Let's play again/.test(bien.respuesta), bien.respuesta);
+  // La respuesta corta va con lo que preguntó el alumno (tanda 1, 29 de octubre de 2026).
+  const tienda = A2_P09.lecciones.flatMap((l) => l.actividades).find((a) => a.tipo === "adivina");
+  const caras = tienda.preguntas.findIndex((q) => /expensive/i.test(q.pregunta)) + 1;
+  const ellas = respuestaDeAdivina(tienda, { tipo: "pregunta", fila: caras, opcion: 0, espanol: false }, { secreto: "socks", descartadas: [], preguntadas: [], ultima: false }, "Are they expensive?");
+  ok("adivina: \"Are they expensive?\" → \"No, they aren't.\"", ellas.respuesta === "No, they aren't.", ellas.respuesta);
+  const tabla = respuestaDeAdivina(tienda, { tipo: "pregunta", fila: caras, opcion: 0, espanol: false }, { secreto: "socks", descartadas: [], preguntadas: [], ultima: false }, "Expensive?");
+  ok("adivina: sin forma conocida, la de la tabla", tabla.respuesta === "No, it wasn't.", tabla.respuesta);
+  ok("respuesta corta: they, he y she", respuestaCorta("Were they cheap?", true) === "Yes, they were." && respuestaCorta("Do they keep you warm?", false) === "No, they don't." && respuestaCorta("Is he a pilot?", true) === "Yes, he is." && respuestaCorta("Does she cook?", false) === "No, she doesn't.");
+  ok("adivina: la pregunta del alumno, después de lo que dijo antes", preguntaDelAlumno("Hmm, okay. Are they for your feet?") === "Are they for your feet?" && preguntaDelAlumno("Socks?") === null);
   const fin = respuestaDeAdivina(adv, { tipo: "adivina", fila: 0, opcion: 6, espanol: false }, { ...ronda, ultima: true });
   ok("adivina: la última ronda cierra", fin.gano && fin.respuesta.endsWith("Great job!"), fin.respuesta);
   const abierta = respuestaDeAdivina(adv, { tipo: "abierta", fila: 0, opcion: 0, espanol: false }, ronda);
@@ -305,6 +336,32 @@ const adv = A2_P01.lecciones[3].actividades.find((a) => a.tipo === "adivina");
   ok("adivina: lo que dice Allison al adivinar las medias", pares.gano && pares.respuesta === "Yes! I bought five pairs! You got it! Great job!", pares.respuesta);
   const orden = barajarRondas(["pilot", "nurse"], () => 0);
   ok("adivina: barajar no pierde rondas", orden.slice().sort().join() === "nurse,pilot");
+}
+
+// --- Narra: la parte que se pide además de la historia (tanda 1, 29 de octubre de 2026) ---
+{
+  const { seguimientoDeNarra, traeLaParte } = await import("../src/lib/ruta/seguimiento.ts");
+  const narraDe = async (archivo, nombre) =>
+    (await import(`../src/lib/ruta/b1/${archivo}`))[nombre].lecciones.flatMap((l) => l.actividades).find((a) => a.tipo === "narra");
+  const torta = seguimientoDeNarra(await narraDe("parada-09.ts", "PARADA_09"));
+  ok("narra p09: dos ideas con could o might", torta?.cuantas === 2 && torta.marcadores.join() === "could,might" && torta.pregunta === "What could they do now?", JSON.stringify(torta));
+  const historia = "First Zoe's mom baked a cake. Then the dog jumped on the table. After that the cake fell on the floor. Everybody looked at the cake.";
+  ok("narra p09: sin ideas falta la parte", !traeLaParte(historia, torta));
+  ok("narra p09: una idea no basta", !traeLaParte(`${historia} They could buy a new cake.`, torta));
+  ok("narra p09: dos ideas sí", traeLaParte(`${historia} They could buy a new cake, or they might eat ice cream.`, torta));
+  ok("narra p09: una con \"or\" también", traeLaParte(`${historia} Now they could buy a cake or eat ice cream.`, torta));
+  const robo = seguimientoDeNarra(await narraDe("repaso-1.ts", "REPASO_1"));
+  ok("narra repaso 1: la opinión", robo?.cuantas === 1 && robo.pregunta === "And what do you think?" && traeLaParte("In my opinion, she should use a better lock.", robo) && !traeLaParte("The thief had already left.", robo), JSON.stringify(robo));
+  const oso = seguimientoDeNarra(await narraDe("repaso-final.ts", "REPASO_FINAL"));
+  ok("narra repaso final: una idea con could, might o may", oso?.marcadores.join() === "could,might,may" && oso.pregunta === "And what could the family do?" && traeLaParte("So the family might keep the food in the car.", oso), JSON.stringify(oso));
+  const conParte = [
+    [await narraDe("parada-09.ts", "PARADA_09"), torta],
+    [await narraDe("repaso-1.ts", "REPASO_1"), robo],
+    [await narraDe("repaso-final.ts", "REPASO_FINAL"), oso],
+  ];
+  ok("narra: el modelo de Allison trae la parte", conParte.every(([a, s]) => traeLaParte(a.modelo, s)));
+  const sinParte = seguimientoDeNarra(await narraDe("parada-01.ts", "PARADA_01"));
+  ok("narra sin parte extra: nada", sinParte === null);
 }
 
 // --- Cuéntame y A2 ---------------------------------------------------------

@@ -320,6 +320,17 @@ body {
   .habla-ritmo { animation: habla-luz 1.1s ease-in-out infinite !important; }
 }
 
+/* El mapa de Escucha y elige: tras un error el camino se dibuja paso a paso
+   (la polilínea lleva pathLength="1") y las cuadras aparecen al pasar. */
+@keyframes camino-mapa {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes paso-mapa {
+  to { opacity: 1; }
+}
+.camino-mapa { stroke-dasharray: 1; stroke-dashoffset: 1; animation: camino-mapa 3.5s linear 0.3s forwards; }
+.paso-mapa { opacity: 0; animation: paso-mapa 0.25s ease-out forwards; }
+
 /* La flecha de ¿Qué es esto? sobre la foto: baja despacio hacia lo que señala. */
 @keyframes flecha-foto {
   0%, 100% { transform: translateY(-12%); }

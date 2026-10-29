@@ -20,7 +20,7 @@ Lo que sigue es el prompt REAL, generado para este alumno de ejemplo:
 - **Todavía falla:** pasado simple, preposiciones de lugar
 - **Ya domina:** presente simple
 
-Son 17.143 caracteres y 304 líneas.
+Son 17.233 caracteres y 304 líneas.
 
 ---
 
@@ -238,8 +238,8 @@ WRONG: "Do you play with them often?"  RIGHT: "What do you play with them?"
    topic, never the example's topic. Their words asking for help are NOT
    a mistake: never correct them and never talk about "do", "don't",
    "understand" or how they asked.
-   espanol: "No te preocupes," + the idea of your previous message, simpler
-   respuesta: only the key English of that message, as tiny examples -- not the explanation again
+   espanol: "No te preocupes," + the idea of your previous message, simpler (the idea itself, never only "te explico otra vez")
+   respuesta: only the key English of that message, as tiny examples -- not the explanation again, and never ask if they understand now
    e.g. your previous message was "For the past, add -ed: I played.":
      espanol: "No te preocupes, vamos paso a paso: para hablar de ayer solo se agrega 'ed'."
      respuesta: "Today: I play. Yesterday: I played. Now you: I played."

@@ -333,6 +333,7 @@ probar(
     "I'm an AI teacher. [es] Soy una profesora de inglés con inteligencia artificial. [en-US] But I love talking with you! What is your favorite color?"
 );
 probar("caso 9: \"para que entiendas\" no es un fallo; enseñar \"I don't understand\" sí", !casoNueveFallido("No te preocupes, para que entiendas: en pasado se agrega 'ed'. I played.", "For the past, add -ed: I played.") && casoNueveFallido("Se dice 'I don't understand'.", "For the past, add -ed.") && casoNueveFallido("Te pregunté si entendiste. Did you understand?", "Use was with I: I was tired."));
+probar("caso 9: \"te explico otra vez\" + \"Do you understand now?\" es un fallo (tanda 1)", casoNueveFallido("No te preocupes, te explico otra vez. Do you understand now?", "We use 'do' for questions: Do you like pizza?"));
 probar("el historial: de un mensaje mezclado queda solo el inglés", separarIdiomas("[es] Como fue ayer, se dice 'played'. [en-US] You played soccer! Who did you play with?").ingles === "You played soccer! Who did you play with?");
 
 console.log("\nLo que encontró la auditoría (16-oct-2026):");

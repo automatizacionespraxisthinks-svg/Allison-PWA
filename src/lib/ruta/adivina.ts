@@ -54,11 +54,15 @@ export interface RespuestaAdivina {
 const CORTAS: [RegExp, string, string][] = [
   [/^would you like\b/, "I'd love to!", "No, thanks."],
   [/^(do|does) (you|i)\b/, "Yes, I do.", "No, I don't."],
-  [/^does (it|he|she)\b/, "Yes, it does.", "No, it doesn't."],
+  [/^does (it|he|she)\b/, "Yes, $1 does.", "No, $1 doesn't."],
   [/^did (you|i)\b/, "Yes, I did.", "No, I didn't."],
   [/^are you\b/, "Yes, I am.", "No, I'm not."],
   [/^were you\b/, "Yes, I was.", "No, I wasn't."],
-  [/^(is|was) (it|he|she)\b/, "Yes, it $1.", "No, it $1n't."],
+  [/^(is|was) (it|he|she)\b/, "Yes, $2 $1.", "No, $2 $1n't."],
+  // Las medias son "they" (auditoría, 28 de octubre de 2026: "Are they
+  // expensive?" recibía "No, it wasn't.").
+  [/^(are|were) they\b/, "Yes, they $1.", "No, they $1n't."],
+  [/^(do|did) they\b/, "Yes, they $1.", "No, they $1n't."],
   [/^can (you|i)\b/, "Yes, I can.", "No, I can't."],
   [/^will you\b/, "Yes, I will.", "No, I won't."],
   [/^have you\b/, "Yes, I have.", "No, I haven't."],
@@ -71,9 +75,26 @@ export function respuestaCorta(pregunta: string, si: boolean): string {
     const m = p.match(re);
     if (!m) continue;
     const forma = si ? afirmativa : negativa;
-    return forma.replace("$1", m[1] ?? "");
+    return forma.replace("$1", m[1] ?? "").replace("$2", m[2] ?? "");
   }
   return si ? "Yes!" : "No!";
+}
+
+/**
+ * La pregunta del alumno, si tiene una forma que Allison sabe contestar
+ * ("Are they expensive?"): así la respuesta corta va con lo que él
+ * preguntó y no con la pregunta de la tabla ("Was it expensive?").
+ */
+export function preguntaDelAlumno(dicho: string | undefined): string | null {
+  if (!dicho) return null;
+  const frases = dicho
+    .split(/(?<=[.!?])\s+/)
+    .map((f) => f.trim().replace(/^(hmm+|ok(ay)?|so|and|well|allison)\b[\s,!.]*/i, ""))
+    .filter(Boolean);
+  const pregunta = [...frases].reverse().find((f) => /\?\s*$/.test(f)) ?? frases[frases.length - 1];
+  if (!pregunta) return null;
+  const p = pregunta.toLowerCase();
+  return CORTAS.some(([re]) => re.test(p)) ? pregunta : null;
 }
 
 /** "Are you a {x}?" con la opción. */
@@ -110,7 +131,7 @@ export function preguntaDeEjemplo(a: Adivina, descartadas: string[], preguntadas
  * separados"): si el alumno habla en español, le da la pregunta en inglés
  * para que la intente.
  */
-export function respuestaDeAdivina(a: Adivina, l: LecturaAdivina, r: RondaAdivina): RespuestaAdivina {
+export function respuestaDeAdivina(a: Adivina, l: LecturaAdivina, r: RondaAdivina, dicho?: string): RespuestaAdivina {
   const nada = { gano: false, descartar: [] as string[], preguntada: null };
   const fila = l.fila >= 1 && l.fila <= a.preguntas.length ? a.preguntas[l.fila - 1] : null;
   const opcion = l.opcion >= 1 && l.opcion <= a.opciones.length ? a.opciones[l.opcion - 1].nombre : null;
@@ -132,7 +153,8 @@ export function respuestaDeAdivina(a: Adivina, l: LecturaAdivina, r: RondaAdivin
     const descartar = a.opciones
       .map((o) => o.nombre)
       .filter((n) => !r.descartadas.includes(n) && fila.si.includes(n) !== si);
-    return { respuesta: respuestaCorta(fila.pregunta, si), gano: false, descartar, preguntada: l.fila, fallo: false, entendida: true };
+    const forma = preguntaDelAlumno(dicho) ?? fila.pregunta;
+    return { respuesta: respuestaCorta(forma, si), gano: false, descartar, preguntada: l.fila, fallo: false, entendida: true };
   }
 
   if (l.tipo === "adivina" && opcion) {

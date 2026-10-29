@@ -312,6 +312,13 @@ for (let rep = 0; rep < reps; rep++) {
   }
   const a = respuestaDeEntrevista({ entrevista, clasificacion: { tipo: "pregunta", dato: 2, espanol: false }, descubiertos: [], turno: 0 });
   revisar("Allison contesta y devuelve", a.respuesta.endsWith("And you?") && a.descubierto === 2, a.respuesta);
+  // "When is Luna's birthday?" salía como "How old is Luna?" y Allison
+  // contestaba "She is three." (tanda 1, 29 de octubre de 2026).
+  const fechas = PARADA_04.lecciones[3].actividades.find((x) => x.tipo === "entrevista");
+  const luna = await clasificarEntrevista({ entrevista: fechas, transcripcion: "When is Luna's birthday?" });
+  revisar('"When is Luna\'s birthday?" · no es la edad de Luna', luna.dato !== 4 && luna.tipo === "otro" && luna.fuera, JSON.stringify(luna));
+  const edad = await clasificarEntrevista({ entrevista: fechas, transcripcion: "How old is Luna?" });
+  revisar('"How old is Luna?" · la edad de Luna', edad.tipo === "pregunta" && edad.dato === 4, JSON.stringify(edad));
 
   // Adivina (A2): el modelo solo reconoce qué preguntó; nunca sabe la respuesta.
   console.log(`Adivina (vuelta ${rep + 1})`);

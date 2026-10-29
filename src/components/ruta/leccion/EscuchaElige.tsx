@@ -3,12 +3,13 @@
 import Image from "next/image";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { encuadreZona, escalaZona, srcIlustracion } from "@/lib/ruta/ilustracion";
-import type { EscuchaElige as Datos, Zona } from "@/lib/ruta/tipos";
+import type { EscuchaElige as Datos, DibujoOpcion, Zona } from "@/lib/ruta/tipos";
 import { desdeB1, type Nivel } from "@/lib/tipos";
 import { desbloquearVoz } from "@/lib/voz";
 import { Icono } from "../Iconos";
 import type { Contexto, FinActividad } from "./api";
 import { AllisonAro, BotonOir, Hoja, desordenar, useVoz } from "./comun";
+import { MapaCalles, edificioDe } from "./MapaCalles";
 
 /**
  * Escucha y elige (pantallas 1 y 2): oye la frase, que no está escrita,
@@ -57,6 +58,8 @@ export function EscuchaElige({
    * el primer dibujo acertaba (auditoría, 28 de octubre de 2026).
    */
   const orden = useMemo(() => desordenar(a.opciones.map((_, i) => i), frase), [a.opciones, frase]);
+  /** Las opciones son edificios: un solo mapa donde se toca el edificio. */
+  const mapa = a.opciones.every((o) => edificioDe(o));
   /** Dos opciones con la misma foto y sin su zona marcada: solo se distinguen por la descripción. */
   const sinDistinguir = (o: Datos["opciones"][number]) =>
     !!o.imagen && !o.zona && a.opciones.filter((x) => x.imagen === o.imagen).length > 1;
@@ -142,65 +145,84 @@ export function EscuchaElige({
         </div>
       )}
       {fallidas.length > 0 && !acierto && (
-        <p className="text-center text-sm font-bold text-oro">{b1 ? "¡Casi! Escúchala otra vez y elige." : "¡Casi! Escúchala despacio y elige otra vez."}</p>
+        <p className="text-center text-sm font-bold text-oro">
+          {b1
+            ? "¡Casi! Escúchala otra vez y elige."
+            : mapa
+              ? "¡Casi! Escúchala despacio y sigue el camino."
+              : "¡Casi! Escúchala despacio y elige otra vez."}
+        </p>
       )}
 
-      <div className="grid grid-cols-3 gap-2">
-        {orden.map((i, posicion) => {
-          const o = a.opciones[i];
-          const ok = acierto && i === a.correcta;
-          const sel = elegida === i;
-          const descartada = fallidas.includes(i);
-          const color = ok ? "text-menta" : sel ? "text-primario" : "text-texto-suave";
-          // "Pizza" o "Chicago" se dicen igual en español: no hay nada que traducir.
-          const traducible = !!o.etiquetaEs && o.etiquetaEs.toLowerCase() !== o.etiqueta?.toLowerCase();
-          const traducida = traducidas.includes(i);
-          return (
-            <div key={i} className={`flex min-w-0 flex-col items-center gap-1 text-center ${descartada ? "opacity-40" : ""}`}>
-              <button
-                type="button"
-                disabled={acierto || descartada}
-                onClick={() => setElegida(i)}
-                aria-pressed={sel}
-                className={`relative grid aspect-square w-full place-items-center overflow-hidden rounded-2xl border-2 bg-superficie-2 transition disabled:cursor-default ${
-                  ok ? "border-menta" : sel ? "border-primario" : "border-transparent"
-                }`}
-              >
-                {/* La descripción delata la respuesta ("Tom, un muchacho…"): no va de texto alternativo. */}
-                <Opcion o={o} nivel={ctx.nivel} alt={o.etiqueta ?? `Opción ${posicion + 1}`} />
-                {ok && (
-                  <span className="absolute top-1.5 right-1.5 grid size-7 place-items-center rounded-full bg-menta text-white">
-                    <Icono nombre="check" className="size-4 stroke-[3]" />
-                  </span>
-                )}
-              </button>
-              {/* La etiqueta va en inglés: un toque la dice en voz alta y muestra
-                  su traducción, sin contar como ayuda. Nombra lo que muestra el
-                  dibujo, sin decir cuál es la respuesta. La descripción sí la
-                  delata ("Tom, un muchacho…"): solo se muestra cuando dos
-                  opciones usan la misma foto y no tienen zona (con zona, cada
-                  tarjeta ya muestra ampliada a su persona). */}
-              {o.etiqueta ? (
+      {mapa ? (
+        <MapaCalles
+          opciones={a.opciones}
+          parque={a.parque}
+          orden={orden}
+          elegida={elegida}
+          fallidas={fallidas}
+          correcta={a.correcta}
+          acierto={acierto}
+          onElegir={setElegida}
+        />
+      ) : (
+        <div className="grid grid-cols-3 gap-2">
+          {orden.map((i, posicion) => {
+            const o = a.opciones[i];
+            const ok = acierto && i === a.correcta;
+            const sel = elegida === i;
+            const descartada = fallidas.includes(i);
+            const color = ok ? "text-menta" : sel ? "text-primario" : "text-texto-suave";
+            // "Pizza" o "Chicago" se dicen igual en español: no hay nada que traducir.
+            const traducible = !!o.etiquetaEs && o.etiquetaEs.toLowerCase() !== o.etiqueta?.toLowerCase();
+            const traducida = traducidas.includes(i);
+            return (
+              <div key={i} className={`flex min-w-0 flex-col items-center gap-1 text-center ${descartada ? "opacity-40" : ""}`}>
                 <button
                   type="button"
-                  onClick={() => {
-                    desbloquearVoz();
-                    void decir(o.etiqueta ?? "");
-                    if (traducible && !traducida) setTraducidas((t) => [...t, i]);
-                  }}
-                  className={`px-1 py-0.5 text-[13px] leading-tight font-extrabold text-balance ${color}`}
+                  disabled={acierto || descartada}
+                  onClick={() => setElegida(i)}
+                  aria-pressed={sel}
+                  className={`relative grid aspect-square w-full place-items-center overflow-hidden rounded-2xl border-2 bg-superficie-2 transition disabled:cursor-default ${
+                    ok ? "border-menta" : sel ? "border-primario" : "border-transparent"
+                  }`}
                 >
-                  <Icono nombre="play" className="mr-0.5 inline size-3 align-[-1px]" />
-                  <span className="underline decoration-dotted underline-offset-[3px]">{o.etiqueta}</span>
-                  {traducida && <span className="block pt-0.5 text-xs font-bold text-texto-suave">{o.etiquetaEs}</span>}
+                  {/* La descripción delata la respuesta ("Tom, un muchacho…"): no va de texto alternativo. */}
+                  <Opcion o={o} nivel={ctx.nivel} alt={o.etiqueta ?? `Opción ${posicion + 1}`} />
+                  {ok && (
+                    <span className="absolute top-1.5 right-1.5 grid size-7 place-items-center rounded-full bg-menta text-white">
+                      <Icono nombre="check" className="size-4 stroke-[3]" />
+                    </span>
+                  )}
                 </button>
-              ) : (
-                sinDistinguir(o) && <span className={`line-clamp-2 text-xs font-extrabold ${color}`}>{o.descripcion}</span>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                {/* La etiqueta va en inglés: un toque la dice en voz alta y muestra
+                    su traducción, sin contar como ayuda. Nombra lo que muestra el
+                    dibujo, sin decir cuál es la respuesta. La descripción sí la
+                    delata ("Tom, un muchacho…"): solo se muestra cuando dos
+                    opciones usan la misma foto y no tienen zona (con zona, cada
+                    tarjeta ya muestra ampliada a su persona). */}
+                {o.etiqueta ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      desbloquearVoz();
+                      void decir(o.etiqueta ?? "");
+                      if (traducible && !traducida) setTraducidas((t) => [...t, i]);
+                    }}
+                    className={`px-1 py-0.5 text-[13px] leading-tight font-extrabold text-balance ${color}`}
+                  >
+                    <Icono nombre="play" className="mr-0.5 inline size-3 align-[-1px]" />
+                    <span className="underline decoration-dotted underline-offset-[3px]">{o.etiqueta}</span>
+                    {traducida && <span className="block pt-0.5 text-xs font-bold text-texto-suave">{o.etiquetaEs}</span>}
+                  </button>
+                ) : (
+                  sinDistinguir(o) && <span className={`line-clamp-2 text-xs font-extrabold ${color}`}>{o.descripcion}</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {acierto ? (
         <Hoja
@@ -292,7 +314,7 @@ function Opcion({
   nivel,
   alt,
 }: {
-  o: { imagen?: string; texto?: string; descripcion: string; zona?: Zona };
+  o: { imagen?: string; texto?: string; dibujo?: DibujoOpcion; descripcion: string; zona?: Zona };
   nivel: Nivel;
   alt: string;
 }) {
@@ -320,6 +342,7 @@ function Opcion({
     );
   }
   if (o.imagen) return <span className="px-2 text-[12px] leading-tight font-extrabold text-texto-suave">{o.descripcion}</span>;
+  if (o.dibujo && "semaforo" in o.dibujo) return <Semaforo estado={o.dibujo.semaforo} />;
   const hora = o.texto?.match(/^(\d{1,2}):(\d{2})$/);
   if (hora) return <Reloj horas={Number(hora[1])} minutos={Number(hora[2])} etiqueta={o.descripcion} />;
   // Las tarjetas de B1 llevan frases ("He made a thank-you card."): letra más chica.
@@ -327,6 +350,40 @@ function Opcion({
     return <span className="px-1.5 text-[13px] leading-tight font-extrabold text-texto sm:text-[15px]">{o.texto}</span>;
   }
   return <span className="px-1 text-lg font-black tracking-wide text-texto sm:text-xl">{o.texto}</span>;
+}
+
+const SEMAFORO = { mano: "la mano roja", caminando: "la figura caminando", apagado: "apagado" } as const;
+
+/**
+ * Un semáforo peatonal de Estados Unidos: la mano arriba (roja) y la
+ * figura caminando abajo (blanca); la que no está encendida queda oscura.
+ * La caja es oscura en los dos temas, como en la calle.
+ */
+export function Semaforo({ estado }: { estado: keyof typeof SEMAFORO }) {
+  const mano = estado === "mano" ? "#ef4444" : "#2f3644";
+  const figura = estado === "caminando" ? "#f8fafc" : "#2f3644";
+  return (
+    <svg viewBox="0 0 100 100" role="img" aria-label={`Semáforo peatonal: ${SEMAFORO[estado]}`} className="size-[82%]">
+      <rect x="27" y="4" width="46" height="92" rx="9" fill="#1b2230" stroke="var(--borde)" strokeWidth="2.5" />
+      <rect x="32" y="9" width="36" height="39" rx="6" fill="#0f141d" />
+      <rect x="32" y="52" width="36" height="39" rx="6" fill="#0f141d" />
+      {/* La mano: cuatro dedos, la palma y el pulgar. */}
+      <g fill={mano}>
+        {[39, 44, 49, 54].map((x, i) => (
+          <rect key={x} x={x} y={[18, 15, 16, 19][i]} width="4.2" height="14" rx="2.1" />
+        ))}
+        <rect x="39" y="26" width="19.2" height="15" rx="5" />
+        <rect x="33" y="28" width="4.2" height="11" rx="2.1" transform="rotate(-32 35 33)" />
+      </g>
+      {/* La figura caminando. */}
+      <g stroke={figura} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" fill="none">
+        <circle cx="52" cy="59" r="3.6" fill={figura} stroke="none" />
+        <path d="M 51 65 L 48.5 75" />
+        <path d="M 50.5 67 L 44.5 71.5 M 50.5 67 L 56 71" />
+        <path d="M 48.5 75 L 43.5 85 M 48.5 75 L 55 84" />
+      </g>
+    </svg>
+  );
 }
 
 /** Un reloj de manecillas, sin números (como en las ilustraciones aprobadas). */

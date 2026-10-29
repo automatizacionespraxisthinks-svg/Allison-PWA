@@ -146,19 +146,22 @@ export const REPASO_FINAL: Repaso = {
           traduccion: ["Sigue derecho una cuadra y gira a la derecha. El hotel está frente al parque."],
           opciones: [
             {
-              texto: "1 cuadra, derecha, frente al parque",
+              dibujo: { edificio: { cuadras: 1, gira: "derecha", lado: "derecha" } },
               descripcion: "El edificio frente al parque después de seguir derecho una cuadra y girar a la derecha (el hotel)",
             },
             {
-              texto: "1 cuadra, derecha, al lado del parque",
+              dibujo: { edificio: { cuadras: 1, gira: "derecha", lado: "izquierda", lote: 2 } },
               descripcion: "El edificio al lado del parque después de seguir derecho una cuadra y girar a la derecha",
             },
             {
-              texto: "1 cuadra, izquierda, frente al parque",
+              dibujo: { edificio: { cuadras: 1, gira: "izquierda", lado: "izquierda" } },
               descripcion: "El edificio frente al parque después de seguir derecho una cuadra y girar a la izquierda",
             },
           ],
           correcta: 0,
+          // El parque al final de la calle: el hotel y el de la izquierda quedan
+          // frente a él; el otro, a su lado.
+          parque: 1,
           porRevisar: [
             "traduccion",
             'quienHabla: el documento solo dice "Oye:"; se puso Allison',

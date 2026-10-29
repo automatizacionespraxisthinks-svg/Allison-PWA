@@ -97,12 +97,38 @@ export interface EscuchaElige extends ActividadBase {
    * llevan imagen sino `texto`. `etiqueta` (A1 y A2) es una palabra en
    * inglés que se ve debajo del dibujo y nombra lo que muestra
    * ("Morning", "Green hoodie"); `etiquetaEs` es su traducción, que
-   * aparece con un toque. Va en las tres opciones o en ninguna.
+   * aparece con un toque. Va en las tres opciones o en ninguna. `dibujo`:
+   * lo que la app dibuja cuando no es una hora (un semáforo, un edificio
+   * del mapa).
    */
-  opciones: { imagen?: Ilustracion; texto?: string; descripcion: string; zona?: Zona; etiqueta?: string; etiquetaEs?: string }[];
+  opciones: {
+    imagen?: Ilustracion;
+    texto?: string;
+    dibujo?: DibujoOpcion;
+    descripcion: string;
+    zona?: Zona;
+    etiqueta?: string;
+    etiquetaEs?: string;
+  }[];
   /** Índice de la opción correcta. */
   correcta: number;
+  /** Mapa (opciones con `edificio`): el parque, al final de la calle en esa cuadra, como una T. */
+  parque?: number;
 }
+
+/**
+ * Lo que la app dibuja en una opción de Escucha y elige. Un semáforo
+ * peatonal (la mano roja, la figura caminando o apagado), o un edificio de
+ * un mapa sencillo: desde "You are here" se sigue derecho `cuadras`
+ * cuadras, se gira y el edificio queda a ese lado de la calle, en el lote
+ * `lote` desde la esquina (1 si no se dice). Las tres opciones con
+ * edificio van en un solo mapa y se toca el edificio.
+ */
+export type DibujoOpcion =
+  | { semaforo: "mano" | "caminando" | "apagado" }
+  | { edificio: { cuadras: number; gira: Lado; lado: Lado; lote?: number } };
+
+type Lado = "izquierda" | "derecha";
 
 /** Ve una imagen y dice la palabra. Evaluación corta. */
 export interface QueEsEsto extends ActividadBase {
