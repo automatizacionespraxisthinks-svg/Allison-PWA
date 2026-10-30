@@ -31,12 +31,12 @@ export const REPASO_1: Repaso = {
           traduccion: ["Priya normalmente estudia en la biblioteca después del colegio.", "Pero el sábado pasado se quedó en casa y vio televisión."],
           pregunta: "¿Qué hizo Priya el sábado pasado?",
           opciones: [
-            { imagen: "f-priya-biblioteca", descripcion: "Priya en la biblioteca", etiqueta: "Library", etiquetaEs: "Biblioteca" },
-            { imagen: "f-priya-sofa-pasta", descripcion: "Priya en el sofá frente a la TV", etiqueta: "Watch TV", etiquetaEs: "Ver televisión" },
-            { imagen: "f-priya-estadio", descripcion: "Priya en un estadio", etiqueta: "Stadium", etiquetaEs: "Estadio" },
+            { imagen: "f-priya-biblioteca", descripcion: "Priya en la biblioteca", etiqueta: "Go to the library", etiquetaEs: "Ir a la biblioteca" },
+            { imagen: "f-priya-sofa-pasta", descripcion: "Priya en el sofá frente a la TV", etiqueta: "Stay home and watch TV", etiquetaEs: "Ver televisión en casa" },
+            { imagen: "f-priya-estadio", descripcion: "Priya en un estadio", etiqueta: "Go to the stadium", etiquetaEs: "Ir al estadio" },
           ],
           correcta: 1,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
+          porRevisar: ["etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
         },
         {
           paso: 2,
@@ -88,12 +88,12 @@ export const REPASO_1: Repaso = {
           traduccion: ["Anoche a las nueve, Priya estaba cocinando la cena cuando su mamá llamó."],
           pregunta: "¿Qué estaba haciendo Priya cuando su mamá llamó?",
           opciones: [
-            { imagen: "f-priya-leyendo-hermano", descripcion: "Priya leyendo", etiqueta: "Read", etiquetaEs: "Leer" },
-            { imagen: "f-priya-cocinando", descripcion: "Priya cocinando", etiqueta: "Cook", etiquetaEs: "Cocinar" },
-            { imagen: "f-priya-dormida", descripcion: "Priya dormida", etiqueta: "Sleep", etiquetaEs: "Dormir" },
+            { imagen: "f-priya-leyendo-hermano", descripcion: "Priya leyendo", etiqueta: "Reading", etiquetaEs: "Leyendo" },
+            { imagen: "f-priya-cocinando", descripcion: "Priya cocinando", etiqueta: "Cooking dinner", etiquetaEs: "Cocinando la cena" },
+            { imagen: "f-priya-dormida", descripcion: "Priya dormida", etiqueta: "Sleeping", etiquetaEs: "Durmiendo" },
           ],
           correcta: 1,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a Priya cocinando"'],
+          porRevisar: ["opciones: f-priya-dormida es un dibujo nuevo, Priya dormida sin libro; antes tenía un libro abierto y se confundía con leer (cambio del 30 de octubre de 2026)", "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a Priya cocinando"'],
         },
         {
           paso: 2,
@@ -143,10 +143,10 @@ export const REPASO_1: Repaso = {
           opciones: [
             { imagen: "f-plan-torta", descripcion: "Ben y su abuela horneando una torta", etiqueta: "Bake a cake", etiquetaEs: "Hornear una torta" },
             { imagen: "f-parque-futbol", descripcion: "Niños jugando fútbol en un parque", etiqueta: "Play soccer", etiquetaEs: "Jugar fútbol" },
-            { imagen: "f-cine", descripcion: "Un cine", etiqueta: "Movie theater", etiquetaEs: "Cine" },
+            { imagen: "f-cine", descripcion: "Un cine", etiqueta: "Go to the movies", etiquetaEs: "Ir a cine" },
           ],
           correcta: 1,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a los niños jugando fútbol"'],
+          porRevisar: ["opciones: f-parque-futbol es un dibujo nuevo, solo niños jugando con el balón (cambio del 30 de octubre de 2026)", "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a los niños jugando fútbol"'],
         },
         {
           paso: 2,
@@ -198,10 +198,10 @@ export const REPASO_1: Repaso = {
           opciones: [
             { imagen: "a1/f-mujer-parque", descripcion: "Una mujer caminando en un parque", etiqueta: "Walk in the park", etiquetaEs: "Caminar en el parque" },
             { imagen: "a1/f-amigas-cafe", descripcion: "Dos mujeres tomando café", etiqueta: "Have coffee", etiquetaEs: "Tomar café" },
-            { imagen: "f-hermanas-pelicula", descripcion: "Dos mujeres viendo una película", etiqueta: "Watch a movie", etiquetaEs: "Ver una película" },
+            { imagen: "a1/f-bailar", descripcion: "Una muchacha bailando", etiqueta: "Dance", etiquetaEs: "Bailar" },
           ],
           correcta: 0,
-          porRevisar: ["traduccion", 'pregunta: el documento no la escribe; sale de "Toca a la mujer en el parque"'],
+          porRevisar: ["opciones: «Watch a movie» también era verdad (en la ficha, Allison vio una película ese domingo en la noche); ahora es bailar (cambio del 30 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a la mujer en el parque"'],
         },
         {
           paso: 2,

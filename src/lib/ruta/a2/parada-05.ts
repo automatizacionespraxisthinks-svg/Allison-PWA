@@ -74,10 +74,10 @@ export const PARADA_05: Parada = {
           opciones: [
             { imagen: "f-plan-torta", descripcion: "Ben y su abuela horneando una torta", etiqueta: "Bake a cake", etiquetaEs: "Hornear una torta" },
             { imagen: "f-parque-futbol", descripcion: "Niños jugando fútbol en un parque", etiqueta: "Play soccer", etiquetaEs: "Jugar fútbol" },
-            { imagen: "f-cine", descripcion: "Un cine", etiqueta: "Movie theater", etiquetaEs: "Cine" },
+            { imagen: "f-cine", descripcion: "Un cine", etiqueta: "Go to the movies", etiquetaEs: "Ir a cine" },
           ],
           correcta: 0,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a Ben con su abuela"'],
+          porRevisar: ["opciones: f-parque-futbol es un dibujo nuevo, solo niños jugando con el balón (cambio del 30 de octubre de 2026)", "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a Ben con su abuela"'],
         },
         {
           paso: 2,
@@ -183,12 +183,12 @@ export const PARADA_05: Parada = {
           traduccion: ['Ben dice: "Mira esas nubes. ¡Va a llover!"', 'Priya dice: "Bueno, llevo mi paraguas."'],
           pregunta: "¿Qué va a llevar Priya?",
           opciones: [
-            { imagen: "a1/f-paraguas", descripcion: "Un paraguas", etiqueta: "Umbrella", etiquetaEs: "Paraguas" },
+            { imagen: "a1/f-paraguas", descripcion: "Un paraguas", etiqueta: "An umbrella", etiquetaEs: "Un paraguas" },
             { imagen: "f-gafas-sol", descripcion: "Unas gafas de sol", etiqueta: "Sunglasses", etiquetaEs: "Gafas de sol" },
             { imagen: "a1/f-tenis", descripcion: "Unos tenis", etiqueta: "Sneakers", etiquetaEs: "Tenis" },
           ],
           correcta: 0,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca el paraguas"'],
+          porRevisar: ["etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca el paraguas"'],
         },
         {
           paso: 2,

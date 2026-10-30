@@ -202,6 +202,20 @@ function revisarActividad(a, donde, imagenes) {
         }
         if (a.parque && !edificios.length) fallo(donde, "parque sin mapa");
       }
+      // En la imagen: una sola imagen y, por persona, un recuadro que se toca, sin salirse ni cruzarse.
+      if (a.enLaImagen) {
+        const ops = a.opciones ?? [];
+        if (new Set(ops.map((o) => o.imagen)).size !== 1 || !ops[0]?.imagen) fallo(donde, "enLaImagen: las tres opciones van con la misma imagen");
+        const cajas = ops.map((o) => o.zona && { x0: o.zona.x - (o.zona.ancho ?? 26) / 2, x1: o.zona.x + (o.zona.ancho ?? 26) / 2, y0: o.zona.y - (o.zona.alto ?? 60) / 2, y1: o.zona.y + (o.zona.alto ?? 60) / 2 });
+        if (cajas.some((c) => !c)) fallo(donde, "enLaImagen: cada persona necesita su zona");
+        else {
+          if (cajas.some((c) => c.x0 < 0 || c.x1 > 100 || c.y0 < 0 || c.y1 > 100)) fallo(donde, "enLaImagen: una zona se sale de la imagen");
+          for (let i = 0; i < cajas.length; i++)
+            for (let j = i + 1; j < cajas.length; j++)
+              if (cajas[i].x0 < cajas[j].x1 && cajas[j].x0 < cajas[i].x1 && cajas[i].y0 < cajas[j].y1 && cajas[j].y0 < cajas[i].y1)
+                fallo(donde, "enLaImagen: dos zonas se cruzan (al tocar no se sabe a quién)");
+        }
+      }
       {
         const conEtiqueta = (a.opciones ?? []).filter((o) => o.etiqueta?.trim()).length;
         if (conEtiqueta && conEtiqueta !== a.opciones.length) fallo(donde, "la etiqueta va en las tres opciones o en ninguna");

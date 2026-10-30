@@ -70,21 +70,24 @@ export const PARADA_10: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison muestra fotos del equipo de fútbol de Ben: "Noah is taller than Jack and Ethan." (no está escrito). Elige a Noah entre tres dibujos con el mismo fondo y una regla de medir en la pared: un muchacho mediano, uno alto y uno bajo, sin nombres. Para elegir hay que entender "taller than".',
+            'Allison cuenta: "Noah is very tall. He\'s taller than Jack and Ethan." (no está escrito). Una sola imagen con tres muchachos frente a la misma regla de medir en la pared: uno mediano, uno alto y uno bajo, sin nombres. Se toca a Noah en la imagen.',
           siRespondeMal: "Se repite el audio despacio y elige otra vez.",
           quienHabla: "Allison",
-          audio: ["Noah is taller than Jack and Ethan."],
-          traduccion: ["Noah es más alto que Jack y Ethan."],
+          audio: ["Noah is very tall.", "He's taller than Jack and Ethan."],
+          traduccion: ["Noah es muy alto.", "Es más alto que Jack y Ethan."],
           pregunta: "¿Quién es Noah?",
           // Sin nombres en el dibujo (decidido el 17 de octubre de 2026): con
           // los nombres debajo se elegía leyendo, sin entender "taller".
+          // Una sola imagen y se toca a la persona (30 de octubre de 2026): con
+          // un dibujo por muchacho cada uno traía su regla y el bajo no se veía bajo.
+          enLaImagen: true,
           opciones: [
-            { imagen: "f-muchacho-mediano", descripcion: "Un muchacho de estatura media junto a la regla", etiqueta: "Average height", etiquetaEs: "Mediano" },
-            { imagen: "f-muchacho-alto", descripcion: "Un muchacho alto junto a la regla", etiqueta: "Tall", etiquetaEs: "Alto" },
-            { imagen: "f-muchacho-bajo", descripcion: "Un muchacho bajo junto a la regla", etiqueta: "Short", etiquetaEs: "Bajo" },
+            { imagen: "f-tres-muchachos", descripcion: "El muchacho de estatura media, a la izquierda", zona: { x: 19.5, y: 57, ancho: 24, alto: 82 }, etiqueta: "Average height", etiquetaEs: "De estatura media" },
+            { imagen: "f-tres-muchachos", descripcion: "El muchacho alto, en el centro", zona: { x: 53, y: 50.5, ancho: 27, alto: 94 }, etiqueta: "Tall", etiquetaEs: "Alto" },
+            { imagen: "f-tres-muchachos", descripcion: "El muchacho bajo, a la derecha", zona: { x: 84, y: 66.5, ancho: 22, alto: 63 }, etiqueta: "Short", etiquetaEs: "Bajo" },
           ],
           correcta: 1,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a Noah, el más alto"'],
+          porRevisar: ["opciones: una sola imagen nueva con los tres muchachos frente a la misma regla (f-tres-muchachos), y se toca al muchacho; antes eran tres dibujos y el bajo, con otra regla, no se veía más bajo (cambio del 30 de octubre de 2026)", "audio: dice «very tall», la palabra de la etiqueta, y sigue con «taller than» (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a Noah, el más alto"'],
         },
         {
           paso: 2,
@@ -195,12 +198,12 @@ export const PARADA_10: Parada = {
           traduccion: ["El tren es más rápido que el bus, y es más cómodo.", "Pero el bus es más barato."],
           pregunta: "¿Cuál es más barato?",
           opciones: [
-            { imagen: "f-tren", descripcion: "Un tren", etiqueta: "Train", etiquetaEs: "Tren" },
-            { imagen: "f-avion", descripcion: "Un avión", etiqueta: "Plane", etiquetaEs: "Avión" },
-            { imagen: "a1/c-bus", descripcion: "Un bus", etiqueta: "Bus", etiquetaEs: "Bus" },
+            { imagen: "f-tren", descripcion: "Un tren", etiqueta: "The train", etiquetaEs: "El tren" },
+            { imagen: "f-avion", descripcion: "Un avión", etiqueta: "The plane", etiquetaEs: "El avión" },
+            { imagen: "f-bus", descripcion: "Un bus rojo de dos pisos", etiqueta: "The bus", etiquetaEs: "El bus" },
           ],
           correcta: 2,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
+          porRevisar: ["opciones: el bus es un dibujo nuevo (f-bus), grande y entero como el tren y el avión; a1/c-bus era una calle con el bus pequeño y cortado (cambio del 30 de octubre de 2026)", "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
         },
         {
           paso: 2,
@@ -256,12 +259,12 @@ export const PARADA_10: Parada = {
           traduccion: ["Mi apartamento es pequeño, pero queda frente a un parque.", "El apartamento de mi hermana es más grande."],
           pregunta: "¿Dónde está el apartamento de Allison?",
           opciones: [
-            { imagen: "a1/f-barrio", descripcion: "Una calle con un parque al lado", etiqueta: "Street with a park", etiquetaEs: "Calle con parque" },
-            { imagen: "a1/f-playa-la", descripcion: "Una playa", etiqueta: "Beach", etiquetaEs: "Playa" },
-            { imagen: "f-granjero-vacas", descripcion: "Una granja", etiqueta: "Farm", etiquetaEs: "Granja" },
+            { imagen: "f-apartamento-parque", descripcion: "Un edificio de apartamentos frente a un parque", etiqueta: "Across from a park", etiquetaEs: "Frente a un parque" },
+            { imagen: "a1/f-playa-la", descripcion: "Una playa", etiqueta: "Near the beach", etiquetaEs: "Cerca de la playa" },
+            { imagen: "f-granjero-vacas", descripcion: "Una granja", etiqueta: "On a farm", etiquetaEs: "En una granja" },
           ],
           correcta: 0,
-          porRevisar: ["traduccion"],
+          porRevisar: ["opciones: la correcta es un dibujo nuevo, el edificio de apartamentos frente a un parque (f-apartamento-parque); a1/f-barrio era una casa con jardín, y la ficha de Allison dice apartamento y sin patio (cambio del 30 de octubre de 2026)", "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "traduccion"],
         },
         {
           paso: 2,
@@ -412,9 +415,9 @@ export const PARADA_10: Parada = {
       uso: "Escenario",
     },
     {
-      archivos: ["f-muchacho-alto", "f-muchacho-mediano", "f-muchacho-bajo"],
+      archivos: ["f-tres-muchachos"],
       muestra:
-        "Tres muchachos del equipo de fútbol de Ben, cada uno en su dibujo, con el mismo fondo y la misma regla de medir en la pared: uno alto, uno mediano y uno bajo. Sin nombres",
+        "Tres muchachos en una sola imagen, frente a la misma regla de medir en la pared: uno mediano a la izquierda, uno alto en el centro y uno bajo a la derecha. Sin nombres (nueva, 30 de octubre de 2026; reemplaza a f-muchacho-alto, f-muchacho-mediano y f-muchacho-bajo)",
       uso: "Lección 1 (paso 1)",
     },
     {
@@ -428,8 +431,8 @@ export const PARADA_10: Parada = {
       uso: "Lección 2 (paso 1)",
     },
     {
-      archivos: ["f-tren", "f-avion", "a1/c-bus"],
-      muestra: "Un tren, un avión (de la parada 4) y un bus (de A1)",
+      archivos: ["f-tren", "f-avion", "f-bus"],
+      muestra: "Un tren, un avión y un bus rojo de dos pisos (de la parada 4)",
       uso: "Lección 3 (paso 1)",
     },
     {
@@ -438,8 +441,8 @@ export const PARADA_10: Parada = {
       uso: "Lección 3 (paso 2)",
     },
     {
-      archivos: ["a1/f-barrio", "a1/f-playa-la", "f-granjero-vacas"],
-      muestra: "Una calle con un parque al lado, una playa (de A1) y una granja (de la parada 1)",
+      archivos: ["f-apartamento-parque", "a1/f-playa-la", "f-granjero-vacas"],
+      muestra: "Un edificio de apartamentos frente a un parque (nuevo, 30 de octubre de 2026), una playa (de A1) y una granja (de la parada 1)",
       uso: "Lección 4 (paso 1)",
     },
     {

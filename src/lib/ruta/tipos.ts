@@ -36,6 +36,11 @@ export interface Zona {
    * en porcentaje del ancho (más chico = más ampliado). Por omisión, 42.
    */
   ancho?: number;
+  /**
+   * Solo en Escucha y elige con `enLaImagen`: el alto de la persona que se
+   * toca, en porcentaje del alto de la imagen (`ancho` es su ancho).
+   */
+  alto?: number;
 }
 
 export type TipoActividad =
@@ -116,6 +121,13 @@ export interface EscuchaElige extends ActividadBase {
   correcta: number;
   /** Mapa (opciones con `edificio`): el parque, al final de la calle en esa cuadra, como una T. */
   parque?: number;
+  /**
+   * Las opciones son personas de una misma imagen (con `zona`, `ancho` y
+   * `alto`): se ve la imagen entera y se toca a la persona, en vez de una
+   * tarjeta recortada por persona. Para comparar de un vistazo, a la misma
+   * escala (A2, parada 10: tres muchachos de distinta estatura).
+   */
+  enLaImagen?: boolean;
 }
 
 /**

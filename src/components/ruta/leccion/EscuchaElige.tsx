@@ -9,6 +9,7 @@ import { desbloquearVoz } from "@/lib/voz";
 import { Icono } from "../Iconos";
 import type { Contexto, FinActividad } from "./api";
 import { AllisonAro, BotonOir, Hoja, desordenar, useVoz } from "./comun";
+import { EnLaImagen } from "./EnLaImagen";
 import { MapaCalles, edificioDe } from "./MapaCalles";
 
 /**
@@ -168,7 +169,46 @@ export function EscuchaElige({
         </p>
       )}
 
-      {mapa ? (
+      {a.enLaImagen ? (
+        <div className="flex flex-col gap-2">
+          <EnLaImagen
+            opciones={a.opciones}
+            nivel={ctx.nivel}
+            elegida={elegida}
+            fallidas={fallidas}
+            correcta={a.correcta}
+            acierto={acierto}
+            onElegir={elegir}
+          />
+          {/* Las etiquetas en el orden de las personas, de izquierda a derecha: suenan y se traducen. */}
+          <div className="grid grid-cols-3 gap-2">
+            {a.opciones
+              .map((o, i) => ({ o, i }))
+              .sort((p, q) => (p.o.zona?.x ?? 0) - (q.o.zona?.x ?? 0))
+              .map(({ o, i }) => {
+                const ok = acierto && i === a.correcta;
+                const color = ok ? "text-menta" : elegida === i ? "text-primario" : "text-texto-suave";
+                const traducible = !!o.etiquetaEs && o.etiquetaEs.toLowerCase() !== o.etiqueta?.toLowerCase();
+                return o.etiqueta ? (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      desbloquearVoz();
+                      void decir(o.etiqueta ?? "");
+                      if (traducible && !traducidas.includes(i)) setTraducidas((t) => [...t, i]);
+                    }}
+                    className={`px-1 py-0.5 text-center text-[13px] leading-tight font-extrabold text-balance ${color} ${fallidas.includes(i) ? "opacity-40" : ""}`}
+                  >
+                    <Icono nombre="play" className="mr-0.5 inline size-3 align-[-1px]" />
+                    <span className="underline decoration-dotted underline-offset-[3px]">{o.etiqueta.replaceAll("-", "‑")}</span>
+                    {traducidas.includes(i) && <span className="block pt-0.5 text-xs font-bold text-texto-suave">{o.etiquetaEs}</span>}
+                  </button>
+                ) : null;
+              })}
+          </div>
+        </div>
+      ) : mapa ? (
         <MapaCalles
           opciones={a.opciones}
           parque={a.parque}

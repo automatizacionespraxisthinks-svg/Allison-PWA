@@ -80,12 +80,12 @@ export const PARADA_07: Parada = {
           traduccion: ['Priya pregunta: "¿Te gustaría jugar tenis el martes después del colegio?"', 'Ben dice: "Lo siento, no puedo. Estoy estudiando para un examen."'],
           pregunta: "¿Qué hace Ben el martes?",
           opciones: [
-            { imagen: "f-ben-estudiando", descripcion: "Ben estudiando", etiqueta: "Study", etiquetaEs: "Estudiar" },
-            { imagen: "f-ben-computador", descripcion: "Ben frente a su computador", etiqueta: "Use the computer", etiquetaEs: "Usar el computador" },
+            { imagen: "f-ben-estudiando", descripcion: "Ben estudiando", etiqueta: "Study for a test", etiquetaEs: "Estudiar para un examen" },
+            { imagen: "f-ben-televisor", descripcion: "Ben prendiendo el televisor", etiqueta: "Watch TV", etiquetaEs: "Ver televisión" },
             { imagen: "f-plan-torta", descripcion: "Ben horneando con su abuela", etiqueta: "Bake a cake", etiquetaEs: "Hornear una torta" },
           ],
           correcta: 0,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
+          porRevisar: ["opciones: Ben frente al computador también podía estar estudiando; ahora es Ben con el televisor (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
         },
         {
           paso: 2,
@@ -130,12 +130,12 @@ export const PARADA_07: Parada = {
           traduccion: ['Priya pregunta: "¿Qué tal si vamos al parque?"', 'Ben dice: "¡Buena idea! Llevemos nuestras bicicletas."'],
           pregunta: "¿Adónde van Priya y Ben?",
           opciones: [
-            { imagen: "f-parque-corredor-bici", descripcion: "Un parque con una bicicleta", etiqueta: "Park", etiquetaEs: "Parque" },
-            { imagen: "f-cine", descripcion: "Un cine", etiqueta: "Movie theater", etiquetaEs: "Cine" },
-            { imagen: "a1/f-metro", descripcion: "Un vagón de metro", etiqueta: "Subway", etiquetaEs: "Metro" },
+            { imagen: "f-parque-corredor-bici", descripcion: "Un parque con una bicicleta", etiqueta: "To the park", etiquetaEs: "Al parque" },
+            { imagen: "f-cine", descripcion: "Un cine", etiqueta: "To the movies", etiquetaEs: "A cine" },
+            { imagen: "a1/f-metro", descripcion: "Un vagón de metro", etiqueta: "To the subway", etiquetaEs: "Al metro" },
           ],
           correcta: 0,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca el parque con la bicicleta"'],
+          porRevisar: ["etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca el parque con la bicicleta"'],
         },
         {
           paso: 2,
@@ -188,12 +188,12 @@ export const PARADA_07: Parada = {
           traduccion: ['Ben pregunta: "¿Te gustaría venir a la playa el domingo?"', 'Sam dice: "¡Suena genial! ¿Qué puedo llevar?"'],
           pregunta: "¿Qué respondió Sam?",
           opciones: [
-            { texto: "Sí", descripcion: "La tarjeta Sí" },
-            { texto: "No", descripcion: "La tarjeta No" },
-            { texto: "Tal vez", descripcion: "La tarjeta Tal vez" },
+            { texto: "Sí", descripcion: "La tarjeta Sí", etiqueta: "Yes! Sounds great!", etiquetaEs: "¡Sí! ¡Suena genial!" },
+            { texto: "No", descripcion: "La tarjeta No", etiqueta: "No. Sorry, I can't.", etiquetaEs: "No. Lo siento." },
+            { texto: "Tal vez", descripcion: "La tarjeta Tal vez", etiqueta: "Maybe. I don't know.", etiquetaEs: "Tal vez. No sé." },
           ],
           correcta: 0,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
+          porRevisar: ["etiquetas: la respuesta en inglés de cada tarjeta, que Allison dice al elegirla (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
         },
         {
           paso: 2,
@@ -248,12 +248,13 @@ export const PARADA_07: Parada = {
           traduccion: ["La semana pasada Emily me invitó a un picnic.", "Le dije: ¡Me encantaría!"],
           pregunta: "¿A qué la invitó Emily?",
           opciones: [
-            { imagen: "f-parque-picnic", descripcion: "Un picnic en un parque", etiqueta: "Picnic", etiquetaEs: "Picnic" },
-            { imagen: "f-plan-museo", descripcion: "Un museo", etiqueta: "Museum", etiquetaEs: "Museo" },
-            { imagen: "f-cine", descripcion: "Un cine", etiqueta: "Movie theater", etiquetaEs: "Cine" },
+            { imagen: "f-parque-picnic", descripcion: "Un picnic en un parque", etiqueta: "To a picnic", etiquetaEs: "A un picnic" },
+            { imagen: "f-plan-museo", descripcion: "Un museo", etiqueta: "To a museum", etiquetaEs: "A un museo" },
+            { imagen: "f-cine", descripcion: "Un cine", etiqueta: "To the movies", etiquetaEs: "A cine" },
           ],
           correcta: 0,
           porRevisar: [
+            "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)",
             "traduccion",
             "opciones: la tabla de ilustraciones no nombra el cine de esta lección; se usa f-cine (de la parada 2), el mismo de la lección 2",
           ],
@@ -400,9 +401,9 @@ export const PARADA_07: Parada = {
     },
     { archivos: ["e-cambridge-cocina"], muestra: "La cocina de una casa, con un calendario en la nevera", uso: "Escenario" },
     {
-      archivos: ["f-ben-estudiando", "f-ben-computador", "f-plan-torta"],
+      archivos: ["f-ben-estudiando", "f-ben-televisor", "f-plan-torta"],
       muestra:
-        "Ben estudiando (de la parada 2), Ben frente a su computador (de la parada 1) y Ben horneando con su abuela (de la parada 5)",
+        "Ben estudiando (de la parada 2), Ben con el televisor (de la parada 5; desde el 30 de octubre de 2026) y Ben horneando con su abuela (de la parada 5)",
       uso: "Lección 1 (paso 1)",
     },
     {
