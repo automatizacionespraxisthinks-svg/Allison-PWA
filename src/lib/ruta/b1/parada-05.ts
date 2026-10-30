@@ -60,7 +60,7 @@ export const PARADA_05: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Zoe has been playing hockey since she was six. She has been practicing every Sunday morning for ten years. Now she\'s the captain of her team!" (no está escrito). Pregunta: ¿desde cuándo juega hockey Zoe? Elige entre tres tarjetas dibujadas por la app: Since she was six. / Since she was ten. / For six months.',
+            'Allison cuenta: "Zoe has been playing hockey since she was six. She has been practicing every Sunday morning for ten years. Now she\'s the captain of her team!" (no está escrito). Pregunta: ¿desde cuándo juega hockey Zoe? Elige entre tres tarjetas dibujadas por la app: Since she was six. / Since she was twelve. / Since last summer.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
           audio: [
@@ -71,12 +71,12 @@ export const PARADA_05: Parada = {
           traduccion: [],
           pregunta: "¿Desde cuándo juega hockey Zoe?",
           opciones: [
-            { texto: "Since she was ten.", descripcion: "Since she was ten." },
+            { texto: "Since she was twelve.", descripcion: "Since she was twelve." },
             { texto: "Since she was six.", descripcion: "Since she was six." },
-            { texto: "For six months.", descripcion: "For six months." },
+            { texto: "Since last summer.", descripcion: "Since last summer." },
           ],
           correcta: 1,
-          porRevisar: ["opciones: orden cambiado para que la correcta no sea siempre la primera"],
+          porRevisar: ["opciones: «Since she was twelve.» y «Since last summer.»; antes los distractores tomaban el ten y el six que se oyen en la historia (cambio del 30 de octubre de 2026)", "opciones: orden cambiado para que la correcta no sea siempre la primera"],
         },
         {
           paso: 2,
@@ -140,12 +140,12 @@ export const PARADA_05: Parada = {
           traduccion: [],
           pregunta: "¿Qué hace Liam los miércoles?",
           opciones: [
-            { imagen: "f-liam-libros", descripcion: "Liam organizando libros en un estante" },
-            { imagen: "f-liam-estudiando", descripcion: "Liam estudiando en una mesa" },
-            { imagen: "f-liam-cuentos", descripcion: "Liam leyéndoles cuentos a niños" },
+            { imagen: "f-liam-libros", descripcion: "Liam organizando libros en un estante", dice: "Putting books on a shelf" },
+            { imagen: "f-liam-estudiando", descripcion: "Liam estudiando en una mesa", dice: "Studying at a table" },
+            { imagen: "f-liam-cuentos", descripcion: "Liam leyéndoles cuentos a niños", dice: "Reading stories to kids" },
           ],
           correcta: 2,
-          porRevisar: ["opciones: orden cambiado para que la correcta no sea siempre la primera"],
+          porRevisar: ["opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026)", "opciones: orden cambiado para que la correcta no sea siempre la primera"],
         },
         {
           paso: 2,
@@ -200,7 +200,7 @@ export const PARADA_05: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Liam\'s mom is a baker. She has been working at the same bakery for fifteen years. She gets up at four every morning, so she\'s always tired at night!" (no está escrito). Pregunta: ¿a qué hora se levanta la mamá de Liam? Elige entre tres relojes dibujados por la app: 4:00, 5:00 y 6:00.',
+            'Allison cuenta: "Liam\'s mom is a baker. She has been working at the same bakery for fifteen years. She gets up at four every morning, so she\'s always tired at night!" (no está escrito). Pregunta: ¿a qué hora se levanta la mamá de Liam? Elige entre tres relojes dibujados por la app: 4:00, 7:00 y 10:00.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
           audio: [
@@ -211,12 +211,12 @@ export const PARADA_05: Parada = {
           traduccion: [],
           pregunta: "¿A qué hora se levanta la mamá de Liam?",
           opciones: [
-            { texto: "4:00", descripcion: "Un reloj que marca las 4:00" },
-            { texto: "5:00", descripcion: "Un reloj que marca las 5:00" },
-            { texto: "6:00", descripcion: "Un reloj que marca las 6:00" },
+            { texto: "4:00", descripcion: "Un reloj que marca las 4:00", dice: "At four o'clock" },
+            { texto: "7:00", descripcion: "Un reloj que marca las 7:00", dice: "At seven o'clock" },
+            { texto: "10:00", descripcion: "Un reloj que marca las 10:00", dice: "At ten o'clock" },
           ],
           correcta: 0,
-          porRevisar: ['opciones.descripcion: "Un reloj que marca las…", como en A1'],
+          porRevisar: ["opciones: 4:00, 7:00 y 10:00, bien distintas; entre las 4:00 y las 5:00 la aguja apenas se movía. Los relojes muestran la hora en números y suenan «At four o'clock» (cambio del 30 de octubre de 2026)", 'opciones.descripcion: "Un reloj que marca las…", como en A1'],
         },
         {
           paso: 2,
@@ -298,12 +298,13 @@ export const PARADA_05: Parada = {
           traduccion: [],
           pregunta: "¿Cómo ha estado ganando dinero Zoe?",
           opciones: [
-            { imagen: "f-lavar-carro", descripcion: "Una muchacha lavando un carro" },
-            { imagen: "f-pasear-perro", descripcion: "Una muchacha paseando un perro" },
-            { imagen: "f-cuidar-nino", descripcion: "Una muchacha cuidando a un niño pequeño" },
+            { imagen: "f-lavar-carro", descripcion: "Una muchacha lavando un carro", dice: "Washing a car" },
+            { imagen: "f-pasear-perro", descripcion: "Una muchacha paseando un perro", dice: "Walking a dog" },
+            { imagen: "f-cuidar-nino", descripcion: "Una muchacha cuidando a un niño pequeño", dice: "Taking care of a little boy" },
           ],
           correcta: 1,
           porRevisar: [
+            "opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026)",
             "opciones: orden cambiado para que la correcta no sea siempre la primera",
             "opciones.descripcion: salen de la tabla de ilustraciones",
           ],

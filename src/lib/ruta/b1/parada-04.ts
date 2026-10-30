@@ -67,13 +67,13 @@ export const PARADA_04: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Zoe thinks school should start at nine, because teenagers need more sleep. Her mom doesn\'t agree. She thinks Zoe should just go to bed earlier!" (no está escrito). Pregunta: ¿qué opina la mamá de Zoe? Elige entre tres tarjetas dibujadas por la app: Zoe should go to bed earlier. / School should start at nine. / Zoe needs a new alarm.',
+            'Allison cuenta: "Zoe thinks school should start at nine, because teenagers need more sleep. Her mom doesn\'t agree. Her mom thinks Zoe should just go to bed earlier!" (no está escrito). Pregunta: ¿qué opina la mamá de Zoe? Elige entre tres tarjetas dibujadas por la app: Zoe should go to bed earlier. / School should start at nine. / Zoe needs a new alarm.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
           audio: [
             "Zoe thinks school should start at nine, because teenagers need more sleep.",
             "Her mom doesn't agree.",
-            "She thinks Zoe should just go to bed earlier!",
+            "Her mom thinks Zoe should just go to bed earlier!",
           ],
           traduccion: [],
           pregunta: "¿Qué opina la mamá de Zoe?",
@@ -83,7 +83,7 @@ export const PARADA_04: Parada = {
             { texto: "Zoe should go to bed earlier.", descripcion: "Zoe should go to bed earlier." },
           ],
           correcta: 2,
-          porRevisar: ["opciones: orden cambiado para que la correcta no sea siempre la primera"],
+          porRevisar: ["audio: «Her mom thinks…» en vez de «She thinks…», para que no haya duda de quién lo piensa (cambio del 30 de octubre de 2026)", "opciones: orden cambiado para que la correcta no sea siempre la primera"],
         },
         {
           paso: 2,
@@ -204,7 +204,7 @@ export const PARADA_04: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Zoe\'s class voted on their end-of-year trip. Most students wanted to go to Niagara Falls, but it was too expensive, so they chose Toronto Island. Zoe thinks it was a good choice." (no está escrito). Pregunta: ¿por qué no fueron a las cataratas? Elige entre tres tarjetas dibujadas por la app: It was too expensive. / It was too far. / It was raining.',
+            'Allison cuenta: "Zoe\'s class voted on their end-of-year trip. Most students wanted to go to Niagara Falls, but it was too expensive, so they chose Toronto Island. Zoe thinks it was a good choice." (no está escrito). Pregunta: ¿por qué no fueron a las cataratas del Niágara? Elige entre tres tarjetas dibujadas por la app: It was too expensive. / It was too far. / It was raining.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
           audio: [
@@ -213,13 +213,14 @@ export const PARADA_04: Parada = {
             "Zoe thinks it was a good choice.",
           ],
           traduccion: [],
-          pregunta: "¿Por qué no fueron a las cataratas?",
+          pregunta: "¿Por qué no fueron a las cataratas del Niágara?",
           opciones: [
             { texto: "It was too expensive.", descripcion: "It was too expensive." },
             { texto: "It was too far.", descripcion: "It was too far." },
             { texto: "It was raining.", descripcion: "It was raining." },
           ],
           correcta: 0,
+          porRevisar: ["pregunta: «cataratas del Niágara», como el Niagara Falls que se oye (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 2,
@@ -289,7 +290,7 @@ export const PARADA_04: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Liam\'s grandpa thinks phones are bad for teenagers. Liam disagrees: he uses his phone to study French. But he agrees that he should turn it off at dinner." (no está escrito). Pregunta: ¿en qué está de acuerdo Liam con su abuelo? Elige entre tres tarjetas dibujadas por la app: Turn off the phone at dinner. / Phones are bad for teenagers. / Study French every day.',
+            'Allison cuenta: "Liam\'s grandpa thinks phones are bad for teenagers. Liam disagrees: he uses his phone to study French. But he agrees that he should turn it off at dinner." (no está escrito). Pregunta: ¿en qué está de acuerdo Liam con su abuelo? Elige entre tres tarjetas dibujadas por la app: Turn off the phone at dinner. / Go to bed early. / Study French every day.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
           audio: [
@@ -300,12 +301,12 @@ export const PARADA_04: Parada = {
           traduccion: [],
           pregunta: "¿En qué está de acuerdo Liam con su abuelo?",
           opciones: [
-            { texto: "Phones are bad for teenagers.", descripcion: "Phones are bad for teenagers." },
+            { texto: "Go to bed early.", descripcion: "Go to bed early." },
             { texto: "Study French every day.", descripcion: "Study French every day." },
             { texto: "Turn off the phone at dinner.", descripcion: "Turn off the phone at dinner." },
           ],
           correcta: 2,
-          porRevisar: ["opciones: orden cambiado para que la correcta no sea siempre la primera"],
+          porRevisar: ["opciones: «Go to bed early.» en vez de «Phones are bad for teenagers.», que es justo con lo que Liam NO está de acuerdo (cambio del 30 de octubre de 2026)", "opciones: orden cambiado para que la correcta no sea siempre la primera"],
         },
         {
           paso: 2,

@@ -116,6 +116,12 @@ export interface EscuchaElige extends ActividadBase {
     zona?: Zona;
     etiqueta?: string;
     etiquetaEs?: string;
+    /**
+     * Desde B1 (sin texto a la vista): lo que dice Allison al elegir un
+     * dibujo ("Liam buying a sandwich"). Una tarjeta de texto dice su
+     * `texto`; en A1 y A2 suena la etiqueta.
+     */
+    dice?: string;
   }[];
   /** Índice de la opción correcta. */
   correcta: number;

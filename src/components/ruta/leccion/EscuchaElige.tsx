@@ -78,7 +78,7 @@ export function EscuchaElige({
    */
   function elegir(i: number) {
     setElegida(i);
-    const dice = a.opciones[i]?.etiqueta;
+    const dice = loQueDice(a.opciones[i]);
     if (dice) {
       desbloquearVoz();
       void decir(dice);
@@ -242,7 +242,13 @@ export function EscuchaElige({
                   }`}
                 >
                   {/* La descripción delata la respuesta ("Tom, un muchacho…"): no va de texto alternativo. */}
-                  <Opcion o={o} nivel={ctx.nivel} alt={o.etiqueta ?? `Opción ${posicion + 1}`} />
+                  <Opcion o={o} nivel={ctx.nivel} alt={o.etiqueta ?? o.dice ?? `Opción ${posicion + 1}`} />
+                  {/* Sin etiqueta a la vista (B1): un parlante avisa que la opción suena al tocarla. */}
+                  {!o.etiqueta && loQueDice(o) && (
+                    <span className="absolute top-1.5 left-1.5 grid size-6 place-items-center rounded-full bg-superficie/90 text-primario" aria-hidden>
+                      <Icono nombre="play" className="size-3" />
+                    </span>
+                  )}
                   {ok && (
                     <span className="absolute top-1.5 right-1.5 grid size-7 place-items-center rounded-full bg-menta text-white">
                       <Icono nombre="check" className="size-4 stroke-[3]" />
@@ -316,6 +322,15 @@ export function EscuchaElige({
       )}
     </div>
   );
+}
+
+/**
+ * Lo que dice Allison al elegir una opción: su etiqueta (A1 y A2); desde
+ * B1, que no lleva texto a la vista, lo que dice el dibujo (`dice`) o la
+ * frase de la tarjeta. Un reloj dice su hora ("4:00").
+ */
+function loQueDice(o: Datos["opciones"][number] | undefined): string | undefined {
+  return o?.etiqueta ?? o?.dice ?? o?.texto;
 }
 
 const LETRA = /\p{L}/u;

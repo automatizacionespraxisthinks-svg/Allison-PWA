@@ -10,17 +10,21 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
+| Lección 1, paso 1 (Escucha y elige) | Nota | opciones: March en vez de June, que sonaba y se veía casi igual a July; la pregunta dice que es el mes de Vancouver (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 1, paso 2 (Dilo en inglés) | Traducción de la explicación | "With have, use been: I've been." → "Con have, se usa been: I've been." |
 | Lección 1, paso 2 (Dilo en inglés) | Traducción de la explicación | "With a date, use the past: I went in December." → "Con una fecha, se usa el pasado: I went in December." |
 | Lección 1, paso 2 (Dilo en inglés) | Nota | partes: la frase no lleva because, but, when ni so; se parte en el punto, como las partes que da el documento ("I've…", "The last time, I…") |
 | Lección 1, paso 3 (Repite) | Traducción del consejo | "Listen: I've. Your top teeth touch your lip." → "Escucha: I've. Los dientes de arriba tocan el labio." |
+| Lección 2, paso 1 (Escucha y elige) | Nota | audio y pregunta en positivo («He was very hungry, so he has already bought a sandwich», ¿qué ya hizo?); antes «hasn't bought a sandwich yet» con el dibujo de Liam comprándolo, y el check-in también era algo que no había hecho. El yet sigue en el ¿Qué es esto? siguiente. Cada dibujo suena al elegirlo (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 2, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Use hasn't: My bag hasn't arrived." → "Usa hasn't: My bag hasn't arrived." |
+| Lección 3, paso 1 (Escucha y elige) | Nota | opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 2 (Narra la secuencia) | Qué muestra cada dibujo | 1. Esta mañana Zoe entrega su maleta en el aeropuerto de Toronto · 2. Zoe vuela a Vancouver · 3. Zoe espera una hora en la banda de equipaje · 4. Zoe en el mostrador de la aerolínea, sin maleta |
 | Lección 3, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. checked · 2. flew · 3. waited · 4. hasn't arrived |
 | Lección 3, paso 2 (Narra la secuencia) | Gramática para el evaluador | "past simple for what happened (checked, flew, waited) and present perfect for how things are now (hasn't arrived)" |
 | Lección 3, paso 2 (Narra la secuencia) | Traducción de la explicación | "It's finished, with a time: she flew to Vancouver." → "Ya terminó y dice cuándo: she flew to Vancouver." |
+| Lección 4, paso 1 (Escucha y elige) | Nota | opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "Yet goes at the end: I haven't found my gate yet." → "Yet va al final: I haven't found my gate yet." |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | Have you been there more than once? → "Did you go there many times?" |
@@ -32,16 +36,20 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
+| Lección 1, paso 1 (Escucha y elige) | Nota | opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "In the past: used to, with d." → "En pasado: used to, con d." |
 | Lección 1, paso 3 (Repite) | Traducción del consejo | "Listen: used to sounds like 'yoos-tuh'." → "Escucha: used to suena como 'iusta'." |
+| Lección 2, paso 1 (Escucha y elige) | Nota | opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "In the past: used, with d." → "En pasado: used, con d." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Just say: I used to live." → "Di solo: I used to live." |
+| Lección 3, paso 1 (Escucha y elige) | Nota | audio: sin «there weren't any cell phones», que hacía oír phones junto al dibujo del teléfono antiguo; ahora dice que la prima vivía lejos y que la abuela le escribía cartas. Cada dibujo suena al elegirlo (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 3, paso 2 (Narra la secuencia) | Qué muestra cada dibujo | 1. La abuela de Liam, de niña, se levantaba temprano y miraba la nieve por la ventana · 2. La abuela de Liam caminaba al colegio con guantes y bufanda · 3. Después del colegio, la abuela de Liam patinaba en el lago congelado del parque con sus amigas · 4. En la noche, la abuela de Liam tomaba chocolate caliente en la cocina |
 | Lección 3, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. used to get up · 2. used to walk · 3. used to skate · 4. used to drink |
 | Lección 3, paso 2 (Narra la secuencia) | Gramática para el evaluador | "used to + verb for things she did many times in the past (the past simple is also OK in some sentences)" |
 | Lección 3, paso 2 (Narra la secuencia) | Traducción de la explicación | "She used to skate on the frozen lake in the park." → "Se dice así: She used to skate on the frozen lake in the park." |
+| Lección 4, paso 1 (Escucha y elige) | Nota | opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "With didn't, no d: I didn't use to like." → "Con didn't, sin d: I didn't use to like." |
 | Lección 4, paso 2 (Dilo en inglés) | Nota | partes: la frase empieza por When y además lleva but; se parte antes de but (antes / ahora), como "…but now I…" en la lección 2 |
@@ -57,8 +65,9 @@ licenciado en inglés las revise junto con el resto de la parada.
 |---|---|---|
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It happened first, so use had: The movie had already ended." → "Pasó primero, así que va con had: The movie had already ended." |
-| Lección 1, paso 2 (¿Qué es esto?) | Nota | relojes: el documento pide dos relojes dibujados por la app (la función a las 7:00; Liam llegó a las 9:30); el tipo no tiene campo para dibujarlos junto a la ilustración, quedan solo en queAparece |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | relojes: las etiquetas en inglés ("The movie", "Liam arrived") no están escritas en el documento |
 | Lección 1, paso 3 (Repite) | Traducción del consejo | "Listen: she'd, with a short d." → "Escucha: she'd, con una d corta." |
+| Lección 2, paso 1 (Escucha y elige) | Nota | audio y tarjeta: «put his camera in his bag» en vez de «put his camera away», que es más difícil; «It was too dark.» en vez de «The moose had run away.», que juntaba palabras de la historia (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "They left first: had already left." → "Se fueron primero: had already left." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "In the past, use had." → "En pasado, va had." |
@@ -77,6 +86,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
+| Lección 1, paso 1 (Escucha y elige) | Nota | audio: «Her mom thinks…» en vez de «She thinks…», para que no haya duda de quién lo piensa (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 1, paso 2 (¿Qué es esto?) | Nota | respuesta: el documento pide "Una opinión con una razón" y da dos ejemplos; el primero va como respuesta y el segundo en aceptadas. La regla queda en tambienSeAcepta |
 | Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Just say: I agree." → "Solo di: I agree." |
@@ -85,10 +95,12 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Say: too expensive." → "Di: too expensive." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Say it: I think it's too expensive." → "Dilo así: I think it's too expensive." |
+| Lección 3, paso 1 (Escucha y elige) | Nota | pregunta: «cataratas del Niágara», como el Niagara Falls que se oye (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 2 (Narra la secuencia) | Qué muestra cada dibujo | 1. El parque está sucio y sin luces · 2. Los vecinos en una reunión · 3. Unos vecinos con un dibujo de una pista de skate y otros con un dibujo de árboles · 4. El parque nuevo, con árboles, luces y una pista de skate pequeña |
 | Lección 3, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. was · 2. had a meeting · 3. wanted · 4. has |
 | Lección 3, paso 2 (Narra la secuencia) | Gramática para el evaluador | "past simple narration that joins ideas with the connectors because, so, but and although (never although… but), ending in the present with now" |
 | Lección 3, paso 2 (Narra la secuencia) | Traducción de la explicación | "With although, no but: Although they didn't agree, they found a solution." → "Con although, sin but: Although they didn't agree, they found a solution." |
+| Lección 4, paso 1 (Escucha y elige) | Nota | opciones: «Go to bed early.» en vez de «Phones are bad for teenagers.», que es justo con lo que Liam NO está de acuerdo (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "With although, no but." → "Con although, sin but." |
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "Use aren't: video games aren't." → "Va aren't: video games aren't." |
@@ -102,16 +114,21 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
+| Lección 1, paso 1 (Escucha y elige) | Nota | opciones: «Since she was twelve.» y «Since last summer.»; antes los distractores tomaban el ten y el six que se oyen en la historia (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "From then until now: he's been playing." → "Desde entonces hasta ahora: he's been playing." |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | relojes: las etiquetas en inglés ("He started", "Now") no están escritas en el documento |
 | Lección 1, paso 3 (Repite) | Traducción del consejo | "Listen: been is short, like 'bin'." → "Escucha: been es corto, como 'bin'." |
+| Lección 2, paso 1 (Escucha y elige) | Nota | opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "For a period of time, use for: for three years." → "Para un período de tiempo, usa for: for three years." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "From then until now: I've been studying." → "Desde entonces hasta ahora: I've been studying." |
+| Lección 3, paso 1 (Escucha y elige) | Nota | opciones: 4:00, 7:00 y 10:00, bien distintas; entre las 4:00 y las 5:00 la aguja apenas se movía. Los relojes muestran la hora en números y suenan «At four o'clock» (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones.descripcion: "Un reloj que marca las…", como en A1 |
 | Lección 3, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. started cleaning · 2. has been cleaning · 3. has been listening · 4. is clean |
 | Lección 3, paso 2 (Narra la secuencia) | Gramática para el evaluador | "present perfect continuous: have/has been + -ing, with for, since or all morning (past simple only for when it started)" |
 | Lección 3, paso 2 (Narra la secuencia) | Traducción de la explicación | "From seven until now: she's been cleaning." → "Desde las siete hasta ahora: she's been cleaning." |
+| Lección 4, paso 1 (Escucha y elige) | Nota | opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 4, paso 1 (Escucha y elige) | Nota | opciones.descripcion: salen de la tabla de ilustraciones |
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "For twenty minutes, with I've been: I've been waiting for twenty minutes." → "Por veinte minutos, con I've been: I've been waiting for twenty minutes." |
@@ -131,6 +148,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "After was, say stolen: My phone was stolen." → "Después de was, di stolen: My phone was stolen." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Good! Now start with My phone: My phone was stolen." → "¡Bien! Ahora empieza con My phone: My phone was stolen." |
+| Lección 3, paso 1 (Escucha y elige) | Nota | opciones: 1876, 1950 y 2010; antes 1976 y 1786 tenían los mismos números revueltos. La pregunta dice que es el año y cada tarjeta suena «In 1876», como en la historia (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. was made · 2. was sent · 3. was sold · 4. was given |
 | Lección 3, paso 2 (Narra la secuencia) | Gramática para el evaluador | "passive voice in the past simple: was/were + past participle (was made, was sent)" |
 | Lección 3, paso 2 (Narra la secuencia) | Traducción de la explicación | "Good! Now start with it: it was sent by plane." → "¡Bien! Ahora empieza con it: it was sent by plane." |
@@ -154,6 +172,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Everyone finds, with s." → "Everyone finds, con s." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "The movie causes the feeling: exciting." → "La película causa la sensación: exciting." |
+| Lección 3, paso 1 (Escucha y elige) | Nota | opciones: «It's funny.» en vez de «It's boring.»: el libro fue aburrido solo al comienzo (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. bought · 2. were excited · 3. screamed · 4. left |
 | Lección 3, paso 2 (Narra la secuencia) | Gramática para el evaluador | "-ed and -ing adjectives (excited, scary, exciting) and relative clauses (who, that, which, where), in the past simple" |
 | Lección 3, paso 2 (Narra la secuencia) | Traducción de la explicación | "They felt it: they were excited." → "Ellos lo sintieron: they were excited." |
@@ -217,6 +236,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It's imagined: he would play." → "Es algo imaginado: he would play." |
 | Lección 1, paso 3 (Repite) | Traducción del consejo | "Listen: I'd, short for I would." → "Escucha: I'd, la forma corta de I would." |
+| Lección 2, paso 1 (Escucha y elige) | Nota | opciones: «Write songs» en vez de «Teach his friends», que tomaba friends de la respuesta (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "After if, use the past: If I won." → "Después de if, usa el pasado: If I won." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "It's imagined: I would travel." → "Es algo imaginado: I would travel." |
@@ -241,6 +261,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 
 | Dónde | Qué | Texto |
 |---|---|---|
+| Lección 1, paso 1 (Escucha y elige) | Nota | opciones: «He played hockey.» y «He went to the movies.»; antes «He went to Colombia.» era lo contrario de lo que se oye y «He made arepas.» cambiaba «tried arepas» (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 1, paso 2 (Dilo en inglés) | Traducción de la explicación | "With have, use been: I've never been." → "Con have, usa been: I've never been." |
 | Lección 1, paso 2 (Dilo en inglés) | Traducción de la explicación | "In the past: used to, with d." → "Para el pasado: used to, con d." |
@@ -249,9 +270,11 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. left · 2. opened · 3. rode away · 4. had already left |
 | Lección 2, paso 2 (Narra la secuencia) | Gramática para el evaluador | "past simple and past perfect (had already + past participle) with time connectors (then, when), plus an opinion with I think, In my opinion or should" |
 | Lección 2, paso 2 (Narra la secuencia) | Traducción de la explicación | "He left first: the thief had already left." → "Él se fue primero: the thief had already left." |
+| Lección 3, paso 1 (Escucha y elige) | Nota | opciones: «They played a game with him.»; «They read a book to him.» invertía la historia (es Liam quien les lee) (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "From then until now: she's been walking." → "Desde entonces hasta ahora: she's been walking." |
 | Lección 3, paso 3 (Dilo en inglés) | Traducción de la explicación | "From then until now: I've been studying." → "Desde entonces hasta ahora: I've been studying." |
 | Lección 3, paso 3 (Dilo en inglés) | Traducción de la explicación | "For a period of time, use for: for two hours." → "Para un período de tiempo, usa for: for two hours." |
+| Lección 4, paso 1 (Escucha y elige) | Nota | opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 4, paso 3 (Entrevista a Allison) | Pista en inglés | Si ha estado en Cartagena (parada 1) → "Ask me about Cartagena! Start with: Have you ever…?" |
 | Lección 4, paso 3 (Entrevista a Allison) | Pista en inglés | A qué jugaba de niña (parada 2) → "Ask me about when I was a kid! Start with: What did you use to…?" |

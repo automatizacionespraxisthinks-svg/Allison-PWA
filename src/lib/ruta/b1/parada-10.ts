@@ -118,7 +118,7 @@ export const PARADA_10: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Liam\'s dream is to play in a band. If he could play the guitar well, he would start a band with his friends. Right now he\'s taking guitar lessons on Saturdays." (no está escrito). Pregunta: ¿qué haría Liam si tocara bien la guitarra? Elige entre tres tarjetas dibujadas por la app: Start a band / Teach his friends / Play in the street.',
+            'Allison cuenta: "Liam\'s dream is to play in a band. If he could play the guitar well, he would start a band with his friends. Right now he\'s taking guitar lessons on Saturdays." (no está escrito). Pregunta: ¿qué haría Liam si tocara bien la guitarra? Elige entre tres tarjetas dibujadas por la app: Start a band / Write songs / Play in the street.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
           audio: [
@@ -129,12 +129,12 @@ export const PARADA_10: Parada = {
           traduccion: [],
           pregunta: "¿Qué haría Liam si tocara bien la guitarra?",
           opciones: [
-            { texto: "Teach his friends", descripcion: "Teach his friends" },
+            { texto: "Write songs", descripcion: "Write songs" },
             { texto: "Play in the street", descripcion: "Play in the street" },
             { texto: "Start a band", descripcion: "Start a band" },
           ],
           correcta: 2,
-          porRevisar: ["opciones: orden cambiado para que la correcta no sea siempre la primera"],
+          porRevisar: ["opciones: «Write songs» en vez de «Teach his friends», que tomaba friends de la respuesta (cambio del 30 de octubre de 2026)", "opciones: orden cambiado para que la correcta no sea siempre la primera"],
         },
         {
           paso: 2,

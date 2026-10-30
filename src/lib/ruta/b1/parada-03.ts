@@ -129,23 +129,23 @@ export const PARADA_03: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Liam had never seen a moose before last summer. Then, on a trip to Algonquin Park, he saw one next to the road. But he had already put his camera away, so he didn\'t get a photo!" (no está escrito). Pregunta: ¿por qué no tomó la foto Liam? Elige entre tres tarjetas dibujadas por la app: He had put his camera away. / The moose had run away. / His phone had no battery.',
+            'Allison cuenta: "Liam had never seen a moose before last summer. Then, on a trip to Algonquin Park, he saw one next to the road. But he had already put his camera in his bag, so he didn\'t get a photo!" (no está escrito). Pregunta: ¿por qué no tomó la foto Liam? Elige entre tres tarjetas dibujadas por la app: He had put his camera in his bag. / It was too dark. / His phone had no battery.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
           audio: [
             "Liam had never seen a moose before last summer.",
             "Then, on a trip to Algonquin Park, he saw one next to the road.",
-            "But he had already put his camera away, so he didn't get a photo!",
+            "But he had already put his camera in his bag, so he didn't get a photo!",
           ],
           traduccion: [],
           pregunta: "¿Por qué no tomó la foto Liam?",
           opciones: [
-            { texto: "The moose had run away.", descripcion: "The moose had run away." },
+            { texto: "It was too dark.", descripcion: "It was too dark." },
             { texto: "His phone had no battery.", descripcion: "His phone had no battery." },
-            { texto: "He had put his camera away.", descripcion: "He had put his camera away." },
+            { texto: "He had put his camera in his bag.", descripcion: "He had put his camera in his bag." },
           ],
           correcta: 2,
-          porRevisar: ["opciones: orden cambiado para que la correcta no sea siempre la primera"],
+          porRevisar: ["audio y tarjeta: «put his camera in his bag» en vez de «put his camera away», que es más difícil; «It was too dark.» en vez de «The moose had run away.», que juntaba palabras de la historia (cambio del 30 de octubre de 2026)", "opciones: orden cambiado para que la correcta no sea siempre la primera"],
         },
         {
           paso: 2,

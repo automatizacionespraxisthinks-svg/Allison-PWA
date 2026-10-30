@@ -197,7 +197,7 @@ export const PARADA_07: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Liam is reading a novel about a boy who travels in time. The beginning was a little boring, but now he can\'t stop reading. He thinks it\'s the most interesting book he\'s ever read!" (no está escrito). Pregunta: ¿qué piensa Liam ahora del libro? Elige entre tres tarjetas dibujadas por la app: It\'s very interesting. / It\'s boring. / It\'s too long.',
+            'Allison cuenta: "Liam is reading a novel about a boy who travels in time. The beginning was a little boring, but now he can\'t stop reading. He thinks it\'s the most interesting book he\'s ever read!" (no está escrito). Pregunta: ¿qué piensa Liam ahora del libro? Elige entre tres tarjetas dibujadas por la app: It\'s very interesting. / It\'s funny. / It\'s too long.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
           audio: [
@@ -209,10 +209,11 @@ export const PARADA_07: Parada = {
           pregunta: "¿Qué piensa Liam ahora del libro?",
           opciones: [
             { texto: "It's very interesting.", descripcion: "It's very interesting." },
-            { texto: "It's boring.", descripcion: "It's boring." },
+            { texto: "It's funny.", descripcion: "It's funny." },
             { texto: "It's too long.", descripcion: "It's too long." },
           ],
           correcta: 0,
+          porRevisar: ["opciones: «It's funny.» en vez de «It's boring.»: el libro fue aburrido solo al comienzo (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 2,

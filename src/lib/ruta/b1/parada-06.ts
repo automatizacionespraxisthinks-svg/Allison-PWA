@@ -197,7 +197,7 @@ export const PARADA_06: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Liam is doing a school project about phones. He learned that the first phone call was made in 1876. Today, billions of messages are sent every day!" (no está escrito). Pregunta: ¿cuándo se hizo la primera llamada? Elige entre tres tarjetas dibujadas por la app: 1876 / 1976 / 1786.',
+            'Allison cuenta: "Liam is doing a school project about phones. He learned that the first phone call was made in 1876. Today, billions of messages are sent every day!" (no está escrito). Pregunta: ¿en qué año se hizo la primera llamada telefónica? Elige entre tres tarjetas dibujadas por la app: 1876 / 1950 / 2010.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
           audio: [
@@ -206,13 +206,14 @@ export const PARADA_06: Parada = {
             "Today, billions of messages are sent every day!",
           ],
           traduccion: [],
-          pregunta: "¿Cuándo se hizo la primera llamada?",
+          pregunta: "¿En qué año se hizo la primera llamada telefónica?",
           opciones: [
-            { texto: "1876", descripcion: "1876" },
-            { texto: "1976", descripcion: "1976" },
-            { texto: "1786", descripcion: "1786" },
+            { texto: "1876", descripcion: "1876", dice: "In 1876" },
+            { texto: "1950", descripcion: "1950", dice: "In 1950" },
+            { texto: "2010", descripcion: "2010", dice: "In 2010" },
           ],
           correcta: 0,
+          porRevisar: ["opciones: 1876, 1950 y 2010; antes 1976 y 1786 tenían los mismos números revueltos. La pregunta dice que es el año y cada tarjeta suena «In 1876», como en la historia (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 2,

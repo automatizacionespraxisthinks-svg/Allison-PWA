@@ -34,7 +34,7 @@ export const REPASO_1: Repaso = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Liam has never been to Colombia, but he has tried arepas. When he was a kid, he used to fish with his grandpa every summer. Last weekend, he caught a really big fish!" (no está escrito). Pregunta: ¿qué hizo Liam el fin de semana pasado? Elige entre tres tarjetas dibujadas por la app: He caught a big fish. / He made arepas. / He went to Colombia.',
+            'Allison cuenta: "Liam has never been to Colombia, but he has tried arepas. When he was a kid, he used to fish with his grandpa every summer. Last weekend, he caught a really big fish!" (no está escrito). Pregunta: ¿qué hizo Liam el fin de semana pasado? Elige entre tres tarjetas dibujadas por la app: He caught a big fish. / He played hockey. / He went to the movies.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
           audio: [
@@ -45,12 +45,12 @@ export const REPASO_1: Repaso = {
           traduccion: [],
           pregunta: "¿Qué hizo Liam el fin de semana pasado?",
           opciones: [
-            { texto: "He made arepas.", descripcion: "He made arepas." },
-            { texto: "He went to Colombia.", descripcion: "He went to Colombia." },
+            { texto: "He played hockey.", descripcion: "He played hockey." },
+            { texto: "He went to the movies.", descripcion: "He went to the movies." },
             { texto: "He caught a big fish.", descripcion: "He caught a big fish." },
           ],
           correcta: 2,
-          porRevisar: ["opciones: orden cambiado para que la correcta no sea siempre la primera"],
+          porRevisar: ["opciones: «He played hockey.» y «He went to the movies.»; antes «He went to Colombia.» era lo contrario de lo que se oye y «He made arepas.» cambiaba «tried arepas» (cambio del 30 de octubre de 2026)", "opciones: orden cambiado para que la correcta no sea siempre la primera"],
         },
         {
           paso: 2,
@@ -189,7 +189,7 @@ export const REPASO_1: Repaso = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Liam has been volunteering at the library since January. He has been reading stories to little kids every Wednesday. Last week, the kids drew a picture for him!" (no está escrito). Pregunta: ¿qué hicieron los niños la semana pasada? Elige entre tres tarjetas dibujadas por la app: They drew a picture for him. / They read a book to him. / They sang a song for him.',
+            'Allison cuenta: "Liam has been volunteering at the library since January. He has been reading stories to little kids every Wednesday. Last week, the kids drew a picture for him!" (no está escrito). Pregunta: ¿qué hicieron los niños la semana pasada? Elige entre tres tarjetas dibujadas por la app: They drew a picture for him. / They played a game with him. / They sang a song for him.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
           audio: [
@@ -201,10 +201,11 @@ export const REPASO_1: Repaso = {
           pregunta: "¿Qué hicieron los niños la semana pasada?",
           opciones: [
             { texto: "They drew a picture for him.", descripcion: "They drew a picture for him." },
-            { texto: "They read a book to him.", descripcion: "They read a book to him." },
+            { texto: "They played a game with him.", descripcion: "They played a game with him." },
             { texto: "They sang a song for him.", descripcion: "They sang a song for him." },
           ],
           correcta: 0,
+          porRevisar: ["opciones: «They played a game with him.»; «They read a book to him.» invertía la historia (es Liam quien les lee) (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 2,
@@ -273,12 +274,12 @@ export const REPASO_1: Repaso = {
           traduccion: [],
           pregunta: "¿Qué hicieron Allison y Emily el sábado pasado?",
           opciones: [
-            { imagen: "a1/f-pizza", descripcion: "Una pizza" },
-            { imagen: "a2/f-cine", descripcion: "Un cine" },
-            { imagen: "a2/f-arepas", descripcion: "Unas arepas" },
+            { imagen: "a1/f-pizza", descripcion: "Una pizza", dice: "Pizza" },
+            { imagen: "a2/f-cine", descripcion: "Un cine", dice: "A movie theater" },
+            { imagen: "a2/f-arepas", descripcion: "Unas arepas", dice: "Arepas" },
           ],
           correcta: 2,
-          porRevisar: ["opciones: orden cambiado para que la correcta no sea siempre la primera"],
+          porRevisar: ["opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026)", "opciones: orden cambiado para que la correcta no sea siempre la primera"],
         },
         {
           paso: 2,

@@ -230,6 +230,12 @@ function revisarActividad(a, donde, imagenes) {
           if (/[áéíóúñ¿¡]/i.test(o.etiqueta)) fallo(donde, `la etiqueta "${o.etiqueta}" parece en español: va en inglés`);
         }
         if (conEtiqueta && desdeB1()) aviso(donde, "B1 no lleva texto a la vista (etiqueta)");
+        // Cada opción suena al elegirla: etiqueta, dice (B1, sin texto a la vista) o el texto de la tarjeta (30 de octubre de 2026).
+        for (const o of a.opciones ?? []) {
+          const suena = o.etiqueta ?? o.dice ?? o.texto;
+          if (!suena?.trim()) fallo(donde, `la opción "${o.descripcion}" no suena al elegirla (falta etiqueta, dice o texto)`);
+          if (o.dice && /[áéíóúñ¿¡]/i.test(o.dice)) fallo(donde, `lo que dice la opción va en inglés: "${o.dice}"`);
+        }
       }
       break;
     case "que-es-esto":
