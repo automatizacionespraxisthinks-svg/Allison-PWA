@@ -27,12 +27,12 @@ export const REPASO_FINAL: Repaso = {
           traduccion: ['Leo dice: "No sé cocinar, pero me gustaría una sopa."'],
           pregunta: "¿Qué quiere Leo?",
           opciones: [
-            { imagen: "f-sopa", descripcion: "La sopa", etiqueta: "Soup", etiquetaEs: "Sopa" },
-            { imagen: "f-pizza", descripcion: "La pizza", etiqueta: "Pizza", etiquetaEs: "Pizza" },
-            { imagen: "f-ensalada", descripcion: "La ensalada", etiqueta: "Salad", etiquetaEs: "Ensalada" },
+            { imagen: "f-sopa", descripcion: "La sopa", etiqueta: "Some soup", etiquetaEs: "Una sopa" },
+            { imagen: "f-pizza", descripcion: "La pizza", etiqueta: "A pizza", etiquetaEs: "Una pizza" },
+            { imagen: "f-ensalada", descripcion: "La ensalada", etiqueta: "A salad", etiquetaEs: "Una ensalada" },
           ],
           correcta: 0,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", 
+          porRevisar: ["etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", 
             "traduccion",
             'quienHabla: el documento solo dice "Oye:"; no se puso Allison porque ella sí sabe cocinar (su ficha)',
           ],
@@ -86,7 +86,7 @@ export const REPASO_FINAL: Repaso = {
             { imagen: "f-gato-alado", descripcion: "El gato al lado de la cama", etiqueta: "Next to the bed", etiquetaEs: "Al lado de la cama" },
           ],
           correcta: 2,
-          porRevisar: ["traduccion", 'quienHabla: el documento solo dice "Oye:"; se puso Allison'],
+          porRevisar: ["opciones: el dibujo del gato al lado de la cama es nuevo (f-gato-alado): la cama tiene el mismo estilo y ángulo que en los otros dos, y el gato está en el piso a su lado; antes estaba delante de la cama, que se leía como in front of (cambio del 30 de octubre de 2026)", "traduccion", 'quienHabla: el documento solo dice "Oye:"; se puso Allison'],
         },
         {
           paso: 2,
@@ -144,18 +144,25 @@ export const REPASO_FINAL: Repaso = {
           quienHabla: "Allison",
           audio: ["Go straight one block and turn right. The hotel is across from the park."],
           traduccion: ["Sigue derecho una cuadra y gira a la derecha. El hotel está frente al parque."],
+          pregunta: "¿Dónde está el hotel? Toca el edificio.",
           opciones: [
             {
               dibujo: { edificio: { cuadras: 1, gira: "derecha", lado: "derecha" } },
               descripcion: "El edificio frente al parque después de seguir derecho una cuadra y girar a la derecha (el hotel)",
+              etiqueta: "Turn right. Across from the park.",
+              etiquetaEs: "Gira a la derecha. Frente al parque.",
             },
             {
               dibujo: { edificio: { cuadras: 1, gira: "derecha", lado: "izquierda", lote: 2 } },
               descripcion: "El edificio al lado del parque después de seguir derecho una cuadra y girar a la derecha",
+              etiqueta: "Turn right. Next to the park.",
+              etiquetaEs: "Gira a la derecha. Al lado del parque.",
             },
             {
               dibujo: { edificio: { cuadras: 1, gira: "izquierda", lado: "izquierda" } },
               descripcion: "El edificio frente al parque después de seguir derecho una cuadra y girar a la izquierda",
+              etiqueta: "Turn left. Across from the park.",
+              etiquetaEs: "Gira a la izquierda. Frente al parque.",
             },
           ],
           correcta: 0,
@@ -163,6 +170,7 @@ export const REPASO_FINAL: Repaso = {
           // frente a él; el otro, a su lado.
           parque: 1,
           porRevisar: [
+            "con pregunta, y cada edificio dice su camino al tocarlo (cambio del 30 de octubre de 2026)",
             "traduccion",
             'quienHabla: el documento solo dice "Oye:"; se puso Allison',
             "opciones: el documento no dice dónde están los edificios del mapa; las posiciones de los dos incorrectos son una propuesta",
@@ -210,13 +218,14 @@ export const REPASO_FINAL: Repaso = {
           quienHabla: "Allison",
           audio: ["Take the subway. Don't take a taxi!"],
           traduccion: ["Toma el metro. ¡No tomes taxi!"],
+          pregunta: "¿Qué recomienda Allison?",
           opciones: [
-            { imagen: "f-metro", descripcion: "El metro", etiqueta: "Subway", etiquetaEs: "Metro" },
-            { imagen: "f-taxi", descripcion: "El taxi", etiqueta: "Taxi", etiquetaEs: "Taxi" },
-            { imagen: "f-tranvia", descripcion: "El tranvía", etiqueta: "Streetcar", etiquetaEs: "Tranvía" },
+            { imagen: "f-metro", descripcion: "El metro", etiqueta: "The subway", etiquetaEs: "El metro" },
+            { imagen: "f-taxi", descripcion: "El taxi", etiqueta: "A taxi", etiquetaEs: "Un taxi" },
+            { imagen: "f-tranvia", descripcion: "El tranvía", etiqueta: "A cable car", etiquetaEs: "Un tranvía" },
           ],
           correcta: 0,
-          porRevisar: ["traduccion"],
+          porRevisar: ["con pregunta (antes salía «¿Qué dice Allison?» y Allison nombra el metro y el taxi); el tranvía es «cable car», como en la parada 10 (cambio del 30 de octubre de 2026)", "traduccion"],
         },
         {
           paso: 2,

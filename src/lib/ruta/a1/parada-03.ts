@@ -46,12 +46,12 @@ export const PARADA_03: Parada = {
           traduccion: ['Un muchacho pregunta: "¿Quién es ella?"', 'Una muchacha dice: "Es mi profesora. Se llama Ms. Lee."'],
           pregunta: "¿Quién es Ms. Lee?",
           opciones: [
-            { imagen: "a-profesor", descripcion: "La profesora", etiqueta: "Teacher", etiquetaEs: "Profesora" },
-            { imagen: "f-nina", descripcion: "Emma (una niña)", etiqueta: "Girl", etiquetaEs: "Niña" },
-            { imagen: "f-senor-mayor", descripcion: "El señor mayor", etiqueta: "Older man", etiquetaEs: "Señor mayor" },
+            { imagen: "a-profesor", descripcion: "La profesora", etiqueta: "A teacher", etiquetaEs: "Una profesora" },
+            { imagen: "f-nina", descripcion: "Emma (una niña)", etiqueta: "A girl", etiquetaEs: "Una niña" },
+            { imagen: "f-senor-mayor", descripcion: "El señor mayor", etiqueta: "An older man", etiquetaEs: "Un señor mayor" },
           ],
           correcta: 0,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", "quienHabla: el documento no dice quiénes hablan en el pasillo"],
+          porRevisar: ["etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", "quienHabla: el documento no dice quiénes hablan en el pasillo"],
         },
         {
           paso: 2,
@@ -94,12 +94,12 @@ export const PARADA_03: Parada = {
           audio: ['A girl says: "My name is Amy. A-M-Y."'],
           traduccion: ['Una muchacha dice: "Me llamo Amy. A-M-Y."'],
           opciones: [
-            { texto: "AMY", descripcion: "La tarjeta con el nombre AMY" },
-            { texto: "ANA", descripcion: "La tarjeta con el nombre ANA" },
-            { texto: "ANNIE", descripcion: "La tarjeta con el nombre ANNIE" },
+            { texto: "AMY", descripcion: "La tarjeta con el nombre AMY", etiqueta: "Amy. A-M-Y.", etiquetaEs: "Amy. A-M-Y." },
+            { texto: "ANA", descripcion: "La tarjeta con el nombre ANA", etiqueta: "Ana. A-N-A.", etiquetaEs: "Ana. A-N-A." },
+            { texto: "ANNIE", descripcion: "La tarjeta con el nombre ANNIE", etiqueta: "Annie. A-N-N-I-E.", etiquetaEs: "Annie. A-N-N-I-E." },
           ],
           correcta: 0,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
+          porRevisar: ["etiquetas: el nombre y su deletreo, que Allison dice al elegir la tarjeta (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
         },
         {
           paso: 2,

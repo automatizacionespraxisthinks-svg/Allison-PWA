@@ -51,12 +51,12 @@ export const PARADA_07: Parada = {
           audio: ['A boy says: "I\'d like a pizza, please."'],
           traduccion: ['Un muchacho dice: "Me gustaría una pizza, por favor."'],
           opciones: [
-            { imagen: "f-pizza", descripcion: "Una pizza", etiqueta: "Pizza", etiquetaEs: "Pizza" },
-            { imagen: "f-hamburguesa", descripcion: "Una hamburguesa", etiqueta: "Hamburger", etiquetaEs: "Hamburguesa" },
-            { imagen: "f-ensalada", descripcion: "Una ensalada", etiqueta: "Salad", etiquetaEs: "Ensalada" },
+            { imagen: "f-pizza", descripcion: "Una pizza", etiqueta: "A pizza", etiquetaEs: "Una pizza" },
+            { imagen: "f-hamburguesa", descripcion: "Una hamburguesa", etiqueta: "A burger", etiquetaEs: "Una hamburguesa" },
+            { imagen: "f-ensalada", descripcion: "Una ensalada", etiqueta: "A salad", etiquetaEs: "Una ensalada" },
           ],
           correcta: 0,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", "quienHabla: el documento no dice quién habla"],
+          porRevisar: ["etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", "quienHabla: el documento no dice quién habla"],
         },
         {
           paso: 2,
@@ -100,11 +100,11 @@ export const PARADA_07: Parada = {
           pregunta: "¿Qué pide Sarah hoy?",
           opciones: [
             { imagen: "f-pizza", descripcion: "Pizza", etiqueta: "Pizza", etiquetaEs: "Pizza" },
-            { imagen: "f-hamburguesa", descripcion: "Hamburguesa", etiqueta: "Hamburger", etiquetaEs: "Hamburguesa" },
-            { imagen: "f-ensalada", descripcion: "Ensalada", etiqueta: "Salad", etiquetaEs: "Ensalada" },
+            { imagen: "f-hamburguesa", descripcion: "Hamburguesa", etiqueta: "A burger", etiquetaEs: "Una hamburguesa" },
+            { imagen: "f-ensalada", descripcion: "Ensalada", etiqueta: "A salad", etiquetaEs: "Una ensalada" },
           ],
           correcta: 2,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
+          porRevisar: ["etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion"],
         },
         {
           paso: 2,
@@ -151,12 +151,12 @@ export const PARADA_07: Parada = {
           traduccion: ['La mesera pregunta: "¿Quieres unas papas a la francesa?"', 'Tom dice: "No, gracias. Me gustaría una sopa."'],
           pregunta: "¿Qué pide Tom?",
           opciones: [
-            { imagen: "f-sopa", descripcion: "Sopa", etiqueta: "Soup", etiquetaEs: "Sopa" },
-            { imagen: "f-papas", descripcion: "Papas", etiqueta: "French fries", etiquetaEs: "Papas a la francesa" },
-            { imagen: "f-ensalada", descripcion: "Ensalada", etiqueta: "Salad", etiquetaEs: "Ensalada" },
+            { imagen: "f-sopa", descripcion: "Sopa", etiqueta: "Some soup", etiquetaEs: "Una sopa" },
+            { imagen: "f-papas", descripcion: "Papas", etiqueta: "Some fries", etiquetaEs: "Papas a la francesa" },
+            { imagen: "f-ensalada", descripcion: "Ensalada", etiqueta: "A salad", etiquetaEs: "Una ensalada" },
           ],
           correcta: 0,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", "quienHabla: el documento no dice quiénes hablan"],
+          porRevisar: ["etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", "quienHabla: el documento no dice quiénes hablan"],
         },
         {
           paso: 2,
@@ -209,12 +209,12 @@ export const PARADA_07: Parada = {
           traduccion: ["¡En Nueva Orleans siempre como beignets y me tomo un café!"],
           pregunta: "¿Qué come Allison?",
           opciones: [
-            { imagen: "f-beignets", descripcion: "Los beignets", etiqueta: "Beignets", etiquetaEs: "Beignets" },
+            { imagen: "f-beignets", descripcion: "Los beignets", etiqueta: "Beignets and coffee", etiquetaEs: "Beignets y café" },
             { imagen: "f-helado", descripcion: "El helado", etiqueta: "Ice cream", etiquetaEs: "Helado" },
             { imagen: "f-pizza", descripcion: "La pizza", etiqueta: "Pizza", etiquetaEs: "Pizza" },
           ],
           correcta: 0,
-          porRevisar: ["traduccion"],
+          porRevisar: ["etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "traduccion"],
         },
         {
           paso: 2,

@@ -70,6 +70,20 @@ export function EscuchaElige({
     return () => clearTimeout(t);
   }, [decir, frase]);
 
+  /**
+   * Elegir una opción la dice en voz alta (su etiqueta en inglés): el alumno
+   * compara lo que oyó con cada opción (30 de octubre de 2026: "que pueda
+   * escuchar el audio de cada opción"). No cuenta como ayuda.
+   */
+  function elegir(i: number) {
+    setElegida(i);
+    const dice = a.opciones[i]?.etiqueta;
+    if (dice) {
+      desbloquearVoz();
+      void decir(dice);
+    }
+  }
+
   function comprobar() {
     if (elegida === null) return;
     if (elegida === a.correcta) {
@@ -163,7 +177,7 @@ export function EscuchaElige({
           fallidas={fallidas}
           correcta={a.correcta}
           acierto={acierto}
-          onElegir={setElegida}
+          onElegir={elegir}
         />
       ) : (
         <div className="grid grid-cols-3 gap-2">
@@ -181,7 +195,7 @@ export function EscuchaElige({
                 <button
                   type="button"
                   disabled={acierto || descartada}
-                  onClick={() => setElegida(i)}
+                  onClick={() => elegir(i)}
                   aria-pressed={sel}
                   className={`relative grid aspect-square w-full place-items-center overflow-hidden rounded-2xl border-2 bg-superficie-2 transition disabled:cursor-default ${
                     ok ? "border-menta" : sel ? "border-primario" : "border-transparent"
@@ -212,7 +226,8 @@ export function EscuchaElige({
                     className={`px-1 py-0.5 text-[13px] leading-tight font-extrabold text-balance ${color}`}
                   >
                     <Icono nombre="play" className="mr-0.5 inline size-3 align-[-1px]" />
-                    <span className="underline decoration-dotted underline-offset-[3px]">{o.etiqueta}</span>
+                    {/* Guion que no parte la línea: "A-N-N-I-E" o "T-shirt" no se cortan en dos. */}
+                    <span className="underline decoration-dotted underline-offset-[3px]">{o.etiqueta.replaceAll("-", "‑")}</span>
                     {traducida && <span className="block pt-0.5 text-xs font-bold text-texto-suave">{o.etiquetaEs}</span>}
                   </button>
                 ) : (
@@ -348,22 +363,40 @@ function Opcion({
   if (o.dibujo && "reloj" in o.dibujo) {
     const [h, m] = o.dibujo.reloj.split(":").map(Number);
     return (
-      <span className="relative grid size-full place-items-center">
-        <Reloj horas={h} minutos={m} etiqueta={o.descripcion} />
+      <span className="relative size-full">
+        <RelojConHora horas={h} minutos={m} etiqueta={o.descripcion} />
         {/* De noche: la luna al lado del reloj. */}
-        <svg viewBox="0 0 20 20" className="absolute top-[7%] right-[7%] size-[26%]" aria-hidden>
+        <svg viewBox="0 0 20 20" className="absolute top-[6%] right-[6%] size-[22%]" aria-hidden>
           <path d="M13.5 2.5a7.5 7.5 0 1 0 4 13.6A8 8 0 0 1 13.5 2.5Z" fill="var(--estrella)" />
         </svg>
       </span>
     );
   }
   const hora = o.texto?.match(/^(\d{1,2}):(\d{2})$/);
-  if (hora) return <Reloj horas={Number(hora[1])} minutos={Number(hora[2])} etiqueta={o.descripcion} />;
+  if (hora) return <RelojConHora horas={Number(hora[1])} minutos={Number(hora[2])} etiqueta={o.descripcion} />;
   // Las tarjetas de B1 llevan frases ("He made a thank-you card."): letra más chica.
   if ((o.texto?.length ?? 0) > 12) {
     return <span className="px-1.5 text-[13px] leading-tight font-extrabold text-texto sm:text-[15px]">{o.texto}</span>;
   }
   return <span className="px-1 text-lg font-black tracking-wide text-texto sm:text-xl">{o.texto}</span>;
+}
+
+/**
+ * El reloj con la hora en números debajo (7:30): sin números había que leer
+ * las agujas, que no es inglés, y la lección enseña la hora en dígitos
+ * (30 de octubre de 2026).
+ */
+function RelojConHora({ horas, minutos, etiqueta }: { horas: number; minutos: number; etiqueta: string }) {
+  return (
+    <span className="flex size-full flex-col items-center justify-center gap-0.5 pt-1">
+      <span className="grid w-[74%] place-items-center [&>svg]:size-full">
+        <Reloj horas={horas} minutos={minutos} etiqueta={etiqueta} />
+      </span>
+      <span className="text-lg leading-none font-black tabular-nums text-texto sm:text-xl">
+        {horas}:{String(minutos).padStart(2, "0")}
+      </span>
+    </span>
+  );
 }
 
 /** Una flecha gruesa: izquierda, derecha o derecho (hacia arriba). */

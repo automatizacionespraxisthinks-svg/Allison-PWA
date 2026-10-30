@@ -108,12 +108,13 @@ export const PARADA_01: Parada = {
           traduccion: ["Este es Tom. Es un muchacho alegre con un saco verde.", 'Dice: "¡Hola! Me llamo Tom."'],
           pregunta: "¿Quién es Tom?",
           opciones: [
-            { imagen: "f-nino", descripcion: "Un muchacho de camiseta naranja", etiqueta: "Orange T-shirt", etiquetaEs: "Camiseta naranja" },
-            { imagen: "a-tom", descripcion: "Tom, un muchacho alegre de saco verde", etiqueta: "Green hoodie", etiquetaEs: "Saco verde" },
-            { imagen: "a-sarah", descripcion: "Sarah, una muchacha de camiseta amarilla", etiqueta: "Yellow T-shirt", etiquetaEs: "Camiseta amarilla" },
+            { imagen: "f-nino", descripcion: "Un muchacho de camiseta naranja", etiqueta: "An orange T-shirt", etiquetaEs: "Una camiseta naranja" },
+            { imagen: "a-tom", descripcion: "Tom, un muchacho alegre de saco verde", etiqueta: "A green hoodie", etiquetaEs: "Un saco verde" },
+            { imagen: "a-sarah", descripcion: "Sarah, una muchacha de camiseta amarilla", etiqueta: "A yellow T-shirt", etiquetaEs: "Una camiseta amarilla" },
           ],
           correcta: 1,
           porRevisar: [
+            "etiquetas: con el artículo, como suenan en la frase («a green hoodie»); al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)",
             "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)",
             "audio: Allison describe a Tom («This is Tom. He is a happy boy in a green hoodie.») y cita su saludo, con el verbo to be y los pronombres de la parada; antes contaba un diálogo entre Sarah y Tom. Para acertar hay que oír green: los colores se enseñan en la Parada 9, pero el dibujo muestra lo que significa y la etiqueta se traduce con un toque (cambio del 28 de octubre de 2026)",
             "traduccion",
@@ -154,11 +155,13 @@ export const PARADA_01: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: A girl asks: "Where are you from?" A boy says: "I\'m from Colombia. And you?" The girl says: "I\'m from Canada." Pregunta: ¿de dónde es la muchacha? Elige entre tres banderas. Al acertar aparece el diálogo con su traducción.',
+            'Allison cuenta: A boy asks: "Where are you from?" A girl says: "I\'m from Canada." Pregunta: ¿de dónde es la muchacha? Elige entre tres banderas. Al acertar aparece el diálogo con su traducción.',
           siRespondeMal: "Se repite el diálogo y elige otra vez.",
           quienHabla: "Allison",
-          audio: ['A girl asks: "Where are you from?"', 'A boy says: "I\'m from Colombia. And you?"', 'The girl says: "I\'m from Canada."'],
-          traduccion: ['Una muchacha pregunta: "¿De dónde eres?"', 'Un muchacho dice: "Soy de Colombia. ¿Y tú?"', 'La muchacha dice: "Soy de Canadá."'],
+          // Un solo país en el audio (30 de octubre de 2026): antes el muchacho
+          // decía Colombia, una opción incorrecta, y había que seguir quién decía qué.
+          audio: ['A boy asks: "Where are you from?"', 'A girl says: "I\'m from Canada."'],
+          traduccion: ['Un muchacho pregunta: "¿De dónde eres?"', 'Una muchacha dice: "Soy de Canadá."'],
           pregunta: "¿De dónde es la muchacha?",
           opciones: [
             { imagen: "a-bandera-canada", descripcion: "La bandera de Canadá", etiqueta: "Canada", etiquetaEs: "Canadá" },
@@ -166,7 +169,8 @@ export const PARADA_01: Parada = {
             { imagen: "a-bandera-mexico", descripcion: "La bandera de México", etiqueta: "Mexico", etiquetaEs: "México" },
           ],
           correcta: 0,
-          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", 
+          porRevisar: ["audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)",
+            "audio: dos líneas y un solo país; ya no está «I'm from Colombia. And you?» del muchacho (cambio del 30 de octubre de 2026)",
             "traduccion",
             "quienHabla: el documento no dice quiénes hablan",
             "opciones: el documento no nombra las tres banderas; se usaron Canadá, Colombia y México",
@@ -222,18 +226,24 @@ export const PARADA_01: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Oye "See you tomorrow" (la frase no está escrita) y elige entre tres imágenes: mano diciendo adiós, calendario y luna con cama. Al acertar aparece la frase con su traducción.',
+            'Oye "See you tomorrow" (la frase no está escrita) y elige entre tres situaciones de la parada: una muchacha que se despide en la puerta (See you!), dos muchachos que se dan la mano (Nice to meet you!) y el sol saliendo (Good morning!). Al acertar aparece la frase con su traducción.',
           siRespondeMal: "Se repite la frase despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ["See you tomorrow"],
           traduccion: ["Nos vemos mañana"],
+          // Tres frases de la parada (30 de octubre de 2026): antes la mano que
+          // dice adiós también servía, y el calendario pedía deducir "tomorrow".
           opciones: [
-            { imagen: "a-adios", descripcion: "Mano diciendo adiós", etiqueta: "Say goodbye", etiquetaEs: "Decir adiós" },
-            { imagen: "a-calendario", descripcion: "Calendario", etiqueta: "Calendar", etiquetaEs: "Calendario" },
-            { imagen: "a-luna-cama", descripcion: "Luna con cama", etiqueta: "Bedtime", etiquetaEs: "Hora de dormir" },
+            { imagen: "a-despedida-puerta", descripcion: "Una muchacha que se despide en la puerta", etiqueta: "See you!", etiquetaEs: "¡Nos vemos!" },
+            { imagen: "a-mucho-gusto", descripcion: "Dos muchachos que se dan la mano", etiqueta: "Nice to meet you!", etiquetaEs: "¡Mucho gusto!" },
+            { imagen: "a-sol-saliendo", descripcion: "El sol saliendo", etiqueta: "Good morning!", etiquetaEs: "¡Buenos días!" },
           ],
-          correcta: 1,
-          porRevisar: ["traduccion", "quienHabla: el documento no dice quién habla; se puso Allison"],
+          correcta: 0,
+          porRevisar: [
+            "traduccion",
+            "quienHabla: el documento no dice quién habla; se puso Allison",
+            "opciones: el documento pedía mano diciendo adiós, calendario y luna con cama; la mano también era una despedida, así que había dos respuestas. Ahora son tres frases de la parada con su dibujo (cambio del 30 de octubre de 2026)",
+          ],
         },
         {
           paso: 2,
@@ -375,7 +385,11 @@ export const PARADA_01: Parada = {
       muestra: "Una fiesta: un hombre y una mujer se dan la mano, hay música y una bandera",
       uso: "Lección 3 (paso 2)",
     },
-    { archivos: ["a-adios", "a-calendario", "a-luna-cama"], muestra: "Mano diciendo adiós, calendario y luna con cama", uso: "Lección 4 (paso 1)" },
+    {
+      archivos: ["a-despedida-puerta", "a-mucho-gusto", "a-sol-saliendo"],
+      muestra: "Una muchacha que se despide en la puerta, dos muchachos que se dan la mano y el sol saliendo (antes: mano diciendo adiós, calendario y luna con cama)",
+      uso: "Lección 4 (paso 1)",
+    },
     { archivos: ["a-despedida-puerta"], muestra: "Una persona en la puerta diciendo adiós con la mano", uso: "Lección 4 (paso 2)" },
   ],
 };

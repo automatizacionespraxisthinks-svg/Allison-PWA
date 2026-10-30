@@ -205,7 +205,9 @@ function revisarActividad(a, donde, imagenes) {
       {
         const conEtiqueta = (a.opciones ?? []).filter((o) => o.etiqueta?.trim()).length;
         if (conEtiqueta && conEtiqueta !== a.opciones.length) fallo(donde, "la etiqueta va en las tres opciones o en ninguna");
-        if ((a.opciones ?? []).some((o) => Math.max(o.etiqueta?.length ?? 0, o.etiquetaEs?.length ?? 0) > 22))
+        // En el mapa la etiqueta no va debajo de un dibujo: solo suena al tocar el edificio.
+        const enMapa = (o) => !!o.dibujo && "edificio" in o.dibujo;
+        if ((a.opciones ?? []).some((o) => !enMapa(o) && Math.max(o.etiqueta?.length ?? 0, o.etiquetaEs?.length ?? 0) > 22))
           aviso(donde, "una etiqueta de más de dos líneas no cabe debajo del dibujo");
         // La etiqueta va en inglés y se traduce con un toque (28 de octubre de 2026).
         for (const o of a.opciones ?? []) {

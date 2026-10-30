@@ -198,6 +198,16 @@ function segmentosValidos(x: unknown): SegmentoVoz[] | null {
   return ok ? (x as SegmentoVoz[]) : null;
 }
 
+/**
+ * Un deletreo con guiones ("A-M-Y") la voz lo lee de corrido, como una
+ * palabra: con comas suena letra por letra ("A, M, Y"). Las escenas ya lo
+ * hacían en el servidor (escena.ts); aquí vale para todo lo que suena, como
+ * "My name is Amy. A-M-Y." en Escucha y elige (30 de octubre de 2026).
+ * "T-shirt" no cambia: cada parte tiene que ser una sola letra.
+ */
+export const deletreoParaVoz = (t: string) =>
+  t.replace(/\b[A-Za-z](?:-[A-Za-z]){2,}\b/g, (m) => m.toUpperCase().split("-").join(", "));
+
 async function hablar(
   texto: string,
   idioma: IdiomaVoz | "auto",
@@ -205,6 +215,7 @@ async function hablar(
   opciones?: OpcionesHabla
 ): Promise<boolean> {
   if (typeof window === "undefined" || !texto.trim()) return false;
+  texto = deletreoParaVoz(texto);
 
   detenerVoz();
   const mio = ++turno;
