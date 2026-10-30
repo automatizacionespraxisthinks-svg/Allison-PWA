@@ -131,10 +131,10 @@ export const PARADA_04: Parada = {
           paso: 2,
           tipo: "dilo",
           queAparece:
-            'Frase en español: "Nunca he probado el sushi, pero he comido tacos." Dibujo de un plato de sushi tachado y unos tacos. Las palabras de apoyo aparecen después del primer fallo: I\'ve, never, tried, sushi, but, eaten, tacos.',
+            'Frase en español: "Nunca he probado sushi, pero he comido tacos." Dibujo de un plato de sushi tachado y unos tacos. Las palabras de apoyo aparecen después del primer fallo: I\'ve, never, tried, sushi, but, eaten, tacos.',
           siRespondeMal:
             'Se marca la primera palabra que falla. Si dice "I have never try": Después de have va el participio: tried. Si dice "I\'ve never eat": El participio de eat es eaten. Al segundo fallo dice la frase completa y el alumno la repite.',
-          espanol: "Nunca he probado el sushi, pero he comido tacos.",
+          espanol: "Nunca he probado sushi, pero he comido tacos.",
           imagen: "f-sushi-tacos",
           respuesta: "I've never tried sushi, but I've eaten tacos.",
           aceptadas: ["I have never tried sushi, but I have eaten tacos.", "I never tried sushi, but I ate tacos."],
@@ -142,8 +142,12 @@ export const PARADA_04: Parada = {
           explicaciones: [
             { siDice: "I have never try", explicacion: "Después de have va el participio: tried." },
             { siDice: "I've never eat", explicacion: "El participio de eat es eaten." },
+            { siDice: "have eat", explicacion: "Después de have va el participio: eaten." },
+            { siDice: "have ate", explicacion: "Después de have va el participio: eaten, no ate." },
+            { siDice: "haven't never", explicacion: "Never ya niega; va sin not: I've never tried." },
+            { siDice: "proved", explicacion: "Probar una comida es try: I've never tried sushi." },
           ],
-          porRevisar: ['palabras: el documento trae "I\'ve" una vez; la frase lo usa dos veces'],
+          porRevisar: ["frase: sin «el», que llevaba a «the sushi»; explicaciones para «I've eat tacos», «I haven't never» y «proved» (cambio del 30 de octubre de 2026)", 'palabras: el documento trae "I\'ve" una vez; la frase lo usa dos veces'],
         },
         {
           paso: 3,

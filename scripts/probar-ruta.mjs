@@ -630,6 +630,26 @@ ok("A2: sin RUTA_A2 sigue la ruta provisional", process.env.RUTA_A2 === "1" || r
   ok("explicación: con «football» explica soccer", una("football", "I play football", "soccer"));
   ok("evaluación: «He's ridden a horse» es «has ridden»", contieneAlguna("He's ridden a horse.", ["has ridden a horse"]));
   ok("evaluación: «He's tired» sigue siendo «is tired»", contieneAlguna("He's tired.", ["is tired"]));
+
+  // Dilo: la línea se llena como compara la evaluación (contracciones y números).
+  const { palabrasEnOrden, primeraDeLaParte } = await import("../src/lib/ruta/dilo.ts");
+  const edad = ["I'm", "15", "years", "old."];
+  ok("Dilo: «I am fifteen years old» llena la línea", palabrasEnOrden(edad, "I am fifteen years old") === 4);
+  ok("Dilo: «I'm 15 year» se queda en years", palabrasEnOrden(edad, "I'm 15 year old") === 2);
+  ok("Dilo: palabras de más no cortan la línea", palabrasEnOrden(["This", "is", "my", "brother."], "Um this is uh my brother") === 4);
+  ok("Dilo: «T-shirts» dicho como «T shirts»", palabrasEnOrden(["How", "many", "T-shirts"], "how many t shirts") === 3);
+  ok("Dilo B1: empieza por la parte que falló", primeraDeLaParte(["I stayed home", "because it was raining."], "I stayed home so it rained") === "because");
+  ok(
+    "Dilo B1: con otra forma buena al comienzo, señala la parte que falló",
+    primeraDeLaParte(["I've been studying English for three years,", "but I'm still learning."], "I have been studying English for three years, but I still learning") === "but"
+  );
+
+  // «used to» y «use to» suenan igual: lo transcrito de la voz va como la respuesta buena.
+  const { comoSeOye } = await import("../src/lib/normalizar.ts");
+  ok("voz: «use to» es «used to» si la respuesta lo trae", comoSeOye("She use to watch cartoons", ["She used to watch cartoons."]) === "She used to watch cartoons");
+  ok("voz: «didn't used to» es «didn't use to»", comoSeOye("I didn't used to like reading", ["I didn't use to like reading."]) === "I didn't use to like reading");
+  ok("voz: sin used to en la respuesta, no se toca", comoSeOye("What do you use to clean it?", ["I use a cloth."]) === "What do you use to clean it?");
+  ok("voz: «didn't use to» no se vuelve «didn't used to»", comoSeOye("I didn't use to like it", ["I used to hate it, I didn't use to like it."]) === "I didn't use to like it");
 }
 
 console.log(`${total - fallos}/${total} comprobaciones de la ruta bien.`);

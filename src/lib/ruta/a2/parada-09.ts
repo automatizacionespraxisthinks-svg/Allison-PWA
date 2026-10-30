@@ -146,13 +146,16 @@ export const PARADA_09: Parada = {
             'Se marca la primera palabra que falla. Si dice "many money": El dinero no se cuenta: much money. Si dice "How much T-shirts": Las camisetas se cuentan: how many T-shirts. Al segundo fallo dice la frase completa y el alumno la repite.',
           espanol: "No tengo mucho dinero. ¿Cuántas camisetas hay en oferta?",
           respuesta: "I don't have much money. How many T-shirts are on sale?",
-          aceptadas: ["I don't have a lot of money. How many T-shirts are on sale?"],
+          aceptadas: ["I don't have a lot of money. How many T-shirts are on sale?", "I don't have much money. How many T-shirts are there on sale?", "I don't have a lot of money. How many T-shirts are there on sale?"],
           palabras: ["I", "don't", "have", "much", "money.", "How", "many", "T-shirts", "are", "on", "sale?"],
           explicaciones: [
             { siDice: "many money", explicacion: "El dinero no se cuenta: much money." },
             { siDice: "How much T-shirts", explicacion: "Las camisetas se cuentan: how many T-shirts." },
+            { siDice: "I no have", explicacion: "Para negar va don't: I don't have." },
+            { siDice: "offer", explicacion: "En oferta se dice on sale." },
+            { siDice: "T-shirts there are", explicacion: "En la pregunta, are va antes: how many T-shirts are on sale?" },
           ],
-          porRevisar: ['palabras: el documento junta "how many" y "on sale"; aquí van palabra por palabra, como en la respuesta'],
+          porRevisar: ["aceptadas: también «are there on sale» (de «hay»); explicaciones para «I no have», «on offer» y el orden del español (cambio del 30 de octubre de 2026)", 'palabras: el documento junta "how many" y "on sale"; aquí van palabra por palabra, como en la respuesta'],
         },
         {
           paso: 3,

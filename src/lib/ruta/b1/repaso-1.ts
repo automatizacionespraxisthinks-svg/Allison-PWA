@@ -56,27 +56,20 @@ export const REPASO_1: Repaso = {
           paso: 2,
           tipo: "dilo",
           queAparece:
-            'Frase en español: "Nunca he ido a un partido de hockey, pero de niño solía verlo en la televisión." Sin palabras de apoyo.',
+            'Frase en español: "Nunca he ido a un partido de hockey, pero cuando era niño solía ver hockey en la televisión." Sin palabras de apoyo.',
           siRespondeMal:
             'Allison da solo la primera palabra de la parte que falló. Si dice "I\'ve never went": "With have, use been: I\'ve never been." Si dice "I use to watch": "In the past: used to, with d." Al segundo fallo dice la frase completa y el alumno la repite.',
-          espanol: "Nunca he ido a un partido de hockey, pero de niño solía verlo en la televisión.",
+          espanol: "Nunca he ido a un partido de hockey, pero cuando era niño solía ver hockey en la televisión.",
           respuesta: "I've never been to a hockey game, but when I was a kid, I used to watch hockey on TV.",
-          aceptadas: ["I have never been to a hockey game, but when I was little, I used to watch hockey on TV."],
+          aceptadas: ["I have never been to a hockey game, but when I was little, I used to watch hockey on TV.", "I've never been to a hockey game, but when I was a kid, I used to watch it on TV.", "I've never been to a hockey game, but when I was little, I used to watch it on TV.", "I've never been to a hockey game, but when I was a child, I used to watch hockey on TV.", "I've never been to a hockey game, but when I was a kid, I used to watch hockey on television."],
           palabras: [],
           partes: ["I've never been to a hockey game,", "but when I was a kid, I used to watch hockey on TV."],
           explicaciones: [
-            {
-              siDice: "I've never went",
-              explicacion: "With have, use been: I've never been.",
-              es: "Con have, usa been: I've never been.",
-            },
-            {
-              siDice: "I use to watch",
-              explicacion: "In the past: used to, with d.",
-              es: "Para el pasado: used to, con d.",
-            },
+            { siDice: "I've never went", explicacion: "With have, use been: I've never been.", es: "Con have, usa been: I've never been." },
+            { siDice: "I use to watch", explicacion: "In the past: used to, with d.", es: "Para el pasado: used to, con d." },
+            { siDice: "never gone", explicacion: "For a visit, use been: I've never been to a hockey game.", es: "Para una visita, se usa been: I've never been to a hockey game." },
           ],
-          porRevisar: ["explicaciones.es: traducciones"],
+          porRevisar: ["frase: «Nunca he ido a un partido de hockey, pero cuando era niño solía ver hockey en la televisión.», para que lleve a una sola frase (antes «Nunca he ido a un partido de hockey, pero de niño solía verlo en la televisión.»); aceptadas: también «I've never been to a hockey game, but when I was a kid, I used to watch it on TV.» y «I've never been to a hockey game, but when I was little, I used to watch it on TV.» y otras; explicaciones para «never gone» (cambio del 30 de octubre de 2026)", "explicaciones.es: traducciones"],
         },
         {
           paso: 3,
@@ -240,18 +233,12 @@ export const REPASO_1: Repaso = {
           palabras: [],
           partes: ["I've been studying for two hours,", "so I'm tired."],
           explicaciones: [
-            {
-              siDice: "I'm studying for two hours",
-              explicacion: "From then until now: I've been studying.",
-              es: "Desde entonces hasta ahora: I've been studying.",
-            },
-            {
-              siDice: "since two hours",
-              explicacion: "For a period of time, use for: for two hours.",
-              es: "Para un período de tiempo, usa for: for two hours.",
-            },
+            { siDice: "I'm studying for two hours", explicacion: "From then until now: I've been studying.", es: "Desde entonces hasta ahora: I've been studying." },
+            { siDice: "since two hours", explicacion: "For a period of time, use for: for two hours.", es: "Para un período de tiempo, usa for: for two hours." },
+            { siDice: "hours studying", explicacion: "Say: I've been studying for two hours.", es: "Dilo así: I've been studying for two hours." },
+            { siDice: "during two hours", explicacion: "For a period of time, use for: for two hours.", es: "Para un período de tiempo, usa for: for two hours." },
           ],
-          porRevisar: ["explicaciones.es: traducciones"],
+          porRevisar: ["explicaciones para «hours studying», «during two hours» (cambio del 30 de octubre de 2026)", "explicaciones.es: traducciones"],
         },
       ],
     },

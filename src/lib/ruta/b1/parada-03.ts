@@ -149,24 +149,23 @@ export const PARADA_03: Parada = {
           paso: 2,
           tipo: "dilo",
           queAparece:
-            'Frase en español: "Cuando llegué a la fiesta, mis amigos ya se habían ido." Dibujo de una fiesta. Sin palabras de apoyo.',
+            'Frase en español: "Cuando llegué a la fiesta, mis amigos ya se habían ido." Dibujo de un muchacho con un regalo en la puerta de una fiesta que ya se acabó, sin nadie (f-fiesta-vacia). Sin palabras de apoyo.',
           siRespondeMal:
             'Allison da solo la primera palabra de la parte que falló ("When I…", "…my friends had…"). Si dice "my friends already left": "They left first: had already left." Si dice "have already left": "In the past, use had." Al segundo fallo dice la frase completa y el alumno la repite.',
           espanol: "Cuando llegué a la fiesta, mis amigos ya se habían ido.",
-          imagen: "a1/a-fiesta",
+          imagen: "f-fiesta-vacia",
           respuesta: "When I got to the party, my friends had already left.",
-          aceptadas: ["When I arrived at the party, my friends had left."],
+          aceptadas: ["When I arrived at the party, my friends had left.", "When I arrived at the party, my friends had already left.", "When I got to the party, my friends had already gone.", "When I arrived at the party, my friends had already gone.", "When I got to the party, my friends had left.", "My friends had already left when I got to the party.", "My friends had already left when I arrived at the party."],
           palabras: [],
           partes: ["When I got to the party,", "my friends had already left."],
           explicaciones: [
-            {
-              siDice: "my friends already left",
-              explicacion: "They left first: had already left.",
-              es: "Se fueron primero: had already left.",
-            },
+            { siDice: "my friends already left", explicacion: "They left first: had already left.", es: "Se fueron primero: had already left." },
             { siDice: "have already left", explicacion: "In the past, use had.", es: "En pasado, va had." },
+            { siDice: "arrived to", explicacion: "Say: arrived at the party, or got to the party.", es: "Di: arrived at the party, o got to the party." },
+            { siDice: "my friends left", explicacion: "They left first: had already left.", es: "Se fueron primero: had already left." },
+            { siDice: "friends have", explicacion: "In the past, use had.", es: "En pasado, va had." },
           ],
-          porRevisar: ["explicaciones.es: traducción"],
+          porRevisar: ["imagen: f-fiesta-vacia, la fiesta ya sin nadie; antes a1/a-fiesta, dos amigos saludándose en la fiesta, lo contrario de la frase (cambio del 30 de octubre de 2026)", "aceptadas: también «When I arrived at the party, my friends had already left.» y «When I got to the party, my friends had already gone.» y otras; explicaciones para «arrived to», «my friends left», «friends have» (cambio del 30 de octubre de 2026)", "explicaciones.es: traducción"],
         },
         {
           paso: 3,
@@ -317,19 +316,21 @@ export const PARADA_03: Parada = {
           paso: 2,
           tipo: "dilo",
           queAparece:
-            'Frase en español: "No pude montar bicicleta porque mi hermano se la había llevado." Dibujo de una bicicleta. Sin palabras de apoyo.',
+            'Frase en español: "No pude montar en mi bicicleta porque mi hermano se la había llevado." Dibujo de una bicicleta. Sin palabras de apoyo.',
           siRespondeMal:
             'Allison da solo la primera palabra de la parte que falló. Si dice "has taken": "He took it first: had taken." Al segundo fallo dice la frase completa y el alumno la repite.',
-          espanol: "No pude montar bicicleta porque mi hermano se la había llevado.",
+          espanol: "No pude montar en mi bicicleta porque mi hermano se la había llevado.",
           imagen: "a1/f-bicicleta",
           respuesta: "I couldn't ride my bike because my brother had taken it.",
-          aceptadas: ["I couldn't ride my bike because my brother took it."],
+          aceptadas: ["I couldn't ride my bike because my brother took it.", "I couldn't ride my bicycle because my brother had taken it."],
           palabras: [],
           partes: ["I couldn't ride my bike", "because my brother had taken it."],
           explicaciones: [
             { siDice: "has taken", explicacion: "He took it first: had taken.", es: "Él se la llevó primero: had taken." },
+            { siDice: "had took", explicacion: "After had, say taken: had taken.", es: "Después de had, di taken: had taken." },
+            { siDice: "had carried", explicacion: "He took it with him: had taken it.", es: "Se la llevó: had taken it." },
           ],
-          porRevisar: ["explicaciones.es: traducción"],
+          porRevisar: ["frase: «No pude montar en mi bicicleta porque mi hermano se la había llevado.», para que lleve a una sola frase (antes «No pude montar bicicleta porque mi hermano se la había llevado.»); aceptadas: también «I couldn't ride my bicycle because my brother had taken it.»; explicaciones para «had took», «had carried» (cambio del 30 de octubre de 2026)", "explicaciones.es: traducción"],
         },
         {
           paso: 3,
@@ -499,7 +500,7 @@ export const PARADA_03: Parada = {
       muestra: "Liam en la puerta de una sala de cine vacía, sorprendido",
       uso: "Lección 1 (paso 2)",
     },
-    { archivos: ["a1/a-fiesta"], muestra: "Una fiesta (de A1)", uso: "Lección 2 (paso 2)" },
+    { archivos: ["f-fiesta-vacia"], muestra: "Un muchacho con un regalo en la puerta de una fiesta que ya se acabó, sin nadie (desde el 30 de octubre de 2026; antes a1/a-fiesta)", uso: "Lección 2 (paso 2)" },
     {
       archivos: ["f-robo-1", "f-robo-2", "f-robo-3", "f-robo-4"],
       muestra:

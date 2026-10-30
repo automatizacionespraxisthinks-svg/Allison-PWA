@@ -92,3 +92,23 @@ export function normalizar(texto: string): string {
   const abiertas = crudas.flatMap((p, i) => abrirContraccion(p, crudas[i + 1]));
   return ` ${enCifras(abiertas).join(" ")} `;
 }
+
+/**
+ * «used to» y «use to» suenan igual: en lo que se transcribió de la voz
+ * (no en lo escrito) se escriben como en las respuestas buenas. Antes un
+ * «used to» bien dicho que la transcripción escribía «use to» salía mal
+ * y recibía la explicación de la d (30 de octubre de 2026).
+ */
+export function comoSeOye(transcripcion: string, formas: string[]): string {
+  const buenas = formas.join(" ");
+  let t = transcripcion;
+  if (/\b(didn't|did not) use to\b/i.test(buenas)) t = t.replace(/\b(didn't|did not) used to\b/gi, "$1 use to");
+  if (/(?<!\b(?:didn't|did not) )\bused to\b/i.test(buenas)) t = t.replace(/(?<!\b(?:didn't|did not) )\buse to\b/gi, "used to");
+  return t;
+}
+
+/** Una palabra de la frase, abierta como en la frase ("she'd" antes de "already" es "she had"). */
+export function palabraNormalizada(palabra: string, siguiente?: string): string[] {
+  const [p = "", sig] = palabrasCrudas(`${palabra} ${siguiente ?? ""}`);
+  return enCifras(palabrasCrudas(palabra).length > 1 ? normalizar(palabra).trim().split(" ").filter(Boolean) : abrirContraccion(p, sig));
+}

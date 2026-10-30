@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { conPunto } from "@/lib/habla";
+import { palabrasEnOrden, primeraDeLaParte } from "@/lib/ruta/dilo";
 import type { Dilo as Datos } from "@/lib/ruta/tipos";
 import { desdeB1 } from "@/lib/tipos";
+import { desbloquearVoz } from "@/lib/voz";
 import { evaluar, type Contexto, type FinActividad } from "./api";
 import {
   AllisonAro,
@@ -20,37 +22,6 @@ import {
   type Entrada,
 } from "./comun";
 import { Ondas } from "./EscuchaElige";
-
-const limpia = (p: string) => p.toLowerCase().replace(/[^a-z0-9']/g, "");
-
-/**
- * Cuántas palabras de la frase dijo en orden desde el principio: se
- * pintan de verde en la línea a medida que las dice (pantalla 6).
- */
-function palabrasEnOrden(frase: string[], dicho: string): number {
-  const oidas = dicho.split(/\s+/).map(limpia).filter(Boolean);
-  let k = 0;
-  for (const w of oidas) {
-    if (k < frase.length && limpia(frase[k]) === w) k++;
-  }
-  return k;
-}
-
-/**
- * B1: la primera palabra de la parte que falló. La parte es la que tiene
- * la primera palabra que no dijo en orden.
- */
-function primeraDeLaParte(partes: string[], dicho: string): string {
-  const frase = partes.join(" ").split(/\s+/);
-  const k = palabrasEnOrden(frase, dicho);
-  let desde = 0;
-  for (const p of partes) {
-    const n = p.split(/\s+/).length;
-    if (k < desde + n) return p.split(/\s+/)[0].replace(/[,.!?;:]+$/, "");
-    desde += n;
-  }
-  return partes[partes.length - 1].split(/\s+/)[0].replace(/[,.!?;:]+$/, "");
-}
 
 type Explicacion = { en: string; es?: string };
 
@@ -84,6 +55,8 @@ export function Dilo({
   const [fallos, setFallos] = useState(0);
   const [fase, setFase] = useState<"pregunta" | "pista" | "bien" | "ensena" | "repetida">("pregunta");
   const [explicacion, setExplicacion] = useState<Explicacion | null>(null);
+  /** Al acertar con una forma que la app dice distinto: la nota «Good!…». */
+  const [notaBuena, setNotaBuena] = useState<Explicacion | null>(null);
   /** B1: la primera palabra de la parte que falló. */
   const [empieza, setEmpieza] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState<string | null>(null);
@@ -121,7 +94,13 @@ export function Dilo({
     if (r.correcto) {
       setEnLinea(linea.length);
       setFase("bien");
-      void decir(a.respuesta);
+      // Una forma que vale pero que la app dice distinto («If I was you»): la nota «Good!…» del documento.
+      const nota = explicacionPara(a.explicaciones?.filter((x) => /^good!/i.test(x.explicacion)), r.transcripcion);
+      setNotaBuena(nota ? { en: nota.explicacion, es: nota.es } : null);
+      void (async () => {
+        if (nota && !(await decirExplicacion(nota.explicacion))) return;
+        await decir(a.respuesta);
+      })();
       return;
     }
     setOido({ texto: r.transcripcion, escrito: "texto" in e, antes: { fase, fallos, enLinea, explicacion, empieza } });
@@ -239,24 +218,33 @@ export function Dilo({
       {!terminado && conApoyo && (
         <>
           <span className="text-center text-xs font-extrabold tracking-[0.08em] text-texto-suave uppercase">Usa estas palabras</span>
+          {/* Cada palabra suena al tocarla, como las opciones de Escucha y elige (30 de octubre de 2026). */}
           <div className="flex flex-wrap justify-center gap-1.5">
             {chips.map((w, i) => {
               const quedan = usadas.get(w) ?? 0;
               const usada = quedan > 0;
               if (usada) usadas.set(w, quedan - 1);
+              // Sin el signo pegado ("you.", "name?"): delataba qué palabra va al final.
+              const palabra = w.replace(/[.,!?;:]+$/, "");
               return (
-                <span
+                <button
+                  type="button"
                   key={i}
-                  className={`rounded-xl px-3.5 py-1.5 text-lg font-extrabold ${
+                  onClick={() => {
+                    desbloquearVoz();
+                    void decir(palabra);
+                  }}
+                  aria-label={`Oír «${palabra}»`}
+                  className={`rounded-xl px-3.5 py-1.5 text-lg font-extrabold transition active:scale-95 ${
                     usada ? "border-[1.5px] border-dashed border-borde text-borde" : "bg-superficie-2"
                   }`}
                 >
-                  {/* Sin el signo pegado ("you.", "name?"): delataba qué palabra va al final. */}
-                  {w.replace(/[.,!?;:]+$/, "")}
-                </span>
+                  {palabra}
+                </button>
               );
             })}
           </div>
+          <span className="text-center text-[12px] font-semibold text-texto-suave">Toca una palabra para oírla.</span>
         </>
       )}
 
@@ -284,6 +272,11 @@ export function Dilo({
           }
         >
           <span>{fase === "bien" ? `¡Perfecto! Así se dice "${a.espanol}"` : "Esta frase vuelve a salir más adelante."}</span>
+          {fase === "bien" && notaBuena && (
+            <div className="rounded-2xl bg-oro-suave px-4 py-2.5 text-center text-sm font-bold text-oro">
+              <Explicado en={notaBuena.en} es={notaBuena.es} />
+            </div>
+          )}
           <div className="flex flex-wrap gap-2">
             <BotonOir onClick={() => void decir(a.respuesta)} texto="Oír la frase" />
             {miVoz && <BotonOir onClick={() => oirGrabacion(miVoz)} texto="Oír mi voz" />}

@@ -142,22 +142,17 @@ export const PARADA_08: Parada = {
             'Allison da solo la primera palabra de la parte que falló. Si dice "If we won\'t recycle": "After if, no will: If we don\'t recycle." Si dice "the river get worse": "Use will: the river will get worse." Al segundo fallo dice la frase completa y el alumno la repite.',
           espanol: "Si no reciclamos, el río se pondrá peor, así que tenemos que hacer algo.",
           respuesta: "If we don't recycle, the river will get worse, so we have to do something.",
-          aceptadas: ["If we don't recycle, the river is going to get worse, so we need to do something."],
+          aceptadas: ["If we don't recycle, the river is going to get worse, so we need to do something.", "If we don't recycle, the river will get worse, so we need to do something.", "If we don't recycle, the river is going to get worse, so we have to do something.", "If we don't recycle, the river will be worse, so we have to do something."],
           palabras: [],
           partes: ["If we don't recycle, the river will get worse,", "so we have to do something."],
           explicaciones: [
-            {
-              siDice: "If we won't recycle",
-              explicacion: "After if, no will: If we don't recycle.",
-              es: "Después de if no va will: If we don't recycle.",
-            },
-            {
-              siDice: "the river get worse",
-              explicacion: "Use will: the river will get worse.",
-              es: "Usa will: the river will get worse.",
-            },
+            { siDice: "If we won't recycle", explicacion: "After if, no will: If we don't recycle.", es: "Después de if no va will: If we don't recycle." },
+            { siDice: "the river get worse", explicacion: "Use will: the river will get worse.", es: "Usa will: the river will get worse." },
+            { siDice: "river gets worse", explicacion: "Use will: the river will get worse.", es: "Usa will: the river will get worse." },
+            { siDice: "put worse", explicacion: "Say get: the river will get worse.", es: "Di get: the river will get worse." },
           ],
           porRevisar: [
+            "aceptadas: también «If we don't recycle, the river will get worse, so we need to do something.» y «If we don't recycle, the river is going to get worse, so we have to do something.» y otras; explicaciones para «river gets worse», «put worse» (cambio del 30 de octubre de 2026)",
             "partes: la frase empieza con if y además lleva so; se parte justo antes de so, la palabra que une",
             "explicaciones.es: la traducción no estaba en el documento",
           ],
@@ -304,13 +299,13 @@ export const PARADA_08: Parada = {
           palabras: [],
           partes: ["If you see a bear, don't run,", "because it will follow you."],
           explicaciones: [
-            {
-              siDice: "If you will see a bear",
-              explicacion: "After if, no will: If you see a bear.",
-              es: "Después de if no va will: If you see a bear.",
-            },
+            { siDice: "If you will see a bear", explicacion: "After if, no will: If you see a bear.", es: "Después de if no va will: If you see a bear." },
+            { siDice: "no run", explicacion: "Say don't: don't run.", es: "Di don't: don't run." },
+            { siDice: "it follows you", explicacion: "Use will: it will follow you.", es: "Usa will: it will follow you." },
+            { siDice: "because he", explicacion: "For an animal, say it: it will follow you.", es: "Para un animal, se dice it: it will follow you." },
           ],
           porRevisar: [
+            "explicaciones para «no run», «it follows you», «because he» (cambio del 30 de octubre de 2026)",
             "partes: la frase empieza con if y además lleva because; se parte justo antes de because, la palabra que une",
             "explicaciones.es: la traducción no estaba en el documento",
           ],

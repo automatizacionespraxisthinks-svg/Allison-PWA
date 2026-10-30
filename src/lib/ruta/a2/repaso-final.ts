@@ -49,15 +49,18 @@ export const REPASO_FINAL: Repaso = {
           respuesta: "How about Sunday? I'm taking the ten o'clock train.",
           // Las dos primeras, de "También se acepta"; la tercera, de "Si responde
           // mal": "Si dice 'How about on Sunday?', se acepta".
-          aceptadas: [
-            "What about Sunday? I'm taking the train at ten.",
-            "How about Sunday? My train leaves at ten.",
-            "How about on Sunday? I'm taking the ten o'clock train.",
-          ],
+          aceptadas: ["What about Sunday? I'm taking the train at ten.", "How about Sunday? My train leaves at ten.", "How about on Sunday? I'm taking the ten o'clock train.", "How about Sunday? I'm taking the train at ten.", "What about Sunday? I'm taking the ten o'clock train.", "How about on Sunday? I'm taking the train at ten."],
           // El documento agrupa "how about" y "ten o'clock"; aquí van palabra por
           // palabra, como en Londres, para que sean las de la respuesta.
           palabras: ["How", "about", "Sunday?", "I'm", "taking", "the", "ten", "o'clock", "train."],
-          explicaciones: [{ siDice: "I take the train at ten", explicacion: "Para lo que ya está arreglado: I'm taking the train." }],
+          explicaciones: [
+            { siDice: "I take the train at ten", explicacion: "Para lo que ya está arreglado: I'm taking the train." },
+            { siDice: "I take the", explicacion: "Para lo que ya está arreglado: I'm taking the train." },
+            { siDice: "train of", explicacion: "El tren de las diez es the ten o'clock train." },
+            { siDice: "about the Sunday", explicacion: "Con los días no va the: how about Sunday?" },
+            { siDice: "How was", explicacion: "Aquí no preguntas cómo te fue: propones un día. Para proponer: how about Sunday?" },
+          ],
+          porRevisar: ["aceptadas: las variantes cruzadas (How/What about con at ten u o'clock); explicaciones para «I take the ten o'clock train», «the train of the ten» y «How was Sunday?» (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,

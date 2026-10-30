@@ -133,7 +133,12 @@ export const PARADA_07: Parada = {
           respuesta: "I'd like a glass of water, please.",
           aceptadas: ["I would like a glass of water, please."],
           palabras: ["I'd", "like", "a", "glass", "of", "water,", "please."],
-          explicaciones: [{ siDice: "I like a glass of water", explicacion: "Para pedir se usa I'd like." }],
+          explicaciones: [
+            { siDice: "I like a glass of water", explicacion: "Para pedir se usa I'd like." },
+            { siDice: "vase", explicacion: "Vaso se dice glass: a glass of water." },
+            { siDice: "I want", explicacion: "Me gustaría se dice I'd like: I'd like a glass of water." },
+          ],
+          porRevisar: ["explicaciones para «vase» (vaso es glass) e «I want» (cambio del 30 de octubre de 2026)"],
         },
       ],
     },

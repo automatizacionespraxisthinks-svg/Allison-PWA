@@ -133,13 +133,16 @@ export const PARADA_01: Parada = {
           espanol: "Voy al colegio en bus. Mi materia favorita es ciencias.",
           imagen: "f-bus-escolar",
           respuesta: "I go to school by bus. My favorite subject is science.",
-          aceptadas: ["I take the bus to school. My favorite subject is science."],
+          aceptadas: ["I take the bus to school. My favorite subject is science.", "I go to school on the bus. My favorite subject is science."],
           palabras: ["I", "go", "to", "school", "by", "bus.", "My", "favorite", "subject", "is", "science."],
           explicaciones: [
             { siDice: "go to the school", explicacion: "Al colegio, sin the: go to school." },
             { siDice: "subject are", explicacion: "Es una materia: is." },
+            { siDice: "in bus", explicacion: "En bus se dice by bus: I go to school by bus." },
+            { siDice: "in the bus", explicacion: "En bus se dice by bus: I go to school by bus." },
+            { siDice: "college", explicacion: "Colegio es school; college es la universidad: I go to school." },
           ],
-          porRevisar: ['palabras: el documento no trae "I"; sin ella no se arma la frase'],
+          porRevisar: ["aceptadas: también «on the bus»; explicaciones para «in bus» y «college» (colegio es school) (cambio del 30 de octubre de 2026)", 'palabras: el documento no trae "I"; sin ella no se arma la frase'],
         },
         {
           paso: 3,

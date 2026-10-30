@@ -132,6 +132,13 @@ export const PARADA_03: Parada = {
           respuesta: "How do you spell your last name?",
           aceptadas: ["How do you spell it?"],
           palabras: ["How", "do", "you", "spell", "your", "last", "name?"],
+          explicaciones: [
+            { siDice: "write", explicacion: "Para preguntar cómo se escribe, letra por letra, se usa spell: How do you spell your last name?" },
+            { siDice: "How you spell", explicacion: "En la pregunta va do: How do you spell?" },
+            { siDice: "How spell", explicacion: "En la pregunta va do: How do you spell?" },
+            { siDice: "you last name", explicacion: "«Tu» se dice your: your last name." },
+          ],
+          porRevisar: ["explicaciones para «How do you write…», «How you spell…» y «you last name» (cambio del 30 de octubre de 2026)"],
         },
       ],
     },

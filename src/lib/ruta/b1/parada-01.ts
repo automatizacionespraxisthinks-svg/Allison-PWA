@@ -85,22 +85,16 @@ export const PARADA_01: Parada = {
           espanol: "He estado en Cartagena dos veces. La última vez fui en diciembre.",
           imagen: "f-cartagena-murallas",
           respuesta: "I've been to Cartagena twice. The last time, I went in December.",
-          aceptadas: ["I have been to Cartagena two times. The last time I went there in December."],
+          aceptadas: ["I have been to Cartagena two times. The last time I went there in December.", "I have been to Cartagena two times. The last time I went in December.", "I have been to Cartagena twice. The last time I went there in December."],
           palabras: [],
           partes: ["I've been to Cartagena twice.", "The last time, I went in December."],
           explicaciones: [
-            {
-              siDice: "I have went",
-              explicacion: "With have, use been: I've been.",
-              es: "Con have, se usa been: I've been.",
-            },
-            {
-              siDice: "I've gone there in December",
-              explicacion: "With a date, use the past: I went in December.",
-              es: "Con una fecha, se usa el pasado: I went in December.",
-            },
+            { siDice: "I have went", explicacion: "With have, use been: I've been.", es: "Con have, se usa been: I've been." },
+            { siDice: "I've gone there in December", explicacion: "With a date, use the past: I went in December.", es: "Con una fecha, se usa el pasado: I went in December." },
+            { siDice: "last time… have", explicacion: "With a date, use the past: I went in December.", es: "Con una fecha, se usa el pasado: I went in December." },
           ],
           porRevisar: [
+            "aceptadas: también «I have been to Cartagena two times. The last time I went in December.» y «I have been to Cartagena twice. The last time I went there in December.»; explicaciones para «last time… have» (cambio del 30 de octubre de 2026)",
             "explicaciones.es: traducciones",
             'partes: la frase no lleva because, but, when ni so; se parte en el punto, como las partes que da el documento ("I\'ve…", "The last time, I…")',
           ],
@@ -303,26 +297,22 @@ export const PARADA_01: Parada = {
           paso: 2,
           tipo: "dilo",
           queAparece:
-            'Frase en español: "Ya hice el check-in, pero todavía no he encontrado mi puerta." Dibujo de Liam en la puerta de embarque. Sin palabras de apoyo.',
+            'Frase en español: "Ya hice el check-in, pero todavía no he encontrado mi puerta." Dibujo de Liam en un pasillo del aeropuerto, confundido, buscando su puerta (f-liam-buscando-puerta). Sin palabras de apoyo.',
           siRespondeMal:
             'Allison da la primera palabra de la parte que falló ("…but I…"). Si dice "I haven\'t found yet my gate": "Yet goes at the end: I haven\'t found my gate yet." Al segundo fallo dice la frase completa y el alumno la repite.',
           espanol: "Ya hice el check-in, pero todavía no he encontrado mi puerta.",
-          imagen: "f-liam-puerta",
+          imagen: "f-liam-buscando-puerta",
           respuesta: "I've already checked in, but I haven't found my gate yet.",
-          aceptadas: [
-            "I have already checked in, but I haven't found my gate.",
-            "I already checked in, but I didn't find my gate yet.",
-          ],
+          aceptadas: ["I have already checked in, but I haven't found my gate.", "I already checked in, but I didn't find my gate yet.", "I already checked in, but I haven't found my gate yet.", "I've already checked in, but I still haven't found my gate.", "I already checked in, but I still haven't found my gate."],
           palabras: [],
           partes: ["I've already checked in,", "but I haven't found my gate yet."],
           explicaciones: [
-            {
-              siDice: "I haven't found yet my gate",
-              explicacion: "Yet goes at the end: I haven't found my gate yet.",
-              es: "Yet va al final: I haven't found my gate yet.",
-            },
+            { siDice: "I haven't found yet my gate", explicacion: "Yet goes at the end: I haven't found my gate yet.", es: "Yet va al final: I haven't found my gate yet." },
+            { siDice: "yet my gate", explicacion: "Yet goes at the end: I haven't found my gate yet.", es: "Yet va al final: I haven't found my gate yet." },
+            { siDice: "the check-in", explicacion: "Use the verb: I've already checked in.", es: "Usa el verbo: I've already checked in." },
+            { siDice: "door", explicacion: "At the airport, it's the gate: my gate.", es: "En el aeropuerto, la puerta es gate: my gate." },
           ],
-          porRevisar: ["explicaciones.es: traducción"],
+          porRevisar: ["imagen: f-liam-buscando-puerta, Liam todavía buscando su puerta; antes f-liam-puerta, Liam sentado tranquilo en su puerta, lo contrario de la frase (cambio del 30 de octubre de 2026)", "aceptadas: también «I already checked in, but I haven't found my gate yet.» y «I've already checked in, but I still haven't found my gate.» y otras; explicaciones para «yet my gate», «the check-in», «door» (cambio del 30 de octubre de 2026)", "explicaciones.es: traducción"],
         },
         {
           paso: 3,
@@ -492,7 +482,12 @@ export const PARADA_01: Parada = {
     {
       archivos: ["f-liam-sandwich", "f-liam-puerta", "f-liam-checkin"],
       muestra: "Liam comprando un sándwich, en la puerta de embarque y en la fila del check-in",
-      uso: "Lección 2 (paso 1); la de la puerta también en la lección 4 (paso 2)",
+      uso: "Lección 2 (paso 1)",
+    },
+    {
+      archivos: ["f-liam-buscando-puerta"],
+      muestra: "Liam en un pasillo del aeropuerto, confundido, con su pase de abordar, buscando su puerta (desde el 30 de octubre de 2026; antes f-liam-puerta)",
+      uso: "Lección 4 (paso 2)",
     },
     {
       archivos: ["f-banda-vacia"],

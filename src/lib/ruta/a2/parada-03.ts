@@ -140,18 +140,22 @@ export const PARADA_03: Parada = {
           paso: 2,
           tipo: "dilo",
           queAparece:
-            'Frase en español: "Estaba cocinando cuando sonó el teléfono." Dibujo de una cocina con un teléfono que suena. Las palabras de apoyo aparecen después del primer fallo: I, was, cooking, when, the, phone, rang.',
+            'Frase en español: "Yo estaba cocinando cuando sonó el teléfono." Dibujo de una cocina con un teléfono que suena. Las palabras de apoyo aparecen después del primer fallo: I, was, cooking, when, the, phone, rang.',
           siRespondeMal:
             'Se marca la primera palabra que falla. Si dice "I cooked when": Lo que estaba pasando va con was y -ing: I was cooking. Si dice "ringed": Ring es irregular: rang. Al segundo fallo dice la frase completa y el alumno la repite.',
-          espanol: "Estaba cocinando cuando sonó el teléfono.",
+          espanol: "Yo estaba cocinando cuando sonó el teléfono.",
           imagen: "f-cocina-telefono",
           respuesta: "I was cooking when the phone rang.",
-          aceptadas: ["I was cooking when my phone rang."],
+          aceptadas: ["I was cooking when my phone rang.", "The phone rang while I was cooking.", "The phone rang when I was cooking.", "While I was cooking, the phone rang.", "When the phone rang, I was cooking."],
           palabras: ["I", "was", "cooking", "when", "the", "phone", "rang."],
           explicaciones: [
             { siDice: "I cooked when", explicacion: "Lo que estaba pasando va con was y -ing: I was cooking." },
             { siDice: "ringed", explicacion: "Ring es irregular: rang." },
+            { siDice: "was ringing", explicacion: "Lo que interrumpe va en pasado simple: the phone rang." },
+            { siDice: "sounded", explicacion: "Un teléfono que suena es ring; en pasado, rang." },
+            { siDice: "phone ring", explicacion: "Ya pasó: ring en pasado es rang." },
           ],
+          porRevisar: ["frase: «Yo estaba…», porque «estaba» solo también es él o ella; aceptadas: también con while; explicaciones para «the phone was ringing», «sounded» y «the phone ring» (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,

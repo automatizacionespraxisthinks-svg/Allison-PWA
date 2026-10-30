@@ -163,8 +163,14 @@ export const PARADA_10: Parada = {
           explicaciones: [
             { siDice: "the more cheap", explicacion: "Cheap es corta: the cheapest." },
             { siDice: "the most good", explicacion: "Good cambia: the best." },
+            { siDice: "but is not", explicacion: "En inglés la frase lleva sujeto: but it isn't the best." },
+            { siDice: "no is", explicacion: "Para negar va isn't: it isn't the best." },
+            { siDice: "most cheap", explicacion: "Cheap es corta: the cheapest." },
+            { siDice: "the better", explicacion: "El mejor de todos es the best." },
+            { siDice: "apartment more", explicacion: "En inglés va primero cheapest: the cheapest apartment." },
           ],
           porRevisar: [
+            "explicaciones para «but is not the best» (sin it), «no is», «the most cheap», «the better» y el orden del español (cambio del 30 de octubre de 2026)",
             'palabras: el documento trae "the cheapest" y "the best" juntas y sin puntuación; aquí van palabra por palabra, como en Londres',
           ],
         },

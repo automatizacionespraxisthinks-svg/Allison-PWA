@@ -131,7 +131,12 @@ export const PARADA_09: Parada = {
           explicaciones: [
             { siDice: "I wearing", explicacion: "Se necesitan las dos partes: I'm wearing." },
             { siDice: "I am wear", explicacion: "Se necesitan las dos partes: I'm wearing." },
+            { siDice: "Is raining", explicacion: "Con el clima se empieza con it: It's raining." },
+            { siDice: "It raining", explicacion: "Se necesitan las dos partes: It's raining." },
+            { siDice: "have a raincoat", explicacion: "Tener puesto se dice wear: I'm wearing a raincoat." },
+            { siDice: "using", explicacion: "Para la ropa que tienes puesta se usa wear: I'm wearing." },
           ],
+          porRevisar: ["explicaciones para «Is raining» (sin it), «I have a raincoat» e «I'm using a raincoat» (cambio del 30 de octubre de 2026)"],
         },
       ],
     },

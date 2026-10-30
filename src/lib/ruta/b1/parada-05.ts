@@ -159,18 +159,13 @@ export const PARADA_05: Parada = {
           palabras: [],
           partes: ["I've been studying English for three years,", "but I'm still learning."],
           explicaciones: [
-            {
-              siDice: "since three years",
-              explicacion: "For a period of time, use for: for three years.",
-              es: "Para un período de tiempo, usa for: for three years.",
-            },
-            {
-              siDice: "I'm studying English for three years",
-              explicacion: "From then until now: I've been studying.",
-              es: "Desde entonces hasta ahora: I've been studying.",
-            },
+            { siDice: "since three years", explicacion: "For a period of time, use for: for three years.", es: "Para un período de tiempo, usa for: for three years." },
+            { siDice: "I'm studying English for three years", explicacion: "From then until now: I've been studying.", es: "Desde entonces hasta ahora: I've been studying." },
+            { siDice: "during three years", explicacion: "For a period of time, use for: for three years.", es: "Para un período de tiempo, usa for: for three years." },
+            { siDice: "I still learning", explicacion: "Say am: I'm still learning.", es: "Di am: I'm still learning." },
+            { siDice: "have studied", explicacion: "Good! Now with been + -ing: I've been studying.", es: "¡Bien! Ahora con been + -ing: I've been studying." },
           ],
-          porRevisar: ["explicaciones.es: traducciones"],
+          porRevisar: ["explicaciones para «during three years», «I still learning», «have studied» (cambio del 30 de octubre de 2026)", "explicaciones.es: traducciones"],
         },
         {
           paso: 3,
@@ -318,17 +313,16 @@ export const PARADA_05: Parada = {
           espanol: "He estado esperando el bus por veinte minutos, pero todavía no ha llegado.",
           imagen: "a2/f-parada-lluvia",
           respuesta: "I've been waiting for the bus for twenty minutes, but it still hasn't arrived.",
-          aceptadas: ["I have been waiting for the bus for twenty minutes, but it hasn't come yet."],
+          aceptadas: ["I have been waiting for the bus for twenty minutes, but it hasn't come yet.", "I've been waiting for the bus for twenty minutes, but it hasn't arrived yet.", "I've been waiting for the bus for twenty minutes, but it still hasn't come."],
           palabras: [],
           partes: ["I've been waiting for the bus for twenty minutes,", "but it still hasn't arrived."],
           explicaciones: [
-            {
-              siDice: "I'm waiting for the bus since twenty minutes",
-              explicacion: "For twenty minutes, with I've been: I've been waiting for twenty minutes.",
-              es: "Por veinte minutos, con I've been: I've been waiting for twenty minutes.",
-            },
+            { siDice: "I'm waiting for the bus since twenty minutes", explicacion: "For twenty minutes, with I've been: I've been waiting for twenty minutes.", es: "Por veinte minutos, con I've been: I've been waiting for twenty minutes." },
+            { siDice: "waiting the bus", explicacion: "Say: waiting for the bus.", es: "Di: waiting for the bus." },
+            { siDice: "since twenty minutes", explicacion: "For a period of time, use for: for twenty minutes.", es: "Para un período de tiempo, usa for: for twenty minutes." },
+            { siDice: "I'm waiting", explicacion: "From then until now: I've been waiting.", es: "Desde entonces hasta ahora: I've been waiting." },
           ],
-          porRevisar: ["explicaciones.es: traducción"],
+          porRevisar: ["aceptadas: también «I've been waiting for the bus for twenty minutes, but it hasn't arrived yet.» y «I've been waiting for the bus for twenty minutes, but it still hasn't come.»; explicaciones para «waiting the bus», «since twenty minutes», «I'm waiting» (cambio del 30 de octubre de 2026)", "explicaciones.es: traducción"],
         },
         {
           paso: 3,

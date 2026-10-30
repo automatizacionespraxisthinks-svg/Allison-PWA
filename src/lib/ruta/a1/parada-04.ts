@@ -134,7 +134,12 @@ export const PARADA_04: Parada = {
           respuesta: "The test is on Monday at eight.",
           aceptadas: ["The test is on Monday at eight o'clock.", "The exam is on Monday at eight."],
           palabras: ["The", "test", "is", "on", "Monday", "at", "eight."],
-          explicaciones: [{ siDice: "in Monday", explicacion: "Con los días se usa on." }],
+          explicaciones: [
+            { siDice: "in Monday", explicacion: "Con los días se usa on." },
+            { siDice: "the Monday", explicacion: "Con los días se usa on, sin the: on Monday." },
+            { siDice: "the eight", explicacion: "Con la hora se usa at, sin the: at eight." },
+          ],
+          porRevisar: ["explicaciones para «the Monday» y «at the eight» (de «el lunes» y «a las ocho») (cambio del 30 de octubre de 2026)"],
         },
       ],
     },

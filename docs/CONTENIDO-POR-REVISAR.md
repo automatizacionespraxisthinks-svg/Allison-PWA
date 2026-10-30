@@ -23,6 +23,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "This is Tom. He is a happy boy in a green hoodie." → "Este es Tom. Es un muchacho alegre con un saco verde." |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "He says: "Hi! My name is Tom."" → "Dice: "¡Hola! Me llamo Tom."" |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: dos muchachos (f-nino y a-tom) y una muchacha (a-sarah), para que no baste saber que Tom es nombre de hombre; el documento no dice cuáles son las tres imágenes (cambio del 28 de octubre de 2026) |
+| Lección 2, paso 3 (Dilo en inglés) | Nota | aceptadas: también «Glad to meet you»; explicaciones para «Nice to know you», «Nice to see you» y «Much pleasure» (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Canada (Canadá) · Colombia (Colombia) · Mexico (México) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: dos líneas y un solo país; ya no está «I'm from Colombia. And you?» del muchacho (cambio del 30 de octubre de 2026) |
@@ -57,6 +58,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Tom says: "This is my sister. Her name is Emma."" → "Tom dice: "Esta es mi hermana. Se llama Emma."" |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: palabras de la familia, como en el audio (Sister, Brother, Grandpa); antes Girl, Boy y Older man (cambio del 30 de octubre de 2026) |
+| Lección 2, paso 3 (Dilo en inglés) | Nota | aceptadas: también dicha de corrido con and; explicaciones para «He name is Juan» y «He calls Juan» (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Two sisters and a dog (Dos hermanas y un perro) · Two brothers and a cat (Dos hermanos y un gato) · One sister and a dog (Una hermana y un perro) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "A boy says: "I have two sisters and a dog."" → "Un muchacho dice: "Tengo dos hermanas y un perro."" |
@@ -162,6 +164,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Tom asks: "Can you dance, Sarah?"" → "Tom pregunta: "¿Sabes bailar, Sarah?"" |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Sarah says: "No, I can't. But I can sing!"" → "Sarah dice: "No, no sé. ¡Pero sé cantar!"" |
 | Lección 2, paso 2 (Tu turno en el diálogo) | Nota | dialogo: la segunda pregunta de Sarah ("Can you cook?") no cabe en el tipo, que tiene una sola línea del alumno; queda solo en queAparece |
+| Lección 2, paso 3 (Dilo en inglés) | Nota | aceptadas: también «can speak very good English»; explicaciones para «can to», «talk English» y «English very good» (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Surf (Surfear) · Swim (Nadar) · Play the guitar (Tocar la guitarra) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "Leo says: "I can't surf. Can I try?"" → "Leo dice: "No sé surfear. ¿Puedo probar?"" |
@@ -210,6 +213,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: el dibujo del gato al lado de la cama es nuevo (f-gato-alado): la cama tiene el mismo estilo y ángulo que en los otros dos, y el gato está en el piso a su lado; antes estaba delante de la cama, que se leía como in front of (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "The cat is under the bed." → "El gato está debajo de la cama." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
+| Lección 2, paso 3 (Dilo en inglés) | Nota | aceptadas: también «beside the bed»; explicaciones para «There are a lamp» y «next of» (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | A drugstore (Una droguería) · A supermarket (Un supermercado) · A bank (Un banco) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: el banco es un dibujo nuevo, cuadrado (f-banco); el recorte de c-banco no mostraba nada de un banco (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
@@ -259,6 +263,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Don't cross! Wait." → "¡No cruces! Espera." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla |
 | Lección 2, paso 2 (Tu turno en el diálogo) | Nota | mapa: el documento no dice qué más hay en el mapa; el café enfrente del banco es una propuesta |
+| Lección 2, paso 3 (Dilo en inglés) | Nota | aceptadas: también «turn to the left» y «then turn left»; explicación para «turn to left» (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Two blocks and turn left (Dos cuadras y gira a la izquierda) · One block and turn left (Una cuadra y gira a la izquierda) · Two blocks and turn right (Dos cuadras y gira a la derecha) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: los tres edificios quedan a la derecha y se distinguen por lo que se oye (dos cuadras o una, izquierda o derecha); antes uno quedaba a la izquierda y había que girar el mapa en la cabeza. Con pregunta, y cada edificio dice su camino al tocarlo (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "Go straight two blocks and turn left. The museum is on the right." → "Sigue derecho dos cuadras y gira a la izquierda. El museo está a la derecha." |
@@ -278,6 +283,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Sarah says: "This is my dad. His name is Mark. He is 45."" → "Sarah dice: "Este es mi papá. Se llama Mark. Tiene 45 años."" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento solo dice "Oye:"; se puso Sarah porque es su foto y dice "my dad" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: el documento solo dice "elige a la persona en la foto"; el abuelo y la mamá como otras opciones son una propuesta |
+| Lección 1, paso 2 (Dilo en inglés) | Nota | aceptadas: también «I'm 15 years old and I have a sister»; explicación para «I'm 15 years» sin old (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 3 (Responde rápido) | Respuesta modelo | What's your name? → "My name is Diego." |
 | Lección 1, paso 3 (Responde rápido) | Respuesta modelo | How old are you? → "I'm 15." |
 | Lección 1, paso 3 (Responde rápido) | Respuesta modelo | Where are you from? → "I'm from Colombia." |
@@ -295,6 +301,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 3, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "Leo always has breakfast at seven." → "Leo siempre desayuna a las siete." |
 | Lección 3, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison, porque la frase habla de Leo |
+| Lección 3, paso 3 (Dilo en inglés) | Nota | aceptadas: también «My mom never has coffee»; explicaciones para «takes coffee» (de «toma») y «doesn't drink» (sin never) (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | A cat (Una gata) · A dog (Un perro) · A bird (Un pájaro) |
 | Lección 4, paso 1 (Escucha y elige) | Nota | audio: completo («I have a cat. She's three. Her name is Luna.», de la ficha) y con pregunta; antes terminaba en «Her name is…» (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "I have a cat. She's three. Her name is Luna." → "Tengo una gata. Tiene tres años. Se llama Luna." |
@@ -318,6 +325,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Leo says: "I can't cook, but I'd like some soup."" → "Leo dice: "No sé cocinar, pero me gustaría una sopa."" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento solo dice "Oye:"; no se puso Allison porque ella sí sabe cocinar (su ficha) |
+| Lección 1, paso 2 (Dilo en inglés) | Nota | aceptadas: también «I know how to swim…»; explicaciones para «I know swim», «I can to swim» e «I like a lemonade» (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 3 (Responde rápido) | Respuesta modelo | Can you dance? → "Yes, I can." |
 | Lección 1, paso 3 (Responde rápido) | Respuesta modelo | What would you like to drink? → "I'd like some juice." |
 | Lección 1, paso 3 (Responde rápido) | Respuesta modelo | Do you like pizza? → "Yes, I do." |

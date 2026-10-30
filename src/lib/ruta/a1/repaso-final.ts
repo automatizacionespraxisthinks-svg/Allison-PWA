@@ -44,8 +44,15 @@ export const REPASO_FINAL: Repaso = {
           siRespondeMal: "Se marca la primera palabra que falla. Al segundo fallo Allison dice la frase y el alumno la repite.",
           espanol: "Sé nadar y me gustaría una limonada.",
           respuesta: "I can swim and I'd like a lemonade.",
-          aceptadas: ["I can swim, and I'd like some lemonade."],
+          aceptadas: ["I can swim, and I'd like some lemonade.", "I know how to swim and I'd like a lemonade."],
           palabras: ["I", "can", "swim", "and", "I'd", "like", "a", "lemonade."],
+          explicaciones: [
+            { siDice: "can to", explicacion: "Después de can no va to: I can swim." },
+            { siDice: "know swim", explicacion: "Para decir lo que sabes hacer se usa can: I can swim." },
+            { siDice: "know to swim", explicacion: "Para decir lo que sabes hacer se usa can: I can swim." },
+            { siDice: "I like", explicacion: "Para pedir se usa I'd like." },
+          ],
+          porRevisar: ["aceptadas: también «I know how to swim…»; explicaciones para «I know swim», «I can to swim» e «I like a lemonade» (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,

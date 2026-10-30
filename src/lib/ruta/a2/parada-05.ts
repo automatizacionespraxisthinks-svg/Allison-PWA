@@ -143,13 +143,17 @@ export const PARADA_05: Parada = {
           espanol: "¿Tienes sed? Te traigo un vaso de agua.",
           imagen: "f-vaso-agua",
           respuesta: "Are you thirsty? I'll get you a glass of water.",
-          aceptadas: ["Are you thirsty? I will get you a glass of water.", "Are you thirsty? I'll get you some water."],
+          aceptadas: ["Are you thirsty? I will get you a glass of water.", "Are you thirsty? I'll get you some water.", "Are you thirsty? I'll bring you a glass of water.", "Are you thirsty? I'll bring you some water."],
           palabras: ["Are", "you", "thirsty?", "I'll", "get", "you", "a", "glass", "of", "water."],
           explicaciones: [
             { siDice: "Do you have thirst?", explicacion: "La sed se dice con be: are you thirsty?" },
             { siDice: "I get you", explicacion: "Para ofrecer en el momento: I'll get you." },
+            { siDice: "have thirst", explicacion: "La sed se dice con be: are you thirsty?" },
+            { siDice: "you are thirsty", explicacion: "En la pregunta, are va primero: are you thirsty?" },
+            { siDice: "I bring you", explicacion: "Para ofrecer en el momento: I'll bring you." },
           ],
           porRevisar: [
+            "aceptadas: también «I'll bring you…» (te traigo); explicaciones para «You have thirst?», «You are thirsty?» e «I bring you» (cambio del 30 de octubre de 2026)",
             'palabras: el documento trae "you" una sola vez y "a glass of" junto; aquí van una por una, con "you" dos veces, como en la respuesta',
           ],
         },

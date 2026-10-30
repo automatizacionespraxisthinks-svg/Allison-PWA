@@ -146,13 +146,17 @@ export const PARADA_08: Parada = {
             'Se marca la primera palabra que falla. Si dice "You should to stay": Después de should va el verbo solo: you should stay. Si dice "You are cold": Eso es tener frío. La gripa se tiene: you have a cold. Al segundo fallo dice la frase completa y el alumno la repite.',
           espanol: "Tienes gripa. Deberías quedarte en casa.",
           respuesta: "You have a cold. You should stay home.",
-          aceptadas: ["You have a cold. You should stay at home.", "You have the flu. You should stay home."],
+          aceptadas: ["You have a cold. You should stay at home.", "You have the flu. You should stay home.", "You have the flu. You should stay at home."],
           palabras: ["You", "have", "a", "cold.", "You", "should", "stay", "home."],
           explicaciones: [
             { siDice: "You should to stay", explicacion: "Después de should va el verbo solo: you should stay." },
             { siDice: "You are cold", explicacion: "Eso es tener frío. La gripa se tiene: you have a cold." },
+            { siDice: "have cold", explicacion: "La gripa lleva a: you have a cold." },
+            { siDice: "in home", explicacion: "En casa se dice home, sin in: stay home." },
+            { siDice: "must stay", explicacion: "Deberías es un consejo: you should stay." },
           ],
           porRevisar: [
+            "aceptadas: también «the flu… stay at home»; explicaciones para «You have cold», «stay in home» y «must» (cambio del 30 de octubre de 2026)",
             'palabras: el documento trae "you" una sola vez y "a cold" junto; aquí van las palabras de la respuesta, una por una ("You" dos veces)',
           ],
         },

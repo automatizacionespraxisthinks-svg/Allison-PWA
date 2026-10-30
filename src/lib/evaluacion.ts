@@ -4,7 +4,7 @@ import { palabrasDeFrase } from "./ruta/rayas.ts";
 import { limpiarTranscripcion } from "./transcripcion.ts";
 import { hablaEspanol, mezclaEspanol } from "./ruta/escena.ts";
 import { esInglesClaro } from "./allison.ts";
-import { abrirContraccion, enCifras, normalizar, palabrasCrudas } from "./normalizar.ts";
+import { comoSeOye, normalizar, palabraNormalizada } from "./normalizar.ts";
 
 /**
  * La "evaluación corta" del plan de mejoras (sección 6): comprobar UNA
@@ -160,12 +160,6 @@ function jsonDelModelo<T>(r: { text?: string; candidates?: { finishReason?: unkn
 }
 
 export { normalizar };
-
-/** Una palabra de la frase, abierta como en la frase ("she'd" antes de "already" es "she had"). */
-function palabraNormalizada(palabra: string, siguiente?: string): string[] {
-  const [p = "", sig] = palabrasCrudas(`${palabra} ${siguiente ?? ""}`);
-  return enCifras(palabrasCrudas(palabra).length > 1 ? palabrasDe(palabra) : abrirContraccion(p, sig));
-}
 
 /** Cuántas letras hay que cambiar, poner o quitar para pasar de a a b. */
 function distancia(a: string, b: string): number {
@@ -449,7 +443,8 @@ export async function evaluarRespuestaCorta(p: PedidoEvaluacion): Promise<Result
   let tokensSalida = 0;
   if (!transcripcion && p.audioBase64) {
     const tr = await transcribirACiegas(p.audioBase64, p.mimeType ?? "audio/webm");
-    transcripcion = tr.transcripcion.trim();
+    // «use to» y «used to» suenan igual: van como en la respuesta buena.
+    transcripcion = p.esperado ? comoSeOye(tr.transcripcion.trim(), [p.esperado, ...(p.aceptadas ?? [])]) : tr.transcripcion.trim();
     tokensEntrada += tr.tokensEntrada;
     tokensSalida += tr.tokensSalida;
   }
