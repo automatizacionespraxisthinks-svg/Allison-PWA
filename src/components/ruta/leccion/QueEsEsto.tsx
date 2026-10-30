@@ -8,7 +8,7 @@ import { desdeB1 } from "@/lib/tipos";
 import { Icono } from "../Iconos";
 import { evaluar, type Contexto, type FinActividad, type ResultadoEvaluacion } from "./api";
 import { AllisonAro, BotonOir, Explicado, Grabador, Hoja, IlustracionCompleta, explicacionPara, oirGrabacion, useVoz, type Entrada } from "./comun";
-import { Ondas, Reloj } from "./EscuchaElige";
+import { Ondas, Reloj, RelojConHora } from "./EscuchaElige";
 
 /**
  * ¿Qué es esto? (pantallas 3, 12, 13 y 14). Ve una imagen y dice la
@@ -217,8 +217,16 @@ export function QueEsEsto({
                 ? a.respuesta
                 : a.pregunta}
         </h2>
+        {/* Con la pista a la vista, la pregunta sigue escrita: si no, en B1 no quedaba nada de lo que se pidió. */}
+        {fase === "pista" && <p className="mt-1 text-[17px] font-extrabold text-balance">{a.pregunta}</p>}
         {a.contexto && (fase === "pregunta" || fase === "pista") && (
           <p className="mt-1 text-[15px] font-bold text-balance text-texto-suave">{a.contexto}</p>
+        )}
+        {/* La pregunta se puede volver a oír (30 de octubre de 2026): antes solo sonaba al abrir la actividad. */}
+        {(fase === "pregunta" || fase === "pista") && (
+          <div className="mt-2 flex justify-center">
+            <BotonOir onClick={() => void decir(a.pregunta)} texto="Oír la pregunta" />
+          </div>
         )}
       </div>
 
@@ -246,7 +254,11 @@ export function QueEsEsto({
                 <span className="grid size-16 place-items-center rounded-2xl bg-superficie-2">
                   <Reloj horas={h} minutos={m} etiqueta={`${r.etiqueta}: ${r.hora}`} />
                 </span>
-                <figcaption className="text-[13px] font-extrabold text-texto-suave">{r.etiqueta}</figcaption>
+                {/* Con la hora en números, como los demás relojes de la app (30 de octubre de 2026). */}
+                <figcaption className="text-center text-[13px] leading-tight font-extrabold text-texto-suave">
+                  {r.etiqueta}
+                  <span className="block text-[15px] font-black tabular-nums text-texto">{r.hora}</span>
+                </figcaption>
               </figure>
             );
           })}
@@ -412,9 +424,10 @@ function Rayas({
 function TextoDibujado({ texto }: { texto: string }) {
   const hora = texto.match(/^(\d{1,2}):(\d{2})$/);
   if (hora) {
+    // Con la hora en números, como en Escucha y elige: lo que se practica es decirla en inglés, no leer las agujas (30 de octubre de 2026).
     return (
-      <span className="grid size-40 place-items-center">
-        <Reloj horas={Number(hora[1])} minutos={Number(hora[2])} etiqueta={`Un reloj que marca las ${texto}`} />
+      <span className="grid size-44 place-items-center">
+        <RelojConHora horas={Number(hora[1])} minutos={Number(hora[2])} etiqueta={`Un reloj que marca las ${texto}`} />
       </span>
     );
   }

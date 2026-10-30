@@ -230,17 +230,17 @@ export const REPASO_FINAL: Repaso = {
         {
           paso: 2,
           tipo: "que-es-esto",
-          queAparece: 'La gata Luna (f-gata-luna). Allison pregunta: "Who is she? Tell me 3 things about her."',
+          queAparece: 'La gata Luna (f-gata-luna). Allison pregunta: "Who is she?"',
           siRespondeMal:
             'Pistas en inglés, una a la vez: "She is my pet." → "She is gray." → "Her name starts with L."',
           imagen: "f-gata-luna",
-          pregunta: "Who is she? Tell me 3 things about her.",
-          contexto: "¿Quién es ella? Di tres cosas de ella en inglés: cómo se llama, de quién es y cuántos años tiene.",
-          respuesta: "She's Luna. She's Allison's cat. She's three.",
-          aceptadas: ["Her name is Luna.", "She sleeps next to the window."],
+          pregunta: "Who is she?",
+          contexto: "Es la mascota de Allison. ¿Cómo se llama? Responde en inglés.",
+          respuesta: "She's Luna.",
+          aceptadas: ["Luna"],
           pistas: ["She is my pet.", "She is gray.", "Her name starts with L."],
           porRevisar: [
-            "respuesta: la actividad pide 3 cosas, pero ¿Qué es esto? evalúa una sola frase: con las aceptadas tal cual, basta con decir una de ellas",
+            "pregunta: solo el nombre («She's Luna.»); antes pedía tres cosas pero se califica una frase, y «She's Luna» salía mal (cambio del 30 de octubre de 2026)",
           ],
         },
         {

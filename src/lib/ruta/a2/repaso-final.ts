@@ -106,13 +106,17 @@ export const REPASO_FINAL: Repaso = {
           queAparece:
             'La chaqueta negra con la etiqueta de £30 (f-ropa-chaqueta). Allison: "You like this jacket, but you need a large. Ask the clerk!"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "You need a different size." → "Start with: Do you have…" Sin pistas, Allison dice la frase y el alumno la repite. Si dice "Do you have in large?": Falta it: do you have it in a large?',
+            'Pistas en inglés, una a la vez: "You need a different size." → "Ask for a large." → "Start with: Do you have it…" Sin pistas, Allison dice la frase y el alumno la repite. Si dice "Do you have in large?": Falta it: do you have it in a large?',
           imagen: "f-ropa-chaqueta",
           pregunta: "You like this jacket, but you need a large. Ask the clerk!",
           contexto: "Te gusta esta chaqueta, pero necesitas talla grande. Pregúntale al vendedor en inglés.",
           respuesta: "Do you have it in a large?",
-          aceptadas: ["Do you have this jacket in a large?", "Do you have a large?"],
-          pistas: ["You need a different size.", "Start with: Do you have…"],
+          aceptadas: ["Do you have this jacket in a large", "Do you have a large", "Do you have it in large", "Do you have this in a large", "Do you have this in large", "Do you have this jacket in large", "Do you have the jacket in a large", "Do you have one in a large", "Do you have it in a bigger size", "Do you have a bigger size"],
+          pistas: ["You need a different size.", "Ask for a large.", "Start with: Do you have it…"],
+          explicaciones: [
+            { siDice: "Do you have in", explicacion: "Falta it: do you have it in a large?" },
+          ],
+          porRevisar: ["aceptadas: también «Do you have this in a large?» y «Do you have a bigger size?»; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
@@ -222,14 +226,15 @@ export const REPASO_FINAL: Repaso = {
           queAparece:
             'La foto de Ben montando a caballo (f-ben-caballo). Allison: "Ben has ridden a horse. Have I ever ridden a horse?"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "Remember Edinburgh." → "Start with: No, you…" Sin pistas, Allison dice "No, I haven\'t. I\'m a little scared of horses!" y el alumno responde "No, you haven\'t."',
+            'Pistas en inglés, una a la vez: "Remember Edinburgh? I told you about horses." → "I\'m a little scared of horses!" → "Start with: No, you…" Sin pistas, Allison dice "No, I haven\'t. I\'m a little scared of horses!" y el alumno responde "No, you haven\'t."',
           imagen: "f-ben-caballo",
           pregunta: "Ben has ridden a horse. Have I ever ridden a horse?",
-          contexto: "Allison te pregunta si ella ha montado a caballo alguna vez. En la foto solo está Ben. Respóndele con una respuesta corta en inglés.",
+          contexto: "Allison te pregunta si ella ha montado a caballo alguna vez. Ella no está en la foto: acuérdate de lo que te contó en Edimburgo. Respóndele con una respuesta corta en inglés.",
           respuesta: "No, you haven't.",
-          aceptadas: ["No, never.", "No, you haven't. You're scared of horses!"],
-          pistas: ["Remember Edinburgh.", "Start with: No, you…"],
+          aceptadas: ["No, never.", "you haven't", "you've never"],
+          pistas: ["Remember Edinburgh? I told you about horses.", "I'm a little scared of horses!", "Start with: No, you…"],
           porRevisar: [
+            "contexto: antes decía «En la foto solo está Ben», pero al fondo hay otros jinetes; ahora dice que Allison no está en la foto y que se acuerde de Edimburgo. Pistas que se lo recuerdan; aceptadas: también «You haven't» y «No, you've never ridden a horse» (cambio del 30 de octubre de 2026)",
             'aceptadas: el documento las escribe seguidas ("No, never. No, you haven\'t. You\'re scared of horses!"); se separaron en dos formas, "No, never." y "No, you haven\'t. You\'re scared of horses!"',
           ],
         },

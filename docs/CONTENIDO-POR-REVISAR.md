@@ -15,6 +15,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Good morning" → "Buenos días" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Son las 7 de la mañana y ves a tu vecino. ¿Qué le dices? |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | pistas: la tercera es «Good…»; «The answer has two words.» no ayudaba, las rayas ya muestran las dos palabras (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | An orange T-shirt (Una camiseta naranja) · A green hoodie (Un saco verde) · A yellow T-shirt (Una camiseta amarilla) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: con el artículo, como suenan en la frase («a green hoodie»); al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -63,6 +64,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | A cat (Una gata) · A dog (Un perro) · A bird (Un pájaro) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "This is my cat. Her name is Luna." → "Esta es mi gata. Se llama Luna." |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Sarah te muestra la foto de su familia. ¿Quién es la persona de la flecha? Completa la frase. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: también granddad (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | Do you have any brothers or sisters? → "Yes, I have a sister." |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | What's her name? → "Her name is Emily." |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | How old is she? → "She is 31." |
@@ -80,6 +82,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "A girl says: "She's my teacher. Her name is Ms. Lee."" → "Una muchacha dice: "Es mi profesora. Se llama Ms. Lee."" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quiénes hablan en el pasillo |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Tom te presenta a Ms. Lee. ¿Quién es ella para Tom? Completa la frase. |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | imagen: a-profesor ahora es Ms. Lee junto al tablero (recorte de f-salon-clase); antes una mujer leyendo un libro, que no se veía profesora. Si dice professor, Allison explica (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Amy. A-M-Y. (Amy. A-M-Y.) · Ana. A-N-A. (Ana. A-N-A.) · Annie. A-N-N-I-E. (Annie. A-N-N-I-E.) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: el nombre y su deletreo, que Allison dice al elegir la tarjeta (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -104,6 +107,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "It's seven thirty." → "Son las siete y media." |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento solo dice "Oye:"; se puso Allison |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Mira el reloj. ¿Qué hora es? Responde en inglés. |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | el reloj muestra la hora en números, como en Escucha y elige; pistas que llevan a la hora («It's in the morning.» no se veía en el reloj) (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Monday (Lunes) · Saturday (Sábado) · Sunday (Domingo) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: el día, que Allison dice al elegir la tarjeta (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -116,6 +120,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Nota | relojes: la hora va también en números debajo y cada reloj tiene su etiqueta, que suena al elegirlo (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "My English class is at four o'clock." → "Mi clase de inglés es a las cuatro." |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Hay nieve y un árbol de Navidad. ¿En qué mes estamos? Dilo en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | pistas: primero la Navidad y el último mes del año; «It's cold in New York.» no llevaba al mes (cambio del 30 de octubre de 2026) |
 
 ## Parada 5 · Chicago
 
@@ -139,7 +144,8 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Visit my sister (Visitar a mi hermana) · Walk in the park (Caminar en el parque) · Cook (Cocinar) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "On Saturdays, I visit my sister." → "Los sábados visito a mi hermana." |
 | Lección 4, paso 1 (Escucha y elige) | Nota | opciones: la correcta era dos mujeres tomando café, que no es lo que dice el audio; ahora es un dibujo nuevo de dos hermanas que se abrazan en la puerta (f-visita-hermana). Sirve también para la entrevista de esta lección (I visit my sister, Emily) (cambio del 30 de octubre de 2026) |
-| Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Son las 10 de la noche. ¿Qué haces tú a esa hora? Responde en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Mira la imagen: son las 10 de la noche. ¿Qué haces a esa hora? Responde en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «I go to sleep», «I'm sleeping» y «I went to bed»; el contexto pide mirar la imagen (antes «¿Qué haces tú?» invitaba a «I watch TV», que salía mal) (cambio del 30 de octubre de 2026) |
 
 ## Parada 6 · Los Ángeles
 
@@ -163,6 +169,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Nota | audio: en frases cortas, con una pausa antes de «can't»; la pregunta resalta el NO (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "I can cook. I can dance. But I can't sing!" → "Sé cocinar. Sé bailar. ¡Pero no sé cantar!" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿En qué puedes montar? Dilo en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: «bike» o «bicycle» sin artículo también valen (cambio del 30 de octubre de 2026) |
 
 ## Parada 7 · Nueva Orleans
 
@@ -211,7 +218,8 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | A yard (Un patio) · A kitchen (Una cocina) · A bedroom (Un cuarto) |
 | Lección 4, paso 1 (Escucha y elige) | Nota | audio: nombra las tres cosas (la cocina, el cuarto y que no hay patio), así el audio dice qué hay y qué no; la pregunta resalta el NO (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "In my apartment, there's a small kitchen and a bedroom, but there isn't a yard." → "En mi apartamento hay una cocina pequeña y un cuarto, pero no hay patio." |
-| Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿Dónde está tu ropa? Completa la frase. |
+| Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Mira la imagen. ¿Dónde está la ropa? Completa la frase. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | pistas: «It's in your bedroom.» llevaba a responder bedroom; contexto sobre la imagen; aceptadas: también wardrobe (cambio del 30 de octubre de 2026) |
 
 ## Parada 9 · Seattle
 
@@ -236,6 +244,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "I'm cooking right now!" → "¡Estoy cocinando en este momento!" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Está lloviendo en Seattle. ¿Qué necesitas? Responde en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: «umbrella» sin artículo (y «a umbrella») también vale (cambio del 30 de octubre de 2026) |
 
 ## Parada 10 · San Francisco
 
@@ -245,6 +254,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Turn left." → "Gira a la izquierda." |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Mira la foto de San Francisco. ¿Qué es esto? Completa la frase. |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «the Golden Gate» (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Don't cross (No cruces) · Cross (Cruza) · Turn left (Gira a la izquierda) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Don't cross! Wait." → "¡No cruces! Espera." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla |
@@ -335,8 +345,8 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | The subway (El metro) · A taxi (Un taxi) · A cable car (Un tranvía) |
 | Lección 4, paso 1 (Escucha y elige) | Nota | con pregunta (antes salía «¿Qué dice Allison?» y Allison nombra el metro y el taxi); el tranvía es «cable car», como en la parada 10 (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "Take the subway. Don't take a taxi!" → "Toma el metro. ¡No tomes taxi!" |
-| Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿Quién es ella? Di tres cosas de ella en inglés: cómo se llama, de quién es y cuántos años tiene. |
-| Lección 4, paso 2 (¿Qué es esto?) | Nota | respuesta: la actividad pide 3 cosas, pero ¿Qué es esto? evalúa una sola frase: con las aceptadas tal cual, basta con decir una de ellas |
+| Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Es la mascota de Allison. ¿Cómo se llama? Responde en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | pregunta: solo el nombre («She's Luna.»); antes pedía tres cosas pero se califica una frase, y «She's Luna» salía mal (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | Can you sing? → "No, I can't. I can't sing at all!" |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | What's your favorite food? → "Colombian food! My favorite is mute santandereano." |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | How many bedrooms are there in your apartment? → "There is one bedroom. It's small!" |

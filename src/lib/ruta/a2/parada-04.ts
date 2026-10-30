@@ -76,14 +76,18 @@ export const PARADA_04: Parada = {
           tipo: "que-es-esto",
           queAparece: 'Foto de Ben montando a caballo, con el letrero "Ben, last summer". Allison: "Has Ben ever ridden a horse?"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "Look at the photo." → "Answer with: Yes, he…" Sin pistas, Allison dice "Yes, he has" y el alumno la repite. Si dice "Yes, he did": Si preguntan con has, se responde con has: yes, he has.',
+            'Pistas en inglés, una a la vez: "Look at the photo. Ben is on a horse!" → "Answer with: Yes, he…" Sin pistas, Allison dice "Yes, he has" y el alumno la repite. Si dice "Yes, he did": Si preguntan con has, se responde con has: yes, he has.',
           imagen: "f-ben-caballo",
           pregunta: "Has Ben ever ridden a horse?",
           contexto: "¿Ben ha montado a caballo alguna vez? Responde con una respuesta corta en inglés.",
           respuesta: "Yes, he has.",
-          aceptadas: ["Yes, he has ridden a horse."],
-          pistas: ["Look at the photo.", "Answer with: Yes, he…"],
+          aceptadas: ["Yes, he has ridden a horse.", "Yes, Ben has", "has ridden a horse"],
+          pistas: ["Look at the photo. Ben is on a horse!", "Answer with: Yes, he…"],
+          explicaciones: [
+            { siDice: "Yes, he did", explicacion: "Si preguntan con has, se responde con has: yes, he has." },
+          ],
           porRevisar: [
+            "aceptadas: también «Yes, Ben has» y «He's ridden a horse» (ahora «he's ridden» se abre como has); explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)",
             'aceptadas: el documento también acepta "Yes."; no se puso suelto porque aceptaría "Yes, he did", el error que corrige',
           ],
         },
@@ -251,15 +255,16 @@ export const PARADA_04: Parada = {
         {
           paso: 2,
           tipo: "que-es-esto",
-          queAparece: 'Dibujo de una calle de Nueva York con nieve en diciembre. Allison: "In New York, I\'ve seen a lot of…"',
+          queAparece: 'Dibujo de una calle de Nueva York tapada de nieve, con casas de ladrillo y carros, sin árbol de Navidad (f-calle-nieve). Allison: "In New York, I\'ve seen a lot of…"',
           siRespondeMal:
             'Pistas en inglés, una a la vez: "It\'s white and cold." → "It starts with s." Sin pistas, Allison dice "snow" y el alumno la repite.',
-          imagen: "a1/f-navidad-nieve",
+          imagen: "f-calle-nieve",
           pregunta: "In New York, I've seen a lot of…",
           contexto: "¿Qué ha visto mucho Allison en Nueva York? Completa la frase.",
           respuesta: "snow",
           aceptadas: ["A lot of snow.", "You've seen snow."],
           pistas: ["It's white and cold.", "It starts with s."],
+          porRevisar: ["imagen: f-calle-nieve, una calle tapada de nieve; antes a1/f-navidad-nieve, donde lo que más se veía era el árbol de Navidad y el alumno decía «Christmas tree» (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
@@ -410,8 +415,8 @@ export const PARADA_04: Parada = {
     { archivos: ["f-arepas"], muestra: "Unas arepas (de la parada 2)", uso: "Lección 4 (paso 1)" },
     { archivos: ["a1/f-hamburguesa", "a1/f-pizza"], muestra: "Una hamburguesa; una pizza (de A1)", uso: "Lección 4 (paso 1)" },
     {
-      archivos: ["a1/f-navidad-nieve"],
-      muestra: "Un árbol de Navidad en una calle de Nueva York con nieve (de A1)",
+      archivos: ["f-calle-nieve"],
+      muestra: "Una calle de Nueva York tapada de nieve, con casas de ladrillo y carros, sin gente ni árbol de Navidad (desde el 30 de octubre de 2026; antes a1/f-navidad-nieve)",
       uso: "Lección 4 (paso 2)",
     },
   ],

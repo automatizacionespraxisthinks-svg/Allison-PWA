@@ -68,13 +68,14 @@ export const PARADA_04: Parada = {
           tipo: "que-es-esto",
           queAparece: 'Un reloj que marca las 10:00. Allison pregunta: "What time is it?"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "It\'s in the morning." → "It\'s after nine." → "It\'s ten…" Sin pistas, Allison dice "It\'s ten o\'clock" y el alumno la repite.',
+            'Pistas en inglés, una a la vez: "It\'s after nine." → "It\'s before eleven." → "It\'s ten…" Sin pistas, Allison dice "It\'s ten o\'clock" y el alumno la repite.',
           texto: "10:00",
           pregunta: "What time is it?",
           contexto: "Mira el reloj. ¿Qué hora es? Responde en inglés.",
           respuesta: "It's ten o'clock.",
           aceptadas: ["Ten.", "Ten o'clock.", "It's ten."],
-          pistas: ["It's in the morning.", "It's after nine.", "It's ten…"],
+          pistas: ["It's after nine.", "It's before eleven.", "It's ten…"],
+          porRevisar: ["el reloj muestra la hora en números, como en Escucha y elige; pistas que llevan a la hora («It's in the morning.» no se veía en el reloj) (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
@@ -223,13 +224,14 @@ export const PARADA_04: Parada = {
           tipo: "que-es-esto",
           queAparece: 'Un árbol de Navidad en una calle con nieve. Allison pregunta: "What month is it?"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "It\'s cold in New York." → "Christmas is in this month." → "It starts with D." Sin pistas, Allison dice "December" y el alumno la repite.',
+            'Pistas en inglés, una a la vez: "Christmas is in this month." → "It\'s the last month of the year." → "It starts with D." Sin pistas, Allison dice "December" y el alumno la repite.',
           imagen: "f-navidad-nieve",
           pregunta: "What month is it?",
           contexto: "Hay nieve y un árbol de Navidad. ¿En qué mes estamos? Dilo en inglés.",
           respuesta: "December",
           aceptadas: ["It's December."],
-          pistas: ["It's cold in New York.", "Christmas is in this month.", "It starts with D."],
+          pistas: ["Christmas is in this month.", "It's the last month of the year.", "It starts with D."],
+          porRevisar: ["pistas: primero la Navidad y el último mes del año; «It's cold in New York.» no llevaba al mes (cambio del 30 de octubre de 2026)"],
         },
         // Las respuestas de Allison están escritas en el documento, en el párrafo debajo de la
         // tabla ("Respuestas de Allison: …"), y coinciden con su ficha (FICHA_ALLISON).

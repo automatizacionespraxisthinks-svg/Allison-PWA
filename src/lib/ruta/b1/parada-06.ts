@@ -87,16 +87,14 @@ export const PARADA_06: Parada = {
           imagen: "f-arepas-maiz",
           pregunta: "What are arepas made with?",
           respuesta: "They're made with corn.",
-          aceptadas: ["They are made with corn.", "Arepas are made with corn.", "They're made from corn."],
+          aceptadas: ["are made with corn", "are made from corn", "are made of corn", "is made with corn", "is made from corn", "is made of corn"],
           pistas: ["Start with: They're made…"],
           explicaciones: [
-            {
-              siDice: "They make with corn",
-              explicacion: "Use are made: They're made with corn.",
-              es: "Usa are made: They're made with corn.",
-            },
+            { siDice: "They make with corn", explicacion: "Use are made: They're made with corn.", es: "Usa are made: They're made with corn." },
+            { siDice: "They made with corn", explicacion: "Use are made: They're made with corn.", es: "Usa are made: They're made with corn." },
+            { siDice: "are make", explicacion: "Use made: They're made with corn.", es: "Usa made: They're made with corn." },
           ],
-          porRevisar: ["explicaciones.es: traducción"],
+          porRevisar: ["aceptadas: también «made from corn», «made of corn» y «An arepa is made with corn»; explicaciones para «They made with corn» y «are make» (cambio del 30 de octubre de 2026)", "explicaciones.es: traducción"],
         },
         {
           paso: 3,

@@ -94,8 +94,12 @@ export const PARADA_09: Parada = {
           pregunta: "You like this jacket. Ask me the price!",
           contexto: "Te gusta esta chaqueta. Pregunta cuánto cuesta, en inglés.",
           respuesta: "How much is this jacket?",
-          aceptadas: ["How much is it?", "How much does it cost?", "How much is the jacket?"],
+          aceptadas: ["How much is", "How much does", "What is the price"],
           pistas: ["You want to know the price.", "Start with: How much…"],
+          explicaciones: [
+            { siDice: "How many", explicacion: "Para precios: how much." },
+          ],
+          porRevisar: ["aceptadas: también «How much is this?» y «How much does this jacket cost?»; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
@@ -258,13 +262,17 @@ export const PARADA_09: Parada = {
           queAparece:
             'Dibujo de una muchacha con un vestido en la mano frente al probador. Allison: "She likes the dress. What does she ask?"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "Look at the fitting room." → "Start with: Can I try…" Sin pistas, Allison dice la frase y el alumno la repite. Si dice "Can I try on it?": Con it, on va al final: can I try it on?',
+            'Pistas en inglés, una a la vez: "Look at the fitting room." → "She wants to wear the dress before she buys it." → "Start with: Can I try…" Sin pistas, Allison dice la frase y el alumno la repite. Si dice "Can I try on it?": Con it, on va al final: can I try it on?',
           imagen: "f-probador",
           pregunta: "She likes the dress. What does she ask?",
-          contexto: "A ella le gusta el vestido y está frente al probador. ¿Qué pregunta? Dilo en inglés.",
+          contexto: "A ella le gusta el vestido. Antes de entrar al probador, ¿qué le pregunta al vendedor? Dilo en inglés.",
           respuesta: "Can I try it on?",
-          aceptadas: ["Can I try on this dress?", "Can I try this dress on?", "Can I try it?"],
-          pistas: ["Look at the fitting room.", "Start with: Can I try…"],
+          aceptadas: ["Can I try it", "Can I try this", "Can I try the dress", "Can I try on the dress", "Can I try on this dress", "Could I try it", "Could I try this", "May I try it", "May I try this"],
+          pistas: ["Look at the fitting room.", "She wants to wear the dress before she buys it.", "Start with: Can I try…"],
+          explicaciones: [
+            { siDice: "Can I try on it", explicacion: "Con it, on va al final: can I try it on?" },
+          ],
+          porRevisar: ["aceptadas: también «Can I try this on?», «Could I try it on?» y «May I try it on?»; el contexto dice que la pregunta es antes del probador; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         // La tabla de respuestas es la del documento, tal cual. Lo que el
         // documento agrega y no tiene campo propio: "Did you buy many?" vale

@@ -88,12 +88,14 @@ export const PARADA_10: Parada = {
           imagen: "f-lluvia-ventana",
           pregunta: "It's raining, so he can't play soccer. What would he do if it were sunny?",
           respuesta: "If it were sunny, he would play soccer.",
-          aceptadas: ["He would play soccer.", "He'd play soccer outside.", "If it was sunny, he'd play soccer."],
+          aceptadas: ["would play soccer", "would go play soccer", "would go out", "would go outside", "would play outside", "would go to the park"],
           pistas: ["Start with: He would…"],
           explicaciones: [
             { siDice: "he will play", explicacion: "It's imagined: he would play.", es: "Es algo imaginado: he would play." },
+            { siDice: "could play", explicacion: "Use would: He would play soccer.", es: "Usa would: He would play soccer." },
+            { siDice: "football", explicacion: "In the US, we say soccer: He would play soccer.", es: "En Estados Unidos decimos soccer: He would play soccer." },
           ],
-          porRevisar: ["explicaciones.es: traducción"],
+          porRevisar: ["aceptadas: también «He would go outside and play soccer» y «He would play outside»; explicaciones para «He could play soccer» y football (cambio del 30 de octubre de 2026)", "explicaciones.es: traducción"],
         },
         {
           paso: 3,

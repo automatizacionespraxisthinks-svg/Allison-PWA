@@ -72,13 +72,17 @@ export const PARADA_06: Parada = {
           queAparece:
             'Dibujo del tiquete de tren de Ben: "London → Cambridge · Saturday · 10:30". Allison: "Look at Ben\'s ticket. What is he doing on Saturday?"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "Look at the ticket." → "Start with: He\'s taking…" Sin pistas, Allison dice la frase y el alumno la repite. Si dice "He take the train": Para lo que ya está arreglado: he\'s taking the train.',
+            'Pistas en inglés, una a la vez: "It\'s a train ticket to Cambridge." → "Start with: He\'s taking…" Sin pistas, Allison dice la frase y el alumno la repite. Si dice "He take the train": Para lo que ya está arreglado: he\'s taking the train.',
           imagen: "f-tiquete-tren",
           pregunta: "Look at Ben's ticket. What is he doing on Saturday?",
           contexto: "Mira el tiquete de Ben. ¿Qué plan tiene para el sábado? Responde con una frase en inglés.",
           respuesta: "He's taking the train to Cambridge.",
-          aceptadas: ["He is taking the 10:30 train to Cambridge.", "He's going to Cambridge.", "He's traveling to Cambridge."],
-          pistas: ["Look at the ticket.", "Start with: He's taking…"],
+          aceptadas: ["is taking the train", "is taking a train", "is taking the 10:30 train", "is going to Cambridge", "is traveling to Cambridge", "is going from London to Cambridge", "is traveling from London to Cambridge"],
+          pistas: ["It's a train ticket to Cambridge.", "Start with: He's taking…"],
+          explicaciones: [
+            { siDice: "He take", explicacion: "Para lo que ya está arreglado: he's taking the train." },
+          ],
+          porRevisar: ["aceptadas: también «He's taking the train» y «Ben is taking a train to Cambridge»; pista: «Look at the ticket.» repetía la pregunta; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
@@ -247,13 +251,17 @@ export const PARADA_06: Parada = {
           queAparece:
             'Dibujo de la entrada de Priya: "Concert · Thursday · 8:00 p.m.". Allison: "Look at Priya\'s ticket. What is she doing on Thursday?"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "Look at the ticket." → "Start with: She\'s going…" Sin pistas, Allison dice la frase y el alumno la repite. Si dice "She go to a concert": Para lo arreglado: she\'s going to a concert.',
+            'Pistas en inglés, una a la vez: "It\'s a ticket for music." → "Start with: She\'s going…" Sin pistas, Allison dice la frase y el alumno la repite. Si dice "She go to a concert": Para lo arreglado: she\'s going to a concert.',
           imagen: "f-entrada-concierto",
           pregunta: "Look at Priya's ticket. What is she doing on Thursday?",
           contexto: "Mira la entrada de Priya. ¿Qué plan tiene para el jueves? Responde con una frase en inglés.",
           respuesta: "She's going to a concert.",
-          aceptadas: ["She is going to a concert on Thursday.", "She's seeing a concert."],
-          pistas: ["Look at the ticket.", "Start with: She's going…"],
+          aceptadas: ["is going to a concert", "is going to the concert", "is going to a music concert", "is seeing a concert"],
+          pistas: ["It's a ticket for music.", "Start with: She's going…"],
+          explicaciones: [
+            { siDice: "She go to", explicacion: "Para lo arreglado: she's going to a concert." },
+          ],
+          porRevisar: ["aceptadas: también «Priya is going to the concert»; pista: «Look at the ticket.» repetía la pregunta; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,

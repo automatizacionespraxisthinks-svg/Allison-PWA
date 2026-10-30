@@ -65,6 +65,8 @@ export const PARADA_03: Parada = {
           respuesta: "teacher",
           aceptadas: ["my teacher", "she is my teacher"],
           pistas: ["She is at school.", "She is with the students.", "It starts with t."],
+          explicaciones: [{ siDice: "professor", explicacion: "En el colegio se dice teacher. Professor es en la universidad." }],
+          porRevisar: ["imagen: a-profesor ahora es Ms. Lee junto al tablero (recorte de f-salon-clase); antes una mujer leyendo un libro, que no se veía profesora. Si dice professor, Allison explica (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
@@ -225,6 +227,8 @@ export const PARADA_03: Parada = {
           respuesta: "soccer",
           aceptadas: ["it's soccer"],
           pistas: ["It is a sport with a ball.", "It is Colombia's favorite sport.", "It starts with s."],
+          explicaciones: [{ siDice: "football", explicacion: "En Estados Unidos se dice soccer." }],
+          porRevisar: ["explicaciones: si dice football, Allison explica que en Estados Unidos se dice soccer, como dice el documento (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,

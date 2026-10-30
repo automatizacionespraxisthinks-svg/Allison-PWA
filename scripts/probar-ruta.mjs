@@ -616,5 +616,21 @@ ok("A2: sin RUTA_A2 sigue la ruta provisional", process.env.RUTA_A2 === "1" || r
   ok("Tu turno: la respuesta del modelo es la del mapa", /next to the bank/i.test(tt.modelo));
 }
 
+{
+  // Las explicaciones previstas comparan como la evaluación: con las contracciones abiertas (30 de octubre de 2026).
+  const { explicacionPara } = await import("../src/lib/ruta/explicaciones.ts");
+  const { contieneAlguna } = await import("../src/lib/evaluacion.ts");
+  const una = (siDice, dicho, buena) => !!explicacionPara([{ siDice }], dicho, buena);
+  ok("explicación: «He is boring» encuentra «He's boring»", una("He's boring", "He is boring."));
+  ok("explicación: «I'm agree» encuentra «I am agree»", una("I am agree", "I'm agree because it's fun."));
+  ok("explicación: «He'll play» encuentra «he will play»", una("he will play", "He'll play soccer."));
+  ok("explicación: «drink» no está en «drinks»", !una("drink", "My mom drinks coffee."));
+  ok("explicación: «…» vale por lo que sea", una("although… but", "Although it rained, but we went."));
+  ok("explicación: dijo la forma buena, no es el error", !una("Is a lamp", "There is a lamp next to the bed.", "There is a lamp next to the bed."));
+  ok("explicación: con «football» explica soccer", una("football", "I play football", "soccer"));
+  ok("evaluación: «He's ridden a horse» es «has ridden»", contieneAlguna("He's ridden a horse.", ["has ridden a horse"]));
+  ok("evaluación: «He's tired» sigue siendo «is tired»", contieneAlguna("He's tired.", ["is tired"]));
+}
+
 console.log(`${total - fallos}/${total} comprobaciones de la ruta bien.`);
 process.exit(fallos ? 1 : 0);

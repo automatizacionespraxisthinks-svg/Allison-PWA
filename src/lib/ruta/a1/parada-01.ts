@@ -74,13 +74,14 @@ export const PARADA_01: Parada = {
           tipo: "que-es-esto",
           queAparece: 'Dibujo de un sol saliendo y un reloj que marca las 7. "What do you say?"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "It\'s seven in the morning." → "You say it when you see someone." → "The answer has two words." Sin pistas, Allison dice "Good morning" y el alumno la repite.',
+            'Pistas en inglés, una a la vez: "It\'s seven in the morning." → "You say it when you see someone." → "Good…" Sin pistas, Allison dice "Good morning" y el alumno la repite.',
           imagen: "a-sol-reloj",
           pregunta: "What do you say?",
           contexto: "Son las 7 de la mañana y ves a tu vecino. ¿Qué le dices?",
           respuesta: "Good morning",
           aceptadas: ["Morning", "Good morning!"],
-          pistas: ["It's seven in the morning.", "You say it when you see someone.", "The answer has two words."],
+          pistas: ["It's seven in the morning.", "You say it when you see someone.", "Good…"],
+          porRevisar: ["pistas: la tercera es «Good…»; «The answer has two words.» no ayudaba, las rayas ya muestran las dos palabras (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
@@ -373,7 +374,7 @@ export const PARADA_01: Parada = {
       muestra: "Sarah y Tom se saludan en un salón de clase",
       uso: "Lección 2: el salón del diálogo; el documento no dice en qué pantalla va",
     },
-    { archivos: ["a-tom", "a-sarah", "a-profesor"], muestra: "Tom, Sarah y una persona con gafas y un libro, cada uno solo", uso: "Lección 2 (paso 1)" },
+    { archivos: ["a-tom", "a-sarah", "a-profesor"], muestra: "Tom, Sarah y la profesora Ms. Lee junto al tablero (desde el 30 de octubre de 2026; antes con un libro), cada uno solo", uso: "Lección 2 (paso 1)" },
     { archivos: ["a-mucho-gusto"], muestra: "Dos personas dándose la mano", uso: "Lección 2 (paso 3)" },
     {
       archivos: ["a-bandera-canada", "a-bandera-colombia", "a-bandera-mexico"],

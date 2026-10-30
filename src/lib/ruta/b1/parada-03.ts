@@ -80,26 +80,24 @@ export const PARADA_03: Parada = {
           paso: 2,
           tipo: "que-es-esto",
           queAparece:
-            'Dibujo: Liam en la puerta de una sala de cine vacía, con cara de sorpresa. Dos relojes dibujados por la app: la función, a las 7:00; Liam llegó a las 9:30. Allison: "Liam got to the movie theater at 9:30. What had happened?"',
+            'Dibujo: Liam en la puerta de una sala de cine vacía, con cara de sorpresa. Dos relojes dibujados por la app: la película terminó a las 9:00; Liam llegó a las 9:30. Allison: "Liam got to the movie theater at 9:30. What had happened?"',
           siRespondeMal:
             'Una sola pista en inglés: "Start with: The movie had…". Sin pista, Allison dice "The movie had already ended" y el alumno la repite. Si dice "The movie already ended": "It happened first, so use had: The movie had already ended."',
           imagen: "f-cine-vacio",
-          relojes: [
-            { hora: "7:00", etiqueta: "The movie" },
-            { hora: "9:30", etiqueta: "Liam arrived" },
-          ],
+          relojes: [{ hora: "9:00", etiqueta: "The movie ended" }, { hora: "9:30", etiqueta: "Liam arrived" }],
           pregunta: "Liam got to the movie theater at 9:30. What had happened?",
           respuesta: "The movie had already ended.",
-          aceptadas: ["The movie had ended.", "The movie had finished.", "Everyone had left."],
+          aceptadas: ["had ended", "had already ended", "had finished", "had already finished", "had left", "had already left", "had gone home"],
           pistas: ["Start with: The movie had…"],
           explicaciones: [
-            {
-              siDice: "The movie already ended",
-              explicacion: "It happened first, so use had: The movie had already ended.",
-              es: "Pasó primero, así que va con had: The movie had already ended.",
-            },
+            { siDice: "The movie already ended", explicacion: "It happened first, so use had: The movie had already ended.", es: "Pasó primero, así que va con had: The movie had already ended." },
+            { siDice: "movie has", explicacion: "It happened before 9:30, so use had: The movie had already ended.", es: "Pasó antes de las 9:30, así que va con had: The movie had already ended." },
+            { siDice: "movie ended", explicacion: "It happened first, so use had: The movie had ended.", es: "Pasó primero, así que va con had: The movie had ended." },
+            { siDice: "movie finished", explicacion: "It happened first, so use had: The movie had finished.", es: "Pasó primero, así que va con had: The movie had finished." },
+            { siDice: "started", explicacion: "Look: the theater is empty. The movie had already ended.", es: "Mira: la sala está vacía. The movie had already ended." },
           ],
           porRevisar: [
+            "relojes: «The movie ended» a las 9:00 (antes «The movie» a las 7:00, y «The movie had already started» también era cierto); aceptadas: también «The movie had already finished» y «Everybody had already left»; explicaciones para el presente perfecto y el pasado simple (cambio del 30 de octubre de 2026)",
             "explicaciones.es: traducción",
             'relojes: las etiquetas en inglés ("The movie", "Liam arrived") no están escritas en el documento',
           ],

@@ -85,13 +85,17 @@ export const PARADA_05: Parada = {
           queAparece:
             'Dibujo de Priya en el aeropuerto con su maleta y su pasaje. Allison: "Look at Priya. What is she going to do?"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "She has a suitcase." → "She\'s at the airport." Sin pistas, Allison dice "She\'s going to travel" y el alumno la repite. Si dice "She going to travel": Antes de going to va is: she\'s going to travel.',
+            'Pistas en inglés, una a la vez: "She has a suitcase." → "She\'s at the airport." → "Start with: She\'s going to…" Sin pistas, Allison dice "She\'s going to travel" y el alumno la repite. Si dice "She going to travel": Antes de going to va is: she\'s going to travel.',
           imagen: "f-priya-aeropuerto",
           pregunta: "Look at Priya. What is she going to do?",
           contexto: "Mira a Priya. ¿Qué va a hacer? Responde con una frase en inglés.",
           respuesta: "She's going to travel.",
-          aceptadas: ["She is going to travel.", "She's going to take a plane.", "She's going to fly."],
-          pistas: ["She has a suitcase.", "She's at the airport."],
+          aceptadas: ["is going to travel", "is going to fly", "is going to take a plane", "is going to take the plane", "is going to take a trip", "is going to go on a trip", "is going to go on vacation", "is going to get on the plane"],
+          pistas: ["She has a suitcase.", "She's at the airport.", "Start with: She's going to…"],
+          explicaciones: [
+            { siDice: "She going to", explicacion: "Antes de going to va is: she's going to travel." },
+          ],
+          porRevisar: ["aceptadas: con is going to, también «Priya is going to travel» y «She's going to take a trip»; tercera pista con el comienzo; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
@@ -260,8 +264,12 @@ export const PARADA_05: Parada = {
           pregunta: "He has a lot of books! What does she say?",
           contexto: "A él se le caen los libros y ella corre hacia él. ¿Qué le dice ella? Dilo en inglés.",
           respuesta: "I'll help you!",
-          aceptadas: ["I will help you.", "I'll help.", "Let me help you."],
+          aceptadas: ["I'll help", "Let me help", "I'll pick them up", "I'll get them", "I'll carry them"],
           pistas: ["She wants to help.", "Start with: I'll…"],
+          explicaciones: [
+            { siDice: "I help you", explicacion: "Para ofrecer ayuda en el momento: I'll help you." },
+          ],
+          porRevisar: ["aceptadas: también otras ofertas con I'll («I'll pick them up», «I'll carry them»); explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         // El párrafo del documento bajo la tabla ("Hmm, I can't answer that
         // one…" para una pregunta fuera de la tabla, y la misma pregunta con

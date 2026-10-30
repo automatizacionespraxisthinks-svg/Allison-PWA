@@ -98,8 +98,12 @@ export const PARADA_07: Parada = {
           pregunta: "Read the card. Now invite me!",
           contexto: "Lee la tarjeta e invita a Allison al plan. Dilo en inglés.",
           respuesta: "Would you like to come to a picnic on Sunday?",
-          aceptadas: ["Would you like to come to my picnic?", "Do you want to come to a picnic on Sunday?"],
+          aceptadas: ["Would you like to come", "Would you like to go", "Would you like to have a picnic", "Would you like to join", "Do you want to come", "Do you want to go"],
           pistas: ["It's an invitation.", "Start with: Would you like…"],
+          explicaciones: [
+            { siDice: "You like to come", explicacion: "Para invitar con amabilidad: would you like to come…?" },
+          ],
+          porRevisar: ["aceptadas: cualquier invitación con Would you like to… o Do you want to… («Would you like to come?»); antes había que decir «a picnic on Sunday» seguido; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
@@ -265,13 +269,17 @@ export const PARADA_07: Parada = {
           queAparece:
             'Dibujo de una muchacha cansada después de correr y un vaso de agua. Allison: "Your friend is thirsty. Offer her some water!"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "Be polite!" → "Start with: Would you like…" Sin pistas, Allison dice la frase y el alumno la repite. Si dice "You like water?": Para ofrecer con amabilidad: would you like some water?',
+            'Pistas en inglés, una a la vez: "Ask her a question. Be polite!" → "Start with: Would you like…" Sin pistas, Allison dice la frase y el alumno la repite. Si dice "You like water?": Para ofrecer con amabilidad: would you like some water?',
           imagen: "f-vaso-agua",
           pregunta: "Your friend is thirsty. Offer her some water!",
           contexto: "Tu amiga tiene sed. Ofrécele agua en inglés.",
           respuesta: "Would you like some water?",
-          aceptadas: ["Would you like a glass of water?", "Do you want some water?"],
-          pistas: ["Be polite!", "Start with: Would you like…"],
+          aceptadas: ["Would you like water", "Would you like a glass of water", "Would you like a drink", "Would you like something to drink", "Would you like to drink", "Do you want some water", "Do you want water", "Do you want a glass of water"],
+          pistas: ["Ask her a question. Be polite!", "Start with: Would you like…"],
+          explicaciones: [
+            { siDice: "You like", explicacion: "Para ofrecer con amabilidad: would you like some water?" },
+          ],
+          porRevisar: ["aceptadas: también «Would you like water?» y «Would you like something to drink?»; pista: dice que es una pregunta; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         // El documento agrega, debajo de la tabla de respuestas: "Una
         // invitación que no está en la tabla recibe 'Hmm, I can't answer

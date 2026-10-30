@@ -220,13 +220,14 @@ export const PARADA_08: Parada = {
           tipo: "que-es-esto",
           queAparece: 'Un clóset abierto con ropa colgada. Allison pregunta: "Where are your clothes? In the…"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "It\'s in your bedroom." → "It has a door." → "It starts with c." Sin pistas, Allison dice "closet" y el alumno la repite.',
+            'Pistas en inglés, una a la vez: "It has two doors." → "Your shirts are in it." → "It starts with c." Sin pistas, Allison dice "closet" y el alumno la repite.',
           imagen: "f-closet",
           pregunta: "Where are your clothes? In the…",
-          contexto: "¿Dónde está tu ropa? Completa la frase.",
+          contexto: "Mira la imagen. ¿Dónde está la ropa? Completa la frase.",
           respuesta: "closet",
-          aceptadas: ["In the closet.", "The closet."],
-          pistas: ["It's in your bedroom.", "It has a door.", "It starts with c."],
+          aceptadas: ["wardrobe"],
+          pistas: ["It has two doors.", "Your shirts are in it.", "It starts with c."],
+          porRevisar: ["pistas: «It's in your bedroom.» llevaba a responder bedroom; contexto sobre la imagen; aceptadas: también wardrobe (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,

@@ -217,16 +217,16 @@ export const REPASO_1: Repaso = {
           imagen: "f-pasear-perro",
           pregunta: "Zoe started walking her neighbor's dog in September. How long has she been doing it?",
           respuesta: "She's been walking the dog since September.",
-          aceptadas: ["She has been walking her neighbor's dog since September.", "She's been doing it since September."],
+          aceptadas: ["has been walking the dog since September", "has been walking her dog since September", "has been walking it since September", "has been walking her neighbor's dog since September", "has been walking the neighbor's dog since September", "has been doing it since September", "has been doing that since September", "Zoe's been walking the dog since September", "Zoe's been walking her neighbor's dog since September", "Zoe's been doing it since September"],
           pistas: ["Start with: She's been…"],
           explicaciones: [
-            {
-              siDice: "She walks the dog since September",
-              explicacion: "From then until now: she's been walking.",
-              es: "Desde entonces hasta ahora: she's been walking.",
-            },
+            { siDice: "She walks the dog since September", explicacion: "From then until now: she's been walking.", es: "Desde entonces hasta ahora: she's been walking." },
+            { siDice: "is walking", explicacion: "From then until now: she's been walking.", es: "Desde entonces hasta ahora: she's been walking." },
+            { siDice: "months", explicacion: "We don't know today's date. Use since: She's been walking the dog since September.", es: "No sabemos qué fecha es hoy. Usa since: She's been walking the dog since September." },
+            { siDice: "month", explicacion: "We don't know today's date. Use since: She's been walking the dog since September.", es: "No sabemos qué fecha es hoy. Usa since: She's been walking the dog since September." },
+            { siDice: "since September", explicacion: "Right, since September! Now say it all: She's been walking the dog since September.", es: "¡Sí, since September! Ahora dilo completo: She's been walking the dog since September." },
           ],
-          porRevisar: ["explicaciones.es: traducción"],
+          porRevisar: ["aceptadas: también «Zoe has been walking the dog», «her dog», «it» y «doing it»; explicaciones para «She is walking the dog since September», «for two months» y la respuesta corta «Since September» (cambio del 30 de octubre de 2026)", "explicaciones.es: traducción"],
         },
         {
           paso: 3,

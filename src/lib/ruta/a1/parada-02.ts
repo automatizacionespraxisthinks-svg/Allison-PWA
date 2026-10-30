@@ -230,9 +230,10 @@ export const PARADA_02: Parada = {
           pregunta: "This is my…",
           contexto: "Sarah te muestra la foto de su familia. ¿Quién es la persona de la flecha? Completa la frase.",
           respuesta: "grandpa",
-          aceptadas: ["grandfather", "my grandpa"],
+          aceptadas: ["grandfather", "my grandpa", "granddad"],
           pistas: ["He is old.", "He is my mom's dad.", "It starts with g."],
           flecha: { x: 16, y: 30 },
+          porRevisar: ["aceptadas: también granddad (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,

@@ -93,8 +93,12 @@ export const PARADA_03: Parada = {
           pregunta: "What was he doing at seven?",
           contexto: "¿Qué estaba haciendo él a las siete? Responde con una frase en inglés.",
           respuesta: "He was waiting for the bus.",
-          aceptadas: ["He was waiting.", "Waiting for the bus."],
+          aceptadas: ["was waiting", "Waiting for the bus", "Waiting for a bus", "was standing", "was holding an umbrella"],
           pistas: ["He was at the bus stop.", "It starts with w."],
+          explicaciones: [
+            { siDice: "He waited", explicacion: "Lo que estaba pasando va con was y -ing: he was waiting." },
+          ],
+          porRevisar: ["aceptadas: con was y -ing, también «He was waiting for a bus», «He was standing at the bus stop» y «He was holding an umbrella»; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
@@ -268,8 +272,12 @@ export const PARADA_03: Parada = {
           pregunta: "What was she doing?",
           contexto: "¿Qué estaba haciendo ella? Responde con una frase en inglés.",
           respuesta: "She was walking her dog.",
-          aceptadas: ["She was walking a dog.", "Walking the dog."],
+          aceptadas: ["was walking", "Walking the dog", "Walking her dog", "was holding an umbrella"],
           pistas: ["She has an animal.", "It starts with w."],
+          explicaciones: [
+            { siDice: "She walked", explicacion: "Lo que estaba haciendo va con was y -ing: she was walking." },
+          ],
+          porRevisar: ["aceptadas: con was y -ing, también «She was walking in the rain» y «She was holding an umbrella»; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,

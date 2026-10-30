@@ -93,8 +93,13 @@ export const PARADA_02: Parada = {
           pregunta: "What did Ben do yesterday?",
           contexto: "¿Qué hizo Ben ayer? Responde con una frase en inglés.",
           respuesta: "He played soccer.",
-          aceptadas: ["He played soccer yesterday.", "Played soccer."],
+          aceptadas: ["played soccer", "played with the ball", "played with a ball", "played with his ball", "played in the park"],
           pistas: ["He has a ball.", "It ends with -ed."],
+          explicaciones: [
+            { siDice: "He play", explicacion: "Ya pasó: played." },
+            { siDice: "football", explicacion: "En Estados Unidos se dice soccer." },
+          ],
+          porRevisar: ["aceptadas: también «He played with his ball» y «He played in the park»; si dice football, Allison explica soccer; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
@@ -259,14 +264,17 @@ export const PARADA_02: Parada = {
           tipo: "que-es-esto",
           queAparece: 'Dibujo de un parque soleado. Allison: "This is my Sunday. What did I do?" Debajo: "You ___ in the park."',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "It was sunny. There are trees." → "It starts with w." Sin pistas, Allison dice "You walked in the park" y el alumno la repite. Si dice "You walk": Ya pasó: you walked.',
+            'Pistas en inglés, una a la vez: "I was in the park." → "It starts with w." Sin pistas, Allison dice "You walked in the park" y el alumno la repite. Si dice "You walk": Ya pasó: you walked.',
           imagen: "a1/f-mujer-parque",
           pregunta: "This is my Sunday. What did I do?",
           contexto: "Este fue el domingo de Allison. ¿Qué hizo ella? Respóndele a ella en inglés.",
           respuesta: "You walked in the park.",
-          aceptadas: ["You went to the park.", "She walked in the park.", "Walked in the park."],
-          pistas: ["It was sunny. There are trees.", "It starts with w."],
-          porRevisar: ["imagen: f-mujer-parque es de A1 y la tabla de ilustraciones la deja por confirmar"],
+          aceptadas: ["walked", "went to the park", "went to a park", "went for a walk", "took a walk", "went walking"],
+          pistas: ["I was in the park.", "It starts with w."],
+          explicaciones: [
+            { siDice: "You walk", explicacion: "Ya pasó: you walked." },
+          ],
+          porRevisar: ["aceptadas: también «You walked», «You went for a walk» y «You took a walk»; pista: «It was sunny. There are trees.» mezclaba tiempos y el sol no se ve; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)", "imagen: f-mujer-parque es de A1 y la tabla de ilustraciones la deja por confirmar"],
         },
         {
           paso: 3,

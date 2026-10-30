@@ -95,14 +95,18 @@ export const PARADA_10: Parada = {
           queAparece:
             'Dibujo de dos maletas: una grande de £60 y una pequeña de £25. Allison: "Look at the prices. Which one is cheaper?"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "Look at the prices." → "Start with: The small one is…" Sin pistas, Allison dice la frase y el alumno la repite. Si dice "more cheap": Cheap es corta: cheaper.',
+            'Pistas en inglés, una a la vez: "Twenty-five pounds is less than sixty pounds." → "Which suitcase is twenty-five pounds?" → "Start with: The small one is…" Sin pistas, Allison dice la frase y el alumno la repite. Si dice "more cheap": Cheap es corta: cheaper.',
           imagen: "f-dos-maletas",
           pregunta: "Look at the prices. Which one is cheaper?",
           contexto: "Mira los precios. ¿Cuál maleta es más barata? Responde con una frase en inglés.",
           respuesta: "The small one is cheaper.",
-          aceptadas: ["The small suitcase is cheaper.", "It's cheaper than the big one."],
-          pistas: ["Look at the prices.", "Start with: The small one is…"],
+          aceptadas: ["small one is cheaper", "small suitcase is cheaper", "smaller one is cheaper", "little one is cheaper", "yellow one is cheaper", "yellow suitcase is cheaper", "is cheaper than the big", "is cheaper than the orange"],
+          pistas: ["Twenty-five pounds is less than sixty pounds.", "Which suitcase is twenty-five pounds?", "Start with: The small one is…"],
+          explicaciones: [
+            { siDice: "more cheap", explicacion: "Cheap es corta: cheaper." },
+          ],
           porRevisar: [
+            "aceptadas: también «The yellow one is cheaper» (la pequeña es la amarilla de £25); pista: «Look at the prices.» repetía la pregunta; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)",
             'aceptadas: sin "The small one." del documento: con esa forma también valdría "The small one is more cheap", el error que se corrige',
           ],
         },
@@ -272,14 +276,18 @@ export const PARADA_10: Parada = {
           queAparece:
             'Dibujo de tres helados: uno pequeño de vainilla, uno mediano de fresa y uno grande de chocolate. Allison: "Which ice cream is the biggest?"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "Look at the sizes." → "Start with: The chocolate one…" Sin pistas, Allison dice la frase y el alumno la repite. Si dice "the most big": Big es corta: the biggest. Al acertar: "Good! Chocolate is my favorite!"',
+            'Pistas en inglés, una a la vez: "Look at the sizes." → "The biggest one is brown." → "Start with: The chocolate one…" Sin pistas, Allison dice la frase y el alumno la repite. Si dice "the most big": Big es corta: the biggest. Al acertar: "Good! Chocolate is my favorite!"',
           imagen: "f-tres-helados",
           pregunta: "Which ice cream is the biggest?",
           contexto: "¿Cuál helado es el más grande? Responde con una frase en inglés.",
           respuesta: "The chocolate one is the biggest.",
-          aceptadas: ["The chocolate ice cream is the biggest."],
-          pistas: ["Look at the sizes.", "Start with: The chocolate one…"],
+          aceptadas: ["The chocolate ice cream is the biggest.", "chocolate is the biggest", "brown one is the biggest", "brown ice cream is the biggest"],
+          pistas: ["Look at the sizes.", "The biggest one is brown.", "Start with: The chocolate one…"],
+          explicaciones: [
+            { siDice: "most big", explicacion: "Big es corta: the biggest." },
+          ],
           porRevisar: [
+            "aceptadas: también «Chocolate is the biggest» y «The brown one is the biggest»; pista de en medio; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)",
             'aceptadas: sin "The chocolate one." del documento: con esa forma también valdría "The chocolate one is the most big", el error que se corrige',
           ],
         },

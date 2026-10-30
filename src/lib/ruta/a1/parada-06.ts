@@ -222,8 +222,9 @@ export const PARADA_06: Parada = {
           pregunta: "What can you ride?",
           contexto: "¿En qué puedes montar? Dilo en inglés.",
           respuesta: "a bike",
-          aceptadas: ["a bicycle", "I can ride a bike"],
+          aceptadas: ["bike", "bicycle"],
           pistas: ["It has two wheels.", "You can ride it in the park.", "It starts with b."],
+          porRevisar: ["aceptadas: «bike» o «bicycle» sin artículo también valen (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,

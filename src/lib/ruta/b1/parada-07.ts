@@ -87,16 +87,14 @@ export const PARADA_07: Parada = {
           imagen: "f-cine-aburrido",
           pregunta: "How does he feel? And how is the movie?",
           respuesta: "He's bored, because the movie is boring.",
-          aceptadas: ["He's bored.", "The movie is boring.", "He feels bored."],
+          aceptadas: ["He is bored", "He is very bored", "He is so bored", "He is really bored", "He feels bored", "He looks bored", "He looks so bored", "He is getting bored", "He is tired", "He is very tired", "He is so tired", "He is sleepy", "He feels tired"],
           pistas: ["Start with: He's bored…"],
           explicaciones: [
-            {
-              siDice: "He's boring",
-              explicacion: "He isn't boring! He feels bored: he's bored.",
-              es: "¡Él no es aburrido! Se siente aburrido: he's bored.",
-            },
+            { siDice: "He's boring", explicacion: "He isn't boring! He feels bored: he's bored.", es: "¡Él no es aburrido! Se siente aburrido: he's bored." },
+            { siDice: "movie is bored", explicacion: "The movie isn't bored! It's boring. And he feels bored.", es: "¡La película no está aburrida! Es aburrida: boring. Y él se siente bored." },
+            { siDice: "the movie is boring", explicacion: "Yes, the movie is boring! Now, how does he feel? He's bored.", es: "¡Sí, la película es aburrida! Ahora, ¿cómo se siente él? He's bored." },
           ],
-          porRevisar: ["explicaciones.es: traducción"],
+          porRevisar: ["aceptadas: lo que vale es cómo se siente él (-ed): «He's so bored», «He looks bored», y también «He's tired» o «He's sleepy» (bosteza); «The movie is boring» sola ya no vale: Allison le pide decir cómo se siente él. Antes «He is boring because the movie is boring» salía bien (cambio del 30 de octubre de 2026)", "explicaciones.es: traducción"],
         },
         {
           paso: 3,

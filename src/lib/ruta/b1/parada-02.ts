@@ -89,16 +89,14 @@ export const PARADA_02: Parada = {
           imagen: "f-zoe-caricaturas",
           pregunta: "This is Zoe when she was six. What did she use to do on Saturday mornings?",
           respuesta: "She used to watch cartoons.",
-          aceptadas: ["She used to watch TV.", "She watched cartoons."],
+          aceptadas: ["She used to watch", "Zoe used to watch", "She used to eat", "Zoe used to eat", "She watched cartoons."],
           pistas: ["Start with: She used to…"],
           explicaciones: [
-            {
-              siDice: "She use to watch",
-              explicacion: "In the past: used to, with d.",
-              es: "En pasado: used to, con d.",
-            },
+            { siDice: "She use to watch", explicacion: "In the past: used to, with d.", es: "En pasado: used to, con d." },
+            { siDice: "was used to", explicacion: "Just say: She used to watch cartoons.", es: "Solo di: She used to watch cartoons." },
+            { siDice: "used to see", explicacion: "For TV, we say watch: She used to watch cartoons.", es: "Para la TV decimos watch: She used to watch cartoons." },
           ],
-          porRevisar: ["explicaciones.es: traducción"],
+          porRevisar: ["aceptadas: también «She used to eat cereal» (el plato se ve tanto como la TV) y «Zoe used to watch cartoons»; explicaciones para «She was used to watch» y «used to see» (cambio del 30 de octubre de 2026)", "explicaciones.es: traducción"],
         },
         {
           paso: 3,

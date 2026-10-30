@@ -83,16 +83,13 @@ export const PARADA_08: Parada = {
           imagen: "f-llave-abierta",
           pregunta: "He leaves the water on. What will happen if everyone does that?",
           respuesta: "If everyone does that, we'll waste a lot of water.",
-          aceptadas: ["We'll waste a lot of water.", "If everyone leaves the water on, we will waste water."],
+          aceptadas: ["will waste", "are going to waste", "will run out of water", "will not have water", "will not have any water", "will not have enough water", "will be no water", "will not be any water", "will not be enough water"],
           pistas: ["Start with: If everyone does that, we'll…"],
           explicaciones: [
-            {
-              siDice: "If everyone will do that",
-              explicacion: "After if, no will: If everyone does that.",
-              es: "Después de if no va will: If everyone does that.",
-            },
+            { siDice: "If everyone will do that", explicacion: "After if, no will: If everyone does that.", es: "Después de if no va will: If everyone does that." },
+            { siDice: "we waste", explicacion: "It's in the future: we'll waste a lot of water.", es: "Es en el futuro: we'll waste a lot of water." },
           ],
-          porRevisar: ["explicaciones.es: la traducción no estaba en el documento"],
+          porRevisar: ["aceptadas: también «We'll waste water», «We'll run out of water» y «There won't be any water»; explicación para «We waste a lot of water» (sin will) (cambio del 30 de octubre de 2026)", "explicaciones.es: la traducción no estaba en el documento"],
         },
         {
           paso: 3,

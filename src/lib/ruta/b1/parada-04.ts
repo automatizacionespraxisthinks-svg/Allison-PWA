@@ -89,17 +89,21 @@ export const PARADA_04: Parada = {
           paso: 2,
           tipo: "que-es-esto",
           queAparece:
-            'Dibujo de un salón de clase con una caja llena de celulares en el escritorio del profesor. Allison: "Some schools don\'t allow phones in class. What do you think?"',
+            'Dibujo de un salón de clase con una caja llena de celulares en el escritorio del profesor. Allison: "Some schools don\'t allow phones in class. What do you think? Why?"',
           siRespondeMal:
             'Una sola pista en inglés: "Start with: I think… because…". Si dice "I am agree": "Just say: I agree." Si no da razón, Allison pregunta "Why?" y el alumno completa.',
-          tambienSeAcepta: "Cualquier opinión con I think, In my opinion o I don't think, y una razón",
+          tambienSeAcepta: "Cualquier opinión con una razón, con I think, I don't think, In my opinion, I believe, For me, I agree o I disagree. No vale \"I am agree\".",
           imagen: "f-salon-celulares",
-          pregunta: "Some schools don't allow phones in class. What do you think?",
+          pregunta: "Some schools don't allow phones in class. What do you think? Why?",
           respuesta: "I think it's a good idea, because students pay more attention.",
           aceptadas: ["In my opinion, it's a bad idea, because we use our phones to study."],
           pistas: ["Start with: I think… because…"],
-          explicaciones: [{ siDice: "I am agree", explicacion: "Just say: I agree.", es: "Solo di: I agree." }],
+          explicaciones: [
+            { siDice: "I am agree", explicacion: "Just say: I agree.", es: "Solo di: I agree." },
+            { siDice: "I am disagree", explicacion: "Just say: I disagree.", es: "Solo di: I disagree." },
+          ],
           porRevisar: [
+            "pregunta: «Why?» al final, porque se pide una razón; la regla acepta también I believe, For me, I agree e I disagree, y dice que «I am agree» no vale (el modelo dejaba pasar los errores pequeños) (cambio del 30 de octubre de 2026)",
             'respuesta: el documento pide "Una opinión con una razón" y da dos ejemplos; el primero va como respuesta y el segundo en aceptadas. La regla queda en tambienSeAcepta',
             "explicaciones.es: traducción",
           ],

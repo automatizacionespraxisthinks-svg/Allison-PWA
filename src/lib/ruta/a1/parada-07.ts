@@ -70,6 +70,8 @@ export const PARADA_07: Parada = {
           respuesta: "fries",
           aceptadas: ["French fries", "some fries"],
           pistas: ["You eat them with a burger.", "They are yellow.", "It starts with f."],
+          explicaciones: [{ siDice: "chips", explicacion: "En Estados Unidos se dice fries." }],
+          porRevisar: ["explicaciones: si dice chips, Allison explica que en Estados Unidos se dice fries, como dice el documento (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,

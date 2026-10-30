@@ -92,16 +92,15 @@ export const PARADA_05: Parada = {
           ],
           pregunta: "Liam started playing tennis at four o'clock. It's six o'clock now. How long has he been playing?",
           respuesta: "He's been playing for two hours.",
-          aceptadas: ["He's been playing tennis for two hours.", "He has been playing since four o'clock."],
+          aceptadas: ["He's been playing tennis for two hours.", "has been playing for two hours", "has been playing tennis for two hours", "has been playing since four", "has been playing tennis since four", "Liam's been playing for two hours", "Liam's been playing tennis for two hours"],
           pistas: ["Start with: He's been…"],
           explicaciones: [
-            {
-              siDice: "He is playing tennis for two hours",
-              explicacion: "From then until now: he's been playing.",
-              es: "Desde entonces hasta ahora: he's been playing.",
-            },
+            { siDice: "He is playing tennis for two hours", explicacion: "From then until now: he's been playing.", es: "Desde entonces hasta ahora: he's been playing." },
+            { siDice: "is playing", explicacion: "From then until now: he's been playing.", es: "Desde entonces hasta ahora: he's been playing." },
+            { siDice: "for two hours", explicacion: "Right, two hours! Now say it all: He's been playing for two hours.", es: "¡Sí, dos horas! Ahora dilo completo: He's been playing for two hours." },
           ],
           porRevisar: [
+            "aceptadas: también «Liam has been playing for two hours» y «since four»; explicaciones para «He's playing for two hours» y para la respuesta corta «For two hours» (cambio del 30 de octubre de 2026)",
             "explicaciones.es: traducción",
             'relojes: las etiquetas en inglés ("He started", "Now") no están escritas en el documento',
           ],

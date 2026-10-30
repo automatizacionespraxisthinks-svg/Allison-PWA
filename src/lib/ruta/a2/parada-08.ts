@@ -94,8 +94,12 @@ export const PARADA_08: Parada = {
           pregunta: "Look at Priya. What's wrong with her?",
           contexto: "Mira a Priya. ¿Qué le pasa? Responde con una frase en inglés.",
           respuesta: "She has a fever.",
-          aceptadas: ["She's sick.", "She has a high temperature."],
+          aceptadas: ["has a fever", "is sick", "feels sick", "has a high temperature", "has a cold", "has the flu"],
           pistas: ["Look at the thermometer.", "It starts with f."],
+          explicaciones: [
+            { siDice: "She is fever", explicacion: "Para lo que tienes va has: she has a fever." },
+          ],
+          porRevisar: ["aceptadas: también «Priya has a fever», «She has a cold» y «She has the flu»; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
@@ -266,15 +270,18 @@ export const PARADA_08: Parada = {
           queAparece:
             'El dibujo de Ben con dolor de garganta (el de la lección 1). Allison: "Ben has a sore throat. Give him some advice!"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "What\'s good for a sore throat?" → "Start with: You should…" Sin pistas, Allison dice "You should drink hot tea" y el alumno la repite. Si dice "You should to rest": Después de should va el verbo solo: you should rest.',
-          tambienSeAcepta:
-            "Cualquier consejo con should que tenga sentido: You should rest. You should stay home. You shouldn't eat ice cream.",
+            'Pistas en inglés, una a la vez: "What\'s good for a sore throat?" → "Hot tea is good for a sore throat." → "Start with: You should…" Sin pistas, Allison dice "You should drink hot tea" y el alumno la repite. Si dice "You should to rest": Después de should va el verbo solo: you should rest.',
+          tambienSeAcepta: "Cualquier consejo con should que tenga sentido: You should rest. You should stay home. You shouldn't eat ice cream. No vale \"should to\".",
           imagen: "f-ben-garganta",
           pregunta: "Ben has a sore throat. Give him some advice!",
           contexto: "A Ben le duele la garganta. Dale un consejo en inglés.",
           respuesta: "You should drink hot tea.",
-          aceptadas: ["You should rest.", "You should stay home.", "You shouldn't eat ice cream."],
-          pistas: ["What's good for a sore throat?", "Start with: You should…"],
+          aceptadas: ["should drink tea", "should drink hot", "should drink water", "should drink some tea", "should drink some water", "should rest", "should stay home", "should stay in bed", "should sleep", "should go to bed", "should go to the doctor", "should see a doctor", "should take medicine", "shouldn't eat ice cream", "shouldn't drink cold", "shouldn't talk", "shouldn't go to school"],
+          pistas: ["What's good for a sore throat?", "Hot tea is good for a sore throat.", "Start with: You should…"],
+          explicaciones: [
+            { siDice: "should to", explicacion: "Después de should va el verbo solo: you should rest." },
+          ],
+          porRevisar: ["aceptadas: los consejos comunes valen sin pasar por el modelo (no gastan y no fallan); la regla dice que «should to» no vale; pista de en medio con una idea; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,

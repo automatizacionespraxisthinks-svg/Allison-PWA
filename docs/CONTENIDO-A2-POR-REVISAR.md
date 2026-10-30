@@ -17,6 +17,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "But today she's studying at home." → "Pero hoy está estudiando en casa." |
 | Lección 1, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca a Priya en su cuarto" |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | ¿Qué está haciendo Ben en este momento? Responde con una frase en inglés. |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: con is y -ing, también «Ben is working», «He's doing his homework» y «He's typing»; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | A nurse (Una enfermera) · A teacher (Una profesora) · A chef (Un chef) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: la profesora es la del salón de clase (a1/f-salon-clase); a1/a-profesor era una mujer leyendo un libro, no enseñando. Etiquetas como suenan (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -54,6 +55,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "She watched a movie and she cooked pasta." → "Vio una película y cocinó pasta." |
 | Lección 1, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca a Priya en el sofá" |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | ¿Qué hizo Ben ayer? Responde con una frase en inglés. |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «He played with his ball» y «He played in the park»; si dice football, Allison explica soccer; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | To the stadium (Al estadio) · To the movies (A cine) · To the beach (A la playa) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -74,6 +76,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "We cooked arepas!" → "¡Cocinamos arepas!" |
 | Lección 4, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca las arepas" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Este fue el domingo de Allison. ¿Qué hizo ella? Respóndele a ella en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «You walked», «You went for a walk» y «You took a walk»; pista: «It was sunny. There are trees.» mezclaba tiempos y el sol no se ve; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 2 (¿Qué es esto?) | Nota | imagen: f-mujer-parque es de A1 y la tabla de ilustraciones la deja por confirmar |
 
 ## Parada 3 · Liverpool
@@ -88,6 +91,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Her little brother was playing video games." → "Su hermanito estaba jugando videojuegos." |
 | Lección 1, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca a Priya leyendo" |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | ¿Qué estaba haciendo él a las siete? Responde con una frase en inglés. |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: con was y -ing, también «He was waiting for a bus», «He was standing at the bus stop» y «He was holding an umbrella»; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | A fox (Un zorro) · A dog (Un perro) · A cat (Un gato) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: el gato es a1/f-gata-luna, grande y centrado; en a1/f-gato-debajo se veía sobre todo una cama (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -107,6 +111,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "A man was running and a girl was riding a bike." → "Un hombre estaba corriendo y una niña estaba montando en bicicleta." |
 | Lección 4, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca el parque con el hombre corriendo y la niña en bicicleta" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿Qué estaba haciendo ella? Responde con una frase en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: con was y -ing, también «She was walking in the rain» y «She was holding an umbrella»; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 3 (Adivina) | Nota | opciones: las seis tarjetas usan f-parque-adivina y cada una muestra ampliada a su persona (puntos puestos el 18 de octubre de 2026 sobre la ilustración aprobada) |
 | Lección 4, paso 3 (Adivina) | Nota | rondas: Mrs. Bell en lugar de Mr. Green, porque Allison solo hace papeles de mujer (18 de octubre de 2026; también cambiado en el documento) |
 
@@ -121,6 +126,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "She has seen the Eiffel Tower!" → "¡Ha visto la torre Eiffel!" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca a Priya frente a la torre Eiffel" |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | ¿Ben ha montado a caballo alguna vez? Responde con una respuesta corta en inglés. |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «Yes, Ben has» y «He's ridden a horse» (ahora «he's ridden» se abre como has); explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: el documento también acepta "Yes."; no se puso suelto porque aceptaría "Yes, he did", el error que corrige |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | By train (En tren) · By bus (En bus) · By boat (En barco) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: el avión salía entre las opciones y es justo en lo que Ben NUNCA ha volado; ahora es un bus. El «never flown» se sigue oyendo, pero ya no decide la respuesta (cambio del 30 de octubre de 2026) |
@@ -147,6 +153,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "I've eaten a lot of arepas there. I love them!" → "Allá he comido muchas arepas. ¡Me encantan!" |
 | Lección 4, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca las arepas" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿Qué ha visto mucho Allison en Nueva York? Completa la frase. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | imagen: f-calle-nieve, una calle tapada de nieve; antes a1/f-navidad-nieve, donde lo que más se veía era el árbol de Navidad y el alumno decía «Christmas tree» (cambio del 30 de octubre de 2026) |
 
 ## Parada 5 · Oxford
 
@@ -160,6 +167,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "They're going to bake a cake." → "Van a hornear una torta." |
 | Lección 1, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca a Ben con su abuela" |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Mira a Priya. ¿Qué va a hacer? Responde con una frase en inglés. |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: con is going to, también «Priya is going to travel» y «She's going to take a trip»; tercera pista con el comienzo; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Close the window (Cerrar la ventana) · Open the door (Abrir la puerta) · Turn on the TV (Prender el televisor) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Priya says: "It's cold in here."" → "Priya dice: "Hace frío aquí adentro."" |
@@ -178,6 +186,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "We're going to watch a movie." → "Vamos a ver una película." |
 | Lección 4, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca a las dos mujeres viendo la película" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | A él se le caen los libros y ella corre hacia él. ¿Qué le dice ella? Dilo en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: también otras ofertas con I'll («I'll pick them up», «I'll carry them»); explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 3 (Adivina) | Nota | opciones: los nombres largos de las tarjetas ("go to the movies", "play soccer", "visit a museum", "go shopping", "bake a cake", "go camping") salen de la lista de tarjetas del documento (Qué aparece); la tabla de respuestas y las rondas usan los cortos (movies, soccer, museum, shopping, cake, camping) |
 | Lección 4, paso 3 (Adivina) | Nota | adivinar: "Are you going to {x}?" no está escrita como regla; sale del ejemplo "Are you going to visit a museum?" y sirve con los nombres largos |
 
@@ -191,6 +200,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Priya is flying to Paris on Friday." → "El viernes Priya vuela a París." |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Her aunt is meeting her at the airport." → "Su tía la espera en el aeropuerto." |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Mira el tiquete de Ben. ¿Qué plan tiene para el sábado? Responde con una frase en inglés. |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «He's taking the train» y «Ben is taking a train to Cambridge»; pista: «Look at the ticket.» repetía la pregunta; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | To the movies (A cine) · To the stadium (Al estadio) · To the museum (Al museo) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -210,6 +220,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "I'm making ajiaco!" → "¡Voy a hacer ajiaco!" |
 | Lección 4, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca a la mujer cocinando" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Mira la entrada de Priya. ¿Qué plan tiene para el jueves? Responde con una frase en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «Priya is going to the concert»; pista: «Look at the ticket.» repetía la pregunta; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 
 ## Parada 7 · Cambridge
 
@@ -221,6 +232,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Priya asks: "Would you like to play tennis on Tuesday after school?"" → "Priya pregunta: "¿Te gustaría jugar tenis el martes después del colegio?"" |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Ben says: "Sorry, I can't. I'm studying for a test."" → "Ben dice: "Lo siento, no puedo. Estoy estudiando para un examen."" |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Lee la tarjeta e invita a Allison al plan. Dilo en inglés. |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: cualquier invitación con Would you like to… o Do you want to… («Would you like to come?»); antes había que decir «a picnic on Sunday» seguido; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | To the park (Al parque) · To the movies (A cine) · To the subway (Al metro) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -240,6 +252,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "I said: I'd love to!" → "Le dije: ¡Me encantaría!" |
 | Lección 4, paso 1 (Escucha y elige) | Nota | opciones: la tabla de ilustraciones no nombra el cine de esta lección; se usa f-cine (de la parada 2), el mismo de la lección 2 |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Tu amiga tiene sed. Ofrécele agua en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «Would you like water?» y «Would you like something to drink?»; pista: dice que es una pregunta; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 3 (Adivina) | Nota | opciones: los nombres son los de "Qué aparece" (have a picnic, go to a concert…); el encabezado de la tabla los abrevia (picnic, concert, bikes, boat, museum, soccer game) |
 | Lección 4, paso 3 (Adivina) | Nota | rondas: el documento dice "concert y bikes"; son las tarjetas go to a concert y ride bikes |
 
@@ -255,6 +268,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "He ate a lot of pizza last night!" → "¡Anoche comió mucha pizza!" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca a Ben con dolor de estómago" |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Mira a Priya. ¿Qué le pasa? Responde con una frase en inglés. |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «Priya has a fever», «She has a cold» y «She has the flu»; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Drink water and rest (Tomar agua y descansar) · Eat ice cream (Comer helado) · Buy sneakers (Comprar tenis) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: la correcta es un dibujo nuevo, Priya descansando en el sofá con un vaso de agua (f-priya-agua-descanso); f-vaso-agua era otra muchacha sudada después de hacer deporte (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
@@ -273,6 +287,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "Music always helps." → "La música siempre ayuda." |
 | Lección 4, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca a la muchacha bailando" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | A Ben le duele la garganta. Dale un consejo en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: los consejos comunes valen sin pasar por el modelo (no gastan y no fallan); la regla dice que «should to» no vale; pista de en medio con una idea; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 
 ## Parada 9 · Bath
 
@@ -285,6 +300,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "The salesclerk says: "They're forty pounds."" → "La vendedora dice: "Cuestan cuarenta libras."" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca £40" |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Te gusta esta chaqueta. Pregunta cuánto cuesta, en inglés. |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «How much is this?» y «How much does this jacket cost?»; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Red socks (Medias rojas) · A cap (Una gorra) · A sweater (Un suéter) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -301,7 +317,8 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "I'd like a new sweater for December." → "Quisiera un suéter nuevo para diciembre." |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "New York is very cold!" → "¡En Nueva York hace mucho frío!" |
 | Lección 4, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca el suéter" |
-| Lección 4, paso 2 (¿Qué es esto?) | Situación en español | A ella le gusta el vestido y está frente al probador. ¿Qué pregunta? Dilo en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Situación en español | A ella le gusta el vestido. Antes de entrar al probador, ¿qué le pregunta al vendedor? Dilo en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «Can I try this on?», «Could I try it on?» y «May I try it on?»; el contexto dice que la pregunta es antes del probador; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 3 (Adivina) | Nota | opciones: los nombres llevan "a" ("a sweater", "a T-shirt", "a jacket", "a cap") para que "Did you buy {x}?" sirva con las seis tarjetas; el encabezado de la tabla los trae sin artículo |
 
 ## Parada 10 · Cardiff
@@ -316,6 +333,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "He's taller than Jack and Ethan." → "Es más alto que Jack y Ethan." |
 | Lección 1, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca a Noah, el más alto" |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Mira los precios. ¿Cuál maleta es más barata? Responde con una frase en inglés. |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «The yellow one is cheaper» (la pequeña es la amarilla de £25); pista: «Look at the prices.» repetía la pregunta; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: sin "The small one." del documento: con esa forma también valdría "The small one is more cheap", el error que se corrige |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Edinburgh (Edimburgo) · Oxford (Oxford) · Manchester (Manchester) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -336,6 +354,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "My apartment is small, but it's across from a park." → "Mi apartamento es pequeño, pero queda frente a un parque." |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "My sister's apartment is bigger." → "El apartamento de mi hermana es más grande." |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿Cuál helado es el más grande? Responde con una frase en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «Chocolate is the biggest» y «The brown one is the biggest»; pista de en medio; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: sin "The chocolate one." del documento: con esa forma también valdría "The chocolate one is the most big", el error que se corrige |
 
 ## Repaso 1 · Londres
@@ -354,6 +373,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Last night at nine, Priya was cooking dinner when her mom called." → "Anoche a las nueve, Priya estaba cocinando la cena cuando su mamá llamó." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca a Priya cocinando" |
 | Lección 2, paso 2 (¿Qué es esto?) | Situación en español | ¿Dónde ha estado Priya? Responde con una frase en inglés. |
+| Lección 2, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «Priya has been to Paris» y «Priya's been to Paris»; pista de en medio: la torre está en París; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Bake a cake (Hornear una torta) · Play soccer (Jugar fútbol) · Go to the movies (Ir a cine) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: f-parque-futbol es un dibujo nuevo, solo niños jugando con el balón (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
@@ -383,6 +403,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "He can't talk a lot today." → "Hoy no puede hablar mucho." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca a Ben con dolor de garganta" |
 | Lección 2, paso 2 (¿Qué es esto?) | Situación en español | Te gusta esta chaqueta, pero necesitas talla grande. Pregúntale al vendedor en inglés. |
+| Lección 2, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «Do you have this in a large?» y «Do you have a bigger size?»; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | To the museum (Al museo) · To the movies (A cine) · To a picnic (A un picnic) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -393,7 +414,8 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "I've never been to London." → "Nunca he estado en Londres." |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "Next month I'm visiting it for the first time!" → "¡El mes que viene la visito por primera vez!" |
 | Lección 4, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca Londres" |
-| Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Allison te pregunta si ella ha montado a caballo alguna vez. En la foto solo está Ben. Respóndele con una respuesta corta en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Allison te pregunta si ella ha montado a caballo alguna vez. Ella no está en la foto: acuérdate de lo que te contó en Edimburgo. Respóndele con una respuesta corta en inglés. |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | contexto: antes decía «En la foto solo está Ben», pero al fondo hay otros jinetes; ahora dice que Allison no está en la foto y que se acuerde de Edimburgo. Pistas que se lo recuerdan; aceptadas: también «You haven't» y «No, you've never ridden a horse» (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: el documento las escribe seguidas ("No, never. No, you haven't. You're scared of horses!"); se separaron en dos formas, "No, never." y "No, you haven't. You're scared of horses!" |
 
 ## Frase del día (expresiones)

@@ -441,7 +441,7 @@ function Opcion({
  * las agujas, que no es inglés, y la lección enseña la hora en dígitos
  * (30 de octubre de 2026).
  */
-function RelojConHora({ horas, minutos, etiqueta }: { horas: number; minutos: number; etiqueta: string }) {
+export function RelojConHora({ horas, minutos, etiqueta }: { horas: number; minutos: number; etiqueta: string }) {
   return (
     <span className="flex size-full flex-col items-center justify-center gap-0.5 pt-1">
       <span className="grid w-[74%] place-items-center [&>svg]:size-full">

@@ -91,16 +91,15 @@ export const PARADA_09: Parada = {
           imagen: "f-cielo-nublado",
           pregunta: "Look at the sky. What might happen?",
           respuesta: "It might rain.",
-          aceptadas: ["It may rain.", "It could rain soon."],
+          aceptadas: ["may rain", "could rain", "might start raining", "might start to rain", "might be a storm", "might storm", "might get wet"],
           pistas: ["Start with: It might…"],
           explicaciones: [
-            {
-              siDice: "It might to rain",
-              explicacion: "No to after might: It might rain.",
-              es: "Después de might no va to: It might rain.",
-            },
+            { siDice: "It might to rain", explicacion: "No to after might: It might rain.", es: "Después de might no va to: It might rain." },
+            { siDice: "might rains", explicacion: "After might, no s: It might rain.", es: "Después de might no va s: It might rain." },
+            { siDice: "going to rain", explicacion: "Maybe! We aren't sure, so use might: It might rain.", es: "¡Tal vez! No estamos seguros, así que usa might: It might rain." },
+            { siDice: "will rain", explicacion: "Maybe! We aren't sure, so use might: It might rain.", es: "¡Tal vez! No estamos seguros, así que usa might: It might rain." },
           ],
-          porRevisar: ["explicaciones.es: la traducción no estaba en el documento"],
+          porRevisar: ["aceptadas: también «It could rain», «It might start raining» y «There might be a storm»; explicaciones para «It might rains», «It's going to rain» y «It will rain» (cambio del 30 de octubre de 2026)", "explicaciones.es: la traducción no estaba en el documento"],
         },
         {
           paso: 3,
@@ -319,21 +318,17 @@ export const PARADA_09: Parada = {
             'Dibujo de una muchacha frente a la puerta cerrada de su casa; por la ventana se ven sus llaves adentro. Allison: "She can\'t open the door. Her keys are inside. What could she do?"',
           siRespondeMal:
             'Una sola pista en inglés: "Start with: She could…". Sin pista, Allison dice "She could call her mom" y el alumno la repite. Si dice "She could to call": "No to after could: She could call her mom."',
-          tambienSeAcepta:
-            'Cualquier solución con could o might: "She could ask a neighbor for help." "She might wait for her family."',
+          tambienSeAcepta: "Cualquier solución para entrar a la casa o conseguir las llaves, con could o might y el verbo sin to: \"She could ask a neighbor for help.\" \"She might wait for her family.\" No vale \"could to\" ni \"might to\".",
           imagen: "f-llaves-adentro",
           pregunta: "She can't open the door. Her keys are inside. What could she do?",
           respuesta: "She could call her mom.",
-          aceptadas: ["She could ask a neighbor for help.", "She might wait for her family."],
+          aceptadas: ["She could ask a neighbor for help.", "She might wait for her family.", "could call", "could ask", "could wait", "might wait"],
           pistas: ["Start with: She could…"],
           explicaciones: [
-            {
-              siDice: "She could to call",
-              explicacion: "No to after could: She could call her mom.",
-              es: "Después de could no va to: She could call her mom.",
-            },
+            { siDice: "could to", explicacion: "No to after could: She could call her mom.", es: "Después de could no va to: She could call her mom." },
+            { siDice: "might to", explicacion: "No to after might: She might wait for her family.", es: "Después de might no va to: She might wait for her family." },
           ],
-          porRevisar: ["explicaciones.es: la traducción no estaba en el documento"],
+          porRevisar: ["aceptadas: «She could call…», «She could ask…» y «She might wait…» valen sin pasar por el modelo; la regla dice que «could to» no vale (el modelo dejaba pasar los errores pequeños) (cambio del 30 de octubre de 2026)", "explicaciones.es: la traducción no estaba en el documento"],
         },
         {
           paso: 3,

@@ -76,8 +76,12 @@ export const PARADA_01: Parada = {
           pregunta: "What is Ben doing?",
           contexto: "¿Qué está haciendo Ben en este momento? Responde con una frase en inglés.",
           respuesta: "He's working.",
-          aceptadas: ["He is working.", "He's working on his computer.", "He's studying.", "He's using his computer."],
+          aceptadas: ["is working", "is studying", "is typing", "is writing", "is using", "is doing homework", "is doing his homework"],
           pistas: ["He has a computer.", "It starts with w."],
+          explicaciones: [
+            { siDice: "He work", explicacion: "Lo de ahora mismo va con is y -ing: he's working." },
+          ],
+          porRevisar: ["aceptadas: con is y -ing, también «Ben is working», «He's doing his homework» y «He's typing»; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
@@ -253,6 +257,10 @@ export const PARADA_01: Parada = {
           respuesta: "He's a chef.",
           aceptadas: ["He is a chef.", "A chef.", "He's a cook.", "A cook."],
           pistas: ["He works in a restaurant.", "He cooks food."],
+          explicaciones: [
+            { siDice: "He chef", explicacion: "Para decir el trabajo: he's a chef." },
+          ],
+          porRevisar: ["explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
@@ -380,7 +388,7 @@ export const PARADA_01: Parada = {
       muestra: "Una enfermera en un hospital de noche; un chef en la cocina de un restaurante",
       uso: "Lección 2 (paso 1), lección 4 (paso 2) y las tarjetas de Adivina",
     },
-    { archivos: ["a1/a-profesor"], muestra: "Una persona con gafas y un libro (de A1)", uso: "Adivina" },
+    { archivos: ["a1/a-profesor"], muestra: "La profesora Ms. Lee junto al tablero (de A1; desde el 30 de octubre de 2026, antes con un libro)", uso: "Adivina" },
     { archivos: ["a1/f-salon-clase"], muestra: "Una profesora frente al tablero de su salón (de A1; desde el 30 de octubre de 2026)", uso: "Lección 2 (paso 1)" },
     { archivos: ["f-bus-escolar"], muestra: "Un bus escolar", uso: "Lección 2 (paso 2)" },
     {

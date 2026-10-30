@@ -157,16 +157,14 @@ export const PARADA_01: Parada = {
           imagen: "f-banda-vacia",
           pregunta: "His bag isn't here. What does he say to the airline?",
           respuesta: "My bag hasn't arrived.",
-          aceptadas: ["My bag hasn't arrived yet.", "My bag didn't arrive.", "I can't find my bag."],
+          aceptadas: ["hasn't arrived", "haven't arrived", "hasn't come", "didn't arrive", "can't find my", "lost my bag", "lost my suitcase", "lost my luggage", "is missing"],
           pistas: ["Start with: My bag…"],
           explicaciones: [
-            {
-              siDice: "My bag no arrive",
-              explicacion: "Use hasn't: My bag hasn't arrived.",
-              es: "Usa hasn't: My bag hasn't arrived.",
-            },
+            { siDice: "My bag no arrive", explicacion: "Use hasn't: My bag hasn't arrived.", es: "Usa hasn't: My bag hasn't arrived." },
+            { siDice: "not arrived", explicacion: "Use hasn't: My bag hasn't arrived.", es: "Usa hasn't: My bag hasn't arrived." },
+            { siDice: "doesn't arrive", explicacion: "Use hasn't: My bag hasn't arrived.", es: "Usa hasn't: My bag hasn't arrived." },
           ],
-          porRevisar: ["explicaciones.es: traducción"],
+          porRevisar: ["aceptadas: también «My suitcase hasn't arrived», «My bags haven't arrived», «They lost my luggage» y «My bag is missing»; explicaciones para «My bag is not arrived» y «doesn't arrive» (cambio del 30 de octubre de 2026)", "explicaciones.es: traducción"],
         },
         {
           paso: 3,

@@ -100,13 +100,17 @@ export const REPASO_1: Repaso = {
           tipo: "que-es-esto",
           queAparece: 'Foto de Priya frente a la torre Eiffel (f-priya-paris). Allison: "Where has Priya been?"',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "Look at the tower." → "Start with: She\'s been to…" Sin pistas, Allison dice "She\'s been to Paris" y el alumno la repite. Si dice "She has been in Paris": Para lugares: she\'s been to Paris.',
+            'Pistas en inglés, una a la vez: "Look at the tower." → "This tower is in Paris." → "Start with: She\'s been to…" Sin pistas, Allison dice "She\'s been to Paris" y el alumno la repite. Si dice "She has been in Paris": Para lugares: she\'s been to Paris.',
           imagen: "f-priya-paris",
           pregunta: "Where has Priya been?",
           contexto: "¿Dónde ha estado Priya? Responde con una frase en inglés.",
           respuesta: "She's been to Paris.",
-          aceptadas: ["She has been to Paris.", "She's been to France."],
-          pistas: ["Look at the tower.", "Start with: She's been to…"],
+          aceptadas: ["has been to Paris", "has been to France", "Priya's been to Paris"],
+          pistas: ["Look at the tower.", "This tower is in Paris.", "Start with: She's been to…"],
+          explicaciones: [
+            { siDice: "been in Paris", explicacion: "Para lugares: she's been to Paris." },
+          ],
+          porRevisar: ["aceptadas: también «Priya has been to Paris» y «Priya's been to Paris»; pista de en medio: la torre está en París; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,

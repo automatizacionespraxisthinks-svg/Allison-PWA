@@ -270,6 +270,7 @@ export async function POST(peticion: Request) {
           ? {
               regla: actividad.tambienSeAcepta,
               contexto: "contexto" in actividad ? actividad.contexto : undefined,
+              pregunta: "pregunta" in actividad ? actividad.pregunta : undefined,
             }
           : {}),
       };

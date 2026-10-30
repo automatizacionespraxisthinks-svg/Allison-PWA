@@ -18,6 +18,9 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 3 (Repite) | Traducción del consejo | "Listen: I've. Your top teeth touch your lip." → "Escucha: I've. Los dientes de arriba tocan el labio." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio y pregunta en positivo («He was very hungry, so he has already bought a sandwich», ¿qué ya hizo?); antes «hasn't bought a sandwich yet» con el dibujo de Liam comprándolo, y el check-in también era algo que no había hecho. El yet sigue en el ¿Qué es esto? siguiente. Cada dibujo suena al elegirlo (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
+| Lección 2, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «My suitcase hasn't arrived», «My bags haven't arrived», «They lost my luggage» y «My bag is missing»; explicaciones para «My bag is not arrived» y «doesn't arrive» (cambio del 30 de octubre de 2026) |
+| Lección 2, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Use hasn't: My bag hasn't arrived." → "Usa hasn't: My bag hasn't arrived." |
+| Lección 2, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Use hasn't: My bag hasn't arrived." → "Usa hasn't: My bag hasn't arrived." |
 | Lección 2, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Use hasn't: My bag hasn't arrived." → "Usa hasn't: My bag hasn't arrived." |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 2 (Narra la secuencia) | Qué muestra cada dibujo | 1. Esta mañana Zoe entrega su maleta en el aeropuerto de Toronto · 2. Zoe vuela a Vancouver · 3. Zoe espera una hora en la banda de equipaje · 4. Zoe en el mostrador de la aerolínea, sin maleta |
@@ -38,7 +41,10 @@ licenciado en inglés las revise junto con el resto de la parada.
 |---|---|---|
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «She used to eat cereal» (el plato se ve tanto como la TV) y «Zoe used to watch cartoons»; explicaciones para «She was used to watch» y «used to see» (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "In the past: used to, with d." → "En pasado: used to, con d." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Just say: She used to watch cartoons." → "Solo di: She used to watch cartoons." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "For TV, we say watch: She used to watch cartoons." → "Para la TV decimos watch: She used to watch cartoons." |
 | Lección 1, paso 3 (Repite) | Traducción del consejo | "Listen: used to sounds like 'yoos-tuh'." → "Escucha: used to suena como 'iusta'." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "In the past: used, with d." → "En pasado: used, con d." |
@@ -64,7 +70,12 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Dónde | Qué | Texto |
 |---|---|---|
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | relojes: «The movie ended» a las 9:00 (antes «The movie» a las 7:00, y «The movie had already started» también era cierto); aceptadas: también «The movie had already finished» y «Everybody had already left»; explicaciones para el presente perfecto y el pasado simple (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It happened first, so use had: The movie had already ended." → "Pasó primero, así que va con had: The movie had already ended." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It happened before 9:30, so use had: The movie had already ended." → "Pasó antes de las 9:30, así que va con had: The movie had already ended." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It happened first, so use had: The movie had ended." → "Pasó primero, así que va con had: The movie had ended." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It happened first, so use had: The movie had finished." → "Pasó primero, así que va con had: The movie had finished." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Look: the theater is empty. The movie had already ended." → "Mira: la sala está vacía. The movie had already ended." |
 | Lección 1, paso 2 (¿Qué es esto?) | Nota | relojes: las etiquetas en inglés ("The movie", "Liam arrived") no están escritas en el documento |
 | Lección 1, paso 3 (Repite) | Traducción del consejo | "Listen: she'd, with a short d." → "Escucha: she'd, con una d corta." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio y tarjeta: «put his camera in his bag» en vez de «put his camera away», que es más difícil; «It was too dark.» en vez de «The moose had run away.», que juntaba palabras de la historia (cambio del 30 de octubre de 2026) |
@@ -88,8 +99,10 @@ licenciado en inglés las revise junto con el resto de la parada.
 |---|---|---|
 | Lección 1, paso 1 (Escucha y elige) | Nota | audio: «Her mom thinks…» en vez de «She thinks…», para que no haya duda de quién lo piensa (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | pregunta: «Why?» al final, porque se pide una razón; la regla acepta también I believe, For me, I agree e I disagree, y dice que «I am agree» no vale (el modelo dejaba pasar los errores pequeños) (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 2 (¿Qué es esto?) | Nota | respuesta: el documento pide "Una opinión con una razón" y da dos ejemplos; el primero va como respuesta y el segundo en aceptadas. La regla queda en tambienSeAcepta |
 | Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Just say: I agree." → "Solo di: I agree." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Just say: I disagree." → "Solo di: I disagree." |
 | Lección 1, paso 3 (Dilo en inglés) | Traducción de la explicación | "Use are: uniforms are." → "Va are: uniforms are." |
 | Lección 1, paso 3 (Dilo en inglés) | Traducción de la explicación | "Everyone looks, with s." → "Everyone looks, con s." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
@@ -116,7 +129,10 @@ licenciado en inglés las revise junto con el resto de la parada.
 |---|---|---|
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: «Since she was twelve.» y «Since last summer.»; antes los distractores tomaban el ten y el six que se oyen en la historia (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «Liam has been playing for two hours» y «since four»; explicaciones para «He's playing for two hours» y para la respuesta corta «For two hours» (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "From then until now: he's been playing." → "Desde entonces hasta ahora: he's been playing." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "From then until now: he's been playing." → "Desde entonces hasta ahora: he's been playing." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Right, two hours! Now say it all: He's been playing for two hours." → "¡Sí, dos horas! Ahora dilo completo: He's been playing for two hours." |
 | Lección 1, paso 2 (¿Qué es esto?) | Nota | relojes: las etiquetas en inglés ("He started", "Now") no están escritas en el documento |
 | Lección 1, paso 3 (Repite) | Traducción del consejo | "Listen: been is short, like 'bin'." → "Escucha: been es corto, como 'bin'." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026) |
@@ -142,7 +158,10 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Dónde | Qué | Texto |
 |---|---|---|
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «made from corn», «made of corn» y «An arepa is made with corn»; explicaciones para «They made with corn» y «are make» (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Use are made: They're made with corn." → "Usa are made: They're made with corn." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Use are made: They're made with corn." → "Usa are made: They're made with corn." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Use made: They're made with corn." → "Usa made: They're made with corn." |
 | Lección 1, paso 3 (Repite) | Traducción del consejo | "Listen: fixed ends with a t sound, and saved with a d sound." → "Escucha: fixed termina con sonido de t, y saved con sonido de d." |
 | Lección 1, paso 3 (Repite) | Nota | palabraDificil: el documento practica dos palabras (fixed y saved); va fixed, la del error previsto ("fix-ed") |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
@@ -166,7 +185,10 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Dónde | Qué | Texto |
 |---|---|---|
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: lo que vale es cómo se siente él (-ed): «He's so bored», «He looks bored», y también «He's tired» o «He's sleepy» (bosteza); «The movie is boring» sola ya no vale: Allison le pide decir cómo se siente él. Antes «He is boring because the movie is boring» salía bien (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "He isn't boring! He feels bored: he's bored." → "¡Él no es aburrido! Se siente aburrido: he's bored." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "The movie isn't bored! It's boring. And he feels bored." → "¡La película no está aburrida! Es aburrida: boring. Y él se siente bored." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Yes, the movie is boring! Now, how does he feel? He's bored." → "¡Sí, la película es aburrida! Ahora, ¿cómo se siente él? He's bored." |
 | Lección 1, paso 3 (Repite) | Traducción del consejo | "Listen: bored and surprised end with a d sound; excited ends with id." → "Escucha: bored y surprised terminan con sonido de d; excited termina con id." |
 | Lección 1, paso 3 (Repite) | Nota | palabraDificil: el documento practica tres palabras (bored, surprised y excited); va bored, la del error previsto ("bor-ed") |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
@@ -189,7 +211,9 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Dónde | Qué | Texto |
 |---|---|---|
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «We'll waste water», «We'll run out of water» y «There won't be any water»; explicación para «We waste a lot of water» (sin will) (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "After if, no will: If everyone does that." → "Después de if no va will: If everyone does that." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It's in the future: we'll waste a lot of water." → "Es en el futuro: we'll waste a lot of water." |
 | Lección 1, paso 3 (Repite) | Traducción del consejo | "Listen: we'll, with a soft l at the end." → "Escucha: we'll, con una l suave al final." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 2, paso 2 (Dilo en inglés) | Nota | partes: la frase empieza con if y además lleva so; se parte justo antes de so, la palabra que une |
@@ -212,7 +236,11 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Dónde | Qué | Texto |
 |---|---|---|
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «It could rain», «It might start raining» y «There might be a storm»; explicaciones para «It might rains», «It's going to rain» y «It will rain» (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "No to after might: It might rain." → "Después de might no va to: It might rain." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "After might, no s: It might rain." → "Después de might no va s: It might rain." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Maybe! We aren't sure, so use might: It might rain." → "¡Tal vez! No estamos seguros, así que usa might: It might rain." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Maybe! We aren't sure, so use might: It might rain." → "¡Tal vez! No estamos seguros, así que usa might: It might rain." |
 | Lección 1, paso 3 (Dilo en inglés) | Traducción de la explicación | "No to after might: I might be late." → "Después de might no va to: I might be late." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 2, paso 2 (Dilo en inglés) | Nota | partes: la segunda parte lleva también or; se parte solo antes de so, la palabra que une |
@@ -223,7 +251,9 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 3, paso 2 (Narra la secuencia) | Gramática para el evaluador | "past simple for the story; then could or might + verb (no to) for two ideas" |
 | Lección 3, paso 2 (Narra la secuencia) | Traducción de la explicación | "No to after could: they could buy." → "Después de could no va to: they could buy." |
 | Lección 4, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: «She could call…», «She could ask…» y «She might wait…» valen sin pasar por el modelo; la regla dice que «could to» no vale (el modelo dejaba pasar los errores pequeños) (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 2 (¿Qué es esto?) | Traducción de la explicación | "No to after could: She could call her mom." → "Después de could no va to: She could call her mom." |
+| Lección 4, paso 2 (¿Qué es esto?) | Traducción de la explicación | "No to after might: She might wait for her family." → "Después de might no va to: She might wait for her family." |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | When is it? → "What month is it?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | What's a silletero? → "What does a silletero carry?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | What might I see if I go? → "What can I see there?" |
@@ -234,7 +264,10 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Dónde | Qué | Texto |
 |---|---|---|
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «He would go outside and play soccer» y «He would play outside»; explicaciones para «He could play soccer» y football (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It's imagined: he would play." → "Es algo imaginado: he would play." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Use would: He would play soccer." → "Usa would: He would play soccer." |
+| Lección 1, paso 2 (¿Qué es esto?) | Traducción de la explicación | "In the US, we say soccer: He would play soccer." → "En Estados Unidos decimos soccer: He would play soccer." |
 | Lección 1, paso 3 (Repite) | Traducción del consejo | "Listen: I'd, short for I would." → "Escucha: I'd, la forma corta de I would." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: «Write songs» en vez de «Teach his friends», que tomaba friends de la respuesta (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
@@ -271,7 +304,12 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (Narra la secuencia) | Gramática para el evaluador | "past simple and past perfect (had already + past participle) with time connectors (then, when), plus an opinion with I think, In my opinion or should" |
 | Lección 2, paso 2 (Narra la secuencia) | Traducción de la explicación | "He left first: the thief had already left." → "Él se fue primero: the thief had already left." |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: «They played a game with him.»; «They read a book to him.» invertía la historia (es Liam quien les lee) (cambio del 30 de octubre de 2026) |
+| Lección 3, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «Zoe has been walking the dog», «her dog», «it» y «doing it»; explicaciones para «She is walking the dog since September», «for two months» y la respuesta corta «Since September» (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "From then until now: she's been walking." → "Desde entonces hasta ahora: she's been walking." |
+| Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "From then until now: she's been walking." → "Desde entonces hasta ahora: she's been walking." |
+| Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "We don't know today's date. Use since: She's been walking the dog since September." → "No sabemos qué fecha es hoy. Usa since: She's been walking the dog since September." |
+| Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "We don't know today's date. Use since: She's been walking the dog since September." → "No sabemos qué fecha es hoy. Usa since: She's been walking the dog since September." |
+| Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Right, since September! Now say it all: She's been walking the dog since September." → "¡Sí, since September! Ahora dilo completo: She's been walking the dog since September." |
 | Lección 3, paso 3 (Dilo en inglés) | Traducción de la explicación | "From then until now: I've been studying." → "Desde entonces hasta ahora: I've been studying." |
 | Lección 3, paso 3 (Dilo en inglés) | Traducción de la explicación | "For a period of time, use for: for two hours." → "Para un período de tiempo, usa for: for two hours." |
 | Lección 4, paso 1 (Escucha y elige) | Nota | opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026) |
@@ -295,12 +333,11 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. leave · 2. will smell · 3. will come · 4. will close |
 | Lección 2, paso 2 (Narra la secuencia) | Gramática para el evaluador | "first conditional: if + present, will + verb; then one idea with could, might or may" |
 | Lección 2, paso 2 (Narra la secuencia) | Traducción de la explicación | "After if, no will: If the bear smells the food." → "Después de if, sin will: If the bear smells the food." |
+| Lección 3, paso 2 (¿Qué es esto?) | Nota | regla: vale sin repetir el if («I would watch a movie»), porque la pregunta ya lo trae, y dice que «If I am him» e «I will» no valen; se quitó la explicación «Good!» de If I was him, que salía solo cuando la respuesta había fallado (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It's imagined: If I were him." → "Es algo imaginado: If I were him." |
-| Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It's imagined: I would watch." → "Es algo imaginado: I would watch." |
-| Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Good! In the app we say: If I were him." → "¡Bien! En la app decimos: If I were him." |
+| Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It's imagined, so use would: I would watch a movie." → "Es algo imaginado, así que va would: I would watch a movie." |
 | Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It's imagined: If I were him." → "Es algo imaginado: If I were him." |
-| Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It's imagined: I would watch." → "Es algo imaginado: I would watch." |
-| Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Good! In the app we say: If I were him." → "¡Bien! En la app decimos: If I were him." |
+| Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It's imagined, so use would: I would watch a movie." → "Es algo imaginado, así que va would: I would watch a movie." |
 | Lección 3, paso 3 (Dilo en inglés) | Traducción de la explicación | "After if: If I had more time." → "Después de if: If I had more time." |
 | Lección 3, paso 3 (Dilo en inglés) | Traducción de la explicación | "It's imagined: I would learn." → "Es algo imaginado: I would learn." |
 | Lección 3, paso 3 (Dilo en inglés) | Nota | partes: la frase empieza por if y también lleva but; se partió justo antes de but, la palabra que une |

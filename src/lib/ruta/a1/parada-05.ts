@@ -214,10 +214,11 @@ export const PARADA_05: Parada = {
             'Pistas en inglés, una a la vez: "It\'s late." → "You are tired." → "I go to…" Sin pistas, Allison dice "I go to bed" y el alumno la repite.',
           imagen: "a-luna-cama",
           pregunta: "What do you do at ten at night?",
-          contexto: "Son las 10 de la noche. ¿Qué haces tú a esa hora? Responde en inglés.",
+          contexto: "Mira la imagen: son las 10 de la noche. ¿Qué haces a esa hora? Responde en inglés.",
           respuesta: "I go to bed",
-          aceptadas: ["go to bed", "I sleep"],
+          aceptadas: ["to bed", "sleep", "sleeping"],
           pistas: ["It's late.", "You are tired.", "I go to…"],
+          porRevisar: ["aceptadas: también «I go to sleep», «I'm sleeping» y «I went to bed»; el contexto pide mirar la imagen (antes «¿Qué haces tú?» invitaba a «I watch TV», que salía mal) (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,

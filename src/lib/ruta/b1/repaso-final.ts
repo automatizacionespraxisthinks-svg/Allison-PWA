@@ -221,8 +221,7 @@ export const REPASO_FINAL: Repaso = {
             'El dibujo del muchacho que mira la lluvia por la ventana (f-lluvia-ventana, de la parada 10). Allison: "It\'s raining, and he\'s bored. What would you do if you were him?"',
           siRespondeMal:
             'Una sola pista en inglés: "Start with: If I were him…". Sin pista, Allison dice "If I were him, I would watch a movie" y el alumno la repite. Si dice "If I am him": "It\'s imagined: If I were him." Si dice "I will watch": "It\'s imagined: I would watch."',
-          tambienSeAcepta:
-            'Cualquier actividad con If I were him, I would… o I\'d…: "If I were him, I\'d play video games." También cuenta como bien "If I was him…" (ver la nota)',
+          tambienSeAcepta: "Cualquier actividad para un día de lluvia con I would… o I'd…, con o sin If I were him (también vale If I was him): \"If I were him, I'd play video games.\" \"I would read a book.\" No vale \"If I am him\" ni \"I will\".",
           imagen: "f-lluvia-ventana",
           pregunta: "It's raining, and he's bored. What would you do if you were him?",
           respuesta: "If I were him, I would watch a movie.",
@@ -230,14 +229,10 @@ export const REPASO_FINAL: Repaso = {
           pistas: ["Start with: If I were him…"],
           explicaciones: [
             { siDice: "If I am him", explicacion: "It's imagined: If I were him.", es: "Es algo imaginado: If I were him." },
-            { siDice: "I will watch", explicacion: "It's imagined: I would watch.", es: "Es algo imaginado: I would watch." },
-            {
-              siDice: "If I was him",
-              explicacion: "Good! In the app we say: If I were him.",
-              es: "¡Bien! En la app decimos: If I were him.",
-            },
+            { siDice: "I will", explicacion: "It's imagined, so use would: I would watch a movie.", es: "Es algo imaginado, así que va would: I would watch a movie." },
           ],
           porRevisar: [
+            "regla: vale sin repetir el if («I would watch a movie»), porque la pregunta ya lo trae, y dice que «If I am him» e «I will» no valen; se quitó la explicación «Good!» de If I was him, que salía solo cuando la respuesta había fallado (cambio del 30 de octubre de 2026)",
             "explicaciones.es: traducciones",
             'explicaciones: la de "If I was him" sale de la nota para la docente (cuenta como bien; Allison solo dice cómo se dice en la app)',
           ],

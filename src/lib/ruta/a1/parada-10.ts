@@ -66,9 +66,10 @@ export const PARADA_10: Parada = {
           pregunta: "What is this? It's a…",
           contexto: "Mira la foto de San Francisco. ¿Qué es esto? Completa la frase.",
           respuesta: "bridge",
-          aceptadas: ["it's a bridge", "the Golden Gate Bridge"],
+          aceptadas: ["Golden Gate"],
           pistas: ["It's over the water.", "It's red and very long.", "It starts with b."],
           flecha: { x: 78, y: 53 },
+          porRevisar: ["aceptadas: también «the Golden Gate» (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,

@@ -69,6 +69,8 @@ export const PARADA_09: Parada = {
           respuesta: "sneakers",
           aceptadas: ["they're sneakers", "shoes"],
           pistas: ["You wear them on your feet.", "You can run in them.", "It starts with s."],
+          explicaciones: [{ siDice: "trainers", explicacion: "En Estados Unidos se dice sneakers." }, { siDice: "tennis", explicacion: "Tennis es el deporte. Estos zapatos se llaman sneakers." }, { siDice: "tenis", explicacion: "Tennis es el deporte. Estos zapatos se llaman sneakers." }],
+          porRevisar: ["explicaciones: trainers (como dice el documento) y tennis, que es como se dice en Colombia (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
@@ -229,8 +231,9 @@ export const PARADA_09: Parada = {
           pregunta: "It's raining in Seattle. What do you need?",
           contexto: "Está lloviendo en Seattle. ¿Qué necesitas? Responde en inglés.",
           respuesta: "an umbrella",
-          aceptadas: ["an umbrella", "a raincoat"],
+          aceptadas: ["umbrella", "raincoat"],
           pistas: ["You open it when it's raining.", "You hold it over your head.", "It starts with u."],
+          porRevisar: ["aceptadas: «umbrella» sin artículo (y «a umbrella») también vale (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,
