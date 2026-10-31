@@ -18,14 +18,12 @@ import { desbloquearVoz, detenerVoz, hablarEspanol } from "@/lib/voz";
 const CLAVE = "allison:bienvenida-vista";
 
 /**
- * El guion se lee con la voz del navegador y no desde un archivo.
- *
- * Un WAV de 38 segundos pesa 1,2 MB. Descargarlo en la primera pantalla,
- * con datos móviles colombianos, es justo lo que hace que alguien cierre
- * la app antes de empezar. La voz del navegador pesa cero.
- *
- * Cuando esté el TTS del VPS, esto se reemplaza por un archivo
- * comprimido con la voz real de Allison, que sí vale su peso.
+ * El guion lo dice Allison con su voz, en español: hablarEspanol de
+ * src/lib/voz.ts, la API de voz de Praxis, que manda el audio por partes
+ * mientras lo genera (empieza a sonar a los pocos segundos, sin descargar
+ * un archivo entero en la primera pantalla). Si la API no está, se cae a
+ * la voz del navegador. Antes este comentario decía que lo leía la voz del
+ * navegador; eso cambió con la API de voz (auditoría, 30 de octubre de 2026).
  */
 const GUION = `¡Hola! Soy Allison, tu profesora de inglés.
 Vamos a aprender inglés conversando, de forma natural y sin miedo a equivocarnos.
@@ -137,7 +135,9 @@ export function Bienvenida({ nombre }: { nombre: string }) {
           {[
             ["🎤", "Toca el botón verde y háblame en inglés"],
             ["✅", "Si te equivocas, te corrijo y seguimos"],
-            ["🔁", "¿No entendiste? Toca Repetir o Qué dijo"],
+            // Hablar ya no tiene "Repetir" ni "Qué dijo": cada mensaje trae
+            // ▶ y "Traducción", que usa la IA (auditoría, 30 de octubre de 2026).
+            ["🔁", "¿No entendiste? Toca ▶ para oírlo otra vez, o Traducción (usa una intervención)"],
             ["💡", "¿No sabes qué decir? Te doy una idea"],
             ["📖", "Selecciona una palabra de un mensaje para oírla o guardarla"],
           ].map(([icono, texto]) => (

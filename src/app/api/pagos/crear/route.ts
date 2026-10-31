@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { planConMesesPorDelante } from "@/lib/cobro";
 import { sql } from "@/lib/db";
 import { limitar } from "@/lib/limite";
 import { nuevaReferencia, pasarela } from "@/lib/pasarela";
@@ -39,6 +40,21 @@ export async function POST(peticion: Request) {
     `;
     if (!plan) {
       return NextResponse.json({ error: "Ese plan no existe" }, { status: 400 });
+    }
+    // Con un plan que tiene meses por delante no se vende otro: el nuevo
+    // vencería el actual y se perderían los meses ya pagados. Se le
+    // ofrece recargar (auditoría, 30 de octubre de 2026).
+    const activo = await planConMesesPorDelante(alumno.id);
+    if (activo) {
+      return NextResponse.json(
+        {
+          error:
+            `Ya tienes el ${activo.nombre} activo hasta el ${activo.hasta}. Si se te acabaron las ` +
+            "intervenciones de este mes, recarga en /recargar: comprar otro plan ahora te haría perder los meses que ya pagaste.",
+          irA: "/recargar",
+        },
+        { status: 409 }
+      );
     }
     planId = plan.id;
     montoCop = plan.precio_cop;

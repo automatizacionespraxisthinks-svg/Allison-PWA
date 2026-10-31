@@ -77,10 +77,10 @@ export const PARADA_03: Parada = {
           opciones: [
             { imagen: "f-priya-leyendo-hermano", descripcion: "Priya leyendo y su hermano jugando", etiqueta: "Reading", etiquetaEs: "Leyendo" },
             { imagen: "f-priya-cocinando", descripcion: "Priya cocinando", etiqueta: "Cooking", etiquetaEs: "Cocinando" },
-            { imagen: "f-priya-dormida", descripcion: "Priya dormida", etiqueta: "Sleeping", etiquetaEs: "Durmiendo" },
+            { imagen: "f-priya-durmiendo", descripcion: "Priya dormida", etiqueta: "Sleeping", etiquetaEs: "Durmiendo" },
           ],
           correcta: 0,
-          porRevisar: ["opciones: f-priya-dormida es un dibujo nuevo, Priya dormida sin libro; antes tenía un libro abierto y se confundía con leer (cambio del 30 de octubre de 2026)", "audio: «on the sofa», que es lo que muestra el dibujo correcto (antes «in her room», y Priya dormida en su cuarto con un libro se parecía más). Etiquetas en -ing, como suenan (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a Priya leyendo"'],
+          porRevisar: ["opciones: f-priya-durmiendo es un dibujo nuevo, Priya dormida sin libro; antes tenía un libro abierto y se confundía con leer (cambio del 30 de octubre de 2026)", "audio: «on the sofa», que es lo que muestra el dibujo correcto (antes «in her room», y Priya dormida en su cuarto con un libro se parecía más). Etiquetas en -ing, como suenan (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a Priya leyendo"'],
         },
         {
           paso: 2,
@@ -255,12 +255,12 @@ export const PARADA_03: Parada = {
           pregunta: "¿Qué vio Allison en el parque?",
           opciones: [
             { imagen: "f-parque-corredor-bici", descripcion: "Un parque con un hombre corriendo y una niña en bicicleta", etiqueta: "Running and riding a bike", etiquetaEs: "Corriendo y en bici" },
-            { imagen: "f-parque-futbol", descripcion: "Un parque con niños jugando fútbol", etiqueta: "Playing soccer", etiquetaEs: "Jugando fútbol" },
+            { imagen: "f-parque-ninos-futbol", descripcion: "Un parque con niños jugando fútbol", etiqueta: "Playing soccer", etiquetaEs: "Jugando fútbol" },
             { imagen: "f-parque-picnic", descripcion: "Un parque con una familia en un picnic", etiqueta: "Having a picnic", etiquetaEs: "Haciendo un picnic" },
           ],
           correcta: 0,
           porRevisar: [
-            "opciones: f-parque-futbol es un dibujo nuevo, solo niños jugando con el balón; antes había un muchacho grande corriendo adelante, como en la correcta (cambio del 30 de octubre de 2026)",
+            "opciones: f-parque-ninos-futbol es un dibujo nuevo, solo niños jugando con el balón; antes había un muchacho grande corriendo adelante, como en la correcta (cambio del 30 de octubre de 2026)",
             "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)",
             "traduccion",
             'pregunta: el documento no la escribe; sale de "Toca el parque con el hombre corriendo y la niña en bicicleta"',
@@ -417,7 +417,7 @@ export const PARADA_03: Parada = {
       uso: "Escenario",
     },
     {
-      archivos: ["f-priya-leyendo-hermano", "f-priya-cocinando", "f-priya-dormida"],
+      archivos: ["f-priya-leyendo-hermano", "f-priya-cocinando", "f-priya-durmiendo"],
       muestra: "Priya leyendo mientras su hermano juega videojuegos; Priya cocinando; Priya dormida",
       uso: "Lección 1 (paso 1)",
     },
@@ -443,7 +443,7 @@ export const PARADA_03: Parada = {
       uso: "Lección 3 (paso 2)",
     },
     {
-      archivos: ["f-parque-corredor-bici", "f-parque-futbol", "f-parque-picnic"],
+      archivos: ["f-parque-corredor-bici", "f-parque-ninos-futbol", "f-parque-picnic"],
       muestra: "Tres parques: un hombre corre y una niña monta en bicicleta; niños juegan fútbol; una familia en un picnic",
       uso: "Lección 4 (paso 1)",
     },

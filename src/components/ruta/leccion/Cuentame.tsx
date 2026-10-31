@@ -7,7 +7,7 @@ import { desbloquearVoz, detenerVoz } from "@/lib/voz";
 import type { Cuentame as Datos } from "@/lib/ruta/tipos";
 import { Icono } from "../Iconos";
 import { evaluar, type Contexto, type FinActividad, type ResultadoEvaluacion } from "./api";
-import { AllisonAro, BotonOir, Explicado, Hoja, oirGrabacion, useVoz, type Entrada } from "./comun";
+import { AllisonAro, BotonOir, Explicado, Hoja, oirGrabacion, useGrabacionPropia, useVoz, type Entrada } from "./comun";
 
 type Fase = "listo" | "grabando" | "pausa" | "enviando" | "resultado";
 
@@ -67,6 +67,8 @@ export function Cuentame({
   onSinSaldo: () => void;
 }) {
   const { decir, hablando } = useVoz(ctx.nivel);
+  /** "Oír mi voz" del relato: libera el audio anterior al grabar otro y al salir (auditoría, 30 de octubre de 2026). */
+  const urlDelRelato = useGrabacionPropia();
   const [fase, setFase] = useState<Fase>("listo");
   const [escribiendo, setEscribiendo] = useState(false);
   const [texto, setTexto] = useState("");
@@ -235,7 +237,7 @@ export function Cuentame({
           setAviso(SIN_VOZ);
           return;
         }
-        void enviar({ audio, duracion, url: URL.createObjectURL(audio) });
+        void enviar({ audio, duracion, url: urlDelRelato(audio) });
       };
       const c = new AudioContext();
       const analizador = c.createAnalyser();
@@ -287,7 +289,7 @@ export function Cuentame({
       setPreparando(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [a.guias.length, a.segundos, limite, soltar]);
+  }, [a.guias.length, a.segundos, limite, soltar, urlDelRelato]);
 
   /** "Terminar": antes de 10 segundos, pausa y Allison lo anima a seguir. */
   function tocarTerminar() {

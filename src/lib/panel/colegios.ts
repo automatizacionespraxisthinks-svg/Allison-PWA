@@ -1,4 +1,5 @@
 import { sql } from "../db";
+import { conMarca, operacionHecha } from "./operaciones";
 
 /**
  * Asignar saldo a un colegio o a sus cursos (plan, sección 12; boceto 4):
@@ -41,13 +42,26 @@ export async function previsualizar(p: PedidoAsignacion): Promise<{ alumnos: num
   return { alumnos: d.length, total: d.length * p.porAlumno };
 }
 
-/** La asignación: todo o nada, en una sola transacción. */
-export async function asignarSaldo(p: PedidoAsignacion, quien: string): Promise<{ alumnos: number; total: number }> {
+/**
+ * La asignación: todo o nada, en una sola transacción.
+ *
+ * `operacion` es el id que el navegador le dio al ver el total. Si ya se
+ * hizo (la respuesta se perdió y el admin reintentó), no se suma otra vez:
+ * se responde lo que se hizo entonces, con `repetida` (auditoría, 30 de
+ * octubre de 2026; ver lib/panel/operaciones.ts).
+ */
+export async function asignarSaldo(
+  p: PedidoAsignacion,
+  quien: string,
+  operacion: string
+): Promise<{ alumnos: number; total: number; repetida?: boolean }> {
   const d = await destinatarios(p);
   if (!d.length) return { alumnos: 0, total: 0 };
   const etiqueta = p.cursos === null ? "todo el colegio" : p.cursos.join(", ");
-  const nota = `Asignación del colegio (${etiqueta}) · «${p.motivo}» — por ${quien}`;
-  await sql.begin(async (tx) => {
+  const nota = conMarca(`Asignación del colegio (${etiqueta}) · «${p.motivo}» — por ${quien}`, operacion);
+  return sql.begin(async (tx) => {
+    const hecha = await operacionHecha(tx, operacion, d.map(({ id }) => id));
+    if (hecha) return { ...hecha, repetida: true };
     for (const { id } of d) {
       await tx`select ajustar_saldo(${id}, ${p.porAlumno}, 'recarga'::bolsa_credito, ${nota})`;
     }
@@ -55,8 +69,8 @@ export async function asignarSaldo(p: PedidoAsignacion, quien: string): Promise<
       insert into asignaciones_saldo (institucion_id, cursos, por_alumno, alumnos, motivo, hecha_por)
       values (${p.institucionId}, ${p.cursos}, ${p.porAlumno}, ${d.length}, ${p.motivo}, ${quien})
     `;
+    return { alumnos: d.length, total: d.length * p.porAlumno };
   });
-  return { alumnos: d.length, total: d.length * p.porAlumno };
 }
 
 export interface AsignacionHecha {

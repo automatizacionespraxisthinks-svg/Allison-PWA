@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { EMPRESA } from "@/lib/legal";
 import { pedir } from "@/lib/pedir";
 
 /** Cada cuánto se pregunta, y cuántas veces antes de dejar de insistir. */
@@ -30,7 +31,7 @@ export function ConfirmarPago({
   volverA: string;
 }) {
   const router = useRouter();
-  const [fase, setFase] = useState<"confirmando" | "rechazada" | "demorada">(
+  const [fase, setFase] = useState<"confirmando" | "rechazada" | "demorada" | "revision">(
     "confirmando"
   );
   // Cambiarla vuelve a empezar la ronda de preguntas.
@@ -65,6 +66,10 @@ export function ConfirmarPago({
         setFase("rechazada");
         return;
       }
+      if (datos?.estado === "revision") {
+        setFase("revision");
+        return;
+      }
       if (intento >= INTENTOS) {
         setFase("demorada");
         return;
@@ -94,6 +99,26 @@ export function ConfirmarPago({
           className="rounded-2xl bg-primario px-6 py-4 text-lg font-semibold text-white"
         >
           Intentar de nuevo
+        </Link>
+      </div>
+    );
+  }
+
+  if (fase === "revision") {
+    // La orden quedó con una alerta (el monto no cuadra, o el pago se
+    // anuló): no se acredita sola, así que aquí no se promete que llegue.
+    // Lo resuelve una persona (auditoría, 30 de octubre de 2026).
+    return (
+      <div className="flex flex-col gap-3 text-center">
+        <p role="alert" className="rounded-xl border border-acento/40 bg-acento/10 p-4 text-acento">
+          Tenemos que revisar este pago a mano. <strong>No pagues otra vez</strong>: escríbele a
+          soporte, a <strong>{EMPRESA.correo}</strong> o al {EMPRESA.telefono}, y lo resolvemos.
+        </p>
+        <Link
+          href="/practicar"
+          className="rounded-2xl bg-primario px-6 py-4 text-lg font-semibold text-white"
+        >
+          Seguir practicando
         </Link>
       </div>
     );

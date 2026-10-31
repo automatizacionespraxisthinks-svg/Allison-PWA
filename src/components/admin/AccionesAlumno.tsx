@@ -18,12 +18,15 @@ export function AccionesAlumno({
   nivel,
   curso,
   deColegio,
+  planVence,
 }: {
   userId: string;
   nombre: string;
   nivel: string;
   curso: string | null;
   deColegio: boolean;
+  /** El fin del mes de su plan activo (DD/MM/AAAA), o null si no tiene plan. */
+  planVence: string | null;
 }) {
   const router = useRouter();
   const [ocupado, setOcupado] = useState(false);
@@ -31,6 +34,14 @@ export function AccionesAlumno({
   const [error, setError] = useState<string | null>(null);
   const [nuevoCurso, setNuevoCurso] = useState(curso ?? "");
   const [ajustando, setAjustando] = useState(false);
+  /**
+   * El id del ajuste abierto, creado al abrirlo. El servidor no aplica
+   * dos veces el mismo: un reintento tras una respuesta perdida no suma
+   * doble (auditoría, 30 de octubre de 2026). Si no se supo si quedó, se
+   * conserva para la próxima vez que se abra.
+   */
+  const [operacion, setOperacion] = useState<string | null>(null);
+  const [incierta, setIncierta] = useState(false);
 
   async function enviar(url: string, cuerpo: object, exito: (d: Record<string, unknown>) => string) {
     setOcupado(true);
@@ -48,15 +59,45 @@ export function AccionesAlumno({
     return true;
   }
 
+  function abrirAjuste() {
+    if (!ajustando && (!incierta || !operacion)) setOperacion(crypto.randomUUID());
+    setAjustando((a) => !a);
+  }
+
   async function ajustar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!operacion) return;
     const f = new FormData(e.currentTarget);
-    const ok = await enviar(
-      "/api/admin/saldo",
-      { userId, cantidad: f.get("cantidad"), bolsa: f.get("bolsa"), nota: f.get("nota") },
-      (d) => `${nombre} queda con ${d.saldo} intervenciones.`
+    setOcupado(true);
+    setError(null);
+    setAviso(null);
+    const r = await pedir("/api/admin/saldo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, cantidad: f.get("cantidad"), bolsa: f.get("bolsa"), nota: f.get("nota"), operacion }),
+    });
+    const d = r ? await r.json().catch(() => ({})) : {};
+    setOcupado(false);
+    // Sin respuesta (o un 5xx del proxy) no se sabe si se aplicó: el
+    // formulario se cierra en vez de quedar listo para repetir, y la
+    // ficha se refresca para revisar el historial.
+    if (!r || r.status >= 500) {
+      setIncierta(true);
+      setAjustando(false);
+      setError("No sabemos si quedó: revisa el historial antes de repetir.");
+      router.refresh();
+      return;
+    }
+    if (!r.ok) return setError(d.error ?? "No se pudo guardar.");
+    setAviso(
+      d.repetida
+        ? `Ese ajuste ya estaba hecho: ${nombre} tiene ${d.saldo} intervenciones. No se aplicó otra vez.`
+        : `${nombre} queda con ${d.saldo} intervenciones.`
     );
-    if (ok) setAjustando(false);
+    setIncierta(false);
+    setOperacion(null);
+    setAjustando(false);
+    router.refresh();
   }
 
   return (
@@ -106,7 +147,7 @@ export function AccionesAlumno({
         )}
         <button
           type="button"
-          onClick={() => setAjustando((a) => !a)}
+          onClick={abrirAjuste}
           className="h-10 rounded-xl bg-primario px-4 text-sm font-semibold text-white"
           aria-expanded={ajustando}
         >
@@ -115,7 +156,7 @@ export function AccionesAlumno({
       </div>
 
       {ajustando && (
-        <form onSubmit={ajustar} className="grid gap-2 rounded-xl border border-borde bg-superficie-2/50 p-3 sm:grid-cols-[110px_130px_1fr_auto]">
+        <form onSubmit={ajustar} className="grid gap-2 rounded-xl border border-borde bg-superficie-2/50 p-3 sm:grid-cols-[110px_190px_1fr_auto]">
           <input
             name="cantidad"
             type="number"
@@ -124,9 +165,12 @@ export function AccionesAlumno({
             className="h-10 rounded-xl border border-borde bg-superficie px-3 text-sm"
             aria-label="Cantidad"
           />
+          {/* La bolsa del plan vence al cerrar el mes del plan del alumno
+              (que puede ser mañana); sin plan activo no vencería nunca, y el
+              servidor solo deja quitar de ella (auditoría, 30 de octubre de 2026). */}
           <select name="bolsa" defaultValue="recarga" className="h-10 rounded-xl border border-borde bg-superficie px-2 text-sm" aria-label="Bolsa">
             <option value="recarga">Recarga (no vence)</option>
-            <option value="plan">Plan (vence con el mes)</option>
+            <option value="plan">{planVence ? `Plan (vence el ${planVence})` : "Plan (sin plan activo: solo quitar)"}</option>
           </select>
           <input
             name="nota"

@@ -100,6 +100,22 @@ export async function PATCH(peticion: Request) {
     return NextResponse.json({ error: "Nada que cambiar" }, { status: 400 });
   }
 
-  await sql`update instituciones set ${sql(cambios)} where id = ${d.id}`;
+  // Suspender corta de inmediato (decisión del dueño): alumnoActual ya
+  // rechaza a quien es de un colegio que no está activo, y además se
+  // cierran las sesiones abiertas de sus usuarios, para que al reactivarlo
+  // tengan que entrar de nuevo. La marca sale del reloj de la app, como al
+  // cambiar la contraseña (src/lib/perfil.ts): se compara con la hora de
+  // la sesión, que pone la app. El administrador no se toca, como en
+  // alumnoActual (auditoría, 30 de octubre de 2026).
+  await sql.begin(async (tx) => {
+    await tx`update instituciones set ${tx(cambios)} where id = ${d.id}`;
+    if (d.estado === "suspendida") {
+      await tx`
+        update users
+           set sesiones_validas_desde = ${new Date()}, actualizado_en = now()
+         where institucion_id = ${d.id} and rol <> 'admin'
+      `;
+    }
+  });
   return NextResponse.json({ ok: true });
 }

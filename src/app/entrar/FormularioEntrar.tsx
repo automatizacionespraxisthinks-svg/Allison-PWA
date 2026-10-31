@@ -2,12 +2,25 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { CampoContrasena } from "@/components/CampoContrasena";
 
 type Modo = "correo" | "colegio";
+
+const SIN_CONEXION = "Sin conexión, intenta otra vez.";
+
+/**
+ * Por qué se llegó aquí desde la app (?aviso=): la sesión se cerró en
+ * medio de algo (src/lib/pedir.ts) o la cuenta se creó pero no se pudo
+ * entrar solo (FormularioRegistro). Sin esto, la pantalla de entrar
+ * aparecía sin explicación (auditoría, 30 de octubre de 2026).
+ */
+const NOTAS: Record<string, string> = {
+  sesion: "Tu sesión se cerró. Entra de nuevo.",
+  "cuenta-creada": "Tu cuenta quedó creada. Entra con tu correo (o tu celular o usuario) y tu contraseña para empezar.",
+};
 
 export function FormularioEntrar({
   hayGoogle,
@@ -18,6 +31,9 @@ export function FormularioEntrar({
   aviso?: string | null;
 }) {
   const router = useRouter();
+  // La página se pinta en cada petición (force-dynamic): leer la búsqueda
+  // aquí no necesita Suspense.
+  const nota = NOTAS[useSearchParams().get("aviso") ?? ""] ?? null;
   const [modo, setModo] = useState<Modo>("correo");
   const [error, setError] = useState<string | null>(aviso ?? null);
   const [enviando, setEnviando] = useState(false);
@@ -32,30 +48,54 @@ export function FormularioEntrar({
   async function entrar(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setEnviando(true);
-
-    const resultado =
-      modo === "correo"
-        ? await signIn("acceso", { identificador, password, redirect: false })
-        : await signIn("colegio", { codigo, username, pin, redirect: false });
-
-    if (resultado?.error) {
-      const bloqueada = resultado.code === "demasiados_intentos";
-      setError(
-        modo === "correo"
-          ? bloqueada
-            ? "Demasiados intentos fallidos. Por seguridad, espera unos minutos antes de volver a intentar, o recupera tu contraseña."
-            : "Los datos no coinciden. Revisa e intenta de nuevo."
-          : bloqueada
-            ? "Demasiados intentos fallidos. Espera unos minutos, o pídele al coordinador de tu colegio que te reinicie el PIN."
-            : "Revisa el código del colegio, tu usuario y tu PIN."
-      );
-      setEnviando(false);
+    // Sin red, signIn ni siquiera llega a preguntar: next-auth navega a
+    // su página de error. Se dice aquí antes de intentarlo.
+    if (!navigator.onLine) {
+      setError(SIN_CONEXION);
       return;
     }
+    setEnviando(true);
+    /** Ya entró: el botón sigue en "Entrando…" hasta que cargue Mi ruta. */
+    let entro = false;
 
-    router.push("/ruta");
-    router.refresh();
+    // signIn lanza si la red se cae a mitad o el servidor responde algo
+    // que no es JSON (un 502 del proxy). Sin el try, setEnviando(false)
+    // nunca corría y el botón quedaba en "Entrando…" para siempre, sin
+    // ningún mensaje (auditoría, 30 de octubre de 2026).
+    try {
+      const resultado =
+        modo === "correo"
+          ? await signIn("acceso", { identificador, password, redirect: false })
+          : await signIn("colegio", { codigo, username, pin, redirect: false });
+
+      // Sin resultado: next-auth no pudo ni leer sus proveedores.
+      if (!resultado) {
+        setError(SIN_CONEXION);
+        return;
+      }
+      if (resultado.error) {
+        const bloqueada = resultado.code === "demasiados_intentos";
+        setError(
+          modo === "correo"
+            ? bloqueada
+              ? "Demasiados intentos fallidos. Por seguridad, espera unos minutos antes de volver a intentar, o recupera tu contraseña."
+              : "Los datos no coinciden. Revisa e intenta de nuevo."
+            : bloqueada
+              ? "Demasiados intentos fallidos. Espera unos minutos, o pídele al coordinador de tu colegio que te reinicie el PIN."
+              : "Revisa el código del colegio, tu usuario y tu PIN."
+        );
+        return;
+      }
+
+      entro = true;
+      router.push("/ruta");
+      router.refresh();
+    } catch (fallo) {
+      console.error("No se pudo entrar:", fallo);
+      setError(SIN_CONEXION);
+    } finally {
+      if (!entro) setEnviando(false);
+    }
   }
 
   /**
@@ -110,6 +150,12 @@ export function FormularioEntrar({
           </button>
         ))}
       </div>
+
+      {nota && !error && (
+        <p role="status" className="rounded-lg bg-primario-suave p-3 text-sm text-primario">
+          {nota}
+        </p>
+      )}
 
       {/* El aviso va arriba, junto al botón de Google: es de lo que
           suele hablar, y en el celular el final del formulario queda

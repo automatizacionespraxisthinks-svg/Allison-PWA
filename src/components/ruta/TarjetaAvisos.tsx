@@ -65,9 +65,13 @@ export function TarjetaAvisos({ racha }: { racha: number }) {
             type="button"
             disabled={ocupado}
             onClick={() =>
-              void activar().then((ok) => {
+              void activar().then((r) => {
                 cerrar();
-                setHecho(ok ? "Listo: te aviso en este celular si tu racha está por perderse." : "No se activaron. Puedes hacerlo luego en Perfil → Ajustes.");
+                setHecho(
+                  r.ok
+                    ? "Listo: te aviso en este celular si tu racha está por perderse."
+                    : `${r.aviso ?? "No se activaron."} Puedes hacerlo luego en Perfil → Ajustes.`
+                );
               })
             }
             className="degradado-primario rounded-xl px-4 py-2.5 text-sm font-extrabold text-white disabled:opacity-50"

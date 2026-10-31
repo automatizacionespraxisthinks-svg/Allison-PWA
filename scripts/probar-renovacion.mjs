@@ -14,8 +14,37 @@
  *
  *   node --env-file=.env scripts/probar-renovacion.mjs
  */
+// Candado contra producción (auditoría, 30 de octubre de 2026): este
+// script ESCRIBE y BORRA en la base de DATABASE_URL, y DATABASE_URL se
+// apunta a producción por un túnel para migrar. Corrido ahí, dejaría
+// alumnos y órdenes de mentira (que inflan «Ingresos» y «pagaron») o
+// borraría datos reales. Se niega si DATABASE_URL es la de
+// DATABASE_URL_PRODUCCION o si NODE_ENV es production. Para correrlo ahí
+// a propósito: SI_ES_PRODUCCION=1.
+{
+  const destino = (u) => {
+    try {
+      const x = new URL(u);
+      return `${decodeURIComponent(x.username)}@${x.hostname}:${x.port || "5432"}${x.pathname}`;
+    } catch {
+      return u.trim();
+    }
+  };
+  const url = process.env.DATABASE_URL ?? "";
+  const produccion = process.env.DATABASE_URL_PRODUCCION ?? "";
+  const esProduccion =
+    process.env.NODE_ENV === "production" || (produccion.trim() !== "" && destino(url) === destino(produccion));
+  if (esProduccion && process.env.SI_ES_PRODUCCION !== "1") {
+    console.error(
+      "Este script escribe en la base y DATABASE_URL apunta a producción (o NODE_ENV=production): no se corre.\n" +
+        "Si de verdad es lo que quieres, vuelve a correrlo con SI_ES_PRODUCCION=1."
+    );
+    process.exit(1);
+  }
+}
+
 const { sql } = await import("../src/lib/db.ts");
-const { registrarResultado } = await import("../src/lib/cobro.ts");
+const { planConMesesPorDelante, registrarResultado } = await import("../src/lib/cobro.ts");
 
 let fallos = 0;
 const probar = (nombre, ok, detalle = "") => {
@@ -217,6 +246,15 @@ try {
     compra === "acreditado" && activas === 1 && e.cuadra,
     `${compra} · activas ${activas} · ${JSON.stringify(e)}`
   );
+
+  // 11. ¿Se puede comprar otro plan? Con meses por delante, no: el nuevo
+  //     vencería el actual (auditoría, 30 de octubre de 2026).
+  const anualNuevo = await alumnoConPlan({ codigo: "anual", hace: "1 day" });
+  probar("un anual con meses por delante no deja comprar otro plan", (await planConMesesPorDelante(anualNuevo)) !== null);
+  const mensualNuevo = await alumnoConPlan({ codigo: "mensual", hace: "1 day" });
+  probar("un mensual en su único mes sí deja volver a comprar", (await planConMesesPorDelante(mensualNuevo)) === null);
+  const semestralFinal = await alumnoConPlan({ codigo: "semestral", hace: "5 months 1 day", mes: 6 });
+  probar("un semestral en su último mes también deja comprar", (await planConMesesPorDelante(semestralFinal)) === null);
 } catch (err) {
   console.error("\nError:", err);
   fallos++;

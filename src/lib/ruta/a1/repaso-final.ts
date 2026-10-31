@@ -90,10 +90,10 @@ export const REPASO_FINAL: Repaso = {
           opciones: [
             { imagen: "f-gato-debajo", descripcion: "El gato debajo de la cama", etiqueta: "Under the bed", etiquetaEs: "Debajo de la cama" },
             { imagen: "f-gato-encima", descripcion: "El gato encima de la cama", etiqueta: "On the bed", etiquetaEs: "Encima de la cama" },
-            { imagen: "f-gato-alado", descripcion: "El gato al lado de la cama", etiqueta: "Next to the bed", etiquetaEs: "Al lado de la cama" },
+            { imagen: "f-gato-al-lado", descripcion: "El gato al lado de la cama", etiqueta: "Next to the bed", etiquetaEs: "Al lado de la cama" },
           ],
           correcta: 2,
-          porRevisar: ["opciones: el dibujo del gato al lado de la cama es nuevo (f-gato-alado): la cama tiene el mismo estilo y ángulo que en los otros dos, y el gato está en el piso a su lado; antes estaba delante de la cama, que se leía como in front of (cambio del 30 de octubre de 2026)", "traduccion", 'quienHabla: el documento solo dice "Oye:"; se puso Allison'],
+          porRevisar: ["opciones: el dibujo del gato al lado de la cama es nuevo (f-gato-al-lado): la cama tiene el mismo estilo y ángulo que en los otros dos, y el gato está en el piso a su lado; antes estaba delante de la cama, que se leía como in front of (cambio del 30 de octubre de 2026)", "traduccion", 'quienHabla: el documento solo dice "Oye:"; se puso Allison'],
         },
         {
           paso: 2,

@@ -11,6 +11,10 @@ const Pedido = z.object({
   porAlumno: z.coerce.number().int().min(1).max(MAX_POR_ALUMNO),
   motivo: textoRequerido("Escribe el motivo (por ejemplo, «Pago octubre 2026»)", 3, 200),
   confirmar: z.boolean().default(false),
+  /** El id que el navegador le dio a la asignación al ver el total. Con
+   *  `confirmar` es obligatorio: un reintento con el mismo id no vuelve a
+   *  sumar (lib/panel/operaciones.ts). */
+  operacion: z.string().uuid().optional(),
 });
 
 /**
@@ -24,11 +28,16 @@ export async function POST(peticion: Request) {
   if (!datos.success) {
     return NextResponse.json({ error: datos.error.issues[0]?.message ?? "Datos inválidos" }, { status: 400 });
   }
-  const { confirmar, ...p } = datos.data;
+  const { confirmar, operacion, ...p } = datos.data;
   if (p.cursos !== null && !p.cursos.length) {
     return NextResponse.json({ error: "Elige al menos un curso, o todo el colegio" }, { status: 400 });
   }
-  const r = confirmar ? await asignarSaldo(p, admin.nombre) : await previsualizar(p);
+  // Si la respuesta de una asignación se perdía y el admin volvía a
+  // confirmar, cada alumno recibía el doble (auditoría, 30 de octubre de 2026).
+  if (confirmar && !operacion) {
+    return NextResponse.json({ error: "Falta el id de la operación: recarga la página" }, { status: 400 });
+  }
+  const r = confirmar && operacion ? await asignarSaldo(p, admin.nombre, operacion) : await previsualizar(p);
   if (!r.alumnos) return NextResponse.json({ error: "No hay alumnos activos en esa selección" }, { status: 409 });
   return NextResponse.json({ ok: true, hecho: confirmar, ...r });
 }

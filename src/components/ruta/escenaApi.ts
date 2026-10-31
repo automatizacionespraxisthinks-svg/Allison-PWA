@@ -1,3 +1,4 @@
+import { SESION_CERRADA, sesionCerrada } from "@/lib/pedir";
 import type { Entrada } from "./leccion/comun";
 
 /** El estado de un escenario o una entrevista, tal como lo guarda el servidor. */
@@ -55,6 +56,9 @@ async function enviar(campos: Record<string, string | Blob>): Promise<{ ok: bool
   try {
     // Un turno pasa por transcripción y respuesta: hasta 45 s antes de rendirse.
     const r = await fetch("/api/ruta/escena", { method: "POST", body: f, signal: AbortSignal.timeout(45_000) });
+    // Sesión cerrada: a /entrar, y mientras tanto se dice por qué (antes
+    // salía "Allison no pudo responder" sin fin; auditoría, 30 de octubre de 2026).
+    if (sesionCerrada(r)) return { ok: false, status: 401, datos: { error: "sin_sesion", mensaje: SESION_CERRADA } };
     return { ok: r.ok, status: r.status, datos: await r.json().catch(() => ({})) };
   } catch {
     return { ok: false, status: 0, datos: { mensaje: "Sin conexión. Revisa tu internet e intenta otra vez." } };

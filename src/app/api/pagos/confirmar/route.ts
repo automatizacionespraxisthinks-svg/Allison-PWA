@@ -61,7 +61,7 @@ export async function POST(peticion: Request) {
   // La orden tiene que ser de quien pregunta.
   const leer = () => sql`
     select id, estado, pasarela, referencia_externa, mensajes_otorgados,
-           payload->>'id_pasarela' as id_pasarela
+           payload->>'id_pasarela' as id_pasarela, payload->>'alerta' as alerta
       from transacciones
      where id = ${datos.data.transaccionId} and user_id = ${alumno.id}
      limit 1
@@ -70,6 +70,18 @@ export async function POST(peticion: Request) {
   let [orden] = await leer();
   if (!orden) {
     return NextResponse.json({ error: "Orden no encontrada" }, { status: 404 });
+  }
+
+  /**
+   * Una orden con alerta (monto distinto, pago anulado) no se acredita
+   * sola: la tiene que revisar una persona. Antes la pantalla seguía
+   * diciendo «si ya pagaste, se acredita sola», que en este caso nunca
+   * pasa; con 'revision' le dice al alumno que escriba a soporte
+   * (auditoría, 30 de octubre de 2026). Tampoco se consulta a la
+   * pasarela: registrarResultado no la acreditaría.
+   */
+  if (orden.alerta && orden.estado !== "aprobada") {
+    return NextResponse.json({ estado: "revision", mensajes: orden.mensajes_otorgados });
   }
 
   let estado: string = orden.estado;
@@ -125,6 +137,9 @@ export async function POST(peticion: Request) {
       }
     }
   }
+
+  // La consulta de ahora pudo dejar la alerta (un monto que no cuadra).
+  if (orden.alerta && orden.estado !== "aprobada") estado = "revision";
 
   return NextResponse.json({ estado, mensajes: orden.mensajes_otorgados });
 }

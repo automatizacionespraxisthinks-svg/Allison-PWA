@@ -8,7 +8,7 @@ import {
   type Consentimiento,
 } from "./google";
 import { VERSION_LEGAL } from "./legal";
-import { limitar, REGISTROS_GLOBALES_POR_HORA } from "./limite";
+import { intentosAgotados, REGISTROS_GLOBALES_POR_HORA, sumarFallo } from "./limite";
 import { MENSAJES_PRUEBA } from "./prueba";
 
 /**
@@ -45,7 +45,7 @@ export async function entrarConGoogle(
   }
 
   const [existente] = await sql`
-    select id, activo
+    select id, activo, google_id
       from users
      where google_id = ${sub} or email = ${email}
      order by (google_id is not distinct from ${sub}) desc
@@ -54,6 +54,10 @@ export async function entrarConGoogle(
 
   if (existente) {
     if (!existente.activo) return "/entrar?error=cuenta-inactiva";
+    // La cuenta de ese correo ya está unida a OTRA cuenta de Google: no se
+    // une a esta. Antes se conservaba la primera y las dos personas
+    // entraban a la misma cuenta (auditoría, 30 de octubre de 2026).
+    if (existente.google_id && existente.google_id !== sub) return "/entrar?error=google-otra-cuenta";
     await vincular(existente.id, sub);
     return true;
   }
@@ -64,12 +68,14 @@ export async function entrarConGoogle(
   // El mismo freno global que /api/registro: el que impide que un
   // script se lleve mil pruebas gratis en una noche. Comparten la
   // clave, así que las cuentas por Google cuentan en el mismo tope.
-  if (!limitar("registro:global", REGISTROS_GLOBALES_POR_HORA, 3600).permitido) {
+  // Solo cuentan las cuentas creadas, no cada intento (igual que /api/registro).
+  if (intentosAgotados("registro:global", REGISTROS_GLOBALES_POR_HORA)) {
     return "/registro?google=limite";
   }
 
   try {
     await crearCuenta({ email, sub, nombre: nombreDe(perfil), consentimiento });
+    sumarFallo("registro:global", 3600);
   } catch (e) {
     // Dos regresos de Google al mismo tiempo (un doble clic): el
     // segundo se encuentra con la cuenta que acaba de crear el primero,

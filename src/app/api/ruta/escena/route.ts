@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { CUERPO_MUY_GRANDE, cuerpoExcede, limitar } from "@/lib/limite";
-import { iniciarEscena, pedirAyuda, terminarEscenario, turnoDeEscena } from "@/lib/ruta/conversacion";
+import { iniciarEscena, pedirAyuda, prepararTurno, terminarEscenario, turnoDeEscena } from "@/lib/ruta/conversacion";
 import { alumnoActual } from "@/lib/sesion";
 import { AUDIO_MAX_SEGUNDOS } from "@/lib/tipos";
 
@@ -39,6 +39,20 @@ export async function POST(peticion: Request) {
   if (!f) return NextResponse.json({ error: "Petición inválida" }, { status: 400 });
   const accion = String(f.get("accion") ?? "");
   const conversacion = String(f.get("conversacion") ?? "");
+  const muyRapido = (esperaSeg: number) =>
+    NextResponse.json(
+      { error: "muy_rapido", mensaje: "Vas muy rápido. Espera un momento." },
+      { status: 429, headers: { "Retry-After": String(esperaSeg) } }
+    );
+
+  // Inicio, ayuda y fin también escriben en la base (cada inicio abre una
+  // conversación y un intento que el panel cuenta): un tope holgado, que
+  // un alumno de verdad no alcanza, frena un script en bucle (auditoría,
+  // 30 de octubre de 2026).
+  if (accion === "inicio" || accion === "ayuda" || accion === "fin") {
+    const limiteAccion = limitar(`escena-${accion}:${alumno.id}`, 30, 60);
+    if (!limiteAccion.permitido) return muyRapido(limiteAccion.esperaSeg);
+  }
 
   if (accion === "inicio") {
     const pedida = String(f.get("actividad") ?? "");
@@ -73,12 +87,7 @@ export async function POST(peticion: Request) {
   if (accion !== "turno") return NextResponse.json({ error: "Acción desconocida" }, { status: 400 });
 
   const limite = limitar(`escena:${alumno.id}`, 20, 60);
-  if (!limite.permitido) {
-    return NextResponse.json(
-      { error: "muy_rapido", mensaje: "Vas muy rápido. Espera un momento." },
-      { status: 429, headers: { "Retry-After": String(limite.esperaSeg) } }
-    );
-  }
+  if (!limite.permitido) return muyRapido(limite.esperaSeg);
 
   const audio = f.get("audio");
   const textoCrudo = f.get("texto");
@@ -95,6 +104,25 @@ export async function POST(peticion: Request) {
     }
   }
 
+  // La escena se revisa ANTES de cobrar (que exista, sea suya, siga
+  // abierta y no haya llegado al tope): una petición que no sirve no
+  // escribe un consumo y un reverso en el libro (auditoría, 30 de octubre
+  // de 2026).
+  const falloIA = () =>
+    NextResponse.json(
+      { error: "fallo_ia", mensaje: "Allison no pudo responder. No te cobramos esta intervención." },
+      { status: 502 }
+    );
+  let lista: Awaited<ReturnType<typeof prepararTurno>>;
+  try {
+    lista = await prepararTurno(alumno.id, conversacion);
+  } catch (e) {
+    // Todavía no se cobró: la misma respuesta que antes, sin nada que devolver.
+    console.error("Fallo al revisar la escena:", e instanceof Error ? e.message : e);
+    return falloIA();
+  }
+  if (!lista.ok) return error(lista.error);
+
   const [{ consumir_mensaje: bolsa }] = await sql`select consumir_mensaje(${alumno.id}, null)`;
   if (!bolsa) {
     return NextResponse.json({ error: "sin_mensajes", mensaje: "Te quedaste sin intervenciones." }, { status: 402 });
@@ -104,7 +132,7 @@ export async function POST(peticion: Request) {
   // Hasta que Allison responde, cualquier falla devuelve la intervención.
   let r: Awaited<ReturnType<typeof turnoDeEscena>>;
   try {
-    r = await turnoDeEscena(alumno.id, alumno.nombre, conversacion, {
+    r = await turnoDeEscena(alumno.nombre, lista.escena, {
       ...(texto
         ? { texto }
         : {
@@ -115,10 +143,7 @@ export async function POST(peticion: Request) {
   } catch (e) {
     await devolver().catch(() => {});
     console.error("Fallo en la escena:", e instanceof Error ? e.message : e);
-    return NextResponse.json(
-      { error: "fallo_ia", mensaje: "Allison no pudo responder. No te cobramos esta intervención." },
-      { status: 502 }
-    );
+    return falloIA();
   }
   if (!r.ok) {
     await devolver();
@@ -127,10 +152,7 @@ export async function POST(peticion: Request) {
   // La IA no dio una respuesta que sirva: es falla nuestra, no se cobra.
   if (r.r.sinRespuesta) {
     await devolver();
-    return NextResponse.json(
-      { error: "fallo_ia", mensaje: "Allison no pudo responder. No te cobramos esta intervención." },
-      { status: 502 }
-    );
+    return falloIA();
   }
 
   // Desde aquí Allison ya respondió: un error al anotar se registra en el

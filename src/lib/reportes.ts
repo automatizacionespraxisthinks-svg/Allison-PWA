@@ -24,6 +24,11 @@ export interface Reporte {
   respuestaAllison: string | null;
   comentario: string | null;
   estado: "abierto" | DecisionReporte;
+  /**
+   * Se devolvió la intervención. "Allison se equivocó" sin devolver: otra
+   * corrección del mismo mensaje ya la devolvió (una por mensaje).
+   */
+  devolvio: boolean;
   creadoEn: string;
   revisadoEn: string | null;
   /** Días que lleva abierto (para la alerta de más de 3 días). */
@@ -114,6 +119,7 @@ function aReporte(f: Record<string, unknown>): Reporte {
     respuestaAllison: (f.respuesta_allison as string | null) ?? null,
     comentario: (f.comentario as string | null) ?? null,
     estado: f.estado as Reporte["estado"],
+    devolvio: Boolean(f.devolvio),
     creadoEn: creado.toISOString(),
     revisadoEn: f.revisado_en ? (f.revisado_en as Date).toISOString() : null,
     dias: Math.floor((Date.now() - creado.getTime()) / 86_400_000),
@@ -142,16 +148,68 @@ export async function reportesParaRevisar(): Promise<{
   return { abiertos: abiertos.map(aReporte), resueltos: resueltos.map(aReporte) };
 }
 
-/** La decisión del administrador. False si el reporte ya estaba resuelto. */
+/**
+ * La decisión del administrador. False si el reporte ya estaba resuelto.
+ *
+ * Como máximo una devolución por mensaje: el turno costó 1 intervención,
+ * y desde B1 un mensaje puede traer varias correcciones. Reportando las
+ * tres de un turno, el alumno recuperaba 3 por un turno de 1. Si otra
+ * corrección del mismo mensaje ya devolvió, "Allison se equivocó" queda
+ * anotado sin devolver (devolvio = false) y sin aviso: el aviso dice "te
+ * devolvimos la intervención", y el alumno ya vio el de la primera
+ * (auditoría, 30 de octubre de 2026). Se resuelve aquí, sin tocar
+ * resolver_reporte (db/023), que sigue siendo la que devuelve.
+ */
 export async function resolverReporte(
   reporteId: string,
   adminId: string,
   decision: DecisionReporte
 ): Promise<boolean> {
-  const [f] = await sql`
-    select resolver_reporte(${reporteId}, ${adminId}, ${decision}::estado_reporte) as ok
-  `;
-  return Boolean(f.ok);
+  return (await sql.begin(async (tx) => {
+    const [r] = await tx`
+      select user_id, mensaje_id, texto_alumno, respuesta_allison
+        from reportes_correccion
+       where id = ${reporteId} and estado = 'abierto'
+    `;
+    if (!r) return false;
+
+    // Los reportes del mismo mensaje (este incluido), bloqueados en orden:
+    // dos decisiones a la vez sobre correcciones del mismo mensaje no
+    // devuelven las dos. Si el mensaje ya se borró (a los 20 días queda
+    // mensaje_id en null), se reconocen por la copia del texto del alumno
+    // y de la respuesta de Allison.
+    const delMensaje = await tx`
+      select id, devolvio
+        from reportes_correccion
+       where user_id = ${r.user_id}
+         and ((${r.mensaje_id}::uuid is not null and mensaje_id = ${r.mensaje_id}::uuid)
+              or (${r.mensaje_id}::uuid is null and mensaje_id is null
+                  and texto_alumno = ${r.texto_alumno}
+                  and respuesta_allison is not distinct from ${r.respuesta_allison}::text))
+       order by id
+         for update
+    `;
+    const yaDevolvio = delMensaje.some((h) => h.devolvio && h.id !== reporteId);
+
+    if (decision === "allison_se_equivoco" && yaDevolvio) {
+      const filas = await tx`
+        update reportes_correccion
+           set estado = 'allison_se_equivoco',
+               revisado_por = ${adminId},
+               revisado_en = now(),
+               devolvio = false,
+               aviso_visto_en = now()
+         where id = ${reporteId} and estado = 'abierto'
+        returning id
+      `;
+      return filas.length > 0;
+    }
+
+    const [f] = await tx`
+      select resolver_reporte(${reporteId}, ${adminId}, ${decision}::estado_reporte) as ok
+    `;
+    return Boolean(f.ok);
+  })) as boolean;
 }
 
 export interface AvisoReporte {

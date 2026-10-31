@@ -380,7 +380,7 @@ export const PARADA_01: Parada = {
       muestra: "Sarah y Tom se saludan en un salón de clase",
       uso: "Lección 2: el salón del diálogo; el documento no dice en qué pantalla va",
     },
-    { archivos: ["a-tom", "a-sarah", "a-profesor"], muestra: "Tom, Sarah y la profesora Ms. Lee junto al tablero (desde el 30 de octubre de 2026; antes con un libro), cada uno solo", uso: "Lección 2 (paso 1)" },
+    { archivos: ["a-tom", "a-sarah", "a-profesora-tablero"], muestra: "Tom, Sarah y la profesora Ms. Lee junto al tablero (desde el 30 de octubre de 2026; antes con un libro), cada uno solo", uso: "Lección 2 (paso 1)" },
     { archivos: ["a-mucho-gusto"], muestra: "Dos personas dándose la mano", uso: "Lección 2 (paso 3)" },
     {
       archivos: ["a-bandera-canada", "a-bandera-colombia", "a-bandera-mexico"],

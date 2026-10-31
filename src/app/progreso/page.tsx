@@ -21,24 +21,43 @@ export default async function PaginaProgreso() {
   const nombreCorto = alumno.nombre.split(" ")[0];
   const total = CLAVES_TEMA.length;
 
+  // Todo lo de esta pantalla (el mapa de temas, la semana, el tiempo
+  // hablado) sale de los turnos de Hablar: sin ellos no hay nada que
+  // mostrar. Pero un alumno que solo hace Mi ruta sí practica y tiene
+  // racha (su tiempo va en progreso_diario.segundos_practica), y la
+  // pantalla vacía le decía que su mapa estaba en blanco como si no
+  // hubiera hecho nada. Ahora se le reconoce lo que hizo y se le dice de
+  // dónde sale este mapa; y va con la barra de abajo, que no tenía (en la
+  // app instalada en iPhone no había cómo salir; auditoría, 30 de octubre
+  // de 2026).
   if (p.totalMensajes === 0) {
+    const practicoEnRuta = p.diasPracticados > 0 || p.rachaDias > 0;
     return (
-      <main className="mx-auto flex min-h-dvh max-w-lg flex-col items-center justify-center gap-5 px-6 text-center">
-        <span className="text-6xl" aria-hidden>
-          🗺️
-        </span>
-        <h1 className="text-2xl font-semibold">Tu mapa está en blanco</h1>
-        <p className="text-texto-suave">
-          Cada vez que hables con Allison se destapa un pedazo. Aquí vas a ver
-          qué ya dominas y qué te falta.
-        </p>
-        <Link
-          href="/practicar"
-          className="rounded-2xl bg-primario px-8 py-4 text-lg font-semibold text-white"
-        >
-          Hablar con Allison
-        </Link>
-      </main>
+      <ConNavegacion racha={alumno.rachaDias}>
+        <main className="mx-auto flex min-h-dvh max-w-lg flex-col items-center justify-center gap-5 px-6 text-center">
+          <span className="text-6xl" aria-hidden>
+            🗺️
+          </span>
+          <h1 className="text-2xl font-semibold">
+            {practicoEnRuta ? "Tu mapa de Hablar está en blanco" : "Tu mapa está en blanco"}
+          </h1>
+          <p className="text-texto-suave">
+            {practicoEnRuta
+              ? `${
+                  p.rachaDias > 0
+                    ? `Llevas ${p.rachaDias} ${p.rachaDias === 1 ? "día" : "días"} de racha con Mi ruta: ¡vas bien! `
+                    : "Ya practicaste en Mi ruta: ¡vas bien! "
+                }Este mapa se llena en Hablar: cada vez que conversas con Allison se destapa un pedazo, y aquí vas a ver qué ya dominas y qué te falta.`
+              : "Cada vez que hables con Allison se destapa un pedazo. Aquí vas a ver qué ya dominas y qué te falta."}
+          </p>
+          <Link
+            href="/practicar"
+            className="rounded-2xl bg-primario px-8 py-4 text-lg font-semibold text-white"
+          >
+            Hablar con Allison
+          </Link>
+        </main>
+      </ConNavegacion>
     );
   }
 

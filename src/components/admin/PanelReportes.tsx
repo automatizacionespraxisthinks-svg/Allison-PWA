@@ -5,9 +5,6 @@ import { useRouter } from "next/navigation";
 import { pedir } from "@/lib/pedir";
 import type { DecisionReporte, Reporte } from "@/lib/reportes";
 
-/** Días que puede esperar un reporte antes de la alerta (Ajustes, punto 16). */
-const DIAS_ALERTA = 3;
-
 const TIPO: Record<string, string> = {
   pronunciacion: "Pronunciación",
   gramatica: "Gramática",
@@ -18,9 +15,17 @@ const TIPO: Record<string, string> = {
 export function PanelReportes({
   abiertos,
   resueltos,
+  diasAlerta,
 }: {
   abiertos: Reporte[];
   resueltos: Reporte[];
+  /**
+   * Días que puede esperar un reporte antes de la alerta: el ajuste
+   * «Alerta de reporte sin revisar» (alertaReporteDias), el mismo que usa
+   * el Resumen. Antes era un 3 fijo y las dos pantallas podían decir cosas
+   * distintas (auditoría, 30 de octubre de 2026).
+   */
+  diasAlerta: number;
 }) {
   const router = useRouter();
   const [trabajando, setTrabajando] = useState<string | null>(null);
@@ -42,7 +47,7 @@ export function PanelReportes({
     router.refresh();
   }
 
-  const atrasados = abiertos.filter((r) => r.dias > DIAS_ALERTA).length;
+  const atrasados = abiertos.filter((r) => r.dias > diasAlerta).length;
 
   return (
     <div className="space-y-6">
@@ -56,7 +61,7 @@ export function PanelReportes({
 
       {atrasados > 0 && (
         <p className="rounded-xl bg-acento/10 px-3 py-2 text-sm font-semibold text-acento">
-          {atrasados} {atrasados === 1 ? "reporte lleva" : "reportes llevan"} más de {DIAS_ALERTA}{" "}
+          {atrasados} {atrasados === 1 ? "reporte lleva" : "reportes llevan"} más de {diasAlerta}{" "}
           días sin revisar.
         </p>
       )}
@@ -78,7 +83,7 @@ export function PanelReportes({
                 <b className="text-texto">{r.alumno}</b>
                 {r.nivel && ` · ${r.nivel}`} · {TIPO[r.tipo] ?? r.tipo}
               </span>
-              <span className={r.dias > DIAS_ALERTA ? "font-semibold text-acento" : ""}>
+              <span className={r.dias > diasAlerta ? "font-semibold text-acento" : ""}>
                 hace {r.dias === 0 ? "menos de un día" : `${r.dias} ${r.dias === 1 ? "día" : "días"}`}
               </span>
             </div>

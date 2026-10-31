@@ -64,7 +64,7 @@ export default async function PaginaFicha({ params }: { params: Promise<{ id: st
             </p>
           </div>
         </div>
-        <AccionesAlumno userId={f.id} nombre={f.nombre} nivel={f.nivel} curso={f.curso} deColegio={!!f.institucionId} />
+        <AccionesAlumno userId={f.id} nombre={f.nombre} nivel={f.nivel} curso={f.curso} deColegio={!!f.institucionId} planVence={f.planVence} />
       </header>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

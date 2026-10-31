@@ -3,11 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ComponentProps } from "react";
 import type { Expresion } from "@/lib/expresiones";
 import type { EstadoDeRuta, LeccionEnMapa, ParadaEnMapa } from "@/lib/ruta/estado";
 import { NOMBRE_CORTO } from "@/lib/ruta/nombres";
-import { NIVELES } from "@/lib/tipos";
+import { NIVELES, type Nivel } from "@/lib/tipos";
 import { EncabezadoRuta, PAIS_DE_NIVEL } from "./Encabezado";
 import { FraseDelDia } from "./FraseDelDia";
 import { TarjetaAvisos } from "./TarjetaAvisos";
@@ -17,6 +17,18 @@ import { selloDe } from "@/lib/ruta/sellos";
 import { Estampilla, type LugarSello } from "./Estampilla";
 import { Icono, IconoActividad, Estrellas } from "./Iconos";
 import { MapaViaje } from "./MapaViaje";
+
+/**
+ * El mapa del viaje de cada nivel con ruta escrita (los que acepta rutaDe).
+ * Una tabla en vez del ternario "B1 ? canada : A2 ? reino-unido : eeuu",
+ * que hacía creer que MiRuta podía recibir otros niveles (auditoría, 30 de
+ * octubre de 2026).
+ */
+const MAPA_DE_NIVEL: Partial<Record<Nivel, ComponentProps<typeof MapaViaje>["pais"]>> = {
+  A1: "eeuu",
+  A2: "reino-unido",
+  B1: "canada",
+};
 
 /** Desplazamiento en zigzag de cada calcomanía, continuo a lo largo de todo el camino. */
 const dx = (i: number) => Math.round(Math.sin(i * 0.75) * 58);
@@ -99,38 +111,40 @@ export function MiRuta({
       {frase && <FraseDelDia frase={frase} nivel={estado.nivel} />}
       {salon && <TarjetaSalon salon={salon} />}
 
-      {(estado.nivel === "A1" || estado.nivel === "A2" || estado.nivel === "B1") && (
-        <details className="group overflow-hidden rounded-2xl border border-borde bg-superficie-2">
-          <summary className="flex cursor-pointer list-none items-center gap-3 px-3 py-2.5 [&::-webkit-details-marker]:hidden">
-            <span className="grid size-9 place-items-center rounded-xl bg-primario text-white">
-              <Icono nombre="ruta" className="size-5" />
+      {/* Sin condición de nivel: MiRuta solo se pinta con un EstadoDeRuta, y
+          ese estado solo existe para los niveles con ruta escrita (rutaDe:
+          A1, A2 y B1). El "si es A1, A2 o B1" que había aquí siempre se
+          cumplía (auditoría, 30 de octubre de 2026). */}
+      <details className="group overflow-hidden rounded-2xl border border-borde bg-superficie-2">
+        <summary className="flex cursor-pointer list-none items-center gap-3 px-3 py-2.5 [&::-webkit-details-marker]:hidden">
+          <span className="grid size-9 place-items-center rounded-xl bg-primario text-white">
+            <Icono nombre="ruta" className="size-5" />
+          </span>
+          <span className="flex min-w-0 flex-1 flex-col leading-tight">
+            <b className="text-[15px] font-black">Mapa del viaje</b>
+            <span className="text-xs font-bold text-texto-suave">
+              {PAIS_DE_NIVEL[estado.nivel]} · {estado.sellos} de {estado.totalSellos} sellos
             </span>
-            <span className="flex min-w-0 flex-1 flex-col leading-tight">
-              <b className="text-[15px] font-black">Mapa del viaje</b>
-              <span className="text-xs font-bold text-texto-suave">
-                {PAIS_DE_NIVEL[estado.nivel]} · {estado.sellos} de {estado.totalSellos} sellos
-              </span>
-            </span>
-            <Icono nombre="abajo" className="size-5 transition group-open:rotate-180" />
-          </summary>
-          <div className="px-2 pb-2">
-            <MapaViaje
-              pais={estado.nivel === "B1" ? "canada" : estado.nivel === "A2" ? "reino-unido" : "eeuu"}
-              ciudades={estado.paradas
-                .filter((p) => p.tipo === "parada")
-                .map((p) => ({
-                  nombre: p.ciudad,
-                  estado: p.sello ? "ok" : p.estado === "en-curso" ? "on" : "",
-                }))}
-            />
-          </div>
-        </details>
-      )}
+          </span>
+          <Icono nombre="abajo" className="size-5 transition group-open:rotate-180" />
+        </summary>
+        <div className="px-2 pb-2">
+          <MapaViaje
+            pais={MAPA_DE_NIVEL[estado.nivel] ?? "eeuu"}
+            ciudades={estado.paradas
+              .filter((p) => p.tipo === "parada")
+              .map((p) => ({
+                nombre: p.ciudad,
+                estado: p.sello ? "ok" : p.estado === "en-curso" ? "on" : "",
+              }))}
+          />
+        </div>
+      </details>
     </>
   );
 
   // Dónde empieza cada parada en el zigzag: así el camino sigue de una a otra.
-  const bases = estado.paradas.reduce<number[]>((b, p, k) => [...b, k === 0 ? 0 : b[k - 1] + estado.paradas[k - 1].lecciones.length + 1], []);
+  const bases = estado.paradas.reduce<number[]>((b, _, k) => [...b, k === 0 ? 0 : b[k - 1] + estado.paradas[k - 1].lecciones.length + 1], []);
 
   return (
     <div className="mx-auto w-full max-w-lg px-4 pt-4 lg:grid lg:max-w-5xl lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-8">

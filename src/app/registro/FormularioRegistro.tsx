@@ -33,6 +33,8 @@ export function FormularioRegistro({
   const [declaraEdad, setDeclaraEdad] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  /** La cuenta se creó pero no se pudo entrar solo: ya no se ofrece crearla otra vez. */
+  const [creada, setCreada] = useState(false);
   // El botón de Google tiene su propio aviso, justo debajo de él: el
   // del formulario queda al final, fuera de la pantalla en el celular,
   // y ahí un "marca las casillas" parecía que el botón no hacía nada.
@@ -61,13 +63,28 @@ export function FormularioRegistro({
 
     // Entrar directo: pedirle que inicie sesión después de registrarse
     // es un paso extra donde se pierde gente sin ninguna razón.
-    const entrada = await signIn("acceso", {
-      identificador: acceso || email,
-      password,
-      redirect: false,
-    });
-    if (entrada?.error) {
-      router.push("/entrar");
+    //
+    // La cuenta YA existe aquí. signIn lanza si la red se cae a mitad o el
+    // servidor responde algo que no es JSON: sin el try, el botón quedaba
+    // en "Creando…" para siempre, y al recargar e intentarlo otra vez le
+    // decían "Ya hay una cuenta con ese correo" (auditoría, 30 de octubre
+    // de 2026). Si no se pudo entrar solo, se le lleva a /entrar con un
+    // aviso, y aquí se deja de ofrecer "Crear cuenta".
+    let entro = false;
+    try {
+      const entrada = await signIn("acceso", {
+        identificador: acceso || email,
+        password,
+        redirect: false,
+      });
+      entro = !!entrada && !entrada.error;
+    } catch (fallo) {
+      console.error("La cuenta se creó, pero no se pudo entrar:", fallo);
+    }
+    if (!entro) {
+      setCreada(true);
+      setEnviando(false);
+      router.push("/entrar?aviso=cuenta-creada");
       return;
     }
     router.push("/ruta");
@@ -299,13 +316,26 @@ export function FormularioRegistro({
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={enviando || !aceptaLegal || !declaraEdad}
-          className="rounded-xl bg-primario px-4 py-3.5 font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
-        >
-          {enviando ? "Creando…" : "Crear cuenta y empezar"}
-        </button>
+        {creada ? (
+          // Por si la red no deja ni cargar /entrar: el camino sigue a la vista.
+          <div role="status" className="flex flex-col gap-3 rounded-xl bg-primario-suave p-4 text-sm text-primario">
+            <span>Tu cuenta quedó creada, pero no pudimos entrar. Entra con tu correo y tu contraseña.</span>
+            <Link
+              href="/entrar?aviso=cuenta-creada"
+              className="rounded-xl bg-primario px-4 py-3 text-center font-semibold text-white transition hover:brightness-110"
+            >
+              Entrar
+            </Link>
+          </div>
+        ) : (
+          <button
+            type="submit"
+            disabled={enviando || !aceptaLegal || !declaraEdad}
+            className="rounded-xl bg-primario px-4 py-3.5 font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+          >
+            {enviando ? "Creando…" : "Crear cuenta y empezar"}
+          </button>
+        )}
       </form>
 
       <p className="text-center text-sm text-texto-suave">

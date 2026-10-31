@@ -53,6 +53,61 @@ export async function recargasRecientes(limite = 30): Promise<RecargaManual[]> {
   return filas.map(fila);
 }
 
+/**
+ * Un pago que hay que mirar a mano: la pasarela informó un monto distinto
+ * al de la orden (no se acreditó) o anuló un pago (reembolso o
+ * contracargo; el saldo no se tocó). Antes esas marcas solo quedaban en
+ * el log y en el payload, y ninguna pantalla las leía (auditoría, 30 de
+ * octubre de 2026).
+ */
+export interface PagoPorRevisar {
+  id: string;
+  /** Cuándo pasó: la anulación, o la orden si es un monto distinto. */
+  fecha: string;
+  alumnoId: string;
+  alumno: string;
+  alerta: string;
+  estado: string;
+  tipo: "recarga" | "plan";
+  montoCop: number;
+  intervenciones: number;
+  pasarela: string;
+  referencia: string;
+}
+
+/** Con alerta y sin revisar: lo mismo que cuenta la alerta del Resumen. */
+const porRevisar = () => sql`t.payload->>'alerta' is not null and t.payload->>'revisada_en' is null`;
+
+export async function pagosPorRevisar(limite = 50): Promise<PagoPorRevisar[]> {
+  const filas = await sql`
+    select t.id, t.estado, t.tipo, t.monto_cop, t.mensajes_otorgados, t.pasarela, t.referencia_externa,
+           t.payload->>'alerta' as alerta, t.payload->>'anulada_en' as anulada_en, t.creado_en,
+           u.id as user_id, u.nombre
+      from transacciones t
+      join users u on u.id = t.user_id
+     where ${porRevisar()}
+     order by t.creado_en desc limit ${limite}
+  `;
+  return filas.map((f) => ({
+    id: f.id as string,
+    fecha: (f.anulada_en as string | null) ?? (f.creado_en as Date).toISOString(),
+    alumnoId: f.user_id as string,
+    alumno: f.nombre as string,
+    alerta: f.alerta as string,
+    estado: f.estado as string,
+    tipo: f.tipo === "plan" ? "plan" : "recarga",
+    montoCop: Number(f.monto_cop),
+    intervenciones: Number(f.mensajes_otorgados),
+    pasarela: f.pasarela as string,
+    referencia: f.referencia_externa as string,
+  }));
+}
+
+export async function cuantosPagosPorRevisar(): Promise<number> {
+  const [r] = await sql`select count(*)::int as n from transacciones t where ${porRevisar()}`;
+  return Number(r.n);
+}
+
 /** El cuadre de caja de un día (en Bogotá): cada recarga y lo recibido. */
 export async function cuadreDelDia(fecha: string): Promise<{ recargas: RecargaManual[]; recibido: number; porMedio: Record<string, number> }> {
   const filas = await sql`

@@ -620,6 +620,12 @@ export interface RespuestaAllison {
   objetivoUsado: boolean;
   tokensEntrada: number;
   tokensSalida: number;
+  /**
+   * El modelo no terminó: su JSON llegó cortado y no se pudo rescatar.
+   * No es silencio (que se cobra): la ruta devuelve la intervención
+   * (auditoría, 30 de octubre de 2026).
+   */
+  fallaIA?: boolean;
 }
 
 /**
@@ -1597,15 +1603,19 @@ export async function* conversarEnStream(opciones: {
     correcciones?: Correccion[];
     objetivoUsado?: boolean;
   };
+  // El JSON llegó cortado y sin lo esencial: falla de la IA, no silencio.
+  let fallaIA = false;
   try {
     datos = JSON.parse(acumulado || "{}");
   } catch {
     // El JSON llegó cortado (tope de tokens o desborde del modelo). Se
     // rescatan los campos que alcanzaron a cerrar; si falta alguno de
-    // los dos esenciales, el turno se anula entero — la transcripción
-    // vacía hace que la ruta devuelva el crédito al alumno.
+    // los dos esenciales, el turno se anula entero y la ruta devuelve el
+    // crédito (fallaIA). Si lo que cerró fue una transcripción vacía, sí
+    // fue silencio.
     const t = escrito ?? campoCompleto(acumulado, "transcripcion") ?? "";
     const r = campoCompleto(acumulado, "respuesta") ?? "";
+    fallaIA = !(t && r) && !sinVoz;
     datos =
       t && r
         ? {
@@ -1738,6 +1748,7 @@ export async function* conversarEnStream(opciones: {
       objetivoUsado,
       tokensEntrada: uso?.promptTokenCount ?? 0,
       tokensSalida: uso?.candidatesTokenCount ?? 0,
+      ...(fallaIA ? { fallaIA } : {}),
     },
   };
 }

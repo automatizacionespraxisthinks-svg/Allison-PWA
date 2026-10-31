@@ -35,6 +35,8 @@ function avisoDe(error: string | undefined, callbackUrl: string | undefined): st
         return "Tu cuenta de Google no tiene el correo verificado, así que no podemos usarla para entrar. Entra con tu correo y contraseña.";
       case "cuenta-inactiva":
         return "Esa cuenta está desactivada. Si crees que es un error, escríbenos.";
+      case "google-otra-cuenta":
+        return "Ese correo ya está unido a otra cuenta de Google. Entra con esa cuenta de Google o con tu correo y contraseña.";
       default:
         return "No pudimos completar la entrada. Intenta de nuevo, o entra con tu correo y contraseña.";
     }

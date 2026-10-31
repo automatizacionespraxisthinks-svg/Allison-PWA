@@ -15,8 +15,10 @@ import type { AvisoReporte } from "@/lib/reportes";
 import type { EstadoConversacion, Mensaje, Nivel } from "@/lib/tipos";
 import { fijarModoTexto, useModoTexto } from "@/lib/entrada";
 import { useVelocidad } from "@/lib/velocidad";
-import { desbloquearVoz, hablarIngles } from "@/lib/voz";
+import { desbloquearVoz, detenerVoz, hablarIngles } from "@/lib/voz";
+import { estimarSegundos } from "@/lib/habla";
 import { pedirAyudaIA } from "@/lib/ayudaCliente";
+import { SESION_CERRADA, sesionCerrada } from "@/lib/pedir";
 import { pesos } from "@/lib/precios";
 
 interface Props {
@@ -31,6 +33,7 @@ interface Props {
   /** Viene del servidor: las variables sin NEXT_PUBLIC_ no existen aquí,
    *  y un número escrito a mano quedaría mintiendo si cambia el .env. */
   recargaMinima: number;
+  /** Ve "Panel del colegio": coordinador o admin CON colegio (sin colegio, /colegio lo devuelve aquí). */
   esCoordinador: boolean;
   esAdmin: boolean;
   racha: number;
@@ -102,10 +105,29 @@ export function Conversacion({
   const conversacionId = useRef<string | null>(idInicial);
   const velocidad = useVelocidad();
   const finRef = useRef<HTMLDivElement>(null);
+  /** La pantalla sigue abierta: lo que llega después de salir no suena. */
+  const montado = useRef(true);
+  /** La petición del turno en curso, para cortarla al salir. */
+  const pedido = useRef<AbortController | null>(null);
+  /** Número del turno en curso: un audio de un turno viejo no cambia el estado. */
+  const turno = useRef(0);
 
   useEffect(() => {
     finRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [mensajes, dichoAhora, ideaVisible]);
+
+  // Al salir de Hablar con Allison pensando, la respuesta llegaba después
+  // y sonaba encima de la pantalla siguiente (la limpieza de Transcripcion
+  // ya había pasado). Ahora se corta la petición y la voz (auditoría, 30
+  // de octubre de 2026).
+  useEffect(() => {
+    montado.current = true;
+    return () => {
+      montado.current = false;
+      pedido.current?.abort();
+      detenerVoz();
+    };
+  }, []);
 
   /**
    * La voz vive en lib/voz.ts: la API de voz en streaming, con la del
@@ -114,11 +136,32 @@ export function Conversacion({
    * de un C1. El estado pasa a "hablando" cuando el audio de verdad
    * empieza a sonar, no cuando se pide: entre lo uno y lo otro pasan
    * unos segundos, y el avatar no debe fingir que habla en silencio.
+   *
+   * Con un vigilante, el mismo tope de useVoz en las lecciones
+   * (leccion/comun.tsx): un audio que se queda colgado con datos móviles,
+   * o una voz del navegador que nunca avisa que terminó, dejaba la
+   * pantalla en "hablando" con el micrófono apagado hasta recargar
+   * (auditoría, 30 de octubre de 2026).
    */
-  function hablar(texto: string): Promise<boolean> {
-    return hablarIngles(texto, nivel, velocidad, {
-      alEmpezar: () => setEstado("hablando"),
+  async function hablar(texto: string, mio: number): Promise<boolean> {
+    if (!montado.current) return false;
+    const habla = hablarIngles(texto, nivel, velocidad, {
+      alEmpezar: () => {
+        if (montado.current && mio === turno.current) setEstado("hablando");
+      },
     });
+    const limite = 8000 + estimarSegundos(texto) * 2500;
+    let reloj: ReturnType<typeof setTimeout> | undefined;
+    const vence = new Promise<"vencio">((r) => {
+      reloj = setTimeout(() => r("vencio"), limite);
+    });
+    const sono = await Promise.race([habla, vence]);
+    clearTimeout(reloj);
+    if (sono === "vencio") {
+      if (mio === turno.current) detenerVoz();
+      return false;
+    }
+    return sono;
   }
 
   function manejarAudio(audio: Blob, duracionSeg: number) {
@@ -145,22 +188,31 @@ export function Conversacion({
   }
 
   async function enviarTurno(cuerpo: FormData, conservarDicho = false) {
+    const mio = ++turno.current;
+    pedido.current?.abort();
+    const control = new AbortController();
+    pedido.current = control;
     setEstado("procesando");
     setError(null);
     if (!conservarDicho) setDichoAhora(null);
     setIdea(null);
     setIdeaVisible(false);
 
+    /** La respuesta de Allison sonando (o por sonar), con su vigilante. */
+    let hablando: Promise<boolean> | null = null;
+
     try {
       if (conversacionId.current) {
         cuerpo.append("conversacion", conversacionId.current);
       }
 
-      const respuesta = await fetch("/api/conversar", { method: "POST", body: cuerpo });
+      const respuesta = await fetch("/api/conversar", { method: "POST", body: cuerpo, signal: control.signal });
 
       if (!respuesta.ok) {
         const datos = await respuesta.json().catch(() => ({}));
-        setError(datos.mensaje ?? "Algo salió mal. Intenta de nuevo.");
+        if (!montado.current) return;
+        // Sesión cerrada: a /entrar (antes decía "Algo salió mal" sin fin).
+        setError(sesionCerrada(respuesta) ? SESION_CERRADA : (datos.mensaje ?? "Algo salió mal. Intenta de nuevo."));
         if (datos.error === "sin_mensajes") setMensajesRestantes(0);
         setEstado("inactivo");
         return;
@@ -172,7 +224,6 @@ export function Conversacion({
 
       const decodificador = new TextDecoder();
       let resto = "";
-      let hablando: Promise<boolean> | null = null;
 
       while (true) {
         const { done, value } = await lector.read();
@@ -194,7 +245,7 @@ export function Conversacion({
             // Sigue "pensando" hasta que suene: hablar() cambia el estado.
             // Se dice la versión con marcadores de idioma (voz), no la
             // que se muestra (texto): así el español suena en español.
-            hablando = hablar(parte.voz ?? parte.texto);
+            hablando = hablar(parte.voz ?? parte.texto, mio);
           }
 
           if (parte.tipo === "error") {
@@ -203,7 +254,14 @@ export function Conversacion({
             // Sin voz se cobra igual (la IA escuchó el audio): baja el contador.
             else if (typeof parte.mensajesRestantes === "number") setMensajesRestantes(parte.mensajesRestantes);
             setDichoAhora(null);
-            setEstado("inactivo");
+            // El error puede llegar DESPUÉS de la respuesta ("fallo_guardar":
+            // Allison respondió, pero no se pudo guardar el turno). Antes se
+            // pasaba a inactivo sin esperar: la voz empezaba después, ponía
+            // "hablando" y la pantalla quedaba trabada con el micrófono
+            // apagado (auditoría, 30 de octubre de 2026). Se deja terminar
+            // la respuesta, con su vigilante, y entonces se libera.
+            if (hablando) await hablando;
+            if (montado.current) setEstado("inactivo");
             return;
           }
 
@@ -229,10 +287,15 @@ export function Conversacion({
       }
 
       await hablando;
-      setEstado("inactivo");
+      if (montado.current) setEstado("inactivo");
     } catch {
+      // Salió de la pantalla (se cortó la petición): no hay nada que decir.
+      if (!montado.current) return;
       setError("No pudimos conectar. Revisa tu internet e intenta de nuevo.");
-      setEstado("inactivo");
+      // Igual que con el error del servidor: si la respuesta ya estaba
+      // sonando, se espera (con su vigilante) antes de liberar el micrófono.
+      if (hablando) await hablando;
+      if (montado.current) setEstado("inactivo");
     }
   }
 
@@ -257,6 +320,10 @@ export function Conversacion({
         if (r.sinSaldo) {
           setMensajesRestantes(0);
           setError("Te quedaste sin mensajes.");
+        } else {
+          // Antes el bombillo mostraba "…" y después nada (auditoría, 30 de
+          // octubre de 2026): ahora se dice qué pasó.
+          setError(r.mensaje);
         }
         return;
       }

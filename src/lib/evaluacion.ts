@@ -110,6 +110,13 @@ export interface ResultadoEvaluacion {
   mejora?: { dijo: string; mejor: string };
   /** Lo escrito necesitaba al modelo y no había saldo: no se calificó. */
   sinSaldo?: boolean;
+  /**
+   * Describe desde A2: la revisión de la gramática (corregirFrase) falló.
+   * La frase cuenta igual, pero si lo escrito se cobró solo para
+   * revisarla, la ruta devuelve la intervención: la IA falló (auditoría,
+   * 30 de octubre de 2026).
+   */
+  revisionFallida?: boolean;
   tokensEntrada: number;
   tokensSalida: number;
 }
@@ -488,6 +495,8 @@ export async function evaluarRespuestaCorta(p: PedidoEvaluacion): Promise<Result
       // Desde A2, una frase que nombra algo se revisa: con un error,
       // Allison la dice bien y el alumno la repite (tanda 1, 29 de octubre de 2026).
       // Si la revisión falla, la frase cuenta igual: lo que nombró ya se sabe.
+      // Pero queda marcada: si lo escrito se cobró para revisarla, la ruta
+      // lo devuelve (auditoría, 30 de octubre de 2026).
       // Escrita y sin saldo, no se revisa (no se usa el modelo) y cuenta.
       if ((p.nivel ?? "A1") !== "A1" && cosas.length && juzgable && (await puedeUsarModelo())) {
         const c = await corregirFrase(transcripcion, p.esperado, p.nivel).catch(() => null);
@@ -495,6 +504,8 @@ export async function evaluarRespuestaCorta(p: PedidoEvaluacion): Promise<Result
           resultado.tokensEntrada += c.tokensEntrada;
           resultado.tokensSalida += c.tokensSalida;
           if (c.mejor) resultado.mejora = { dijo: transcripcion, mejor: c.mejor };
+        } else {
+          resultado.revisionFallida = true;
         }
       }
       break;

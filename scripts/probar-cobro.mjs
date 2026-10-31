@@ -14,7 +14,36 @@
  *
  *   node --env-file=.env scripts/probar-cobro.mjs
  */
-const { registrarResultado } = await import("../src/lib/cobro.ts");
+// Candado contra producción (auditoría, 30 de octubre de 2026): este
+// script ESCRIBE y BORRA en la base de DATABASE_URL, y DATABASE_URL se
+// apunta a producción por un túnel para migrar. Corrido ahí, dejaría
+// alumnos y órdenes de mentira (que inflan «Ingresos» y «pagaron») o
+// borraría datos reales. Se niega si DATABASE_URL es la de
+// DATABASE_URL_PRODUCCION o si NODE_ENV es production. Para correrlo ahí
+// a propósito: SI_ES_PRODUCCION=1.
+{
+  const destino = (u) => {
+    try {
+      const x = new URL(u);
+      return `${decodeURIComponent(x.username)}@${x.hostname}:${x.port || "5432"}${x.pathname}`;
+    } catch {
+      return u.trim();
+    }
+  };
+  const url = process.env.DATABASE_URL ?? "";
+  const produccion = process.env.DATABASE_URL_PRODUCCION ?? "";
+  const esProduccion =
+    process.env.NODE_ENV === "production" || (produccion.trim() !== "" && destino(url) === destino(produccion));
+  if (esProduccion && process.env.SI_ES_PRODUCCION !== "1") {
+    console.error(
+      "Este script escribe en la base y DATABASE_URL apunta a producción (o NODE_ENV=production): no se corre.\n" +
+        "Si de verdad es lo que quieres, vuelve a correrlo con SI_ES_PRODUCCION=1."
+    );
+    process.exit(1);
+  }
+}
+
+const { registrarAnulacion, registrarResultado } = await import("../src/lib/cobro.ts");
 const { sql } = await import("../src/lib/db.ts");
 
 let fallos = 0;
@@ -111,7 +140,7 @@ try {
   probar("un monto ilegible (NaN) tampoco acredita", (await resultado(b, { montoCop: Number.NaN })) === "monto_distinto");
   probar("el saldo sigue igual", (await saldo()).mensajes_recarga === 167);
 
-  // 5. Sin monto en el aviso (Wompi antiguo, por ejemplo)
+  // 5. Sin monto en el aviso (una pasarela que no lo informa)
   const c = await nuevaOrden();
   probar("sin monto que comparar, acredita", (await resultado(c, { montoCop: undefined })) === "acreditado");
 
@@ -204,6 +233,44 @@ try {
     "4 aprobaciones del mismo plan a la vez: acredita una y deja UNA suscripción activa",
     carreraPlan.filter((x) => x === "acreditado").length === 1 && activas === 1,
     `${carreraPlan.join(",")} · activas: ${activas}`
+  );
+
+  // 11. Anulaciones de la pasarela (reembolso o contracargo): se marcan,
+  //     no descuentan (auditoría, 30 de octubre de 2026).
+  const q = await nuevaOrden();
+  await resultado(q, { rastro: { transaccion: "PAGO-ANULADO-1" } });
+  const antesAnular = (await saldo()).mensajes_recarga;
+  probar(
+    "una anulación por referencia marca la orden",
+    (await registrarAnulacion({ pasarela: "bold", referencia: q.referencia, idPago: null, rastro: { prueba: true } })) === "marcada"
+  );
+  const [anulada] = await sql`
+    select estado, payload->>'alerta' as alerta, payload->>'anulada_en' as anulada_en from transacciones where id = ${q.id}
+  `;
+  probar(
+    "queda con alerta 'anulada' y su fecha, sigue aprobada y el saldo NO se toca",
+    anulada.alerta === "anulada" && !!anulada.anulada_en && anulada.estado === "aprobada" &&
+      (await saldo()).mensajes_recarga === antesAnular,
+    JSON.stringify(anulada)
+  );
+  probar(
+    "el mismo aviso otra vez no cambia nada",
+    (await registrarAnulacion({ pasarela: "bold", referencia: q.referencia, idPago: null, rastro: {} })) === "ya_marcada"
+  );
+  const r2 = await nuevaOrden();
+  await resultado(r2, { aprobado: false, rastro: { transaccion: "PAGO-ANULADO-2" } });
+  probar(
+    "sin referencia, la encuentra por el id del pago guardado en el historial",
+    (await registrarAnulacion({ pasarela: "bold", referencia: null, idPago: "PAGO-ANULADO-2", rastro: {} })) === "marcada"
+  );
+  const antesAnuladaPendiente = (await saldo()).mensajes_recarga;
+  probar(
+    "una orden anulada no se acredita aunque el link diga pagado",
+    (await resultado(r2, { origen: "consulta" })) === "cerrada" && (await saldo()).mensajes_recarga === antesAnuladaPendiente
+  );
+  probar(
+    "una anulación sin orden que coincida no toca nada",
+    (await registrarAnulacion({ pasarela: "bold", referencia: "NO-EXISTE-JAMAS", idPago: "NO-EXISTE", rastro: {} })) === "desconocida"
   );
 } catch (e) {
   errorOriginal("\nError:", e);

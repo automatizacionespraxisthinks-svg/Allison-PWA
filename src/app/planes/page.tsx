@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ConNavegacion } from "@/components/Navegacion";
 import { BotonPlan } from "@/components/BotonPlan";
+import { planConMesesPorDelante } from "@/lib/cobro";
 import { sql } from "@/lib/db";
 import { configPrecios, pesos, tiempoEquivalente } from "@/lib/precios";
 import { alumnoActual } from "@/lib/sesion";
@@ -26,6 +27,12 @@ export default async function PaginaPlanes() {
      where s.user_id = ${alumno.id} and s.estado = 'activa'
      limit 1
   `;
+
+  // Con meses por delante no se ofrece otro plan: lo vencería y se
+  // perderían los meses pagados. El aviso reemplaza los botones y lleva a
+  // recargar, con la misma regla que /api/pagos/crear (auditoría, 30 de
+  // octubre de 2026).
+  const conMeses = await planConMesesPorDelante(alumno.id);
 
   const mensual = planes.find((p) => p.tipo === "mensual");
 
@@ -61,6 +68,23 @@ export default async function PaginaPlanes() {
           {suscripcion.quedan_meses &&
             ` Tus próximas ${suscripcion.mensajes_por_mes} intervenciones llegan el ${suscripcion.proximo_mes}.`}
         </p>
+      )}
+
+      {conMeses && (
+        <div className="flex flex-col gap-3 rounded-xl border border-acento/40 bg-acento/10 p-4 text-sm">
+          <p>
+            Mientras tu plan tenga meses por delante no puedes comprar otro: lo
+            reemplazaría y perderías los meses que ya pagaste. Podrás elegir un
+            plan nuevo en su último mes. Si se te acabaron las intervenciones
+            de este mes, recarga y sigue hablando.
+          </p>
+          <Link
+            href="/recargar"
+            className="degradado-primario sombra-accion self-start rounded-xl px-4 py-2.5 font-semibold text-white transition hover:brightness-110"
+          >
+            Recargar intervenciones
+          </Link>
+        </div>
       )}
 
       <div className="flex flex-col gap-3">
@@ -115,7 +139,13 @@ export default async function PaginaPlanes() {
                 </p>
               )}
 
-              <BotonPlan codigo={p.codigo} nombre={p.nombre} />
+              {conMeses ? (
+                <p className="mt-4 text-sm text-texto-suave">
+                  Disponible cuando tu {conMeses.nombre} esté en su último mes.
+                </p>
+              ) : (
+                <BotonPlan codigo={p.codigo} nombre={p.nombre} />
+              )}
             </article>
           );
         })}

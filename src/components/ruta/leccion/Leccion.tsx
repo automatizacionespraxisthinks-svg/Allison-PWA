@@ -7,8 +7,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Actividad } from "@/lib/ruta/tipos";
 import { Estampilla, type LugarSello } from "../Estampilla";
 import { Estrella, Icono } from "../Iconos";
+import { SESION_CERRADA } from "@/lib/pedir";
 import { sonar } from "@/lib/sonidos";
-import { terminar, type Contexto, type FinActividad } from "./api";
+import { terminar, yaNoDisponible, type Contexto, type FinActividad } from "./api";
 import { Adivina } from "./Adivina";
 import { Cuentame } from "./Cuentame";
 import { Describe } from "./Describe";
@@ -67,8 +68,8 @@ export function Leccion({
   const [primeraLista, setPrimeraLista] = useState(false);
   const [sinSaldo, setSinSaldo] = useState(false);
   const [guardando, setGuardando] = useState(false);
-  /** No se pudo guardar una actividad: se reintenta antes de seguir. */
-  const [sinGuardar, setSinGuardar] = useState<{ f: FinActividad; segundos: number } | null>(null);
+  /** No se pudo guardar una actividad: se reintenta antes de seguir (status 0: sin respuesta). */
+  const [sinGuardar, setSinGuardar] = useState<{ f: FinActividad; segundos: number; status: number } | null>(null);
   const desde = useRef(0);
   const ultimoFin = useRef<FinLeccion | null>(null);
   /** Ya se está guardando una actividad. */
@@ -117,10 +118,10 @@ export function Leccion({
       guardandoAhora.current = false;
     });
     setGuardando(false);
-    if (!r) {
+    if (!r.ok) {
       // Sin guardar no se sigue: la lección no puede parecer completa si
       // el servidor no la anotó.
-      setSinGuardar({ f, segundos });
+      setSinGuardar({ f, segundos, status: r.status });
       return;
     }
 
@@ -198,23 +199,52 @@ export function Leccion({
         {a.tipo === "ensenale" && <Ensenale key={clave} a={a} {...comun} />}
       </div>
 
-      {sinGuardar && (
-        <div role="alert" className="flex flex-col gap-2 rounded-2xl bg-oro-suave px-4 py-3 text-oro">
-          <b className="font-black">No se guardó tu avance</b>
-          <span className="text-sm font-semibold">Revisa tu conexión. Lo que hiciste sigue aquí.</span>
-          <button
-            type="button"
-            onClick={() => void guardar(sinGuardar.f, sinGuardar.segundos)}
-            disabled={guardando}
-            className="rounded-xl bg-oro px-4 py-2.5 font-extrabold text-superficie disabled:opacity-50"
-          >
-            {guardando ? "Guardando…" : "Reintentar"}
-          </button>
-        </div>
-      )}
+      {sinGuardar && <NoSeGuardo status={sinGuardar.status} guardando={guardando} onReintentar={() => void guardar(sinGuardar.f, sinGuardar.segundos)} />}
 
       {sinSaldo && <SinSaldo tipo={a.tipo} onCerrar={() => setSinSaldo(false)} salir={`/ruta/${datos.parada}?leccion=${datos.numero}`} />}
     </main>
+  );
+}
+
+/**
+ * No se guardó la actividad. Antes siempre decía "Revisa tu conexión" con
+ * un Reintentar, también cuando el servidor respondía que la lección ya no
+ * es de su nivel: el Reintentar repetía el 404 sin fin y la lección quedaba
+ * trabada. "Revisa tu conexión" queda solo para cuando no hubo respuesta
+ * (auditoría, 30 de octubre de 2026).
+ */
+function NoSeGuardo({ status, guardando, onReintentar }: { status: number; guardando: boolean; onReintentar: () => void }) {
+  const caja = "flex flex-col gap-2 rounded-2xl bg-oro-suave px-4 py-3 text-oro";
+  const boton = "rounded-xl bg-oro px-4 py-2.5 text-center font-extrabold text-superficie disabled:opacity-50";
+  if (yaNoDisponible(status) || status === 401) {
+    return (
+      <div role="alert" className={caja}>
+        <b className="font-black">{status === 401 ? SESION_CERRADA : "Esta lección ya no está disponible en tu nivel"}</b>
+        {status !== 401 && (
+          <>
+            <span className="text-sm font-semibold">Puede que tu nivel haya cambiado. En tu ruta están las lecciones de tu nivel de hoy.</span>
+            <Link href="/ruta" className={boton}>
+              Volver a mi ruta
+            </Link>
+          </>
+        )}
+      </div>
+    );
+  }
+  return (
+    <div role="alert" className={caja}>
+      <b className="font-black">No se guardó tu avance</b>
+      <span className="text-sm font-semibold">
+        {status === 0
+          ? "Revisa tu conexión. Lo que hiciste sigue aquí."
+          : status === 429
+            ? "Vas muy rápido. Espera un momento y vuelve a intentar. Lo que hiciste sigue aquí."
+            : "Algo falló al guardarlo. Lo que hiciste sigue aquí: intenta otra vez en un momento."}
+      </span>
+      <button type="button" onClick={onReintentar} disabled={guardando} className={boton}>
+        {guardando ? "Guardando…" : "Reintentar"}
+      </button>
+    </div>
   );
 }
 

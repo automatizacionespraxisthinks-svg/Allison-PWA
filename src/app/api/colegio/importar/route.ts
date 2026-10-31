@@ -30,10 +30,12 @@ export async function POST(peticion: Request) {
 
   // Un curso entero en CSV pesa unos pocos KB; 1 MB alcanza para un colegio grande.
   if (cuerpoExcede(peticion, 1024 * 1024)) return NextResponse.json(CUERPO_MUY_GRANDE, { status: 413 });
-  const { csv, confirmar, curso } = (await peticion.json().catch(() => ({}))) as {
-    csv?: string;
-    confirmar?: boolean;
-    curso?: string;
+  // Un cuerpo "null" es JSON válido: sin el ?? {}, desestructurarlo
+  // reventaba con un 500 (auditoría, 30 de octubre de 2026).
+  const { csv, confirmar, curso } = ((await peticion.json().catch(() => null)) ?? {}) as {
+    csv?: unknown;
+    confirmar?: unknown;
+    curso?: unknown;
   };
 
   if (typeof csv !== "string" || !csv.trim()) {

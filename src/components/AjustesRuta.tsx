@@ -102,8 +102,12 @@ export function AvisosCelular() {
           type="button"
           disabled={ocupado}
           onClick={() =>
-            void activar().then((ok) =>
-              setAviso(ok ? "Listo: te aviso en este celular. La hora la cambias arriba." : "No se activaron. Si el celular preguntó, toca Permitir.")
+            void activar().then((r) =>
+              setAviso(
+                r.ok
+                  ? "Listo: te aviso en este celular. La hora la cambias arriba."
+                  : (r.aviso ?? "No se activaron. Si el celular preguntó, toca Permitir.")
+              )
             )
           }
           className="rounded-xl bg-primario px-4 py-3 font-semibold text-white disabled:opacity-50"

@@ -51,15 +51,29 @@ export async function alumnoActual(): Promise<Alumno | null> {
            exists (
              select 1 from suscripciones x
               where x.user_id = u.id and x.estado = 'activa' and x.periodo_fin <= now()
-           ) as mes_vencido
+           ) as mes_vencido,
+           (u.institucion_id is not null and u.rol <> 'admin'
+            and i.estado is distinct from 'activa') as colegio_suspendido
       from users u
       left join saldos s on s.user_id = u.id
+      left join instituciones i on i.id = u.institucion_id
      where u.id = ${sesion.user.id} and u.activo
      limit 1
   `;
 
   let [fila] = await leer();
   if (!fila) return null;
+
+  // Colegio suspendido: se corta de inmediato (decisión del dueño). Antes
+  // solo impedía ENTRAR (auth.ts); las sesiones abiertas de alumnos y
+  // coordinadores seguían conversando, gastando e importando hasta 30
+  // días. El administrador no se corta: si su cuenta está en un colegio,
+  // suspenderlo lo dejaría sin el panel con que se reactiva (auditoría,
+  // 30 de octubre de 2026).
+  if (fila.colegio_suspendido) {
+    console.info(`Sesión rechazada: el colegio de ${fila.id} no está activo`);
+    return null;
+  }
 
   // Si su mes de plan ya terminó, se pone al día ANTES de mostrar el
   // saldo: sin esto, quien tiene plan anual vería cero al empezar su mes

@@ -3,7 +3,8 @@ import bcrypt from "bcryptjs";
 import { sql } from "@/lib/db";
 import { cuentaDeCorreo, liberarCuenta } from "@/lib/intentos";
 import { limitar, origenDe } from "@/lib/limite";
-import { cambiarClave } from "@/lib/recuperacion";
+import { validarContrasenaNueva } from "@/lib/perfil-reglas";
+import { cambiarClave, tokenValido } from "@/lib/recuperacion";
 
 export async function POST(peticion: Request) {
   const limite = limitar(`cambiar:${origenDe(peticion)}`, 10, 3600);
@@ -14,22 +15,33 @@ export async function POST(peticion: Request) {
     );
   }
 
-  const { token, password } = (await peticion.json().catch(() => ({}))) as {
-    token?: string;
-    password?: string;
+  // Un cuerpo "null" es JSON válido: sin el ?? {}, desestructurarlo
+  // reventaba con un 500 (auditoría, 30 de octubre de 2026).
+  const { token, password } = ((await peticion.json().catch(() => null)) ?? {}) as {
+    token?: unknown;
+    password?: unknown;
   };
 
-  if (typeof password !== "string" || password.length < 8) {
-    return NextResponse.json(
-      { error: "La contraseña debe tener al menos 8 caracteres" },
-      { status: 400 }
-    );
-  }
+  // Las reglas de la contraseña del registro y del perfil: de 8 a 200.
+  // Sin el máximo, cualquiera hacía calcular bcrypt sobre una enorme.
+  const invalida = validarContrasenaNueva(password);
+  if (invalida) return NextResponse.json({ error: invalida }, { status: 400 });
   if (typeof token !== "string" || !token) {
     return NextResponse.json({ error: "Enlace inválido" }, { status: 400 });
   }
 
-  const userId = await cambiarClave(token, await bcrypt.hash(password, 12));
+  // El enlace se comprueba ANTES de hashear: bcrypt de costo 12 no se
+  // calcula para un token inventado (auditoría, 30 de octubre de 2026).
+  // cambiar_clave lo vuelve a comprobar al usarlo, así que dos usos a la
+  // vez del mismo enlace siguen sin poder pasar los dos.
+  if (!(await tokenValido(token))) {
+    return NextResponse.json(
+      { error: "Este enlace ya no sirve. Pide uno nuevo." },
+      { status: 410 }
+    );
+  }
+
+  const userId = await cambiarClave(token, await bcrypt.hash(String(password), 12));
 
   if (!userId) {
     return NextResponse.json(

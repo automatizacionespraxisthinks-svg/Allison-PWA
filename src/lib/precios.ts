@@ -30,8 +30,11 @@ export function configPrecios(): ConfigPrecios {
 }
 
 /** Bono por volumen: empuja a recargar grande, que es lo que baja el
- *  peso de la comisión fija de la pasarela. */
-const ESCALONES = [
+ *  peso de la comisión fija de la pasarela. Se exporta para que el
+ *  panel arme su texto con estos números y no con una copia escrita a
+ *  mano que se quede vieja (auditoría, 30 de octubre de 2026). De mayor
+ *  a menor: calcularRecarga toma el primero que alcanza. */
+export const ESCALONES: readonly { desde: number; bono: number }[] = [
   { desde: 50_000, bono: 0.15 },
   { desde: 20_000, bono: 0.1 },
 ];

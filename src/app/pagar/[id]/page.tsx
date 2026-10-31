@@ -6,6 +6,7 @@ import { sql } from "@/lib/db";
 import { pasarela } from "@/lib/pasarela";
 import { pesos } from "@/lib/precios";
 import { alumnoActual } from "@/lib/sesion";
+import { esUuid } from "@/lib/validar";
 
 export default async function PaginaPagar({
   params,
@@ -15,6 +16,10 @@ export default async function PaginaPagar({
   const { id } = await params;
   const alumno = await alumnoActual();
   if (!alumno) redirect("/entrar");
+  // transacciones.id es uuid: un enlace cortado (copiado a medias de
+  // WhatsApp) hacía fallar la consulta y salía un error 500 en vez de
+  // "no encontrado" (auditoría, 30 de octubre de 2026).
+  if (!esUuid(id)) notFound();
 
   const [t] = await sql`
     select id, monto_cop, mensajes_otorgados, tipo, estado

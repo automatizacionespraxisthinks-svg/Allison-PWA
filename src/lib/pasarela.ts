@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 /** Referencia de pago propia: viaja a la pasarela y vuelve en el aviso. */
 export function nuevaReferencia(): string {
@@ -43,6 +43,22 @@ export interface EventoPago {
 }
 
 /**
+ * Una anulación APROBADA: un reembolso o un contracargo. El dinero ya
+ * volvió al pagador. No se descuenta saldo solo —el alumno pudo gastarlo
+ * ya, y un descuento automático contra una orden mal atada le quitaría
+ * saldo a otro—: la orden se marca y el panel la muestra para que el
+ * administrador decida (auditoría, 30 de octubre de 2026).
+ */
+export interface Anulacion {
+  /** Nuestra referencia, si el aviso la trae. */
+  referencia: string | null;
+  /** El id del pago en la pasarela: con él se busca la orden en su
+   *  historial cuando el aviso no trae referencia. */
+  idPago: string | null;
+  rastro: Rastro;
+}
+
+/**
  * Lo que responde la pasarela cuando se le PREGUNTA por un pago.
  *
  *   pendiente  hay un pago en curso (o un estado desconocido): esperar.
@@ -73,6 +89,9 @@ export interface Pasarela {
   verificarFirma(cuerpoCrudo: string, cabeceras: Headers): boolean;
   /** null = auténtico, pero no es un cobro que haya que procesar. */
   interpretarEvento(cuerpo: unknown): EventoPago | null;
+  /** null = el aviso no es una anulación aprobada. Solo la tienen las
+   *  pasarelas que avisan reembolsos y contracargos. */
+  interpretarAnulacion?(cuerpo: unknown): Anulacion | null;
   /**
    * Preguntarle a la pasarela por un pago, sin esperar su aviso. Solo
    * la tienen las pasarelas cuyo aviso puede tardar o perderse.
@@ -284,7 +303,7 @@ const bold: Pasarela = {
   /**
    * Solo ventas: SALE_APPROVED y SALE_REJECTED. Las anulaciones
    * (VOID_*) le devuelven el dinero al pagador y NO se revierten solas
-   * aquí —el saldo pudo gastarse ya—; la ruta las deja en el log.
+   * —el saldo pudo gastarse ya—: las lee interpretarAnulacion.
    *
    * Un aviso sin referencia tampoco se puede atar a una orden: en el
    * ejemplo oficial del QR presencial la referencia llega en null. Ese
@@ -316,6 +335,43 @@ const bold: Pasarela = {
         tipo: e.type,
         transaccion: plano(e.data?.payment_id ?? e.subject),
         medio: plano(e.data?.payment_method),
+        total: plano(e.data?.amount?.total),
+        moneda: plano(e.data?.amount?.currency),
+        creada: plano(e.data?.created_at),
+      },
+    };
+  },
+
+  /**
+   * VOID_APPROVED: Bold devolvió el dinero de un pago (reembolso o
+   * contracargo). Antes el aviso se ignoraba con un console.warn y la
+   * orden seguía aprobada y contando como ingreso (auditoría, 30 de
+   * octubre de 2026). VOID_REJECTED no cambia nada: la venta sigue en
+   * pie. La referencia puede no venir (como en el QR presencial); el id
+   * del pago es el mismo que guardó el aviso de la venta en el historial.
+   */
+  interpretarAnulacion(cuerpo) {
+    const e = cuerpo as {
+      type?: string;
+      subject?: unknown;
+      data?: {
+        payment_id?: unknown;
+        created_at?: unknown;
+        metadata?: { reference?: unknown };
+        amount?: { total?: unknown; currency?: unknown };
+      };
+    };
+    if (e?.type !== "VOID_APPROVED") return null;
+
+    const referencia = plano(e.data?.metadata?.reference);
+    const idPago = plano(e.data?.payment_id ?? e.subject);
+    return {
+      referencia: typeof referencia === "string" && referencia !== "" ? referencia : null,
+      idPago: typeof idPago === "string" && idPago !== "" ? idPago : null,
+      // Sin card, payer_email ni seller: datos del pagador.
+      rastro: {
+        tipo: e.type,
+        transaccion: idPago,
         total: plano(e.data?.amount?.total),
         moneda: plano(e.data?.amount?.currency),
         creada: plano(e.data?.created_at),
@@ -404,154 +460,11 @@ const bold: Pasarela = {
   },
 };
 
-// ---------------------------------------------------------------------
-//  Wompi — checkout alojado. La alternativa a Bold, que solo desembolsa
-//  a cuentas Bancolombia o Nequi.
-//
-//  Si se usa con la decisión de SOLO QR (1% contra 2,65% + $700), esa
-//  restricción NO se puede imponer desde esta URL —el checkout alojado
-//  no tiene parámetro de métodos— sino en el panel del comercio.
-// ---------------------------------------------------------------------
-const wompi: Pasarela = {
-  nombre: "wompi",
-  simulada: false,
-
-  async crearPago({ transaccionId, referencia, montoCop, origen }) {
-    const llavePublica = process.env.WOMPI_PUBLIC_KEY;
-    const secretoIntegridad = process.env.WOMPI_INTEGRITY_SECRET;
-    // El de eventos también se exige ANTES de cobrar: sin él, Wompi
-    // cobra y la app rechaza su aviso, y el alumno paga sin recibir.
-    if (!llavePublica || !secretoIntegridad || !process.env.WOMPI_EVENTS_SECRET) {
-      throw new Error(
-        "Wompi sin configurar: faltan WOMPI_PUBLIC_KEY, WOMPI_INTEGRITY_SECRET o WOMPI_EVENTS_SECRET."
-      );
-    }
-
-    const centavos = montoCop * 100;
-
-    // La firma de integridad ata referencia, monto y moneda: sin ella,
-    // cualquiera podría abrir un checkout de $4.000 por una recarga de
-    // $50.000. Fórmula documentada por Wompi: sha256 de la
-    // concatenación referencia + centavos + moneda + secreto.
-    const integridad = createHash("sha256")
-      .update(`${referencia}${centavos}COP${secretoIntegridad}`)
-      .digest("hex");
-
-    const parametros = new URLSearchParams({
-      "public-key": llavePublica,
-      currency: "COP",
-      "amount-in-cents": String(centavos),
-      reference: referencia,
-      "signature:integrity": integridad,
-      // A la página de la orden, que muestra el resultado en cuanto el
-      // aviso lo acredita.
-      "redirect-url": `${origen}/pagar/${transaccionId}`,
-    });
-
-    return { urlPago: `https://checkout.wompi.co/p/?${parametros.toString()}` };
-  },
-
-  /**
-   * Verifica la firma de un evento COMO LA CALCULA WOMPI.
-   *
-   * No es un HMAC sobre el cuerpo — eso fue un error que habría
-   * rechazado todos los avisos reales, dejando al alumno pagando sin
-   * recibir nada. Wompi documenta otra cosa (docs.wompi.co, "Eventos"):
-   *
-   *   sha256( valores de signature.properties, en orden
-   *           + timestamp
-   *           + secreto de eventos )
-   *
-   * Los "properties" son rutas dentro de `data` ("transaction.status"),
-   * y pueden CAMBIAR con el tiempo: por eso se leen del propio evento
-   * en vez de fijarlas aquí. El checksum llega por partida doble — en
-   * la cabecera y en el cuerpo —; se prefiere la cabecera, que es lo
-   * que un atacante tendría que falsificar junto con todo lo demás.
-   */
-  verificarFirma(cuerpoCrudo, cabeceras) {
-    const secreto = process.env.WOMPI_EVENTS_SECRET ?? "";
-    if (!secreto) return false;
-
-    let evento: {
-      data?: Record<string, unknown>;
-      timestamp?: number | string;
-      signature?: { properties?: unknown; checksum?: unknown };
-    };
-    try {
-      evento = JSON.parse(cuerpoCrudo);
-    } catch {
-      return false;
-    }
-
-    const propiedades = evento?.signature?.properties;
-    if (!Array.isArray(propiedades) || propiedades.length === 0) return false;
-    if (evento.timestamp === undefined || !evento.data) return false;
-
-    // "transaction.status" -> data.transaction.status
-    const valor = (ruta: unknown): string | null => {
-      if (typeof ruta !== "string") return null;
-      let actual: unknown = evento.data;
-      for (const paso of ruta.split(".")) {
-        if (actual === null || typeof actual !== "object") return null;
-        actual = (actual as Record<string, unknown>)[paso];
-      }
-      // Un campo ausente NO puede pasar como cadena vacía: dos eventos
-      // distintos firmarían igual.
-      if (actual === null || actual === undefined) return null;
-      if (typeof actual === "object") return null;
-      return String(actual);
-    };
-
-    let concatenado = "";
-    for (const ruta of propiedades) {
-      const v = valor(ruta);
-      if (v === null) return false;
-      concatenado += v;
-    }
-    concatenado += String(evento.timestamp) + secreto;
-
-    const esperada = createHash("sha256").update(concatenado).digest("hex");
-    const recibida = String(
-      cabeceras.get("x-event-checksum") ?? evento.signature?.checksum ?? ""
-    ).toLowerCase();
-
-    return igualSeguro(recibida, esperada);
-  },
-
-  interpretarEvento(cuerpo) {
-    const e = cuerpo as {
-      data?: {
-        transaction?: {
-          id?: unknown;
-          reference?: string;
-          status?: string;
-          amount_in_cents?: unknown;
-          currency?: unknown;
-          payment_method_type?: unknown;
-        };
-      };
-    };
-    const t = e?.data?.transaction;
-    if (!t?.reference) return null;
-
-    const centavos = pesosDelAviso(t.amount_in_cents, t.currency);
-    return {
-      referencia: t.reference,
-      aprobado: t.status === "APPROVED",
-      montoCop: centavos === undefined ? undefined : centavos / 100,
-      // Sin customer_email ni los datos del medio de pago.
-      rastro: {
-        transaccion: plano(t.id),
-        estado: plano(t.status),
-        medio: plano(t.payment_method_type),
-        centavos: plano(t.amount_in_cents),
-        moneda: plano(t.currency),
-      },
-    };
-  },
-};
-
-const PASARELAS: Record<string, Pasarela> = { simulada, bold, wompi };
+// Wompi se quitó por decisión del dueño: la pasarela es Bold, y un
+// adaptador que nadie usa es código de cobro sin probar en producción
+// (auditoría, 30 de octubre de 2026). Si PASARELA trae un nombre que ya
+// no existe, cae a la simulada, que en producción revienta (abajo).
+const PASARELAS: Record<string, Pasarela> = { simulada, bold };
 
 export function pasarela(): Pasarela {
   const elegida = process.env.PASARELA ?? "simulada";

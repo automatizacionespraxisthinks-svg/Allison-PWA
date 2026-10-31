@@ -401,16 +401,30 @@ export interface ResultadoTurno {
   tokensSalida: number;
 }
 
+/** Una escena ya revisada para recibir un turno (prepararTurno). */
+interface EscenaParaTurno {
+  userId: string;
+  conversacionId: string;
+  estado: EstadoEscena;
+  u: Ubicacion;
+  /** Tareas, rondas, preguntas o datos de la actividad. */
+  total: number;
+  /** Es el último turno permitido. */
+  ultimo: boolean;
+}
+
 /**
- * Un turno del alumno. No cobra: la ruta cobra antes de llamar y
- * devuelve la intervención si algo falla o la IA no responde.
+ * Lo que se revisa ANTES de cobrar un turno: que la escena exista, sea
+ * del alumno, no esté terminada (ni su juego) y no haya llegado al tope.
+ * Antes la ruta cobraba primero y devolvía después: con un id inventado o
+ * una escena cerrada, cada petición escribía un consumo y un reverso en
+ * el libro (auditoría, 30 de octubre de 2026). Si otro turno llega en el
+ * camino, guardarTurno lo ve al guardar y la ruta devuelve.
  */
-export async function turnoDeEscena(
+export async function prepararTurno(
   userId: string,
-  nombre: string,
-  conversacionId: string,
-  entrada: { texto?: string; audioBase64?: string; mimeType?: string }
-): Promise<{ ok: true; r: ResultadoTurno } | { ok: false; error: ErrorEscena }> {
+  conversacionId: string
+): Promise<{ ok: true; escena: EscenaParaTurno } | { ok: false; error: ErrorEscena }> {
   const leida = await leerEscena(userId, conversacionId);
   if (!leida) return { ok: false, error: "no_existe" };
   const estado = leida.estado;
@@ -418,7 +432,6 @@ export async function turnoDeEscena(
   const u = await ubicar(userId, estado, leida.nivel);
   if (!u) return { ok: false, error: "no_existe" };
   if (desactualizada(estado, u)) return { ok: false, error: "desactualizada" };
-  const intervencionesAntes = estado.intervenciones;
 
   const total = u.escenario
     ? u.escenario.tareas.length
@@ -431,9 +444,35 @@ export async function turnoDeEscena(
   // El tope se aplica en el servidor: sin las tareas cumplidas, al máximo
   // la escena se cierra (Allison propone repasar); con todo cumplido, el
   // alumno puede seguir hablando hasta el doble.
-  if (estado.intervenciones >= (todas ? topeDuro(u) : u.maximo)) return { ok: false, error: "terminada" };
-  const ultimo = estado.intervenciones + 1 >= (todas ? topeDuro(u) : u.maximo);
+  const tope = todas ? topeDuro(u) : u.maximo;
+  if (estado.intervenciones >= tope) return { ok: false, error: "terminada" };
+  // Adivina y Enséñale terminan con su juego, aunque queden turnos.
+  if (u.adivina && (!estado.adivina || estado.adivina.ronda >= estado.adivina.rondas.length)) return { ok: false, error: "terminada" };
+  if (u.ensenale && (estado.ensenale?.actual ?? 0) >= u.ensenale.preguntas.length) return { ok: false, error: "terminada" };
+  return { ok: true, escena: { userId, conversacionId, estado, u, total, ultimo: estado.intervenciones + 1 >= tope } };
+}
+
+/**
+ * Un turno del alumno en una escena ya revisada (prepararTurno). No
+ * cobra: la ruta cobra antes de llamar y devuelve la intervención si algo
+ * falla o la IA no responde.
+ */
+export async function turnoDeEscena(
+  nombre: string,
+  escena: EscenaParaTurno,
+  entrada: { texto?: string; audioBase64?: string; mimeType?: string }
+): Promise<{ ok: true; r: ResultadoTurno } | { ok: false; error: ErrorEscena }> {
+  const { userId, conversacionId, estado, u, total, ultimo } = escena;
+  const intervencionesAntes = estado.intervenciones;
   const vacio = { nuevas: [], estado, metaCumplida: false, cerrada: false };
+  // La IA no dio una respuesta que sirva (JSON roto o vacío, no terminó):
+  // se sale sin tocar el estado (ni intervenciones, ni ayudas, ni
+  // estrellas) y la ruta devuelve la intervención (auditoría, 30 de
+  // octubre de 2026).
+  const fallaDeLaIA = (transcripcion: string, tokensEntrada: number, tokensSalida: number) => ({
+    ok: true as const,
+    r: { ...vacio, estado: estadoPublico(estado), sinRespuesta: true, transcripcion, respuesta: "", respuestaVoz: "", tokensEntrada, tokensSalida },
+  });
   let r: ResultadoTurno;
 
   if (u.escenario) {
@@ -482,9 +521,7 @@ export async function turnoDeEscena(
     });
     tokensEntrada += t.tokensEntrada;
     tokensSalida += t.tokensSalida;
-    if (t.sinRespuesta) {
-      return { ok: true, r: { ...vacio, sinRespuesta: true, transcripcion: t.transcripcion, respuesta: "", respuestaVoz: "", tokensEntrada, tokensSalida } };
-    }
+    if (t.sinRespuesta) return fallaDeLaIA(t.transcripcion, tokensEntrada, tokensSalida);
     r = {
       ...vacio,
       transcripcion: t.transcripcion,
@@ -518,6 +555,7 @@ export async function turnoDeEscena(
     const l = await clasificarAdivina({ adivina: u.adivina, transcripcion });
     tokensEntrada += l.tokensEntrada;
     tokensSalida += l.tokensSalida;
+    if (l.sinRespuesta) return fallaDeLaIA(transcripcion, tokensEntrada, tokensSalida);
     const secreto = juego.rondas[juego.ronda];
     const a = respuestaDeAdivina(
       u.adivina,
@@ -575,6 +613,7 @@ export async function turnoDeEscena(
     const l = await clasificarEnsenale({ ensenale: u.ensenale, pregunta: u.ensenale.preguntas[juego.actual].pregunta, transcripcion });
     tokensEntrada += l.tokensEntrada;
     tokensSalida += l.tokensSalida;
+    if (l.sinRespuesta) return fallaDeLaIA(transcripcion, tokensEntrada, tokensSalida);
     const a = respuestaDeEnsenale({ ensenale: u.ensenale, lectura: l, actual: juego.actual, intentos: juego.intentos });
     // Si no respondió (en español, muy corto o sin entenderse), Allison le
     // dio la pregunta más simple: cuenta como ayuda.
@@ -605,6 +644,7 @@ export async function turnoDeEscena(
     const c = await clasificarEntrevista({ entrevista: u.entrevista!, transcripcion, devuelta: estado.devuelta ?? undefined });
     tokensEntrada += c.tokensEntrada;
     tokensSalida += c.tokensSalida;
+    if (c.sinRespuesta) return fallaDeLaIA(transcripcion, tokensEntrada, tokensSalida);
     const fichaCompleta = estado.cumplidas.length >= u.entrevista!.datos.length;
     const a = respuestaDeEntrevista({
       entrevista: u.entrevista!,

@@ -327,10 +327,12 @@ export async function POST(peticion: Request) {
 
   // Todo lo que usa la IA cuesta, porque sus tokens se pagan (decisión del
   // usuario, 29 de octubre de 2026). Lo hablado se transcribe: siempre
-  // cobra. Lo escrito cobra solo si hace falta el modelo: Responde rápido
-  // siempre; Dilo y ¿Qué es esto? abiertas cuando no es una frase
-  // aprobada; Describe desde A2 al revisar la gramática. Una frase
-  // aprobada la resuelve el código y es gratis.
+  // cobra. Lo escrito cobra solo si hace falta el modelo (antesDelModelo):
+  // Responde rápido al juzgarlo; Dilo y ¿Qué es esto? abiertas cuando no
+  // es una frase aprobada; Describe desde A2 al revisar la gramática. Una
+  // frase aprobada la resuelve el código y es gratis. Responde rápido
+  // escrito cobraba al comienzo, también en español, que no se juzga ni
+  // llama al modelo (auditoría, 30 de octubre de 2026).
   const sinSaldo = () =>
     NextResponse.json(
       { error: "sin_mensajes", mensaje: "Te quedaste sin intervenciones." },
@@ -343,7 +345,7 @@ export async function POST(peticion: Request) {
         await sql`select consumir_mensaje(${alumno.id}, null)`;
     return !!bolsa;
   };
-  const alComienzo = !texto || pedido.tipo === "responde";
+  const alComienzo = !texto;
   if (alComienzo && !(await cobrar())) return sinSaldo();
   const devolver = async () => {
     if (bolsa)
@@ -379,6 +381,20 @@ export async function POST(peticion: Request) {
 
   // Escrito, hacía falta el modelo y no había saldo: no se calificó.
   if (resultado.sinSaldo) return sinSaldo();
+
+  // Describe escrito desde A2: se cobró solo para revisar la gramática y
+  // la revisión falló. La frase cuenta igual (lo que nombró lo sabe el
+  // código), pero la IA falló: se devuelve y no se anota el uso. Hablado
+  // no, porque la transcripción sí usó la IA (auditoría, 30 de octubre de
+  // 2026).
+  if (resultado.revisionFallida && texto && bolsa) {
+    try {
+      await devolver();
+      bolsa = null;
+    } catch (e) {
+      console.error("No se pudo devolver la revisión fallida:", e instanceof Error ? e.message : e);
+    }
+  }
 
   // Desde aquí la IA ya trabajó: se cobra aunque no se haya oído voz (no
   // cuenta como intento, pero la transcripción usó la IA; plan, secciones

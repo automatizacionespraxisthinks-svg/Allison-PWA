@@ -39,14 +39,14 @@ export const PARADA_03: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: A boy asks: "Who is she?" A girl says: "She\'s my teacher. Her name is Ms. Lee." Pregunta: ¿quién es Ms. Lee? Elige entre tres imágenes: la profesora (a-profesor), Emma (f-nina) y el señor mayor (f-senor-mayor). Al acertar aparece el diálogo con su traducción.',
+            'Allison cuenta: A boy asks: "Who is she?" A girl says: "She\'s my teacher. Her name is Ms. Lee." Pregunta: ¿quién es Ms. Lee? Elige entre tres imágenes: la profesora (a-profesora-tablero), Emma (f-nina) y el señor mayor (f-senor-mayor). Al acertar aparece el diálogo con su traducción.',
           siRespondeMal: "Se repite el diálogo y elige otra vez.",
           quienHabla: "Allison",
           audio: ['A boy asks: "Who is she?"', 'A girl says: "She\'s my teacher. Her name is Ms. Lee."'],
           traduccion: ['Un muchacho pregunta: "¿Quién es ella?"', 'Una muchacha dice: "Es mi profesora. Se llama Ms. Lee."'],
           pregunta: "¿Quién es Ms. Lee?",
           opciones: [
-            { imagen: "a-profesor", descripcion: "La profesora", etiqueta: "A teacher", etiquetaEs: "Una profesora" },
+            { imagen: "a-profesora-tablero", descripcion: "La profesora", etiqueta: "A teacher", etiquetaEs: "Una profesora" },
             { imagen: "f-nina", descripcion: "Emma (una niña)", etiqueta: "A girl", etiquetaEs: "Una niña" },
             { imagen: "f-senor-mayor", descripcion: "El señor mayor", etiqueta: "An older man", etiquetaEs: "Un señor mayor" },
           ],
@@ -59,14 +59,14 @@ export const PARADA_03: Parada = {
           queAparece: 'Imagen de la profesora. Tom dice: "This is Ms. Lee. She is my…"',
           siRespondeMal:
             'Pistas en inglés, una a la vez: "She is at school." → "She is with the students." → "It starts with t." Sin pistas, Allison dice "teacher" y el alumno la repite.',
-          imagen: "a-profesor",
+          imagen: "a-profesora-tablero",
           pregunta: "This is Ms. Lee. She is my…",
           contexto: "Tom te presenta a Ms. Lee. ¿Quién es ella para Tom? Completa la frase.",
           respuesta: "teacher",
           aceptadas: ["my teacher", "she is my teacher"],
           pistas: ["She is at school.", "She is with the students.", "It starts with t."],
           explicaciones: [{ siDice: "professor", explicacion: "En el colegio se dice teacher. Professor es en la universidad." }],
-          porRevisar: ["imagen: a-profesor ahora es Ms. Lee junto al tablero (recorte de f-salon-clase); antes una mujer leyendo un libro, que no se veía profesora. Si dice professor, Allison explica (cambio del 30 de octubre de 2026)"],
+          porRevisar: ["imagen: a-profesora-tablero (antes a-profesor) es Ms. Lee junto al tablero (recorte de f-salon-clase); antes una mujer leyendo un libro, que no se veía profesora. Si dice professor, Allison explica (cambio del 30 de octubre de 2026)"],
         },
         {
           paso: 3,

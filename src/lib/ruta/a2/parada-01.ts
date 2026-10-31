@@ -278,7 +278,7 @@ export const PARADA_01: Parada = {
             { nombre: "chef", imagen: "f-chef-cocina" },
             { nombre: "nurse", imagen: "f-enfermera-noche" },
             { nombre: "police officer", imagen: "f-policia-patrulla" },
-            { nombre: "teacher", imagen: "a1/a-profesor" },
+            { nombre: "teacher", imagen: "a1/a-profesora-tablero" },
             { nombre: "farmer", imagen: "f-granjero-vacas" },
             { nombre: "pilot", imagen: "f-piloto-avion" },
           ],
@@ -391,7 +391,7 @@ export const PARADA_01: Parada = {
       muestra: "Una enfermera en un hospital de noche; un chef en la cocina de un restaurante",
       uso: "Lección 2 (paso 1), lección 4 (paso 2) y las tarjetas de Adivina",
     },
-    { archivos: ["a1/a-profesor"], muestra: "La profesora Ms. Lee junto al tablero (de A1; desde el 30 de octubre de 2026, antes con un libro)", uso: "Adivina" },
+    { archivos: ["a1/a-profesora-tablero"], muestra: "La profesora Ms. Lee junto al tablero (de A1; desde el 30 de octubre de 2026, antes con un libro)", uso: "Adivina" },
     { archivos: ["a1/f-salon-clase"], muestra: "Una profesora frente al tablero de su salón (de A1; desde el 30 de octubre de 2026)", uso: "Lección 2 (paso 1)" },
     { archivos: ["f-bus-escolar"], muestra: "Un bus escolar", uso: "Lección 2 (paso 2)" },
     {

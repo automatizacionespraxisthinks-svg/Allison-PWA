@@ -95,9 +95,27 @@ export function CargaAlumnos({
     const d = r ? await r.json().catch(() => ({})) : {};
     setOcupado(false);
 
-    if (!r?.ok) {
+    // Al confirmar, si la respuesta se pierde (sin red, o un error del
+    // servidor sin explicación, como un 502 del proxy) las cuentas pueden
+    // haberse creado igual. Antes decía "No pudimos leer el archivo", el
+    // coordinador repetía, todas salían como "Ya existe" y los PIN no se
+    // volvían a mostrar (auditoría, 30 de octubre de 2026). Ahora se dice
+    // la verdad y se vuelve al paso 2: revisar otra vez muestra cuáles ya
+    // quedaron.
+    if (confirmar && (!r || (r.status >= 500 && d.error === undefined))) {
+      setResumen(null);
+      setError(
+        "No sabemos si se crearon: revisa la lista antes de repetir. Toca «Revisar antes de crear»: las cuentas que ya quedaron salen como «Ya existe», y sus PIN se reinician desde la lista de alumnos."
+      );
+      return;
+    }
+    if (!r) {
+      setError("Sin conexión. Revisa tu internet e intenta otra vez.");
+      return;
+    }
+    if (!r.ok) {
       setResumen(d.aCrear !== undefined ? d : null);
-      setError(d.error ?? "No pudimos leer el archivo.");
+      setError(d.error ?? (confirmar ? "No pudimos crear las cuentas. Intenta otra vez." : "No pudimos leer el archivo."));
       return;
     }
     setResumen(d);

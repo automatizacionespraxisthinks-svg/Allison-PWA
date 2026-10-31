@@ -55,6 +55,8 @@ export function Transcripcion({
   const [confirmando, setConfirmando] = useState<string | null>(null);
   const [sonando, setSonando] = useState<string | null>(null);
   const [traducciones, setTraducciones] = useState<Record<string, string>>({});
+  /** Lo que hay en `traducciones` es un aviso de que no se pudo, no una traducción. */
+  const [fallidas, setFallidas] = useState<Record<string, boolean>>({});
   const [abiertas, setAbiertas] = useState<Record<string, boolean>>({});
   const [traduciendo, setTraduciendo] = useState<string | null>(null);
   const zonaRef = useRef<HTMLDivElement>(null);
@@ -115,8 +117,8 @@ export function Transcripcion({
       setAbiertas((a) => ({ ...a, [m.id]: false }));
       return;
     }
-    // El aviso de sin saldo no se guarda como traducción: al recargar, se pide otra vez.
-    if (traducciones[m.id] && traducciones[m.id] !== SIN_SALDO) {
+    // Un aviso (sin saldo, sin red) no se guarda como traducción: al tocar otra vez, se pide.
+    if (traducciones[m.id] && !fallidas[m.id]) {
       setAbiertas((a) => ({ ...a, [m.id]: true }));
       return;
     }
@@ -125,14 +127,18 @@ export function Transcripcion({
     try {
       const r = await pedirAyudaIA(m.texto, nivel);
       if (!r.ok) {
-        if (r.sinSaldo) {
-          alCobrar?.(0);
-          // Se dice ahí mismo: traducir usa la IA y gasta una intervención.
-          setTraducciones((t) => ({ ...t, [m.id]: SIN_SALDO }));
-          setAbiertas((a) => ({ ...a, [m.id]: true }));
-        }
+        if (r.sinSaldo) alCobrar?.(0);
+        // Se dice ahí mismo: traducir usa la IA y gasta una intervención.
+        // Los otros fallos (sin red, la IA no respondió) antes no decían
+        // nada: el botón volvía a "Traducción" como si no se hubiera tocado
+        // (auditoría, 30 de octubre de 2026). Tampoco se guardan: al tocar
+        // otra vez, se pide de nuevo.
+        setTraducciones((t) => ({ ...t, [m.id]: r.sinSaldo ? SIN_SALDO : r.mensaje }));
+        setFallidas((f) => ({ ...f, [m.id]: true }));
+        setAbiertas((a) => ({ ...a, [m.id]: true }));
         return;
       }
+      setFallidas((f) => ({ ...f, [m.id]: false }));
       if (r.cobrada && r.ayuda.restantes !== undefined) alCobrar?.(r.ayuda.restantes);
       setTraducciones((t) => ({ ...t, [m.id]: r.ayuda.traduccion || "—" }));
       setAbiertas((a) => ({ ...a, [m.id]: true }));
@@ -204,7 +210,7 @@ export function Transcripcion({
                   onClick={() => traducir(m)}
                   disabled={traduciendo === m.id}
                   aria-expanded={Boolean(abiertas[m.id])}
-                  title={traducciones[m.id] && traducciones[m.id] !== SIN_SALDO ? undefined : "Traducir usa una intervención"}
+                  title={traducciones[m.id] && !fallidas[m.id] ? undefined : "Traducir usa una intervención"}
                   className="shrink-0 text-xs font-semibold text-primario transition hover:opacity-75 disabled:opacity-40"
                 >
                   {traduciendo === m.id

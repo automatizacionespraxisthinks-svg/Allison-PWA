@@ -2,6 +2,7 @@ import type { PendingQuery, Row } from "postgres";
 import { sql } from "../db";
 import type { Ajustes } from "../ajustes";
 import { costoCop } from "../uso";
+import { cuantosPagosPorRevisar } from "./recargas";
 
 /**
  * El Resumen del panel (plan, sección 21; boceto 1): si los alumnos
@@ -26,7 +27,7 @@ export interface FiltroResumen {
 }
 
 export interface Alerta {
-  clave: "reportes" | "saldo-colegio" | "sin-saldo" | "inactivos" | "parada" | "prueba";
+  clave: "pagos" | "reportes" | "saldo-colegio" | "sin-saldo" | "inactivos" | "parada" | "prueba";
   cuantos: number;
   texto: string;
   detalle?: string;
@@ -76,6 +77,20 @@ export async function resumenDelPanel(f: FiltroResumen, a: Ajustes): Promise<Res
     select user_id, fecha from uso_diario where turnos > 0
   `;
 
+  /**
+   * Lo que de verdad entró por cada orden aprobada. En las recargas del
+   * panel (efectivo o transferencia) es lo recibido en caja, que puede ser
+   * distinto del precio: sumar monto_cop hacía que el cuadre del día dijera
+   * 30.000 y los ingresos 35.000. Un pago que la pasarela anuló (reembolso o
+   * contracargo) ya no es ingreso: el dinero volvió (auditoría, 30 de
+   * octubre de 2026).
+   */
+  const ingreso = sql`
+    case when payload->>'alerta' = 'anulada' then 0
+         when pasarela in ('efectivo', 'transferencia') then coalesce((payload->>'valorRecibido')::int, monto_cop)
+         else monto_cop end
+  `;
+
   const [[hoy], [d7], [racha], [dinero], [negocio]] = await Promise.all([
     sql`
       with a as (${alumnos}), x as (${activos})
@@ -110,7 +125,7 @@ export async function resumenDelPanel(f: FiltroResumen, a: Ajustes): Promise<Res
                         where user_id in (select id from a) and fecha > current_date - ${dias}::int), 0)::bigint as entrada,
              coalesce((select sum(tokens_salida + tokens_ayuda_salida) from uso_diario
                         where user_id in (select id from a) and fecha > current_date - ${dias}::int), 0)::bigint as salida,
-             coalesce((select sum(monto_cop) from transacciones
+             coalesce((select sum(${ingreso}) from transacciones
                         where estado = 'aprobada' and user_id in (select id from a)
                           and confirmado_en > now() - make_interval(days => ${dias})), 0)::bigint as cobrado
     `,
@@ -118,7 +133,7 @@ export async function resumenDelPanel(f: FiltroResumen, a: Ajustes): Promise<Res
       select (select count(distinct user_id)::int from transacciones where estado = 'aprobada') as pagaron,
              (select count(*)::int from instituciones where estado = 'activa') as colegios,
              (select count(*)::int from users where institucion_id is not null and rol = 'estudiante' and activo) as alumnos_colegio,
-             (select coalesce(sum(monto_cop), 0)::bigint from transacciones where estado = 'aprobada') as ingresos
+             (select coalesce(sum(${ingreso}), 0)::bigint from transacciones where estado = 'aprobada') as ingresos
     `,
   ]);
 
@@ -175,7 +190,7 @@ async function retencion(
 
 /** "Para atender hoy": cada umbral sale de Ajustes. */
 async function alertas(a: Ajustes, alumnos: Fragmento): Promise<Alerta[]> {
-  const [[r], [sinSaldo], [inactivos], [parada], [prueba], colegios] = await Promise.all([
+  const [[r], [sinSaldo], [inactivos], [parada], [prueba], colegios, pagos] = await Promise.all([
     sql`
       select count(*) filter (where creado_en < now() - make_interval(days => ${a.alertaReporteDias}))::int as viejos,
              count(*)::int as abiertos
@@ -213,9 +228,19 @@ async function alertas(a: Ajustes, alumnos: Fragmento): Promise<Alerta[]> {
          and not exists (select 1 from transacciones t where t.user_id = a.id and t.estado = 'aprobada')
     `,
     colegiosConPocoSaldo(a.alertaSaldoColegioPct),
+    cuantosPagosPorRevisar(),
   ]);
 
   return [
+    // Primero la plata: montos que no cuadran y pagos anulados por la
+    // pasarela, que antes solo quedaban en el log (auditoría, 30 de
+    // octubre de 2026).
+    {
+      clave: "pagos",
+      cuantos: pagos,
+      texto: "Pagos por revisar: montos que no cuadran o anulados por la pasarela",
+      href: "/admin/recargas",
+    },
     {
       clave: "reportes",
       cuantos: n(r.viejos),

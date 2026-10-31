@@ -1,4 +1,5 @@
 import { PAIS_DE_NIVEL } from "@/components/ruta/Encabezado";
+import { finDelMesDelPlan } from "../cobro";
 import { sql } from "../db";
 import { estadoRutaDe } from "../ruta/avance";
 import { rutaDe } from "../ruta/index";
@@ -6,6 +7,7 @@ import { rutaProvisionalDe } from "../ruta/provisional";
 import { NIVELES, type Nivel } from "../tipos";
 import { costoCop } from "../uso";
 import { nombreDeParada } from "./etiquetas";
+import { sinMarca } from "./operaciones";
 
 /**
  * La ficha de un alumno en el panel (plan, sección 21; boceto 3): dónde
@@ -39,6 +41,9 @@ export interface FichaAlumno {
   racha: number;
   rachaMaxima: number;
   saldo: number;
+  /** El fin del mes de su plan activo (DD/MM/AAAA): cuando vence la bolsa
+   *  del plan. null si no tiene plan activo. */
+  planVence: string | null;
   mes: { intervenciones: number; costoCop: number };
   total: { intervenciones: number; costoCop: number };
   historial: MovimientoFicha[];
@@ -122,7 +127,7 @@ export async function fichaDe(userId: string, dolar: number): Promise<FichaAlumn
             }${payload.registradoPor ? ` · por ${payload.registradoPor}` : ""}`
           : pago
             ? `${TIPO[m.tipo] ?? m.tipo} en línea · $${n(m.monto_cop).toLocaleString("es-CO")}`
-            : `${TIPO[m.tipo] ?? m.tipo}${m.nota ? ` · ${m.nota}` : ""}`;
+            : `${TIPO[m.tipo] ?? m.tipo}${m.nota ? ` · ${sinMarca(m.nota)}` : ""}`;
       return { fecha: (m.creado_en as Date).toISOString(), texto, cantidad: n(m.cantidad), orden: (m.creado_en as Date).getTime() };
     }),
     ...consumo.map((c) => ({
@@ -183,6 +188,7 @@ export async function fichaDe(userId: string, dolar: number): Promise<FichaAlumn
     racha: n(u.racha),
     rachaMaxima: Math.max(n(u.racha_maxima), n(u.racha)),
     saldo: n(u.saldo),
+    planVence: (await finDelMesDelPlan([u.id]))[u.id] ?? null,
     mes: { intervenciones: n(mes.turnos), costoCop: costoCop(n(mes.entrada), n(mes.salida), dolar) },
     total: { intervenciones: n(total.turnos), costoCop: costoCop(n(total.entrada), n(total.salida), dolar) },
     historial: historial.slice(0, 40).map(({ fecha, texto, cantidad }) => ({ fecha, texto, cantidad })),

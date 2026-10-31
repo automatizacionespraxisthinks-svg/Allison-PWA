@@ -104,6 +104,16 @@ export function BotonGrabar({
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true },
       });
+      // Salió mientras se abría el micrófono (o mientras el permiso estaba
+      // pendiente): la limpieza ya pasó, así que se cierra aquí. Antes
+      // quedaba grabando hasta los 60 s, con el indicador del micrófono
+      // prendido y el aro de Allison moviéndose en la pantalla siguiente
+      // (auditoría, 30 de octubre de 2026). Igual que el Grabador de las
+      // lecciones.
+      if (!vivo.current) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
 
       // Opus dentro de WebM: buena calidad de voz en archivos pequeños,
       // que es lo que importa desde un celular con datos móviles.

@@ -222,6 +222,49 @@ export { explicacionPara } from "@/lib/ruta/explicaciones";
 /** Lo que entrega el micrófono o el teclado. */
 export type Entrada = { audio: Blob; duracion: number; url: string } | { texto: string };
 
+/**
+ * Cada grabación se oye con "Oír mi voz" desde una URL de objeto, y esa URL
+ * retiene el audio en memoria hasta que se libera: antes no se liberaba
+ * nunca, y en una sesión larga se juntaban decenas de audios en un celular
+ * de gama baja (auditoría, 30 de octubre de 2026).
+ *
+ * El Grabador no puede liberar la suya al desmontarse: la actividad la
+ * sigue mostrando después (en Dilo, ¿Qué es esto?, Tu turno o la frase
+ * repetida de Narra, la hoja del resultado reemplaza al Grabador y trae
+ * "Oír mi voz"). Por eso se guardan vivas las últimas pocas de toda la
+ * sesión, y al crear una nueva se libera la más vieja: ninguna pantalla
+ * muestra más de una o dos a la vez.
+ */
+const GRABACIONES_VIVAS = 4;
+const grabacionesVivas: string[] = [];
+
+export function urlDeGrabacion(audio: Blob): string {
+  const url = URL.createObjectURL(audio);
+  grabacionesVivas.push(url);
+  while (grabacionesVivas.length > GRABACIONES_VIVAS) URL.revokeObjectURL(grabacionesVivas.shift()!);
+  return url;
+}
+
+/**
+ * La grabación larga de Cuéntame y Narra, que la actividad crea y muestra
+ * ella misma: se libera la anterior al grabar otra y la última al salir.
+ */
+export function useGrabacionPropia() {
+  const actual = useRef<string | null>(null);
+  useEffect(
+    () => () => {
+      if (actual.current) URL.revokeObjectURL(actual.current);
+      actual.current = null;
+    },
+    []
+  );
+  return useCallback((audio: Blob): string => {
+    if (actual.current) URL.revokeObjectURL(actual.current);
+    actual.current = URL.createObjectURL(audio);
+    return actual.current;
+  }, []);
+}
+
 const UMBRAL_SILENCIO = 0.015;
 
 /**
@@ -346,7 +389,7 @@ export function Grabador({
           setAviso("No te oí. Revisa que el micrófono no esté silenciado, o usa el teclado.");
           return;
         }
-        entregar.current({ audio, duracion: Math.round(duracion), url: URL.createObjectURL(audio) });
+        entregar.current({ audio, duracion: Math.round(duracion), url: urlDeGrabacion(audio) });
       };
       const c = new AudioContext();
       const analizador = c.createAnalyser();

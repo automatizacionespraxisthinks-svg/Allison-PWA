@@ -63,8 +63,10 @@ async function pedir(cuerpo: unknown): Promise<Record<string, unknown> | null> {
  * de Google, ventanas incrustadas) nunca responden a pushManager: sin
  * este límite el ajuste se quedaría cargando para siempre.
  */
+const SIN_RESPUESTA = "sin respuesta";
+
 function conLimite<T>(promesa: Promise<T>, ms = 4000): Promise<T> {
-  return Promise.race([promesa, new Promise<never>((_, no) => setTimeout(() => no(new Error("sin respuesta")), ms))]);
+  return Promise.race([promesa, new Promise<never>((_, no) => setTimeout(() => no(new Error(SIN_RESPUESTA)), ms))]);
 }
 
 async function suscripcionActual(): Promise<PushSubscription | null> {
@@ -96,27 +98,39 @@ export function useAvisos() {
     return () => clearTimeout(t);
   }, [revisar]);
 
-  /** Pide permiso y suscribe este aparato. Devuelve si quedó activo. */
-  const activar = useCallback(async (): Promise<boolean> => {
-    if (!llave) return false;
+  /**
+   * Pide permiso y suscribe este aparato. Devuelve si quedó activo y, si
+   * no, un aviso cuando hay algo más que decir que "no se activaron".
+   *
+   * Con límite de tiempo, como revisar(): si el service worker no se
+   * registró (RegistrarSW ignora el error), `ready` nunca resuelve, y donde
+   * no hay servicio de avisos pushManager nunca responde. El botón se
+   * quedaba en "Activando…" para siempre (auditoría, 30 de octubre de
+   * 2026). 8 s y no 4: subscribe sí habla con el servicio de avisos.
+   */
+  const activar = useCallback(async (): Promise<{ ok: boolean; aviso?: string }> => {
+    if (!llave) return { ok: false };
     setOcupado(true);
     try {
       const permiso = await Notification.requestPermission();
       if (permiso !== "granted") {
         setEstado(permiso === "denied" ? "bloqueado" : "inactivo");
-        return false;
+        return { ok: false };
       }
-      const reg = await navigator.serviceWorker.ready;
+      const reg = await conLimite(navigator.serviceWorker.ready, 8000);
       const sub =
-        (await reg.pushManager.getSubscription()) ??
-        (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: aBytes(llave) }));
+        (await conLimite(reg.pushManager.getSubscription(), 8000)) ??
+        (await conLimite(reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: aBytes(llave) }), 8000));
       const r = await pedir({ accion: "activar", suscripcion: sub.toJSON() });
-      if (!r) return false;
+      if (!r) return { ok: false, aviso: "No pudimos guardarlos. Revisa tu conexión e intenta otra vez." };
       setHora((r.hora as string | null) ?? hora);
       setEstado("activo");
-      return true;
-    } catch {
-      return false;
+      return { ok: true };
+    } catch (e) {
+      if (e instanceof Error && e.message === SIN_RESPUESTA) {
+        return { ok: false, aviso: "Este navegador no respondió al activar los avisos. Intenta otra vez; en Android, prueba con Chrome." };
+      }
+      return { ok: false };
     } finally {
       setOcupado(false);
     }

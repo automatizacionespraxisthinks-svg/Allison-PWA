@@ -67,7 +67,14 @@ export default async function PaginaPracticar({
     <>
     <Navegacion racha={alumno.rachaDias} />
     <div className="lg:pl-56">
+    {/* key: "Nueva conversación" va de /practicar a /practicar?nueva=1, y
+        cambiar solo la búsqueda NO vuelve a montar la página (Next
+        conserva el estado). Conversacion guardaba el historial, la
+        lección y el id del hilo viejo, y el turno siguiente seguía en el
+        hilo viejo. Con el id como key, cada hilo monta una conversación
+        nueva (auditoría, 30 de octubre de 2026). */}
     <Conversacion
+      key={conversacionId}
       nombre={alumno.nombre}
       nivel={alumno.nivel}
       mensajesIniciales={alumno.mensajesPlan + alumno.mensajesRecarga}
@@ -75,7 +82,10 @@ export default async function PaginaPracticar({
       historial={historial.map((m) => ({ ...m, correcciones: m.correcciones }))}
       enPrueba={alumno.enPrueba}
       recargaMinima={configPrecios().minima}
-      esCoordinador={alumno.rol === "coordinador" || alumno.rol === "admin"}
+      // El panel exige colegio (colegio/page.tsx): a un admin sin colegio
+      // el enlace lo devolvía aquí sin explicación (auditoría, 30 de
+      // octubre de 2026).
+      esCoordinador={(alumno.rol === "coordinador" || alumno.rol === "admin") && alumno.institucionId !== null}
       esAdmin={alumno.rol === "admin"}
       racha={alumno.rachaDias}
       reportadas={reportadas}

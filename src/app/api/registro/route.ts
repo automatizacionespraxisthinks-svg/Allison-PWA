@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { sql } from "@/lib/db";
-import { limitar, origenDe, REGISTROS_GLOBALES_POR_HORA } from "@/lib/limite";
+import { intentosAgotados, limitar, origenDe, REGISTROS_GLOBALES_POR_HORA, sumarFallo } from "@/lib/limite";
 import { interpretar } from "@/lib/identificador";
 import { VERSION_LEGAL } from "@/lib/legal";
 import { MENSAJES_PRUEBA } from "@/lib/prueba";
@@ -40,13 +40,15 @@ const REGISTROS_POR_HORA = 5;
 
 export async function POST(peticion: Request) {
   const limite = limitar(`registro:${origenDe(peticion)}`, REGISTROS_POR_HORA, 3600);
-  const global = limitar("registro:global", REGISTROS_GLOBALES_POR_HORA, 3600);
+  // El tope global cuenta solo las cuentas que SÍ se crearon (abajo): antes
+  // contaba cada petición, y 61 peticiones vacías en una hora dejaban sin
+  // registro a todo el país (auditoría, 30 de octubre de 2026).
+  const globalAgotado = intentosAgotados("registro:global", REGISTROS_GLOBALES_POR_HORA);
 
-  if (!limite.permitido || !global.permitido) {
-    const espera = Math.max(limite.esperaSeg, global.esperaSeg);
+  if (!limite.permitido || globalAgotado) {
     return NextResponse.json(
       { error: "Demasiadas cuentas nuevas. Intenta más tarde." },
-      { status: 429, headers: { "Retry-After": String(espera) } }
+      { status: 429, headers: { "Retry-After": String(limite.permitido ? 600 : limite.esperaSeg) } }
     );
   }
 
@@ -145,5 +147,6 @@ export async function POST(peticion: Request) {
     throw e;
   }
 
+  sumarFallo("registro:global", 3600);
   return NextResponse.json({ ok: true, id: nuevoId, mensajes: gratis }, { status: 201 });
 }

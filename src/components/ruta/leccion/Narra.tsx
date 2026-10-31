@@ -10,7 +10,7 @@ import type { Narra as Datos, Explicacion } from "@/lib/ruta/tipos";
 import type { Nivel } from "@/lib/tipos";
 import { Icono } from "../Iconos";
 import { evaluar, type Contexto, type FinActividad, type ResultadoEvaluacion } from "./api";
-import { AllisonAro, BotonOir, Explicado, Grabador, Hoja, explicacionPara, oirGrabacion, useVoz, type Entrada } from "./comun";
+import { AllisonAro, BotonOir, Explicado, Grabador, Hoja, explicacionPara, oirGrabacion, useGrabacionPropia, useVoz, type Entrada } from "./comun";
 import { BotonEnviarOtraVez, Reloj, SIN_VOZ, UMBRAL_VOZ, formatoReloj, frasesQueSeEntienden } from "./Cuentame";
 
 type Fase = "listo" | "grabando" | "pausa" | "enviando" | "resultado";
@@ -80,6 +80,8 @@ export function Narra({
   onSinSaldo: () => void;
 }) {
   const { decir, hablando } = useVoz(ctx.nivel);
+  /** "Oír mi voz" de la historia: libera el audio anterior al grabar otra y al salir (auditoría, 30 de octubre de 2026). */
+  const urlDeLaHistoria = useGrabacionPropia();
   const [fase, setFase] = useState<Fase>("listo");
   const [escribiendo, setEscribiendo] = useState(false);
   const [texto, setTexto] = useState("");
@@ -262,7 +264,7 @@ export function Narra({
           setAviso(SIN_VOZ);
           return;
         }
-        void enviar({ audio, duracion, url: URL.createObjectURL(audio) });
+        void enviar({ audio, duracion, url: urlDeLaHistoria(audio) });
       };
       const c = new AudioContext();
       const analizador = c.createAnalyser();
@@ -306,7 +308,7 @@ export function Narra({
       setPreparando(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [a.segundos, limite, soltar]);
+  }, [a.segundos, limite, soltar, urlDeLaHistoria]);
 
   /** "Terminar": antes de 20 segundos, pausa y Allison lo anima a seguir. */
   function tocarTerminar() {

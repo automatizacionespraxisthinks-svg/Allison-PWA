@@ -65,35 +65,71 @@ function campoRepetido(e: unknown): string | null {
   return "Ya hay otra cuenta con esos datos";
 }
 
+export type ResultadoPerfil =
+  | { ok: true }
+  | { ok: false; motivo: "actual_incorrecta" | "solo_google" | "repetido"; error: string };
+
 /**
- * Guarda los cambios. Devuelve null si todo bien, o el motivo.
+ * Guarda los cambios.
  *
- * Un alumno de colegio solo cambia nombre y nivel; el resto de sus
- * datos los administra el colegio. Si el correo cambia, deja de contar
- * como verificado: el que confirmó Google era el anterior.
+ * Un alumno de colegio solo cambia su nombre; el resto de sus datos los
+ * administra el colegio. El nivel no se cambia aquí: tiene su regla y su
+ * ruta (/api/nivel, con el selector de Ajustes). Guardarlo desde aquí
+ * podía pisar con un nivel viejo el que el alumno acababa de elegir.
+ *
+ * Cambiar el correo exige la contraseña actual, como cambiar la
+ * contraseña: con solo la sesión abierta en un computador ajeno, alguien
+ * ponía su correo, pedía "Olvidé mi contraseña" y se quedaba con la
+ * cuenta. Una cuenta solo de Google (sin contraseña) no lo cambia aquí:
+ * no hay con qué comprobar que es el dueño. Con el correo cambian
+ * también: deja de contar como verificado y se suelta la cuenta de
+ * Google, para que no quede unida al Google del correo anterior
+ * (auditoría, 30 de octubre de 2026).
  */
 export async function actualizarPerfil(
   userId: string,
   tipoAcceso: "email" | "institucional",
-  datos: DatosPerfil
-): Promise<string | null> {
+  datos: DatosPerfil,
+  contrasenaActual?: string
+): Promise<ResultadoPerfil> {
   try {
     if (tipoAcceso === "institucional") {
       await sql`
         update users
-           set nombre = ${datos.nombre}, nivel = ${datos.nivel}, actualizado_en = now()
+           set nombre = ${datos.nombre}, actualizado_en = now()
          where id = ${userId}
       `;
-      return null;
+      return { ok: true };
+    }
+
+    const [u] = await sql`
+      select email, password_hash from users
+       where id = ${userId} and tipo_acceso = 'email'
+       limit 1
+    `;
+    if (u && u.email !== datos.email) {
+      if (!u.password_hash) {
+        return {
+          ok: false,
+          motivo: "solo_google",
+          error: "Entras con Google, así que tu correo es el de esa cuenta y no se cambia aquí.",
+        };
+      }
+      if (!contrasenaActual || !(await bcrypt.compare(contrasenaActual, u.password_hash))) {
+        return { ok: false, motivo: "actual_incorrecta", error: "La contraseña actual no es correcta." };
+      }
     }
 
     await sql`
       update users
          set nombre   = ${datos.nombre},
-             nivel    = ${datos.nivel},
              email_verificado_en = case
                when email is distinct from ${datos.email} then null
                else email_verificado_en
+             end,
+             google_id = case
+               when email is distinct from ${datos.email} then null
+               else google_id
              end,
              email    = ${datos.email},
              telefono = ${datos.telefono},
@@ -101,10 +137,10 @@ export async function actualizarPerfil(
              actualizado_en = now()
        where id = ${userId} and tipo_acceso = 'email'
     `;
-    return null;
+    return { ok: true };
   } catch (e) {
     const repetido = campoRepetido(e);
-    if (repetido) return repetido;
+    if (repetido) return { ok: false, motivo: "repetido", error: repetido };
     throw e;
   }
 }

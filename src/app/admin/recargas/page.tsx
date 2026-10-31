@@ -1,9 +1,24 @@
+import { PagosPorRevisar } from "@/components/admin/PagosPorRevisar";
 import { RecargaManual } from "@/components/admin/RecargaManual";
 import { sql } from "@/lib/db";
-import { cuadreDelDia, recargasRecientes } from "@/lib/panel/recargas";
-import { configPrecios, pesos } from "@/lib/precios";
+import { cuadreDelDia, pagosPorRevisar, recargasRecientes } from "@/lib/panel/recargas";
+import { configPrecios, ESCALONES, pesos } from "@/lib/precios";
 import { hoyEnColombia } from "@/lib/uso";
 import { paginaDeAdmin } from "@/lib/admin";
+
+/**
+ * Los bonos por volumen dichos con los números de precios.ts: «10 % de
+ * bono desde $20.000 y 15 % desde $50.000». Antes estaban escritos a mano
+ * y, si cambiaban los escalones, el panel le decía al admin un bono
+ * distinto del que se aplica (auditoría, 30 de octubre de 2026).
+ */
+function textoDeBonos(): string {
+  const partes = [...ESCALONES]
+    .sort((a, b) => a.desde - b.desde)
+    .map((e, i) => `${Math.round(e.bono * 100)} %${i === 0 ? " de bono" : ""} desde ${pesos(e.desde)}`);
+  if (!partes.length) return "sin bono por volumen";
+  return partes.length === 1 ? partes[0] : `${partes.slice(0, -1).join(", ")} y ${partes[partes.length - 1]}`;
+}
 
 /**
  * Recargas (plan, sección 21; boceto 7): sumar intervenciones a un alumno
@@ -13,10 +28,11 @@ import { paginaDeAdmin } from "@/lib/admin";
 export default async function PaginaRecargas() {
   await paginaDeAdmin();
   const hoy = hoyEnColombia();
-  const [recientes, cuadre, [plan]] = await Promise.all([
+  const [recientes, cuadre, [plan], porRevisar] = await Promise.all([
     recargasRecientes(),
     cuadreDelDia(hoy),
     sql`select precio_cop, mensajes_por_mes from planes where codigo = 'mensual' and activo`,
+    pagosPorRevisar(),
   ]);
   const fecha = (iso: string) =>
     new Date(iso).toLocaleString("es-CO", { timeZone: "America/Bogota", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -38,6 +54,8 @@ export default async function PaginaRecargas() {
           Descargar cuadre del día
         </a>
       </div>
+
+      <PagosPorRevisar pagos={porRevisar} />
 
       <RecargaManual cfg={configPrecios()} plan={plan ? { precio: Number(plan.precio_cop), mensajes: Number(plan.mensajes_por_mes) } : null} />
 
@@ -84,7 +102,7 @@ export default async function PaginaRecargas() {
 
       <p className="text-xs text-texto-suave">
         Los mismos precios de la recarga en línea, para que el alumno reciba igual pague como pague: {pesos(configPrecios().copPorMensaje)} por
-        intervención, mínimo {pesos(configPrecios().minima)}, 10 % de bono desde $20.000 y 15 % desde $50.000. Una recarga no se borra: un error se
+        intervención, mínimo {pesos(configPrecios().minima)}, {textoDeBonos()}. Una recarga no se borra: un error se
         corrige con un ajuste negativo con motivo, desde la ficha del alumno.
       </p>
     </div>

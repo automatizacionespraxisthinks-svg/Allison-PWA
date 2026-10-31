@@ -15,8 +15,10 @@ export async function POST(peticion: Request) {
     );
   }
 
-  const { identificador } = (await peticion.json().catch(() => ({}))) as {
-    identificador?: string;
+  // Un cuerpo "null" es JSON válido: sin el ?? {}, desestructurarlo
+  // reventaba con un 500 (auditoría, 30 de octubre de 2026).
+  const { identificador } = ((await peticion.json().catch(() => null)) ?? {}) as {
+    identificador?: unknown;
   };
 
   if (typeof identificador === "string" && identificador.trim()) {

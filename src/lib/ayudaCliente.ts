@@ -1,6 +1,6 @@
 "use client";
 
-import { pedir } from "./pedir";
+import { pedir, SESION_CERRADA } from "./pedir";
 
 /**
  * La ayuda de rescate (/api/ayuda) desde la pantalla. Cuesta una
@@ -16,7 +16,12 @@ export interface Ayuda {
   restantes?: number;
 }
 
-export type ResultadoAyuda = { ok: true; ayuda: Ayuda; cobrada: boolean } | { ok: false; sinSaldo: boolean };
+/**
+ * `mensaje`: qué decirle al alumno cuando no se pudo. Antes la pantalla
+ * no decía nada (el bombillo mostraba "…" y después nada; auditoría, 30
+ * de octubre de 2026).
+ */
+export type ResultadoAyuda = { ok: true; ayuda: Ayuda; cobrada: boolean } | { ok: false; sinSaldo: boolean; mensaje: string };
 
 const guardadas = new Map<string, Ayuda>();
 
@@ -24,17 +29,22 @@ export async function pedirAyudaIA(texto: string, nivel: string, tarea?: string,
   const clave = `${nivel}\n${tarea ?? ""}\n${texto}`;
   const guardada = guardadas.get(clave);
   if (guardada) return { ok: true, ayuda: guardada, cobrada: false };
+  // pedir() ya lleva a /entrar si la sesión se cerró.
   const r = await pedir("/api/ayuda", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ texto, nivel, ...(tarea ? { tarea } : {}) }),
     signal,
   });
-  if (!r) return { ok: false, sinSaldo: false };
-  if (r.status === 402) return { ok: false, sinSaldo: true };
-  if (!r.ok) return { ok: false, sinSaldo: false };
-  const d = (await r.json().catch(() => null)) as Ayuda | null;
-  if (!d) return { ok: false, sinSaldo: false };
+  if (!r) return { ok: false, sinSaldo: false, mensaje: "Sin conexión. Revisa tu internet e intenta otra vez." };
+  if (r.status === 401) return { ok: false, sinSaldo: false, mensaje: SESION_CERRADA };
+  if (r.status === 402) return { ok: false, sinSaldo: true, mensaje: "Te quedaste sin intervenciones." };
+  if (r.status === 429) return { ok: false, sinSaldo: false, mensaje: "Espera un momento e intenta otra vez." };
+  const d = (await r.json().catch(() => null)) as (Ayuda & { mensaje?: string }) | null;
+  if (!r.ok || !d) {
+    // El 502 del servidor ya dice que no se cobró.
+    return { ok: false, sinSaldo: false, mensaje: d?.mensaje ?? "No pudimos traer la ayuda. Intenta otra vez." };
+  }
   guardadas.set(clave, d);
   return { ok: true, ayuda: d, cobrada: true };
 }

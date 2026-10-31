@@ -51,8 +51,12 @@ export async function POST(peticion: Request) {
 
   const pin = String(randomInt(0, 10_000)).padStart(4, "0");
 
+  // El PIN nuevo cierra las sesiones abiertas, como cambiar la contraseña:
+  // si un compañero entró con el PIN viejo, sale (auditoría, 30 de
+  // octubre de 2026). La marca usa el reloj de la app, igual que perfil.ts.
   const [alumno] = await sql`
-    update users u set pin_hash = ${await bcrypt.hash(pin, COSTO_HASH_PIN)}, actualizado_en = now()
+    update users u set pin_hash = ${await bcrypt.hash(pin, COSTO_HASH_PIN)},
+                       sesiones_validas_desde = ${new Date()}, actualizado_en = now()
       from instituciones i
      where u.id = ${alumnoId} and i.id = u.institucion_id
     returning u.username, i.codigo_acceso

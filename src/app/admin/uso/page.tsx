@@ -6,6 +6,7 @@ import { leerAjustes } from "@/lib/ajustes";
 import { colegiosParaFiltro, consumoPorAlumno, cursosDe, POR_PAGINA, type Estado, type Orden } from "@/lib/panel/consumo";
 import { PARTES } from "@/lib/panel/etiquetas";
 import { pesos } from "@/lib/precios";
+import { MENSAJES_PRUEBA } from "@/lib/prueba";
 import { informeDeUso, resolverRango } from "@/lib/uso";
 import { paginaDeAdmin } from "@/lib/admin";
 
@@ -178,7 +179,9 @@ export default async function PaginaUso({ searchParams }: { searchParams: Promis
         ))}
         {estado === "prueba" && (
           <span className="text-xs text-texto-suave">
-            La prueba gratis es de 5 intervenciones. Un alumno que paga no puede costar más de lo que paga; por eso se vigila a estos grupos.
+            {/* Sale de MENSAJES_PRUEBA, no de un 5 escrito a mano (auditoría, 30 de octubre de 2026). */}
+            La prueba gratis es de {MENSAJES_PRUEBA} {MENSAJES_PRUEBA === 1 ? "intervención" : "intervenciones"}. Un alumno que paga
+            no puede costar más de lo que paga; por eso se vigila a estos grupos.
           </span>
         )}
       </div>

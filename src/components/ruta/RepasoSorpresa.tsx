@@ -3,11 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { pedir, SESION_CERRADA } from "@/lib/pedir";
 import { sonar } from "@/lib/sonidos";
 import type { PreguntaRepaso } from "@/lib/ruta/repaso";
 import type { Nivel } from "@/lib/tipos";
 import { Estrella, Icono } from "./Iconos";
-import type { FinActividad } from "./leccion/api";
+import { yaNoDisponible, type FinActividad } from "./leccion/api";
 import { Dilo } from "./leccion/Dilo";
 import { QueEsEsto } from "./leccion/QueEsEsto";
 import { Repite } from "./leccion/Repite";
@@ -28,7 +29,8 @@ export function RepasoSorpresa({ id, preguntas, ctx }: { id: string; preguntas: 
   const [sinSaldo, setSinSaldo] = useState(false);
   const [fin, setFin] = useState<{ racha: number; minutosHoy: number } | null>(null);
   const [guardando, setGuardando] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  /** No se pudo guardar: qué decir y si reintentar sirve de algo. */
+  const [error, setError] = useState<{ texto: string; reintentar: boolean } | null>(null);
   const desde = useRef(0);
 
   useEffect(() => {
@@ -41,27 +43,33 @@ export function RepasoSorpresa({ id, preguntas, ctx }: { id: string; preguntas: 
   async function guardar(resultados: (boolean | null)[]) {
     setGuardando(true);
     setError(null);
-    try {
-      const r = await fetch("/api/ruta/repaso", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id,
-          // Lo que no se calificó no sale de la lista ni cuenta como fallo.
-          resultados: resultados.flatMap((b, i) => (b === null ? [] : [{ n: preguntas[i].n, bien: b }])),
-          segundos: Math.min(1800, (Date.now() - desde.current) / 1000),
-        }),
-        signal: AbortSignal.timeout(20_000),
-      });
-      if (!r.ok) throw new Error();
-      const d = await r.json();
+    // pedir() no revienta sin red y lleva a /entrar si la sesión se cerró.
+    const r = await pedir("/api/ruta/repaso", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id,
+        // Lo que no se calificó no sale de la lista ni cuenta como fallo.
+        resultados: resultados.flatMap((b, i) => (b === null ? [] : [{ n: preguntas[i].n, bien: b }])),
+        segundos: Math.min(1800, (Date.now() - desde.current) / 1000),
+      }),
+      signal: AbortSignal.timeout(20_000),
+    });
+    const d = r?.ok ? await r.json().catch(() => null) : null;
+    setGuardando(false);
+    if (d) {
       setFin({ racha: d.racha, minutosHoy: d.minutosHoy });
       window.scrollTo({ top: 0 });
-    } catch {
-      setError("No se guardó tu repaso. Revisa tu conexión e intenta otra vez.");
-    } finally {
-      setGuardando(false);
+      return;
     }
+    // Cada fallo con su mensaje: "Revisa tu conexión" solo cuando no hubo
+    // respuesta. Un 404 (el repaso ya no es suyo, o venció) no se arregla
+    // reintentando: antes el Reintentar fallaba para siempre (auditoría,
+    // 30 de octubre de 2026).
+    if (r?.status === 401) setError({ texto: SESION_CERRADA, reintentar: false });
+    else if (r && yaNoDisponible(r.status)) setError({ texto: "Este repaso ya no está disponible.", reintentar: false });
+    else if (!r || r.ok) setError({ texto: "No se guardó tu repaso. Revisa tu conexión e intenta otra vez.", reintentar: true });
+    else setError({ texto: "No se guardó tu repaso. Intenta otra vez en un momento.", reintentar: true });
   }
 
   function alTerminar(f: FinActividad) {
@@ -122,15 +130,21 @@ export function RepasoSorpresa({ id, preguntas, ctx }: { id: string; preguntas: 
 
       {error && (
         <div role="alert" className="flex flex-col gap-2 rounded-2xl bg-oro-suave px-4 py-3 text-sm font-semibold text-oro">
-          {error}
-          <button
-            type="button"
-            onClick={() => void guardar(bien)}
-            disabled={guardando}
-            className="rounded-xl bg-oro px-4 py-2.5 font-extrabold text-superficie disabled:opacity-50"
-          >
-            {guardando ? "Guardando…" : "Reintentar"}
-          </button>
+          {error.texto}
+          {error.reintentar ? (
+            <button
+              type="button"
+              onClick={() => void guardar(bien)}
+              disabled={guardando}
+              className="rounded-xl bg-oro px-4 py-2.5 font-extrabold text-superficie disabled:opacity-50"
+            >
+              {guardando ? "Guardando…" : "Reintentar"}
+            </button>
+          ) : (
+            <Link href="/ruta" className="rounded-xl bg-oro px-4 py-2.5 text-center font-extrabold text-superficie">
+              Volver a mi ruta
+            </Link>
+          )}
         </div>
       )}
       {sinSaldo && (

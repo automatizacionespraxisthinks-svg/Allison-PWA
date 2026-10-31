@@ -105,8 +105,15 @@ export async function POST(peticion: Request) {
     );
   }
 
-  const devolver = () =>
-    sql`select devolver_mensaje(${alumno.id}, ${bolsaUsada}::bolsa_credito)`;
+  // Se devuelve UNA sola vez: antes, una respuesta vacía devolvía y, si
+  // después fallaba el envío, el catch devolvía otra vez (auditoría, 30
+  // de octubre de 2026).
+  let devuelto = false;
+  const devolver = async () => {
+    if (devuelto) return;
+    devuelto = true;
+    await sql`select devolver_mensaje(${alumno.id}, ${bolsaUsada}::bolsa_credito)`;
+  };
 
   // La conversación pedida se verifica como SUYA en la misma consulta
   // que trae su lección: sin comprobar el dueño, cualquiera podría
@@ -114,36 +121,55 @@ export async function POST(peticion: Request) {
   // existe, se cae al hilo activo del alumno, sin distinguir el caso.
   let conversacionId: string;
   let claveLeccion: string | null = null;
+  let buffer: Buffer | null = null;
 
-  const propia = conversacionPedida
-    ? await sql`
-        select id, leccion from conversaciones
-         where id = ${conversacionPedida} and user_id = ${alumno.id} and modo <> 'ruta'
-      `.then((f) => f[0] ?? null).catch(() => null)
-    : null;
+  // Ya se cobró: si la base parpadea antes de llamar a la IA, se devuelve.
+  try {
+    const propia = conversacionPedida
+      ? await sql`
+          select id, leccion from conversaciones
+           where id = ${conversacionPedida} and user_id = ${alumno.id} and modo <> 'ruta'
+        `.then((f) => f[0] ?? null).catch(() => null)
+      : null;
 
-  if (propia) {
-    conversacionId = propia.id;
-    claveLeccion = propia.leccion ?? null;
-  } else {
-    const activa = await conversacionActiva(alumno.id, alumno.nivel);
-    conversacionId = activa.id;
-    claveLeccion = activa.leccion;
+    if (propia) {
+      conversacionId = propia.id;
+      claveLeccion = propia.leccion ?? null;
+    } else {
+      const activa = await conversacionActiva(alumno.id, alumno.nivel);
+      conversacionId = activa.id;
+      claveLeccion = activa.leccion;
+    }
+
+    buffer = !textoEscrito && audio instanceof Blob ? Buffer.from(await audio.arrayBuffer()) : null;
+  } catch (e) {
+    await devolver().catch(() => {});
+    console.error("Fallo al preparar la conversación:", e);
+    return NextResponse.json(
+      { error: "fallo_ia", mensaje: "Allison no pudo responder. No te cobramos este mensaje." },
+      { status: 500 }
+    );
   }
 
   // Clave vieja o inventada: la conversación sigue, pero libre.
   const leccion = claveLeccion ? unidad(claveLeccion) : null;
-
-  const buffer =
-    !textoEscrito && audio instanceof Blob
-      ? Buffer.from(await audio.arrayBuffer())
-      : null;
   const codificador = new TextEncoder();
 
   const flujo = new ReadableStream({
     async start(control) {
-      const enviar = (dato: unknown) =>
-        control.enqueue(codificador.encode(JSON.stringify(dato) + "\n"));
+      // Si el alumno cerró la app, el envío falla: no es una falla de la IA
+      // y lo que falta (guardar el turno) sigue igual.
+      const enviar = (dato: unknown) => {
+        try {
+          control.enqueue(codificador.encode(JSON.stringify(dato) + "\n"));
+        } catch {
+          // El flujo ya se cerró del lado del alumno.
+        }
+      };
+      // Desde que la respuesta salió, Allison ya respondió: un error al
+      // anotar no se devuelve, como en /api/ruta/evaluar y /api/ruta/escena.
+      // Antes, cortar la conexión al oír la respuesta dejaba el turno gratis.
+      let entregada = false;
 
       try {
         // Las dos consultas no dependen entre sí: van juntas. Cada viaje
@@ -196,18 +222,20 @@ export async function POST(peticion: Request) {
           if (parte.tipo === "fin") {
             resultado = parte.resultado;
           } else {
+            if (parte.tipo === "respuesta") entregada = true;
             enviar(parte);
           }
         }
 
-        if (!resultado || !resultado.transcripcion.trim() || !resultado.respuesta.trim()) {
+        if (!resultado || resultado.fallaIA || !resultado.transcripcion.trim() || !resultado.respuesta.trim()) {
           // No se oyó voz: se cobra, porque la IA ya escuchó el audio y sus
           // tokens se pagan (decisión del usuario, 29 de octubre de 2026:
           // todo lo que usa la IA cuesta). Antes se devolvía, salvo una
           // respuesta larga sin nada oído. Si la falla es de la IA (no
           // terminó o no respondió nada a lo que sí se oyó), se devuelve.
           let mensajesRestantes: number | undefined;
-          if (resultado && !resultado.transcripcion.trim()) {
+          // Un JSON cortado del modelo no es silencio: es falla de la IA y se devuelve.
+          if (resultado && !resultado.fallaIA && !resultado.transcripcion.trim()) {
             await sql`
               select registrar_uso(
                 ${alumno.id}, 'conversar',
@@ -336,16 +364,32 @@ export async function POST(peticion: Request) {
           mensajesRestantes: saldo.mensajes_plan + saldo.mensajes_recarga,
         });
       } catch (e) {
-        // Si algo falló después de cobrar, se devuelve el mensaje.
-        await devolver().catch(() => {});
         console.error("Fallo al conversar:", e);
-        enviar({
-          tipo: "error",
-          error: "fallo_ia",
-          mensaje: "Allison no pudo responder. No te cobramos este mensaje.",
-        });
+        if (entregada) {
+          // Allison ya respondió: se cobra, aunque no se haya podido guardar,
+          // y el contador de la pantalla baja con lo que se cobró.
+          const [s] = await sql`select mensajes_plan, mensajes_recarga from saldos where user_id = ${alumno.id}`.catch(() => []);
+          enviar({
+            tipo: "error",
+            error: "fallo_guardar",
+            mensaje: "Allison respondió, pero no pudimos guardar este turno.",
+            ...(s ? { mensajesRestantes: s.mensajes_plan + s.mensajes_recarga } : {}),
+          });
+        } else {
+          // Si algo falló después de cobrar y antes de responder, se devuelve.
+          await devolver().catch(() => {});
+          enviar({
+            tipo: "error",
+            error: "fallo_ia",
+            mensaje: "Allison no pudo responder. No te cobramos este mensaje.",
+          });
+        }
       } finally {
-        control.close();
+        try {
+          control.close();
+        } catch {
+          // Ya estaba cerrado (el alumno se fue).
+        }
       }
     },
   });

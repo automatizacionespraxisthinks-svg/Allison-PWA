@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { NIVELES, type Nivel } from "@/lib/tipos";
-import { pedir } from "@/lib/pedir";
+import { pedir, SESION_CERRADA } from "@/lib/pedir";
 
 /**
  * Cambiar de nivel con la regla aprobada (plan, sección 22): bajar,
@@ -25,6 +25,7 @@ export function SelectorNivel({
   const router = useRouter();
   const [abierto, setAbierto] = useState(false);
   const [ocupado, setOcupado] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   // El refresh no navega, así que loading.tsx no aplica: la transición
   // es lo único que sabe cuándo llegó de verdad la página fresca.
   const [refrescando, empezarTransicion] = useTransition();
@@ -35,21 +36,39 @@ export function SelectorNivel({
       return;
     }
     setOcupado(true);
+    setError(null);
     const r = await pedir("/api/nivel", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nivel: nuevo }),
     });
     setOcupado(false);
-    setAbierto(false);
-    if (r?.ok) empezarTransicion(() => router.refresh());
+    if (r?.ok) {
+      setAbierto(false);
+      empezarTransicion(() => router.refresh());
+      return;
+    }
+    // Antes el menú se cerraba sin decir nada y el nivel seguía igual
+    // (sin red, o un 403 "bloqueado"). Ahora queda abierto con el motivo,
+    // como en "Pasar de nivel" de Mi ruta (auditoría, 30 de octubre de 2026).
+    const d = r ? await r.json().catch(() => ({})) : {};
+    setError(
+      !r
+        ? "Sin conexión. Revisa tu internet e intenta otra vez."
+        : r.status === 401
+          ? SESION_CERRADA
+          : (d.mensaje ?? "No pudimos cambiar tu nivel. Intenta otra vez.")
+    );
   }
 
   return (
     <div className="relative">
       <button
         type="button"
-        onClick={() => setAbierto(!abierto)}
+        onClick={() => {
+          setAbierto(!abierto);
+          setError(null);
+        }}
         aria-expanded={abierto}
         className="flex items-center gap-1 rounded-full bg-primario-suave px-2.5 py-1 text-xs font-semibold text-primario transition hover:brightness-95"
       >
@@ -71,6 +90,11 @@ export function SelectorNivel({
             <p className="px-2 py-1.5 text-xs text-texto-suave">
               Puedes bajar cuando quieras. Para subir, completa todas las actividades de tu nivel.
             </p>
+            {error && (
+              <p role="alert" className="mx-1 mb-1 rounded-xl bg-error/10 px-2 py-1.5 text-xs text-error">
+                {error}
+              </p>
+            )}
             {NIVELES.map((n) => (
               <button
                 key={n.nivel}

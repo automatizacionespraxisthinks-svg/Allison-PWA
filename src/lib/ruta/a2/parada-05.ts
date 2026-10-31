@@ -73,11 +73,11 @@ export const PARADA_05: Parada = {
           pregunta: "¿Qué va a hacer Ben este fin de semana?",
           opciones: [
             { imagen: "f-plan-torta", descripcion: "Ben y su abuela horneando una torta", etiqueta: "Bake a cake", etiquetaEs: "Hornear una torta" },
-            { imagen: "f-parque-futbol", descripcion: "Niños jugando fútbol en un parque", etiqueta: "Play soccer", etiquetaEs: "Jugar fútbol" },
+            { imagen: "f-parque-ninos-futbol", descripcion: "Niños jugando fútbol en un parque", etiqueta: "Play soccer", etiquetaEs: "Jugar fútbol" },
             { imagen: "f-cine", descripcion: "Un cine", etiqueta: "Go to the movies", etiquetaEs: "Ir a cine" },
           ],
           correcta: 0,
-          porRevisar: ["opciones: f-parque-futbol es un dibujo nuevo, solo niños jugando con el balón (cambio del 30 de octubre de 2026)", "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a Ben con su abuela"'],
+          porRevisar: ["opciones: f-parque-ninos-futbol es un dibujo nuevo, solo niños jugando con el balón (cambio del 30 de octubre de 2026)", "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a Ben con su abuela"'],
         },
         {
           paso: 2,
@@ -290,7 +290,7 @@ export const PARADA_05: Parada = {
           apertura: "I have a plan for the weekend. Ask me yes or no questions and guess!",
           opciones: [
             { nombre: "go to the movies", imagen: "f-cine" },
-            { nombre: "play soccer", imagen: "f-parque-futbol" },
+            { nombre: "play soccer", imagen: "f-parque-ninos-futbol" },
             { nombre: "visit a museum", imagen: "f-plan-museo" },
             { nombre: "go shopping", imagen: "f-plan-compras" },
             { nombre: "bake a cake", imagen: "f-plan-torta" },
@@ -411,7 +411,7 @@ export const PARADA_05: Parada = {
       uso: "Lección 1 (paso 1) y la tarjeta bake a cake",
     },
     {
-      archivos: ["f-parque-futbol", "f-cine"],
+      archivos: ["f-parque-ninos-futbol", "f-cine"],
       muestra: "Niños jugando fútbol en un parque (de la parada 3); un cine (de la parada 2)",
       uso: "Lección 1 (paso 1) y las tarjetas play soccer y go to the movies",
     },

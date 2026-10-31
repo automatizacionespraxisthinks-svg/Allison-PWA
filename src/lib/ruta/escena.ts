@@ -2,7 +2,6 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { esEspanolClaro, esInglesClaro, separarIdiomas } from "../allison.ts";
 import { estaEnLoDicho } from "../evaluacion.ts";
 import { conPunto, MARCADOR_EN, MARCADOR_ES, quitarMarcadores } from "../habla.ts";
-import { limpiarTranscripcion } from "../transcripcion.ts";
 import type { Nivel } from "../tipos.ts";
 import { preguntaDeAdivinar, type LecturaAdivina } from "./adivina.ts";
 import type { Adivina, Ensenale, Entrevista, Escenario } from "./tipos.ts";
@@ -63,9 +62,14 @@ export interface TurnoEscenario {
   extra?: string;
   /** Las tareas pendientes que el alumno ya hizo en parte, con lo que les falta. */
   aMedias?: TareaAMedias[];
-  texto?: string;
-  audioBase64?: string;
-  mimeType?: string;
+  /**
+   * Lo que dijo el alumno, siempre en texto: lo hablado llega ya
+   * transcrito a ciegas (turnoDeEscena, conversacion.ts). La rama de audio
+   * se quitó porque nadie la usaba y mandaba el audio con todo el
+   * historial, justo lo que hacía copiar turnos anteriores (auditoría, 30
+   * de octubre de 2026).
+   */
+  texto: string;
 }
 
 /**
@@ -144,7 +148,7 @@ function lineasDelPersonaje(e: Escenario): string {
     .join("\n");
 }
 
-function instruccionEscenario(t: Omit<TurnoEscenario, "texto" | "audioBase64" | "mimeType">): string {
+function instruccionEscenario(t: Omit<TurnoEscenario, "texto">): string {
   const e = t.escenario;
   const visibles = tareasVisibles(e, t.cumplidas);
   const pendientes = visibles.filter((n) => !t.cumplidas.includes(n));
@@ -1312,13 +1316,9 @@ export async function turnoDeEscenario(t: TurnoEscenario): Promise<ResultadoEsce
     role: m.rol === "alumno" ? "user" : "model",
     parts: [{ text: m.texto }],
   }));
-  const ultimo = t.audioBase64
-    ? [{ inlineData: { mimeType: t.mimeType ?? "audio/webm", data: t.audioBase64 } }, { text: recordatorioEscenario(t) }]
-    : [{ text: `${t.texto}\n\n${recordatorioEscenario(t)}` }];
-
   const r = await cliente().models.generateContent({
     model: modelo(),
-    contents: [...historial, { role: "user", parts: ultimo }],
+    contents: [...historial, { role: "user", parts: [{ text: `${t.texto}\n\n${recordatorioEscenario(t)}` }] }],
     config: {
       systemInstruction: instruccionEscenario(t),
       responseMimeType: "application/json",
@@ -1364,12 +1364,11 @@ export async function turnoDeEscenario(t: TurnoEscenario): Promise<ResultadoEsce
   // se devuelve la intervención. Sin esto, un turno hablado quedaba sin
   // transcripción y se cobraba como "No te oí".
   const finDelModelo = String(r.candidates?.[0]?.finishReason ?? "STOP");
-  if (roto || finDelModelo !== "STOP") return { ...falla, transcripcion: t.texto?.trim() ?? "" };
+  if (roto || finDelModelo !== "STOP") return { ...falla, transcripcion: t.texto.trim() };
 
-  // Escrito, lo que el alumno escribió ES la transcripción. Hablado, sin
-  // las marcas de tiempo que el modelo devuelve con un audio en silencio
-  // ("00:00 00:01 00:02"): si no queda nada, no se oyó voz.
-  const transcripcion = (t.texto?.trim() || limpiarTranscripcion(d.transcripcion ?? "")).trim();
+  // Lo que el alumno escribió, o lo hablado ya transcrito a ciegas, ES la
+  // transcripción: el modelo de la escena ya no recibe audio.
+  const transcripcion = t.texto.trim();
   const pendientes = new Set(tareasVisibles(t.escenario, t.cumplidas).filter((n) => !t.cumplidas.includes(n)));
   // Español: lo dice el código, o el modelo salvo que la frase sea inglés
   // claro (llegó a marcar "I am Diego." como español). El código solo no
@@ -1596,8 +1595,32 @@ export interface Clasificacion {
    * birthday?"): Allison no la sabe, pero no es pedir ayuda.
    */
   fuera?: boolean;
+  /** El modelo no clasificó (JSON roto o vacío, no terminó): falla de la IA, se devuelve. */
+  sinRespuesta?: boolean;
   tokensEntrada: number;
   tokensSalida: number;
+}
+
+/**
+ * El JSON de un clasificador (Entrevista, Adivina, Enséñale), o null si
+ * es falla de la IA: no se pudo leer, vino vacío o sin "tipo", o el
+ * modelo no terminó (finishReason distinto de STOP: el tope de salida,
+ * un bloqueo). Antes se tomaba como {} y el turno salía "otro": se cobraba
+ * y sumaba una ayuda que quitaba estrella. Ahora es como en
+ * turnoDeEscenario: el turno no cuenta y la ruta devuelve la intervención
+ * (auditoría, 30 de octubre de 2026).
+ */
+function clasificacionDelModelo<T extends { tipo?: string }>(r: {
+  text?: string;
+  candidates?: { finishReason?: unknown }[];
+}): T | null {
+  if (String(r.candidates?.[0]?.finishReason ?? "STOP") !== "STOP") return null;
+  try {
+    const d = JSON.parse(r.text ?? "") as T | null;
+    return d && typeof d === "object" && typeof d.tipo === "string" ? d : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -1694,12 +1717,12 @@ Classify the student's message:
       abortSignal: AbortSignal.timeout(10_000),
     },
   });
-  let d: { tipo?: string; dato?: number; otroDato?: number; responde?: boolean; espanol?: boolean } = {};
-  try {
-    d = JSON.parse(r.text ?? "{}");
-  } catch {
-    d = {};
-  }
+  const tokens = {
+    tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
+    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+  };
+  const d = clasificacionDelModelo<{ tipo?: string; dato?: number; otroDato?: number; responde?: boolean; espanol?: boolean }>(r);
+  if (!d) return { tipo: "otro", dato: 0, espanol: false, sinRespuesta: true, ...tokens };
   const tipoModelo = d.tipo === "pregunta" || d.tipo === "respuesta" || d.tipo === "social" ? d.tipo : "otro";
   const valido = (n?: number) => (Number.isInteger(n) && n! >= 1 && n! <= o.entrevista.datos.length ? n! : 0);
   const nombres = [...new Set(o.entrevista.datos.flatMap((x) => nombresDe(x.pregunta)))];
@@ -1723,8 +1746,7 @@ Classify the student's message:
     responde: tipo === "pregunta" && !!dato && !!o.devuelta && !!d.responde,
     espanol,
     fuera: tipo === "otro" && !espanol && esPreguntaEnIngles(o.transcripcion),
-    tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
-    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+    ...tokens,
   };
 }
 
@@ -1896,7 +1918,7 @@ const ESQUEMA_ADIVINA = {
 export async function clasificarAdivina(o: {
   adivina: Adivina;
   transcripcion: string;
-}): Promise<LecturaAdivina & { tokensEntrada: number; tokensSalida: number }> {
+}): Promise<LecturaAdivina & { tokensEntrada: number; tokensSalida: number; sinRespuesta?: boolean }> {
   const a = o.adivina;
   const opciones = a.opciones.map((x, i) => `  ${i + 1}. ${x.nombre}`).join("\n");
   const preguntas = a.preguntas.map((p, i) => `  ${i + 1}. ${p.pregunta}`).join("\n");
@@ -1938,12 +1960,12 @@ Classify the student's message:
       abortSignal: AbortSignal.timeout(10_000),
     },
   });
-  let d: { tipo?: string; fila?: number; opcion?: number; espanol?: boolean } = {};
-  try {
-    d = JSON.parse(r.text ?? "{}");
-  } catch {
-    d = {};
-  }
+  const tokens = {
+    tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
+    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+  };
+  const d = clasificacionDelModelo<{ tipo?: string; fila?: number; opcion?: number; espanol?: boolean }>(r);
+  if (!d) return { tipo: "otro", fila: 0, opcion: 0, espanol: false, sinRespuesta: true, ...tokens };
   const tipos = ["pregunta", "adivina", "otra", "abierta"] as const;
   let tipo: LecturaAdivina["tipo"] = tipos.find((t) => t === d.tipo) ?? "otro";
   const fila = tipo === "pregunta" && Number.isInteger(d.fila) && d.fila! >= 1 && d.fila! <= a.preguntas.length ? d.fila! : 0;
@@ -1957,8 +1979,7 @@ Classify the student's message:
     // El modelo marcaba como español preguntas abiertas en inglés ("What do
     // you do?") y contaban como ayuda: si es inglés claro, no lo es.
     espanol: hablaEspanol(o.transcripcion) || (!!d.espanol && !inglesClaroDelAlumno(o.transcripcion)),
-    tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
-    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+    ...tokens,
   };
 }
 
@@ -1984,6 +2005,8 @@ export interface LecturaEnsenale {
   /** Una pregunta que además responde la de Allison ("I swam in the sea. What do you like to do?"). */
   responde?: boolean;
   espanol: boolean;
+  /** El modelo no clasificó (JSON roto o vacío, no terminó): falla de la IA, se devuelve. */
+  sinRespuesta?: boolean;
   tokensEntrada: number;
   tokensSalida: number;
 }
@@ -2043,12 +2066,12 @@ ${lista || "  (none)"}
       abortSignal: AbortSignal.timeout(10_000),
     },
   });
-  let d: { tipo?: string; pregunta?: number; responde?: boolean; espanol?: boolean } = {};
-  try {
-    d = JSON.parse(r.text ?? "{}");
-  } catch {
-    d = {};
-  }
+  const tokens = {
+    tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
+    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+  };
+  const d = clasificacionDelModelo<{ tipo?: string; pregunta?: number; responde?: boolean; espanol?: boolean }>(r);
+  if (!d) return { tipo: "otro", pregunta: 0, espanol: false, sinRespuesta: true, ...tokens };
   const tipos = ["respuesta", "corta", "pregunta", "aclarar"] as const;
   let tipo: LecturaEnsenale["tipo"] = tipos.find((t) => t === d.tipo) ?? "otro";
   // "It's in August." es una frase: el modelo a veces la toma por corta y
@@ -2061,8 +2084,7 @@ ${lista || "  (none)"}
     responde: tipo === "pregunta" && !!d.responde,
     // Como en Adivina: si es inglés claro, no es español aunque el modelo diga que sí.
     espanol: hablaEspanol(o.transcripcion) || (!!d.espanol && !inglesClaroDelAlumno(o.transcripcion)),
-    tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
-    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+    ...tokens,
   };
 }
 

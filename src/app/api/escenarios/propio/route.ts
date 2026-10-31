@@ -135,12 +135,24 @@ Always US English (soccer, apartment, check, "I have").`,
     );
   }
 
-  const [nuevo] = await sql`
-    insert into escenarios_propios (user_id, pedido, titulo, lugar, papel, contexto, tareas, apertura, nivel)
-    values (${alumno.id}, ${pedido}, ${escena.titulo}, ${escena.lugar}, ${escena.papel}, ${escena.contexto},
-            ${sql.json(tareas)}, ${escena.apertura}, ${alumno.nivel})
-    returning id
-  `;
+  // Si no se puede guardar, el alumno no recibe su escenario: se devuelve
+  // como cualquier otra falla. Antes este insert iba suelto y un error de
+  // la base respondía 500 con la intervención cobrada (auditoría, 30 de
+  // octubre de 2026).
+  let nuevoId: string;
+  try {
+    const [nuevo] = await sql`
+      insert into escenarios_propios (user_id, pedido, titulo, lugar, papel, contexto, tareas, apertura, nivel)
+      values (${alumno.id}, ${pedido}, ${escena.titulo}, ${escena.lugar}, ${escena.papel}, ${escena.contexto},
+              ${sql.json(tareas)}, ${escena.apertura}, ${alumno.nivel})
+      returning id
+    `;
+    nuevoId = nuevo.id;
+  } catch (e) {
+    await devolver();
+    console.error("No se pudo guardar el escenario propio:", e instanceof Error ? e.message : e);
+    return NextResponse.json({ error: "fallo_ia", mensaje: "No pudimos crear el escenario. No te cobramos. Intenta otra vez." }, { status: 502 });
+  }
 
   try {
     await sql`select registrar_uso(${alumno.id}, 'conversar', ${tokens.entrada}, ${tokens.salida}, 0, true, false)`;
@@ -149,5 +161,5 @@ Always US English (soccer, apartment, check, "I have").`,
     console.error("No se pudo anotar el escenario propio:", e instanceof Error ? e.message : e);
   }
 
-  return NextResponse.json({ clave: `propio:${nuevo.id}` });
+  return NextResponse.json({ clave: `propio:${nuevoId}` });
 }

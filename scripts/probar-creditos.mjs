@@ -11,6 +11,35 @@
 import postgres from "postgres";
 import { modoSslOSalir } from "../db/conexion.mjs";
 
+// Candado contra producción (auditoría, 30 de octubre de 2026): este
+// script ESCRIBE y BORRA en la base de DATABASE_URL, y DATABASE_URL se
+// apunta a producción por un túnel para migrar. Corrido ahí, dejaría
+// alumnos y órdenes de mentira (que inflan «Ingresos» y «pagaron») o
+// borraría datos reales. Se niega si DATABASE_URL es la de
+// DATABASE_URL_PRODUCCION o si NODE_ENV es production. Para correrlo ahí
+// a propósito: SI_ES_PRODUCCION=1.
+{
+  const destino = (u) => {
+    try {
+      const x = new URL(u);
+      return `${decodeURIComponent(x.username)}@${x.hostname}:${x.port || "5432"}${x.pathname}`;
+    } catch {
+      return u.trim();
+    }
+  };
+  const url = process.env.DATABASE_URL ?? "";
+  const produccion = process.env.DATABASE_URL_PRODUCCION ?? "";
+  const esProduccion =
+    process.env.NODE_ENV === "production" || (produccion.trim() !== "" && destino(url) === destino(produccion));
+  if (esProduccion && process.env.SI_ES_PRODUCCION !== "1") {
+    console.error(
+      "Este script escribe en la base y DATABASE_URL apunta a producción (o NODE_ENV=production): no se corre.\n" +
+        "Si de verdad es lo que quieres, vuelve a correrlo con SI_ES_PRODUCCION=1."
+    );
+    process.exit(1);
+  }
+}
+
 const sql = postgres(process.env.DATABASE_URL, {
   ssl: modoSslOSalir(process.env.DATABASE_URL ?? ""),
   max: 1,
@@ -71,16 +100,19 @@ try {
   verificar("quedaron registrados los 3 consumos", count === 3);
 
   console.log("\nIdempotencia de pagos:");
+  // Con la pasarela de verdad, Bold: Wompi se quitó (auditoría, 30 de
+  // octubre de 2026). Lo que se prueba es la restricción única
+  // (pasarela, referencia_externa), la misma para cualquier pasarela.
   const referencia = `REF-PRUEBA-${Date.now()}`;
   await sql`
     insert into transacciones (user_id, tipo, monto_cop, pasarela, referencia_externa, estado)
-    values (${alumno.id}, 'recarga', 20000, 'wompi', ${referencia}, 'aprobada')
+    values (${alumno.id}, 'recarga', 20000, 'bold', ${referencia}, 'aprobada')
   `;
   let rechazado = false;
   try {
     await sql`
       insert into transacciones (user_id, tipo, monto_cop, pasarela, referencia_externa, estado)
-      values (${alumno.id}, 'recarga', 20000, 'wompi', ${referencia}, 'aprobada')
+      values (${alumno.id}, 'recarga', 20000, 'bold', ${referencia}, 'aprobada')
     `;
   } catch {
     rechazado = true;

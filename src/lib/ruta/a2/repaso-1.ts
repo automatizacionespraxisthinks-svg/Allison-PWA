@@ -85,7 +85,7 @@ export const REPASO_1: Repaso = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Last night at nine, Priya was cooking dinner when her mom called." (no está escrito). Elige entre Priya leyendo (f-priya-leyendo-hermano), Priya cocinando (f-priya-cocinando) y Priya dormida (f-priya-dormida).',
+            'Allison cuenta: "Last night at nine, Priya was cooking dinner when her mom called." (no está escrito). Elige entre Priya leyendo (f-priya-leyendo-hermano), Priya cocinando (f-priya-cocinando) y Priya dormida (f-priya-durmiendo).',
           siRespondeMal: "Se repite el audio despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ["Last night at nine, Priya was cooking dinner when her mom called."],
@@ -94,10 +94,10 @@ export const REPASO_1: Repaso = {
           opciones: [
             { imagen: "f-priya-leyendo-hermano", descripcion: "Priya leyendo", etiqueta: "Reading", etiquetaEs: "Leyendo" },
             { imagen: "f-priya-cocinando", descripcion: "Priya cocinando", etiqueta: "Cooking dinner", etiquetaEs: "Cocinando la cena" },
-            { imagen: "f-priya-dormida", descripcion: "Priya dormida", etiqueta: "Sleeping", etiquetaEs: "Durmiendo" },
+            { imagen: "f-priya-durmiendo", descripcion: "Priya dormida", etiqueta: "Sleeping", etiquetaEs: "Durmiendo" },
           ],
           correcta: 1,
-          porRevisar: ["opciones: f-priya-dormida es un dibujo nuevo, Priya dormida sin libro; antes tenía un libro abierto y se confundía con leer (cambio del 30 de octubre de 2026)", "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a Priya cocinando"'],
+          porRevisar: ["opciones: f-priya-durmiendo es un dibujo nuevo, Priya dormida sin libro; antes tenía un libro abierto y se confundía con leer (cambio del 30 de octubre de 2026)", "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a Priya cocinando"'],
         },
         {
           paso: 2,
@@ -142,7 +142,7 @@ export const REPASO_1: Repaso = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Next Saturday Ben is going to play soccer with his friends. After the game, they\'re going to eat pizza." (no está escrito). Elige entre Ben y su abuela horneando una torta (f-plan-torta), niños jugando fútbol en un parque (f-parque-futbol) y un cine (f-cine).',
+            'Allison cuenta: "Next Saturday Ben is going to play soccer with his friends. After the game, they\'re going to eat pizza." (no está escrito). Elige entre Ben y su abuela horneando una torta (f-plan-torta), niños jugando fútbol en un parque (f-parque-ninos-futbol) y un cine (f-cine).',
           siRespondeMal: "Se repite el audio despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ["Next Saturday Ben is going to play soccer with his friends.", "After the game, they're going to eat pizza."],
@@ -150,11 +150,11 @@ export const REPASO_1: Repaso = {
           pregunta: "¿Qué va a hacer Ben el próximo sábado?",
           opciones: [
             { imagen: "f-plan-torta", descripcion: "Ben y su abuela horneando una torta", etiqueta: "Bake a cake", etiquetaEs: "Hornear una torta" },
-            { imagen: "f-parque-futbol", descripcion: "Niños jugando fútbol en un parque", etiqueta: "Play soccer", etiquetaEs: "Jugar fútbol" },
+            { imagen: "f-parque-ninos-futbol", descripcion: "Niños jugando fútbol en un parque", etiqueta: "Play soccer", etiquetaEs: "Jugar fútbol" },
             { imagen: "f-cine", descripcion: "Un cine", etiqueta: "Go to the movies", etiquetaEs: "Ir a cine" },
           ],
           correcta: 1,
-          porRevisar: ["opciones: f-parque-futbol es un dibujo nuevo, solo niños jugando con el balón (cambio del 30 de octubre de 2026)", "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a los niños jugando fútbol"'],
+          porRevisar: ["opciones: f-parque-ninos-futbol es un dibujo nuevo, solo niños jugando con el balón (cambio del 30 de octubre de 2026)", "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a los niños jugando fútbol"'],
         },
         {
           paso: 2,

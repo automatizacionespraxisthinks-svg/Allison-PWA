@@ -106,7 +106,14 @@ export async function buscarUsuarios(consulta: string): Promise<UsuarioAdmin[]> 
            coalesce(s.mensajes_plan, 0) + coalesce(s.mensajes_recarga, 0) as saldo,
            (select coalesce(sum(p.mensajes), 0)::int from progreso_diario p
              where p.user_id = u.id) as mensajes,
-           (select coalesce(sum(t.monto_cop), 0)::int from transacciones t
+           -- Lo que de verdad entró, como «Ingresos» del resumen: en efectivo el
+           -- valor recibido, y lo anulado por la pasarela no cuenta (auditoría,
+           -- 30 de octubre de 2026).
+           (select coalesce(sum(case when t.payload->>'alerta' = 'anulada' then 0
+                                     when t.pasarela in ('efectivo', 'transferencia')
+                                       then coalesce((t.payload->>'valorRecibido')::int, t.monto_cop)
+                                     else t.monto_cop end), 0)::int
+              from transacciones t
              where t.user_id = u.id and t.estado = 'aprobada') as pagado
       from users u
       left join saldos s on s.user_id = u.id

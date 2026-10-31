@@ -20,14 +20,22 @@ function cuando(iso: string | null): string {
   return `hace ${dias} días`;
 }
 
+/** Sin respuesta, o un 5xx del proxy: no se sabe si el servidor lo hizo. */
+const incierto = (r: Response | null) => !r || r.status >= 500;
+
+const NO_SABEMOS = "No sabemos si quedó: revisa el historial antes de repetir.";
+
 export function BuscadorUsuarios({
   consulta,
   usuarios,
   cfg,
+  planVence,
 }: {
   consulta: string;
   usuarios: UsuarioAdmin[];
   cfg: ConfigPrecios;
+  /** El fin del mes del plan activo de cada alumno (DD/MM/AAAA); sin plan, no está. */
+  planVence: Record<string, string>;
 }) {
   const router = useRouter();
   const [q, setQ] = useState(consulta);
@@ -37,10 +45,33 @@ export function BuscadorUsuarios({
   const [ocupado, setOcupado] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /**
+   * El id de la operación abierta (pago o ajuste), creado al abrirla. El
+   * servidor no acredita dos veces el mismo: si la respuesta se pierde y
+   * se reintenta, no suma doble (auditoría, 30 de octubre de 2026).
+   */
+  const [operacion, setOperacion] = useState<string | null>(null);
+  /** La operación cuya respuesta se perdió, con el alumno y el tipo: si
+   *  se vuelve a abrir la misma, conserva su id. */
+  const [incierta, setIncierta] = useState<{ clave: string; operacion: string } | null>(null);
+
+  /** Abre el pago o el ajuste de un alumno con su id de operación. */
+  function preparar(clave: string) {
+    setOperacion(incierta?.clave === clave ? incierta.operacion : crypto.randomUUID());
+  }
+
+  /** Lo que se hace cuando no se sabe si quedó: nada listo para repetir. */
+  function noSabemos(clave: string) {
+    if (operacion) setIncierta({ clave, operacion });
+    setEfectivoDe(null);
+    setAbierto(null);
+    setError(NO_SABEMOS);
+    router.refresh();
+  }
 
   async function registrarEfectivo(u: UsuarioAdmin) {
     const monto = Number(montoEfectivo.replace(/[^0-9]/g, ""));
-    if (!monto) return;
+    if (!monto || !operacion) return;
     setError(null);
     setAviso(null);
     setOcupado(true);
@@ -48,20 +79,25 @@ export function BuscadorUsuarios({
     const r = await pedir("/api/admin/efectivo", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: u.id, montoCop: monto }),
+      body: JSON.stringify({ userId: u.id, montoCop: monto, operacion }),
     });
     const d = r ? await r.json().catch(() => ({})) : {};
     setOcupado(false);
 
+    if (incierto(r)) return noSabemos(`efectivo:${u.id}`);
     if (!r?.ok) {
       setError(d.error ?? "No pudimos registrar el pago.");
       return;
     }
     setAviso(
-      `Efectivo registrado: ${u.nombre} recibe ${d.mensajes} intervenciones` +
-        (d.bono > 0 ? ` (incluye ${d.bono} de bono)` : "") +
-        ` y queda con ${d.saldo}.`
+      d.repetida
+        ? `Ese pago ya estaba registrado: ${u.nombre} recibió ${d.mensajes} intervenciones y tiene ${d.saldo}. No se sumó otra vez.`
+        : `Efectivo registrado: ${u.nombre} recibe ${d.mensajes} intervenciones` +
+            (d.bono > 0 ? ` (incluye ${d.bono} de bono)` : "") +
+            ` y queda con ${d.saldo}.`
     );
+    setIncierta(null);
+    setOperacion(null);
     setEfectivoDe(null);
     setMontoEfectivo("");
     router.refresh();
@@ -69,6 +105,7 @@ export function BuscadorUsuarios({
 
   async function ajustar(e: React.FormEvent<HTMLFormElement>, u: UsuarioAdmin) {
     e.preventDefault();
+    if (!operacion) return;
     setError(null);
     setAviso(null);
     setOcupado(true);
@@ -82,16 +119,24 @@ export function BuscadorUsuarios({
         cantidad: f.get("cantidad"),
         bolsa: f.get("bolsa"),
         nota: f.get("nota"),
+        operacion,
       }),
     });
     const d = r ? await r.json().catch(() => ({})) : {};
     setOcupado(false);
 
+    if (incierto(r)) return noSabemos(`ajuste:${u.id}`);
     if (!r?.ok) {
       setError(d.error ?? "No pudimos ajustar el saldo.");
       return;
     }
-    setAviso(`${u.nombre} queda con ${d.saldo} mensajes.`);
+    setAviso(
+      d.repetida
+        ? `Ese ajuste ya estaba hecho: ${u.nombre} tiene ${d.saldo} mensajes. No se aplicó otra vez.`
+        : `${u.nombre} queda con ${d.saldo} mensajes.`
+    );
+    setIncierta(null);
+    setOperacion(null);
     setAbierto(null);
     router.refresh();
   }
@@ -178,6 +223,7 @@ export function BuscadorUsuarios({
                   onClick={() => {
                     setEfectivoDe(efectivoDe === u.id ? null : u.id);
                     setAbierto(null);
+                    if (efectivoDe !== u.id) preparar(`efectivo:${u.id}`);
                   }}
                   className="rounded-xl bg-exito px-3 py-2 text-sm font-semibold text-white transition hover:brightness-110"
                 >
@@ -188,6 +234,7 @@ export function BuscadorUsuarios({
                   onClick={() => {
                     setAbierto(abierto === u.id ? null : u.id);
                     setEfectivoDe(null);
+                    if (abierto !== u.id) preparar(`ajuste:${u.id}`);
                   }}
                   className="rounded-xl border border-borde px-3 py-2 text-sm font-medium transition hover:bg-superficie-2"
                 >
@@ -267,9 +314,15 @@ export function BuscadorUsuarios({
 
                 <label className="flex flex-col gap-1">
                   <span className="text-sm font-medium">Bolsa</span>
+                  {/* La bolsa del plan vence al cerrar el mes del plan
+                      del alumno, no «al mes»; sin plan activo no vencería
+                      nunca, y el servidor solo deja quitar de ella
+                      (auditoría, 30 de octubre de 2026). */}
                   <select name="bolsa" defaultValue="recarga" className={campo}>
                     <option value="recarga">Recarga (no caduca)</option>
-                    <option value="plan">Plan (caduca al mes)</option>
+                    <option value="plan">
+                      {planVence[u.id] ? `Plan (caduca el ${planVence[u.id]})` : "Plan (sin plan activo: solo quitar)"}
+                    </option>
                   </select>
                 </label>
 
@@ -309,33 +362,47 @@ export function BuscadorUsuarios({
 /** El administrador sube o baja el nivel de un alumno a voluntad. */
 function NivelAdmin({ userId, nivel, onCambio }: { userId: string; nivel: string; onCambio: () => void }) {
   const [ocupado, setOcupado] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   async function cambiar(nuevo: string) {
     if (nuevo === nivel) return;
     setOcupado(true);
+    setError(null);
     const r = await pedir("/api/admin/nivel", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, nivel: nuevo }),
     });
     setOcupado(false);
-    if (r?.ok) onCambio();
+    if (r?.ok) return onCambio();
+    // Antes un fallo dejaba el nivel como estaba sin decir nada, y el
+    // administrador creía que lo había cambiado (auditoría, 30 de
+    // octubre de 2026).
+    const d = r ? await r.json().catch(() => null) : null;
+    setError(d?.error ?? (r ? "No se pudo cambiar el nivel." : "Sin conexión: no sabemos si cambió. Intenta otra vez."));
   }
   return (
-    <label className="inline-flex items-center gap-1">
-      Nivel
-      <select
-        value={nivel}
-        disabled={ocupado}
-        onChange={(e) => cambiar(e.target.value)}
-        aria-label="Nivel del alumno"
-        className="rounded-lg border border-borde bg-superficie px-1.5 py-0.5 font-semibold"
-      >
-        {["A1", "A2", "B1", "B2", "C1", "C2"].map((n) => (
-          <option key={n} value={n}>
-            {n}
-          </option>
-        ))}
-      </select>
-    </label>
+    <>
+      <label className="inline-flex items-center gap-1">
+        Nivel
+        <select
+          value={nivel}
+          disabled={ocupado}
+          onChange={(e) => cambiar(e.target.value)}
+          aria-label="Nivel del alumno"
+          className="rounded-lg border border-borde bg-superficie px-1.5 py-0.5 font-semibold"
+        >
+          {["A1", "A2", "B1", "B2", "C1", "C2"].map((n) => (
+            <option key={n} value={n}>
+              {n}
+            </option>
+          ))}
+        </select>
+      </label>
+      {error && (
+        <span role="alert" className="ml-1 text-error">
+          {error}
+        </span>
+      )}
+    </>
   );
 }

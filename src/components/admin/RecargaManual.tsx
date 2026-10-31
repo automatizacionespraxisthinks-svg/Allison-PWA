@@ -34,6 +34,15 @@ export function RecargaManual({ cfg, plan }: { cfg: ConfigPrecios; plan: { preci
   const [recibo, setRecibo] = useState("");
   /** Lo que se revisó para confirmar: si algo cambia, hay que revisar otra vez. */
   const [revisado, setRevisado] = useState<string | null>(null);
+  /**
+   * El id de la operación revisada. El servidor no acredita dos veces el
+   * mismo, así que un reintento tras una respuesta perdida no suma doble
+   * (auditoría, 30 de octubre de 2026).
+   */
+  const [operacion, setOperacion] = useState<string | null>(null);
+  /** Los datos de una recarga cuya respuesta se perdió. Si se revisan
+   *  otra vez iguales, conservan su id: repetirla no la duplica. */
+  const [incierta, setIncierta] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -58,19 +67,42 @@ export function RecargaManual({ cfg, plan }: { cfg: ConfigPrecios; plan: { preci
   const datos = JSON.stringify([alumno?.id, tipo, valor, medio, valorRecibido, recibo]);
   const confirmando = revisado === datos;
 
+  function revisar() {
+    if (incierta !== datos || !operacion) setOperacion(crypto.randomUUID());
+    setRevisado(datos);
+  }
+
   async function recargar() {
-    if (!alumno) return;
+    if (!alumno || !operacion) return;
     setOcupado(true);
     setError(null);
+    setAviso(null);
     const r = await pedir("/api/admin/efectivo", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: alumno.id, tipo, montoCop: valor, medio, recibo, valorRecibido }),
+      body: JSON.stringify({ userId: alumno.id, tipo, montoCop: valor, medio, recibo, valorRecibido, operacion }),
     });
     const d = r ? await r.json().catch(() => ({})) : {};
     setOcupado(false);
-    if (!r?.ok) return setError(d.error ?? "No se pudo registrar la recarga.");
-    setAviso(`${alumno.nombre} recibió ${d.mensajes} intervenciones y quedó con ${d.saldo}.`);
+    // Sin respuesta (o un 5xx del proxy) no se sabe si el servidor
+    // acreditó: el botón no queda listo para repetir y la lista de
+    // recientes se refresca para revisarla (auditoría, 30 de octubre de 2026).
+    if (!r || r.status >= 500) {
+      setIncierta(datos);
+      setRevisado(null);
+      setError("No sabemos si quedó: revisa el historial antes de repetir.");
+      router.refresh();
+      return;
+    }
+    if (!r.ok) return setError(d.error ?? "No se pudo registrar la recarga.");
+    setAviso(
+      d.repetida
+        ? `Esa recarga ya estaba registrada: ${alumno.nombre} recibió ${d.mensajes} intervenciones y tiene ${d.saldo}. No se sumó otra vez.`
+        : `${alumno.nombre} recibió ${d.mensajes} intervenciones y quedó con ${d.saldo}.`
+    );
+    setOperacion(null);
+    setIncierta(null);
+    setRevisado(null);
     setAlumno(null);
     setQ("");
     setRecibo("");
@@ -226,7 +258,7 @@ export function RecargaManual({ cfg, plan }: { cfg: ConfigPrecios; plan: { preci
       ) : (
         <button
           type="button"
-          onClick={() => setRevisado(datos)}
+          onClick={revisar}
           disabled={!valido}
           className="self-start rounded-xl bg-texto px-5 py-2.5 font-semibold text-fondo disabled:opacity-40"
         >

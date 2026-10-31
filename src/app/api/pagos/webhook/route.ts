@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { registrarResultado } from "@/lib/cobro";
+import { registrarAnulacion, registrarResultado } from "@/lib/cobro";
 import { CUERPO_MUY_GRANDE, cuerpoExcede } from "@/lib/limite";
 import { pasarela } from "@/lib/pasarela";
 
@@ -40,8 +40,19 @@ export async function POST(peticion: Request) {
   }
 
   const evento = via.interpretarEvento(cuerpo);
+
+  // Un reembolso o un contracargo aprobado: se marca la orden para que
+  // el panel la muestre, sin tocar el saldo (registrarAnulacion). Antes
+  // se ignoraba y el dinero devuelto seguía contando como ingreso
+  // (auditoría, 30 de octubre de 2026).
+  const anulacion = evento ? null : (via.interpretarAnulacion?.(cuerpo) ?? null);
+  if (anulacion) {
+    const desenlace = await registrarAnulacion({ pasarela: via.nombre, ...anulacion });
+    return NextResponse.json({ ok: true, anulacion: desenlace });
+  }
+
   if (!evento) {
-    // Una anulación, otro tipo de evento, un pago sin referencia. Se
+    // Otro tipo de evento, un pago sin referencia. Se
     // registran el tipo y el id de la transacción en la pasarela —para
     // poder buscarla en su panel— y nada más: el cuerpo trae datos del
     // pagador.

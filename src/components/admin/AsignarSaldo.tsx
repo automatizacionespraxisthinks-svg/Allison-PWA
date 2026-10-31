@@ -23,8 +23,16 @@ export function AsignarSaldo({ colegios }: { colegios: Colegio[] }) {
   const [motivo, setMotivo] = useState("");
   /** null: todo el colegio. */
   const [cursos, setCursos] = useState<string[] | null>(null);
-  /** El total calculado, con los datos con que se calculó: si algo cambia, ya no vale. */
-  const [calculado, setCalculado] = useState<{ alumnos: number; total: number; para: string } | null>(null);
+  /**
+   * El total calculado, con los datos con que se calculó (si algo cambia,
+   * ya no vale) y el id de la operación, creado al ver el total. El
+   * servidor no asigna dos veces el mismo id: si la respuesta se pierde y
+   * se reintenta, ningún alumno recibe doble (auditoría, 30 de octubre de 2026).
+   */
+  const [calculado, setCalculado] = useState<{ alumnos: number; total: number; para: string; operacion: string } | null>(null);
+  /** Una asignación cuya respuesta se perdió: si se vuelve a calcular
+   *  igual, conserva su id y repetirla no suma otra vez. */
+  const [incierta, setIncierta] = useState<{ para: string; operacion: string } | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -45,23 +53,46 @@ export function AsignarSaldo({ colegios }: { colegios: Colegio[] }) {
   }
 
   async function enviar(confirmar: boolean) {
+    const operacion = confirmar ? vista?.operacion : undefined;
     setOcupado(true);
     setError(null);
     setAviso(null);
     const r = await pedir("/api/admin/colegios/asignar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ institucionId: colegioId, cursos, porAlumno: cantidad, motivo, confirmar }),
+      body: JSON.stringify({ institucionId: colegioId, cursos, porAlumno: cantidad, motivo, confirmar, operacion }),
     });
     const d = r ? await r.json().catch(() => ({})) : {};
     setOcupado(false);
+    // Al confirmar, sin respuesta (o con un 5xx del proxy) no se sabe si
+    // se asignó: el botón no queda listo para repetir y la lista de
+    // asignaciones se refresca para revisarla.
+    if (confirmar && operacion && (!r || r.status >= 500)) {
+      setIncierta({ para, operacion });
+      setCalculado(null);
+      setError("No sabemos si quedó: revisa el historial antes de repetir.");
+      router.refresh();
+      return;
+    }
     if (!r?.ok) return setError(d.error ?? "No se pudo asignar.");
     if (confirmar) {
-      setAviso(`Listo: ${d.total.toLocaleString("es-CO")} intervenciones repartidas entre ${d.alumnos} alumnos.`);
+      setAviso(
+        d.repetida
+          ? `Esa asignación ya estaba hecha: ${d.total.toLocaleString("es-CO")} intervenciones entre ${d.alumnos} alumnos. No se sumó otra vez.`
+          : `Listo: ${d.total.toLocaleString("es-CO")} intervenciones repartidas entre ${d.alumnos} alumnos.`
+      );
       setMotivo("");
       setCalculado(null);
+      setIncierta(null);
       router.refresh();
-    } else setCalculado({ alumnos: d.alumnos, total: d.total, para });
+    } else {
+      setCalculado({
+        alumnos: d.alumnos,
+        total: d.total,
+        para,
+        operacion: incierta?.para === para ? incierta.operacion : crypto.randomUUID(),
+      });
+    }
   }
 
   if (!colegios.length) {

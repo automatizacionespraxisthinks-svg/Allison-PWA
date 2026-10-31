@@ -53,9 +53,15 @@ async function limpiar(peticion: Request) {
   // quita nada a nadie: si la pasarela confirmara después un pago que
   // SÍ se hizo, acreditar_transaccion acredita también una orden
   // rechazada — el dinero llegó, y cobrar sin entregar sería peor.
+  //
+  // Una orden con alerta (monto distinto, pago anulado) NO es un carrito
+  // abandonado: el alumno pudo pagar y está en «Pagos por revisar» del
+  // panel. Cerrarla como rechazada la hacía pasar por un abandono
+  // (auditoría, 30 de octubre de 2026).
   const abandonadas = await sql`
     update transacciones set estado = 'rechazada'
      where estado = 'pendiente' and creado_en < now() - interval '48 hours'
+       and payload->>'alerta' is null
      returning id
   `;
 
@@ -193,6 +199,9 @@ async function conciliarPagos(): Promise<number> {
          and estado in ('pendiente', 'rechazada')
          and payload->>'id_pasarela' is not null
          and payload->>'link_vencido' is null
+         -- Con alerta no se acredita sola (registrarResultado la frena):
+         -- preguntarle a la pasarela cada hora no serviría de nada.
+         and payload->>'alerta' is null
          and creado_en > now() - interval '72 hours'
          and creado_en < now() - interval '15 minutes'
        order by creado_en

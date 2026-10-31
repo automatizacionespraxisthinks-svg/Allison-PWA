@@ -8,7 +8,6 @@ import { CampoContrasena } from "@/components/CampoContrasena";
 import { EMPRESA } from "@/lib/legal";
 import { pedir } from "@/lib/pedir";
 import type { Perfil } from "@/lib/perfil";
-import type { Nivel } from "@/lib/tipos";
 
 const campo =
   "rounded-xl border border-borde bg-superficie px-4 py-3 outline-none focus:border-primario";
@@ -51,17 +50,25 @@ export function FormularioPerfil({ perfil }: { perfil: Perfil }) {
   const [email, setEmail] = useState(perfil.email ?? "");
   const [telefono, setTelefono] = useState(perfil.telefono ?? "");
   const [username, setUsername] = useState(perfil.username ?? "");
-  const nivel: Nivel = perfil.nivel;
+  // Cambiar el correo pide la contraseña actual (src/lib/perfil.ts).
+  const [claveDelCorreo, setClaveDelCorreo] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [avisoDatos, setAvisoDatos] = useState<Aviso>(null);
 
+  // El nivel no va aquí: se cambia con su regla en el selector de Ajustes
+  // (/api/nivel). Mandarlo con los datos pisaba con el nivel de cuando se
+  // abrió esta pantalla el que el alumno acababa de elegir (auditoría, 30
+  // de octubre de 2026).
+  const cambiaCorreo = !deColegio && email.trim().toLowerCase() !== (perfil.email ?? "");
   const hayCambios =
     nombre.trim() !== perfil.nombre ||
-    nivel !== perfil.nivel ||
     (!deColegio &&
-      (email.trim().toLowerCase() !== (perfil.email ?? "") ||
+      (cambiaCorreo ||
         telefono.trim() !== (perfil.telefono ?? "") ||
         username.trim() !== (perfil.username ?? "")));
+  // Sin contraseña (entra solo con Google) el correo no se cambia aquí; con
+  // contraseña, hay que escribirla.
+  const faltaClave = cambiaCorreo && (!perfil.conContrasena || !claveDelCorreo);
 
   async function guardarDatos(e: React.FormEvent) {
     e.preventDefault();
@@ -71,7 +78,13 @@ export function FormularioPerfil({ perfil }: { perfil: Perfil }) {
     const r = await pedir("/api/perfil", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nombre, email, telefono, username, nivel }),
+      body: JSON.stringify({
+        nombre,
+        email,
+        telefono,
+        username,
+        ...(cambiaCorreo ? { contrasenaActual: claveDelCorreo } : {}),
+      }),
     });
     const d = r ? await r.json().catch(() => ({})) : {};
     setGuardando(false);
@@ -88,6 +101,7 @@ export function FormularioPerfil({ perfil }: { perfil: Perfil }) {
       setTelefono(d.datos.telefono ?? "");
       setUsername(d.datos.username ?? "");
     }
+    setClaveDelCorreo("");
     setAvisoDatos({ tipo: "ok", texto: "Cambios guardados." });
     empezarTransicion(() => router.refresh());
   }
@@ -123,17 +137,32 @@ export function FormularioPerfil({ perfil }: { perfil: Perfil }) {
 
     // Cambiarla cerró todas las sesiones, incluida esta. Se vuelve a
     // entrar aquí mismo con la nueva, sin que el alumno lo note; si
-    // por lo que sea no se puede, se le pide entrar de nuevo.
-    const entrada = await signIn("acceso", {
-      identificador: perfil.email ?? "",
-      password: nueva,
-      redirect: false,
-    });
-    if (entrada?.error) {
-      router.push("/entrar");
+    // por lo que sea no se puede, se le pide entrar de nuevo. Si la red
+    // se cae en ese momento, signIn lanza: sin el try el botón quedaba
+    // en "Cambiando…" para siempre (auditoría, 30 de octubre de 2026).
+    try {
+      const entrada = await signIn("acceso", {
+        identificador: perfil.email ?? "",
+        password: nueva,
+        redirect: false,
+      });
+      if (entrada?.error) {
+        router.push("/entrar");
+        return;
+      }
+    } catch {
+      // La contraseña ya cambió: los campos viejos ya no sirven.
+      setActual("");
+      setNueva("");
+      setRepetida("");
+      setAvisoClave({
+        tipo: "error",
+        texto: "Tu contraseña ya cambió, pero se cayó la conexión. Revisa tu internet y entra de nuevo con la nueva.",
+      });
       return;
+    } finally {
+      setCambiando(false);
     }
-    setCambiando(false);
     setActual("");
     setNueva("");
     setRepetida("");
@@ -206,6 +235,31 @@ export function FormularioPerfil({ perfil }: { perfil: Perfil }) {
               </span>
             </label>
 
+            {/* Cambiar el correo pide la contraseña actual: con solo la sesión
+                abierta en un computador ajeno, otro podía poner su correo y
+                quedarse con la cuenta (auditoría, 30 de octubre de 2026). */}
+            {cambiaCorreo &&
+              (perfil.conContrasena ? (
+                <CampoContrasena
+                  etiqueta="Tu contraseña actual"
+                  ayuda={
+                    perfil.conGoogle
+                      ? "Para cambiar el correo, confirma que eres tú. Tu cuenta deja de estar unida a tu Google: entrarás con el correo nuevo y tu contraseña."
+                      : "Para cambiar el correo, confirma que eres tú."
+                  }
+                  value={claveDelCorreo}
+                  onChange={(e) => setClaveDelCorreo(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                  className={campo}
+                />
+              ) : (
+                <p role="status" className="rounded-lg bg-superficie-2 p-3 text-sm">
+                  Entras con Google, así que tu correo es el de esa cuenta y no se cambia aquí. Si
+                  necesitas usar otro, escríbenos a <strong>{EMPRESA.correo}</strong>.
+                </p>
+              ))}
+
             <label className="flex flex-col gap-1.5">
               <span className="text-sm font-medium">
                 Celular <span className="font-normal text-texto-suave">(opcional)</span>
@@ -245,7 +299,7 @@ export function FormularioPerfil({ perfil }: { perfil: Perfil }) {
 
         <button
           type="submit"
-          disabled={guardando || refrescando || !hayCambios}
+          disabled={guardando || refrescando || !hayCambios || faltaClave}
           className="rounded-xl bg-primario px-4 py-3 font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
         >
           {guardando ? "Guardando…" : "Guardar cambios"}
