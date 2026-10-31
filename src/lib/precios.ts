@@ -20,10 +20,11 @@ export interface ConfigPrecios {
  */
 export function configPrecios(): ConfigPrecios {
   return {
-    // 60 pesos por intervención en recarga, contra 50 en el plan
-    // mensual: pagar sobre la marcha cuesta un poco más que
-    // suscribirse, que es justo lo que empuja hacia el plan.
-    copPorMensaje: Number(process.env.COP_POR_MENSAJE ?? 60),
+    // 37 pesos por intervención en recarga, contra 27,34 en el plan
+    // mensual (35.000 por 1.280, db/028): pagar sobre la marcha cuesta
+    // un poco más que suscribirse, que es justo lo que empuja hacia el
+    // plan. Era 60 hasta el 31 de octubre de 2026.
+    copPorMensaje: Number(process.env.COP_POR_MENSAJE ?? 37),
     minima: Number(process.env.RECARGA_MINIMA_COP ?? 8000),
     maxima: 500_000,
   };

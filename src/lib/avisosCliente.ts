@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { sesionCerrada } from "./pedir";
 
 /**
  * Los avisos en el celular, del lado del navegador: pedir permiso,
@@ -52,6 +53,8 @@ async function pedir(cuerpo: unknown): Promise<Record<string, unknown> | null> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(cuerpo),
     });
+    // Sesión cerrada: a entrar de nuevo (auditoría, 31 de octubre de 2026).
+    if (sesionCerrada(r)) return null;
     return r.ok ? await r.json() : null;
   } catch {
     return null;

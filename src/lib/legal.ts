@@ -48,7 +48,7 @@ export const ENCARGADOS = [
   {
     nombre: "Google (Gmail)",
     pais: "Estados Unidos",
-    para: "Enviar correos de verificación y recuperación de contraseña",
+    para: "Enviar el correo para recuperar o crear la contraseña y, si lo activas, el recordatorio de la racha",
   },
   {
     nombre: "Google (inicio de sesión)",
@@ -57,7 +57,7 @@ export const ENCARGADOS = [
   },
   {
     nombre: "Praxis (API de voz)",
-    pais: "Por confirmar",
+    pais: "Estados Unidos",
     para: "Convertir en voz lo que Allison te dice. Solo recibe ese texto: ni tu audio ni tu cuenta",
   },
 ] as const;

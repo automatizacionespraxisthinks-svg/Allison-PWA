@@ -6,7 +6,8 @@ import { useState } from "react";
 import type { Nivel } from "@/lib/tipos";
 import { Estampilla, type LugarSello } from "./Estampilla";
 import { Icono } from "./Iconos";
-import { BotonOir, useVoz } from "./leccion/comun";
+import { BotonOir, useVoz } from "./leccion/comun";
+import { sesionCerrada } from "@/lib/pedir";
 
 interface LeccionGuia {
   numero: number;
@@ -76,6 +77,8 @@ export function Guia({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ texto: frase.en, contexto: frase.es }),
     }).catch(() => null);
+    // Sesión cerrada: a entrar de nuevo (auditoría, 31 de octubre de 2026).
+    if (sesionCerrada(r)) return;
     if (r?.ok) setGuardadas((g) => new Set(g).add(frase.en));
     else setAviso((await r?.json().catch(() => null))?.error ?? "No se pudo guardar. Intenta otra vez.");
   }

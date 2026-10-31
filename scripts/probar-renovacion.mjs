@@ -56,6 +56,10 @@ const creados = [];
 const planes = Object.fromEntries(
   (await sql`select id, codigo, mensajes_por_mes, duracion_meses from planes`).map((p) => [p.codigo, p])
 );
+/** Lo que entrega cada mes el plan, leído de la base: pasó de 700 a
+ *  1.280 (db/028) y una prueba con el número escrito se quedaría vieja. */
+const MES_ANUAL = planes.anual.mensajes_por_mes;
+const MES_SEMESTRAL = planes.semestral.mensajes_por_mes;
 
 /**
  * Un alumno con una suscripción activa que empezó `hace` (intervalo de
@@ -136,15 +140,15 @@ try {
   const a = await alumnoConPlan({ codigo: "anual", hace: "1 month 1 hour", plan: 250, recarga: 40 });
   probar("un plan anual cuyo mes terminó se renueva", (await renovar(a)) === true);
   let e = await estado(a);
-  probar("lo que sobró del plan (250) vence y llegan los 700 del mes nuevo", e.plan === 700, JSON.stringify(e));
+  probar(`lo que sobró del plan (250) vence y llegan los ${MES_ANUAL} del mes nuevo`, e.plan === MES_ANUAL, JSON.stringify(e));
   probar("la recarga no se toca: no caduca", e.recarga === 40);
   probar(
     "queda en el libro: vencimiento y asignación, y el saldo cuadra",
-    e.cuadra && e.movimientos.slice(-2).join(",") === "expiracion:-250,plan_asignacion:700",
+    e.cuadra && e.movimientos.slice(-2).join(",") === `expiracion:-250,plan_asignacion:${MES_ANUAL}`,
     e.movimientos.join(",")
   );
   probar("la suscripción sigue activa, ahora en su mes 2", e.sus.estado === "activa" && (await enMes(a, 2)));
-  probar("una segunda llamada no encuentra nada que hacer", (await renovar(a)) === false && (await estado(a)).plan === 700);
+  probar("una segunda llamada no encuentra nada que hacer", (await renovar(a)) === false && (await estado(a)).plan === MES_ANUAL);
 
   // 2. Al día
   const b = await alumnoConPlan({ codigo: "anual", hace: "10 days", plan: 500 });
@@ -172,14 +176,14 @@ try {
   e = await estado(f);
   probar(
     "con 3 meses sin ponerse al día, se abre SOLO el mes vigente (uno, no cuatro)",
-    e.plan === 700 && (await enMes(f, 5)) && e.movimientos.filter((m) => m.startsWith("plan_asignacion:700")).length === 1 && e.cuadra,
+    e.plan === MES_ANUAL && (await enMes(f, 5)) && e.movimientos.filter((m) => m === `plan_asignacion:${MES_ANUAL}`).length === 1 && e.cuadra,
     JSON.stringify(e)
   );
 
   // 6. Semestral a mitad y al final
   const g = await alumnoConPlan({ codigo: "semestral", hace: "2 months 1 hour", mes: 2, plan: 0 });
   await renovar(g);
-  probar("el semestral en su mes 3 recibe sus 700", (await estado(g)).plan === 700 && (await enMes(g, 3)));
+  probar(`el semestral en su mes 3 recibe sus ${MES_SEMESTRAL}`, (await estado(g)).plan === MES_SEMESTRAL && (await enMes(g, 3)));
   const h = await alumnoConPlan({ codigo: "semestral", hace: "6 months 1 hour", mes: 6, plan: 12 });
   await renovar(h);
   probar("y al sexto mes termina", (await estado(h)).sus.estado === "vencida");
@@ -212,7 +216,7 @@ try {
   e = await estado(j);
   probar(
     "dos renovaciones al mismo tiempo: una renueva, el saldo no se duplica",
-    dos.filter(Boolean).length === 1 && e.plan === 700 && e.cuadra,
+    dos.filter(Boolean).length === 1 && e.plan === MES_ANUAL && e.cuadra,
     `${dos} · ${JSON.stringify(e)}`
   );
 
@@ -225,7 +229,7 @@ try {
   e = await estado(k);
   probar(
     "renovar mientras llegan 10 consumos: el saldo sigue cuadrando con el libro",
-    e.cuadra && e.plan >= 0 && e.recarga >= 0 && e.plan + e.recarga >= 700 - 10,
+    e.cuadra && e.plan >= 0 && e.recarga >= 0 && e.plan + e.recarga >= MES_ANUAL - 10,
     JSON.stringify(e)
   );
 

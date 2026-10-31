@@ -2,7 +2,7 @@
 --  Allison — BASE COMPLETA para una base de datos VACÍA
 --
 --  Un solo archivo que deja la base lista para producción:
---    1. todo el esquema (27 migraciones, en orden)
+--    1. todo el esquema (28 migraciones, en orden)
 --    2. el registro de que ya se aplicaron
 --    3. el administrador con el que entras por primera vez
 --
@@ -2539,11 +2539,44 @@ alter table instituciones add column if not exists competencia_activa boolean no
 
 
 -- =====================================================================
+--  028_mas_intervenciones.sql
+-- =====================================================================
+
+-- ---------------------------------------------------------------------
+--  Más intervenciones por el mismo precio (31 de octubre de 2026,
+--  decisión del dueño).
+--
+--  Los precios no cambian; cambia lo que entrega cada plan: de 700 a
+--  1.280 intervenciones al mes. La cuenta parte del precio con IVA
+--  incluido y le quita el IVA (19 %), la pasarela (1.000 pesos + 3 %
+--  por pago), los costos fijos (20 % del precio sin IVA) y la IA a 6,8
+--  pesos por intervención: el doble de lo más caro que se midió (Narra
+--  de B1, 3,4; docs/ARQUITECTURA.md, "Costo real por mensaje"). Aun si
+--  el alumno gasta todas en lo más caro, queda de ganancia mínima, sobre
+--  el precio sin IVA y antes de renta e ICA:
+--
+--    mensual     35.000   1.280/mes   27,34 por intervención   43 %
+--    6 meses    189.000   1.280/mes   24,61                    43 %
+--    anual      352.800   1.280/mes   22,97                    41 %
+--
+--  La recarga pasa de 60 a 37 pesos por intervención (COP_POR_MENSAJE,
+--  en el entorno): sigue costando más que cualquier plan, que es lo que
+--  empuja hacia el plan.
+--
+--  Quien ya tiene un plan recibe las 1.280 desde su próximo mes:
+--  renovar_suscripcion (db/020) lee mensajes_por_mes del plan cada vez
+--  que abre un mes. El mes en curso se queda con lo que ya recibió.
+-- ---------------------------------------------------------------------
+
+update planes set mensajes_por_mes = 1280 where codigo in ('mensual', 'semestral', 'anual');
+
+
+-- =====================================================================
 --  Registro de migraciones
 --
 --  Exactamente la tabla que lleva scripts/migrar.mjs. Con esto, la
 --  próxima vez que alguien corra las migraciones contra esta base, verá
---  las 27 como "ya aplicada" y solo aplicará las nuevas.
+--  las 28 como "ya aplicada" y solo aplicará las nuevas.
 -- =====================================================================
 
 create table if not exists migraciones (
@@ -2578,7 +2611,8 @@ insert into migraciones (archivo) values
   ('024_ruta.sql'),
   ('025_viajes_escenarios_repasos.sql'),
   ('026_panel.sql'),
-  ('027_avisos_competencia.sql')
+  ('027_avisos_competencia.sql'),
+  ('028_mas_intervenciones.sql')
 on conflict (archivo) do nothing;
 
 -- ---------------------------------------------------------------------

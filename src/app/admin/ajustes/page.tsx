@@ -28,7 +28,7 @@ export default async function PaginaAjustes() {
       <FormAjustes inicial={a} cambiados={cambiados} />
       {a.dolarCop === 4000 && (
         <p className="text-xs text-texto-suave">
-          El costo se calcula con el dólar a $4.000; el real en octubre de 2026 está cerca de $3.216, así que el panel muestra un costo de IA más
+          El costo se calcula con el dólar a $4.000; la TRM del 31 de octubre de 2026 es $3.183, así que el panel muestra un costo de IA más
           alto que el real.
         </p>
       )}

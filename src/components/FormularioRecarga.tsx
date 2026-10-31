@@ -77,7 +77,7 @@ export function FormularioRecarga({ cfg }: { cfg: ConfigPrecios }) {
           />
         </div>
         <span className="text-xs text-texto-suave">
-          Desde {pesos(cfg.minima)}. Lo que compras no caduca nunca.
+          Desde {pesos(cfg.minima)}, IVA incluido. Lo que compras no caduca nunca.
         </span>
       </label>
 

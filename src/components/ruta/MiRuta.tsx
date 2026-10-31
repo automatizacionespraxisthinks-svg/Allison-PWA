@@ -17,6 +17,7 @@ import { selloDe } from "@/lib/ruta/sellos";
 import { Estampilla, type LugarSello } from "./Estampilla";
 import { Icono, IconoActividad, Estrellas } from "./Iconos";
 import { MapaViaje } from "./MapaViaje";
+import { sesionCerrada } from "@/lib/pedir";
 
 /**
  * El mapa del viaje de cada nivel con ruta escrita (los que acepta rutaDe).
@@ -299,6 +300,8 @@ function PasarDeNivel({ nivel }: { nivel: EstadoDeRuta["nivel"] }) {
         body: JSON.stringify({ nivel: siguiente }),
         signal: AbortSignal.timeout(20_000),
       });
+      // Sesión cerrada: a entrar de nuevo (auditoría, 31 de octubre de 2026).
+      if (sesionCerrada(r)) return;
       if (r.ok) {
         router.refresh();
         return;

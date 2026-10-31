@@ -60,10 +60,10 @@ errores intactos, y el CPX22 pasa de ~5 a ~30 estudiantes simultáneos.
   pruebas quedan intactos; solo cambia el texto: "Hasta 500 intervenciones al mes — más de
   8 horas de conversación" (1 intervención ≈ 1 minuto, redondeado hacia abajo para prometer
   menos de lo que se entrega). Los términos aclaran que la equivalencia es informativa
-- **Tasa:** $60 COP = 1 mensaje en recarga (`COP_POR_MENSAJE`; era $100)
+- **Tasa:** $37 COP = 1 mensaje en recarga (`COP_POR_MENSAJE`; $60 hasta el 31-oct-2026, y antes $100)
 - **Recarga:** mínimo $8.000 (sep-2026; antes $4.000), de ahí en adelante monto libre. **No caducan**
 - **Bono por volumen:** +10% desde $20.000 · +15% desde $50.000
-- **Planes** (`db/018_precios_planes.sql`): mensual $35.000 / semestral $189.000 / anual $352.800 — 700 mensajes por mes
+- **Planes** (precios en `db/018_precios_planes.sql`): mensual $35.000 / semestral $189.000 / anual $352.800 — 1.280 mensajes por mes (`db/028`; eran 700 hasta el 31-oct-2026). Los precios llevan el IVA incluido
 - **Los mensajes del plan caducan** al terminar el mes. Al agotarse se le **pregunta** al alumno si quiere renovar (no hay débito automático forzado)
 - **Planes de varios meses:** entregan los mensajes **cada mes**, contados desde el día de compra (un plan del 31 no se corre al 28). Lo pone al día `renovar_suscripcion` (db/020): al cargar el saldo del alumno y en la tarea de cada hora. Los meses en que nadie la pone al día no se entregan de golpe: habrían vencido igual
 - **Orden de consumo:** primero los del plan, después los de recarga
@@ -93,10 +93,17 @@ dólar (a la TRM real, ~3.216, es un 20 % menos). Script: `scratchpad/costo/medi
 | Hablar, un turno con 10 mensajes de historial | ~5.250 / 100 | ~2,5 a 3 |
 | Voz (API de Praxis, en su propia CPU) | — | 0 por uso. Capacidad: 2 síntesis a la vez para todos sus clientes |
 
-Lo que paga el alumno por intervención: $60 en recarga (`COP_POR_MENSAJE`; $54,5 y $52,2
-con el bono del 10 % y del 15 %) y, con los precios de `db/018`, $50 en el plan mensual
-($35.000 / 700), $45 en el semestral y $42 en el anual. Bold se queda con ~3,4 %. El costo de la
-IA es entre el 0,2 % y el 8 % de lo que paga el alumno.
+Lo que paga el alumno por intervención: $37 en recarga (`COP_POR_MENSAJE`; $33,7 y $32,2
+con el bono del 10 % y del 15 %) y, con los precios de `db/018` y las 1.280 de `db/028`, $27,3
+en el plan mensual ($35.000 / 1.280), $24,6 en el semestral y $23 en el anual. Bold se queda con
+~3,4 %. El costo de la IA es entre el 0,3 % y el 15 % de lo que paga el alumno.
+
+**Cómo se fijaron (31-oct-2026, decisión del dueño).** Del precio, que lleva el IVA, se quitan
+el IVA (19 %), la pasarela ($1.000 + 3 % por pago), los costos fijos (20 % del precio sin IVA) y
+la IA con colchón: $6,8 por intervención, el doble de lo más caro medido (Narra de B1). Aun si
+el alumno gasta todo en lo más caro, la ganancia mínima, sobre el precio sin IVA y antes de
+renta e ICA, es del 43 % en el mensual y el semestral y del 41 % en el anual. En la recarga va del 40 %
+($8.000) al 50 % ($100.000): los $1.000 fijos de la pasarela pesan más en los pagos chicos.
 
 ### Comisiones de pasarela — decisión (sep-2026)
 

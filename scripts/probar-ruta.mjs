@@ -154,8 +154,9 @@ ok("pasoDe de una clave inventada", pasoDe("a1-p99") === null && pasoDe("b2-p01"
   ok("completo: 12 de 12", e.sellos === 12);
 }
 
-// Otros niveles: todavía sin ruta escrita
-ok("A2 sin ruta escrita", estadoDeRuta("A2", [], []) === null);
+// Otros niveles: todavía sin ruta escrita. B2, que no la tiene: A2 y B1
+// sí, y en producción están encendidas (RUTA_A2 y RUTA_B1, 31 de octubre de 2026).
+ok("B2 sin ruta escrita", estadoDeRuta("B2", [], []) === null);
 
 // Estrellas
 ok("lección 80 % → 3", estrellasDeLeccion(4, 5) === 3);

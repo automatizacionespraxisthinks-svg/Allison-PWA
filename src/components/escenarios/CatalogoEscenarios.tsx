@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Estrella, Estrellas, Icono } from "@/components/ruta/Iconos";
-import { CATEGORIAS, ESTILO_CATEGORIA, rutaDeEscenario, type Categoria, type TarjetaEscenario } from "@/lib/escenarios/categorias";
+import { CATEGORIAS, ESTILO_CATEGORIA, rutaDeEscenario, type Categoria, type TarjetaEscenario } from "@/lib/escenarios/categorias";
+import { sesionCerrada } from "@/lib/pedir";
 
 /** Ideas para el escenario propio (se tocan y quedan escritas). */
 const IDEAS = ["Comprar boletas para un concierto", "Ir al cine", "Cortarme el pelo", "Comprar ropa", "Pedir una pizza por teléfono"];
@@ -231,6 +232,8 @@ function CreaTuPropio({ saldo }: { saldo: number }) {
         body: JSON.stringify({ pedido: t }),
         signal: AbortSignal.timeout(30_000),
       });
+      // Sesión cerrada: a entrar de nuevo (auditoría, 31 de octubre de 2026).
+      if (sesionCerrada(r)) return;
       const d = await r.json().catch(() => ({}));
       if (r.ok && d.clave) {
         router.push(`/escenarios/${rutaDeEscenario(d.clave)}`);

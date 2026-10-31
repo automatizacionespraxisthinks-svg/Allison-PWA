@@ -124,8 +124,8 @@ consulta, no al importar el módulo.
 | `TAREAS_SECRETO` | generado, listo |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | **faltan** — las llaves de los avisos en el celular (recordatorio de la racha). Se generan una sola vez con `npx web-push generate-vapid-keys` y no se cambian: si cambian, cada celular tiene que volver a activar los avisos. Sin ellas los avisos se esconden y el recordatorio sigue por correo |
 | `PROXY_CONFIABLE` | **`reverso` — no la dejes vacía**: Traefik reescribe `x-forwarded-for`. Vacía, todas las personas comparten un mismo límite: 5 registros por hora para todo el país, 5 recuperaciones de contraseña por hora, y la entrada pierde el freno por dirección |
-| `COP_POR_MENSAJE`, `RECARGA_MINIMA_COP`, `MENSAJES_PRUEBA`, `REGISTROS_GLOBALES_POR_HORA` | **ajustar**: `RECARGA_MINIMA_COP=8000` y `MENSAJES_PRUEBA=5`; borra `MENSAJES_PRUEBA_INICIAL` y `MENSAJES_PRUEBA_VERIFICAR` si siguen ahí |
-| `RUTA_A2`, `RUTA_B1` | **vacías** hasta que la docente apruebe el contenido de A2 y de B1 (con el nativo para el Repaso final). Con `1`, los alumnos de ese nivel ven la ruta nueva |
+| `COP_POR_MENSAJE`, `RECARGA_MINIMA_COP`, `MENSAJES_PRUEBA`, `REGISTROS_GLOBALES_POR_HORA` | **ajustar**: `COP_POR_MENSAJE=37` (desde el 31 de octubre de 2026; era 60), `RECARGA_MINIMA_COP=8000` y `MENSAJES_PRUEBA=5`; borra `MENSAJES_PRUEBA_INICIAL` y `MENSAJES_PRUEBA_VERIFICAR` si siguen ahí |
+| `RUTA_A2`, `RUTA_B1` | **`1`** desde el 31 de octubre de 2026 (decisión del dueño: se encienden ya y la docente revisa después, con el nativo para los Repasos finales). Con `1`, los alumnos de ese nivel ven la ruta del Reino Unido y la de Canadá; vacías, la ruta provisional |
 | `BOLD_PRUEBAS` | **vacía**: con ella Bold cobra con las llaves de prueba, y en producción la app se niega |
 | `CRON_SECRET` | opcional — un segundo secreto para la limpieza (otra máquina, o cambiar `TAREAS_SECRETO` sin cortarla) |
 
@@ -197,6 +197,13 @@ node scripts/migrar.mjs
 **Producción está al día hasta la 027** (aplicadas en octubre de 2026,
 después de una copia con `pg_dump`). El comando solo aplica las que
 falten, en orden.
+
+**La 028 (1.280 intervenciones al mes en los planes, 31 de octubre de
+2026)** va junto con `COP_POR_MENSAJE=37`: cambia la variable en
+Dokploy, despliega y, apenas arranque, corre `node scripts/migrar.mjs`
+en la Terminal del contenedor. El código no la necesita para arrancar:
+en ese minuto los planes siguen mostrando 700. Quien ya tiene un plan
+recibe las 1.280 desde su próximo mes.
 
 **Cuando una migración nueva tenga que ir ANTES del código nuevo**
 (porque el código la usa al arrancar, como pasó con `dias_descanso()`,
@@ -359,12 +366,14 @@ secreto.
   responsable del servicio. La política de datos ya lo lista como
   encargado; **falta confirmar en qué país corre** para escribirlo ahí.
 - **Las anulaciones de Bold no descuentan saldo solas**: si devuelves un
-  pago desde Bold, el alumno conserva sus intervenciones (pudo haberlas
-  gastado ya). El aviso queda en el log del servidor como
-  `VOID_APPROVED`; ajusta el saldo a mano desde el panel, que exige una
-  nota que lo explique.
+  pago desde Bold (o el banco hace un contracargo), el alumno conserva sus
+  intervenciones (pudo haberlas gastado ya). Desde el 30 de octubre de
+  2026 la orden queda marcada y aparece en **/admin/recargas › «Pagos por
+  revisar»** (y como alerta en el Resumen), junto con los pagos cuyo monto
+  no cuadró; ya no cuenta como ingreso. Descuenta a mano desde la ficha del
+  alumno (el ajuste exige una nota) y marca el pago con «Ya lo revisé».
 - **Planes: sin aviso antes de que termine el mes.** La renovación
-  mensual ya funciona (el anual entrega 700 cada mes y lo que sobra
+  mensual ya funciona (el anual entrega 1.280 cada mes y lo que sobra
   vence, como dicen los términos), pero la app no le avisa al alumno
   que sus mensajes del plan están por vencer. Un aviso unos días antes
   evitaría la sorpresa.

@@ -116,6 +116,28 @@ export function FormularioPerfil({ perfil }: { perfil: Perfil }) {
   async function cambiarContrasena(e: React.FormEvent) {
     e.preventDefault();
     setAvisoClave(null);
+
+    // Sin contraseña (entra con Google): se crea desde un enlace que llega
+    // al correo de la cuenta, no con la sesión sola. Quien encontrara la
+    // sesión abierta en otro computador ya no puede crearla (auditoría, 31
+    // de octubre de 2026).
+    if (!perfil.conContrasena) {
+      setCambiando(true);
+      const r = await pedir("/api/perfil/contrasena", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ porCorreo: true }),
+      });
+      const d = r ? await r.json().catch(() => ({})) : {};
+      setCambiando(false);
+      setAvisoClave(
+        r?.ok
+          ? { tipo: "ok", texto: `Te mandamos un enlace a ${d.correo}. Ábrelo para crear tu contraseña: vence en una hora.` }
+          : { tipo: "error", texto: d.error ?? "No pudimos mandar el enlace. Revisa tu conexión e intenta otra vez." }
+      );
+      return;
+    }
+
     if (nueva !== repetida) {
       setAvisoClave({ tipo: "error", texto: "Las dos contraseñas nuevas no coinciden." });
       return;
@@ -125,7 +147,7 @@ export function FormularioPerfil({ perfil }: { perfil: Perfil }) {
     const r = await pedir("/api/perfil/contrasena", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ actual: perfil.conContrasena ? actual : undefined, nueva }),
+      body: JSON.stringify({ actual, nueva }),
     });
     const d = r ? await r.json().catch(() => ({})) : {};
 
@@ -168,9 +190,7 @@ export function FormularioPerfil({ perfil }: { perfil: Perfil }) {
     setRepetida("");
     setAvisoClave({
       tipo: "ok",
-      texto: perfil.conContrasena
-        ? "Contraseña cambiada. Si tenías la sesión abierta en otro aparato, ahí se cerró."
-        : "Contraseña creada. Ya puedes entrar también con tu correo y contraseña.",
+      texto: "Contraseña cambiada. Si tenías la sesión abierta en otro aparato, ahí se cerró.",
     });
     empezarTransicion(() => router.refresh());
   }
@@ -318,53 +338,58 @@ export function FormularioPerfil({ perfil }: { perfil: Perfil }) {
             </h2>
             {!perfil.conContrasena && (
               <p className="mt-1 text-sm text-texto-suave">
-                Entras con Google. Con una contraseña podrás entrar también con tu correo.
+                Entras con Google. Con una contraseña podrás entrar también con tu correo. Por
+                seguridad, te mandamos un enlace a {perfil.email ?? "tu correo"} para crearla.
               </p>
             )}
           </div>
 
           {perfil.conContrasena && (
-            <CampoContrasena
-              etiqueta="Contraseña actual"
-              value={actual}
-              onChange={(e) => setActual(e.target.value)}
-              required
-              autoComplete="current-password"
-              className={campo}
-            />
+            <>
+              <CampoContrasena
+                etiqueta="Contraseña actual"
+                value={actual}
+                onChange={(e) => setActual(e.target.value)}
+                required
+                autoComplete="current-password"
+                className={campo}
+              />
+              <CampoContrasena
+                etiqueta="Contraseña nueva"
+                ayuda="Mínimo 8 caracteres"
+                value={nueva}
+                onChange={(e) => setNueva(e.target.value)}
+                required
+                minLength={8}
+                autoComplete="new-password"
+                className={campo}
+              />
+              <CampoContrasena
+                etiqueta="Repite la contraseña nueva"
+                value={repetida}
+                onChange={(e) => setRepetida(e.target.value)}
+                required
+                minLength={8}
+                autoComplete="new-password"
+                className={campo}
+              />
+            </>
           )}
-          <CampoContrasena
-            etiqueta="Contraseña nueva"
-            ayuda="Mínimo 8 caracteres"
-            value={nueva}
-            onChange={(e) => setNueva(e.target.value)}
-            required
-            minLength={8}
-            autoComplete="new-password"
-            className={campo}
-          />
-          <CampoContrasena
-            etiqueta="Repite la contraseña nueva"
-            value={repetida}
-            onChange={(e) => setRepetida(e.target.value)}
-            required
-            minLength={8}
-            autoComplete="new-password"
-            className={campo}
-          />
 
           <AvisoDe aviso={avisoClave} />
 
           <button
             type="submit"
-            disabled={cambiando || !nueva || !repetida || (perfil.conContrasena && !actual)}
+            disabled={cambiando || (perfil.conContrasena && (!nueva || !repetida || !actual))}
             className="rounded-xl border border-primario px-4 py-3 font-semibold text-primario transition hover:bg-primario-suave disabled:opacity-50"
           >
             {cambiando
-              ? "Cambiando…"
+              ? perfil.conContrasena
+                ? "Cambiando…"
+                : "Enviando…"
               : perfil.conContrasena
                 ? "Cambiar contraseña"
-                : "Crear contraseña"}
+                : "Enviarme el enlace"}
           </button>
         </form>
       )}

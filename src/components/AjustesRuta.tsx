@@ -3,7 +3,8 @@
 import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useAvisos } from "@/lib/avisosCliente";
-import { animacionesActivas, fijarAnimaciones, fijarSonidos, sonar, sonidosActivos } from "@/lib/sonidos";
+import { animacionesActivas, fijarAnimaciones, fijarSonidos, sonar, sonidosActivos } from "@/lib/sonidos";
+import { sesionCerrada } from "@/lib/pedir";
 
 /** La meta diaria y la hora del recordatorio de la racha (Perfil · Ajustes). */
 export function AjustesMeta({ meta: inicial, hora: horaInicial }: { meta: number; hora: string | null }) {
@@ -19,6 +20,8 @@ export function AjustesMeta({ meta: inicial, hora: horaInicial }: { meta: number
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ accion: "ajustes", meta, hora: con ? hora : null }),
     }).catch(() => null);
+    // Sesión cerrada: a entrar de nuevo (auditoría, 31 de octubre de 2026).
+    if (sesionCerrada(r)) return;
     setAviso(r?.ok ? "Guardado." : "No se pudo guardar. Intenta otra vez.");
   }
 

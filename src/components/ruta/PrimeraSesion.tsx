@@ -6,7 +6,8 @@ import { useCallback, useState } from "react";
 import type { Nivel } from "@/lib/tipos";
 import { Estampilla, type LugarSello } from "./Estampilla";
 import { Icono } from "./Iconos";
-import { Grabador, useVoz } from "./leccion/comun";
+import { Grabador, useVoz } from "./leccion/comun";
+import { sesionCerrada } from "@/lib/pedir";
 
 /** Cómo se describe cada nivel en el paso 1 (boceto aprobado). */
 const DESCRIPCION: Record<Nivel, string> = {
@@ -61,6 +62,8 @@ export function PrimeraSesion({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ accion: "primera", nivel, meta, hora: conRecordatorio ? hora : null }),
     }).catch(() => null);
+    // Sesión cerrada: a entrar de nuevo (auditoría, 31 de octubre de 2026).
+    if (sesionCerrada(r)) return;
     setGuardando(false);
     if (!r?.ok) {
       setError("No pudimos guardar. Revisa tu conexión e intenta otra vez.");

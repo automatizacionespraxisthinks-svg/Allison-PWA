@@ -133,11 +133,10 @@ export default async function PaginaPlanes() {
               <p className="mt-3 text-3xl font-bold tabular-nums">
                 {pesos(p.precio_cop)}
               </p>
-              {p.duracion_meses > 1 && (
-                <p className="text-sm text-texto-suave">
-                  {pesos(porMes)} por mes · pago único
-                </p>
-              )}
+              {/* Los precios llevan el IVA (decisión del dueño, 31 de octubre de 2026). */}
+              <p className="text-sm text-texto-suave">
+                {p.duracion_meses > 1 ? `${pesos(porMes)} por mes · pago único · IVA incluido` : "IVA incluido"}
+              </p>
 
               {conMeses ? (
                 <p className="mt-4 text-sm text-texto-suave">

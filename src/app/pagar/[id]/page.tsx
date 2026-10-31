@@ -68,7 +68,7 @@ export default async function PaginaPagar({
             <dd className="font-medium tabular-nums">{t.mensajes_otorgados}</dd>
           </div>
           <div className="flex justify-between border-t border-borde pt-2">
-            <dt className="text-texto-suave">Total</dt>
+            <dt className="text-texto-suave">Total (IVA incluido)</dt>
             <dd className="text-xl font-bold tabular-nums">{pesos(t.monto_cop)}</dd>
           </div>
         </dl>

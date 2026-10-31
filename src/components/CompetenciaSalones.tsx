@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { CompetenciaDelColegio } from "@/lib/competencia";
-import { ganadores, minutosEnTexto, type SalonEnTabla } from "@/lib/competencia/tabla";
+import { ganadores, minutosEnTexto, type SalonEnTabla } from "@/lib/competencia/tabla";
+import { sesionCerrada } from "@/lib/pedir";
 
 /** "9A", "9A y 9B", "9A, 9B y 10A". */
 function lista(cursos: string[]): string {
@@ -61,6 +62,8 @@ export function CompetenciaSalones({ c }: { c: CompetenciaDelColegio }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ activa }),
       });
+      // Sesión cerrada: a entrar de nuevo (auditoría, 31 de octubre de 2026).
+      if (sesionCerrada(r)) return;
       if (!r.ok) throw new Error();
       router.refresh();
     } catch {

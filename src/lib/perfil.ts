@@ -145,16 +145,19 @@ export async function actualizarPerfil(
   }
 }
 
-export type ResultadoContrasena = "ok" | "actual_incorrecta" | "no_aplica";
+export type ResultadoContrasena = "ok" | "actual_incorrecta" | "no_aplica" | "por_correo";
 
 /**
- * Cambia (o crea) la contraseña.
+ * Cambia la contraseña.
  *
  * Si la cuenta ya tenía una, se exige la actual: quien encontró una
  * sesión abierta no puede adueñarse de la cuenta cambiándola. Una cuenta
- * creada con Google no tiene contraseña todavía, y ponérsela no exige
- * nada más que la sesión — es lo que le permite entrar también sin
- * Google.
+ * creada con Google no tiene contraseña todavía, y ya no se le pone con
+ * la sesión sola: responde "por_correo" y la ruta manda un enlace al
+ * correo de la cuenta (el de recuperar la contraseña). Antes bastaba la
+ * sesión: quien la encontrara abierta en un computador ajeno creaba una
+ * contraseña, con ella cambiaba el correo y se quedaba con la cuenta
+ * (auditoría, 31 de octubre de 2026).
  *
  * Cambiarla cierra las demás sesiones (sesiones_validas_desde): la
  * pantalla vuelve a entrar con la nueva de inmediato, y cualquier otra
@@ -170,10 +173,9 @@ export async function cambiarContrasena(
   `;
   if (!u || u.tipo_acceso !== "email") return "no_aplica";
 
-  if (u.password_hash) {
-    if (!actual || !(await bcrypt.compare(actual, u.password_hash))) {
-      return "actual_incorrecta";
-    }
+  if (!u.password_hash) return "por_correo";
+  if (!actual || !(await bcrypt.compare(actual, u.password_hash))) {
+    return "actual_incorrecta";
   }
 
   const hash = await bcrypt.hash(nueva, 12);

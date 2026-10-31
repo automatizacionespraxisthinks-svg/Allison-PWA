@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState } from "react";
+import { sesionCerrada } from "@/lib/pedir";
 
 /**
  * Alumnos actuales (plan, sección 22): la primera vez que abren la
@@ -18,7 +19,10 @@ export function RutaNueva({ nombre, donde }: { nombre: string; donde: string | n
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ accion: "presentada" }),
-    }).catch(() => {});
+    })
+      // Sesión cerrada: a entrar de nuevo (auditoría, 31 de octubre de 2026).
+      .then((r) => sesionCerrada(r))
+      .catch(() => {});
   }
 
   return (

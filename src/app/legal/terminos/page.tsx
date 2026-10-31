@@ -102,7 +102,7 @@ export default function PaginaTerminos() {
         <section>
           <h2 className="text-lg font-semibold">6. Pagos y devoluciones</h2>
           <p className="mt-2">
-            Los precios están en pesos colombianos. El cobro lo procesa una pasarela de
+            Los precios están en pesos colombianos e incluyen el IVA. El cobro lo procesa una pasarela de
             pago; nosotros no vemos los datos de tu tarjeta.
           </p>
           <p className="mt-2">
