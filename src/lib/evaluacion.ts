@@ -384,8 +384,10 @@ async function juzgar(
       responseMimeType: "application/json",
       responseSchema: { type: Type.OBJECT, properties, required: Object.keys(properties), propertyOrdering: Object.keys(properties) },
       temperature: 0,
-      // La frase completa son unas 20 palabras.
-      maxOutputTokens: conCompleta ? 120 : 40,
+      // Holgado: con un tope justo Gemini marca MAX_TOKENS aunque el JSON
+      // llegue completo, y jsonDelModelo lo toma por falla (pasó con 60 en
+      // la Entrevista, 1 de noviembre de 2026). Se paga lo que escribe.
+      maxOutputTokens: 256,
       // Una evaluación tarda 1-3 s; en la prueba hubo una de 24 s por
       // la red. Mejor cortar y que la ruta devuelva la intervención que
       // dejar al alumno mirando la pantalla.
@@ -462,7 +464,8 @@ The teacher asked: "${consigna}". Judge only what is written, as it is.
         propertyOrdering: ["correcto", "mejor"],
       },
       temperature: 0,
-      maxOutputTokens: 80,
+      // Holgado, como en juzgar: un tope justo daba MAX_TOKENS con el JSON completo.
+      maxOutputTokens: 256,
       abortSignal: AbortSignal.timeout(12_000),
     },
   });

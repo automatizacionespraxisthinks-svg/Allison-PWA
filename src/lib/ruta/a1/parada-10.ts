@@ -280,7 +280,7 @@ export const PARADA_10: Parada = {
             {
               dato: "Dónde está el parque",
               pregunta: "Where is the park?",
-              respuesta: "Go straight two blocks and turn left. It's across from my building.",
+              respuesta: "From the subway, go straight two blocks and turn left. The park is across from my building.",
             },
             {
               dato: "Cómo llegar a la Estatua de la Libertad",

@@ -1624,6 +1624,15 @@ function clasificacionDelModelo<T extends { tipo?: string }>(r: {
 }
 
 /**
+ * El tope de salida de las clasificaciones (Entrevista, Adivina, Enséñale).
+ * Con 60, Gemini marcaba MAX_TOKENS aunque el JSON llegara completo (unos
+ * 46 tokens), y clasificacionDelModelo lo descartaba: desde el 31 de
+ * octubre de 2026 esas tres actividades no reconocían ninguna pregunta.
+ * El tope no cuesta: se paga lo que el modelo escribe (1 de noviembre de 2026).
+ */
+const TOPE_CLASIFICAR = 256;
+
+/**
  * Clases de pregunta que el modelo confunde entre datos del mismo
  * personaje: "When is Luna's birthday?" salía como "How old is Luna?" y
  * Allison contestaba "She is three." aunque el prompt lo prohíbe
@@ -1634,6 +1643,10 @@ const CLASES_DE_PREGUNTA: [string, RegExp][] = [
   ["cumpleaños", /\b(birthday|born)\b/i],
   ["edad", /\b(how old|age|years old)\b/i],
   ["nombre", /\bname\b/i],
+  // "Can you speak English?" salía como "Can you speak Spanish?" y Allison
+  // contestaba que habla muy bien español (1 de noviembre de 2026).
+  ["inglés", /\benglish\b/i],
+  ["español", /\bspanish\b/i],
 ];
 const clasesDe = (t: string) => CLASES_DE_PREGUNTA.filter(([, re]) => re.test(t)).map(([c]) => c);
 
@@ -1713,7 +1726,7 @@ Classify the student's message:
       responseMimeType: "application/json",
       responseSchema: ESQUEMA_CLASIFICAR,
       temperature: 0,
-      maxOutputTokens: 60,
+      maxOutputTokens: TOPE_CLASIFICAR,
       abortSignal: AbortSignal.timeout(10_000),
     },
   });
@@ -1956,7 +1969,7 @@ Classify the student's message:
       responseMimeType: "application/json",
       responseSchema: ESQUEMA_ADIVINA,
       temperature: 0,
-      maxOutputTokens: 60,
+      maxOutputTokens: TOPE_CLASIFICAR,
       abortSignal: AbortSignal.timeout(10_000),
     },
   });
@@ -2062,7 +2075,7 @@ ${lista || "  (none)"}
       responseMimeType: "application/json",
       responseSchema: ESQUEMA_ENSENALE,
       temperature: 0,
-      maxOutputTokens: 60,
+      maxOutputTokens: TOPE_CLASIFICAR,
       abortSignal: AbortSignal.timeout(10_000),
     },
   });

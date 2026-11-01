@@ -240,7 +240,7 @@ export const PARADA_06: Parada = {
           ficha: "lo que sabe hacer Allison",
           datos: [
             { dato: "Si sabe cocinar", pregunta: "Can you cook?", respuesta: "Yes, I can! I can cook Colombian food." },
-            { dato: "Si sabe bailar", pregunta: "Can you dance?", respuesta: "Yes, I can. I love pop and reggaeton!" },
+            { dato: "Si sabe bailar", pregunta: "Can you dance?", respuesta: "Yes, I can! I love to dance to pop music." },
             { dato: "Si sabe cantar", pregunta: "Can you sing?", respuesta: "No, I can't. I can't sing at all!" },
             { dato: "Si sabe nadar", pregunta: "Can you swim?", respuesta: "Yes, I can swim, but I can't surf." },
             { dato: "Si sabe hablar español", pregunta: "Can you speak Spanish?", respuesta: "Yes, I can! I can speak Spanish very well." },
