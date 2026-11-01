@@ -44,6 +44,9 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "Right now he's driving to work." → "Ahora mismo va manejando al trabajo." |
 | Lección 4, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca al policía" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿En qué trabaja él? Responde con una frase en inglés. |
+| Lección 4, paso 3 (Adivina) | Nota | preguntas: «Do you work outside?» incluye a la piloto: su dibujo es afuera, en el aeropuerto, y «No» contradecía lo que se ve (1 de noviembre de 2026) |
+| Lección 4, paso 3 (Adivina) | Nota | preguntas nuevas, sacadas de los dibujos: Do you fly a plane? (pilot), Do you work in a kitchen? (chef), Do you work on a farm? (farmer), Do you work with children? (teacher) y Do you work at night? (nurse: su dibujo es de noche) (1 de noviembre de 2026) |
+| Lección 4, paso 3 (Adivina) | Nota | tambien: otras formas de las preguntas y otros nombres de las tarjetas, para que Allison las entienda; el modelo no ve los dibujos y no las reconocía (1 de noviembre de 2026) |
 
 ## Parada 2 · Manchester
 
@@ -86,7 +89,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Dónde | Qué | Texto |
 |---|---|---|
 | Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Reading (Leyendo) · Cooking (Cocinando) · Sleeping (Durmiendo) |
-| Lección 1, paso 1 (Escucha y elige) | Nota | opciones: f-priya-dormida es un dibujo nuevo, Priya dormida sin libro; antes tenía un libro abierto y se confundía con leer (cambio del 30 de octubre de 2026) |
+| Lección 1, paso 1 (Escucha y elige) | Nota | opciones: f-priya-durmiendo es un dibujo nuevo, Priya dormida sin libro; antes tenía un libro abierto y se confundía con leer (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | audio: «on the sofa», que es lo que muestra el dibujo correcto (antes «in her room», y Priya dormida en su cuarto con un libro se parecía más). Etiquetas en -ing, como suenan (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "At eight o'clock last night, Priya was reading on the sofa." → "Anoche a las ocho, Priya estaba leyendo en el sofá." |
@@ -108,7 +111,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 3, paso 1 (Escucha y elige) | Nota | pregunta: el documento no la escribe; sale de "Toca a Ben durmiendo" |
 | Lección 3, paso 2 (Describe la imagen) | Nota | cosas: el documento no las nombra; salen del dibujo y de las frases modelo |
 | Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Running and riding a bike (Corriendo y en bici) · Playing soccer (Jugando fútbol) · Having a picnic (Haciendo un picnic) |
-| Lección 4, paso 1 (Escucha y elige) | Nota | opciones: f-parque-futbol es un dibujo nuevo, solo niños jugando con el balón; antes había un muchacho grande corriendo adelante, como en la correcta (cambio del 30 de octubre de 2026) |
+| Lección 4, paso 1 (Escucha y elige) | Nota | opciones: f-parque-ninos-futbol es un dibujo nuevo, solo niños jugando con el balón; antes había un muchacho grande corriendo adelante, como en la correcta (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "Yesterday at five I was walking in the park." → "Ayer a las cinco estaba caminando en el parque." |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "A man was running and a girl was riding a bike." → "Un hombre estaba corriendo y una niña estaba montando en bicicleta." |
@@ -117,6 +120,8 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: con was y -ing, también «She was walking in the rain» y «She was holding an umbrella»; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 3 (Adivina) | Nota | opciones: las seis tarjetas usan f-parque-adivina y cada una muestra ampliada a su persona (puntos puestos el 18 de octubre de 2026 sobre la ilustración aprobada) |
 | Lección 4, paso 3 (Adivina) | Nota | rondas: Mrs. Bell en lugar de Mr. Green, porque Allison solo hace papeles de mujer (18 de octubre de 2026; también cambiado en el documento) |
+| Lección 4, paso 3 (Adivina) | Nota | preguntas nuevas, sacadas del dibujo: Are you old? (Mr. Green y Mrs. Bell), Were you wearing glasses? y Were you wearing a cap? (Mr. Green), Were you wearing a red hat? (Anna) y Were you wearing a purple hat? (Mrs. Bell); antes «a red hat» podía contestarse como «a hat» (1 de noviembre de 2026) |
+| Lección 4, paso 3 (Adivina) | Nota | tambien: otras formas de las preguntas y otros nombres de las tarjetas, para que Allison las entienda; el modelo no ve los dibujos y no las reconocía (1 de noviembre de 2026) |
 
 ## Parada 4 · Edimburgo
 
@@ -164,7 +169,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Dónde | Qué | Texto |
 |---|---|---|
 | Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Bake a cake (Hornear una torta) · Play soccer (Jugar fútbol) · Go to the movies (Ir a cine) |
-| Lección 1, paso 1 (Escucha y elige) | Nota | opciones: f-parque-futbol es un dibujo nuevo, solo niños jugando con el balón (cambio del 30 de octubre de 2026) |
+| Lección 1, paso 1 (Escucha y elige) | Nota | opciones: f-parque-ninos-futbol es un dibujo nuevo, solo niños jugando con el balón (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "This weekend Ben is going to visit his grandma in Oxford." → "Este fin de semana Ben va a visitar a su abuela en Oxford." |
@@ -194,6 +199,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: también otras ofertas con I'll («I'll pick them up», «I'll carry them»); explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 3 (Adivina) | Nota | opciones: los nombres largos de las tarjetas ("go to the movies", "play soccer", "visit a museum", "go shopping", "bake a cake", "go camping") salen de la lista de tarjetas del documento (Qué aparece); la tabla de respuestas y las rondas usan los cortos (movies, soccer, museum, shopping, cake, camping) |
 | Lección 4, paso 3 (Adivina) | Nota | adivinar: "Are you going to {x}?" no está escrita como regla; sale del ejemplo "Are you going to visit a museum?" y sirve con los nombres largos |
+| Lección 4, paso 3 (Adivina) | Nota | tambien: otras formas de las preguntas y otros nombres de las tarjetas (también en español: ver una película, ir al museo), para que Allison las entienda; el modelo no ve los dibujos y no las reconocía (1 de noviembre de 2026) |
 
 ## Parada 6 · York
 
@@ -262,6 +268,9 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «Would you like water?» y «Would you like something to drink?»; pista: dice que es una pregunta; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 3 (Adivina) | Nota | opciones: los nombres son los de "Qué aparece" (have a picnic, go to a concert…); el encabezado de la tabla los abrevia (picnic, concert, bikes, boat, museum, soccer game) |
 | Lección 4, paso 3 (Adivina) | Nota | rondas: el documento dice "concert y bikes"; son las tarjetas go to a concert y ride bikes |
+| Lección 4, paso 3 (Adivina) | Nota | opciones: la tarjeta ride bikes es la bicicleta de A1 (a1/f-bicicleta); en f-parque-corredor-bici se veía sobre todo a un hombre corriendo (1 de noviembre de 2026) |
+| Lección 4, paso 3 (Adivina) | Nota | preguntas: «Would you like to get some exercise?» incluye el bote, que tiene remos (1 de noviembre de 2026) |
+| Lección 4, paso 3 (Adivina) | Nota | tambien: otras formas de las preguntas y otros nombres de las tarjetas, para que Allison las entienda; el modelo no ve los dibujos y no las reconocía (1 de noviembre de 2026) |
 
 ## Parada 8 · Brighton
 
@@ -329,6 +338,8 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | A ella le gusta el vestido. Antes de entrar al probador, ¿qué le pregunta al vendedor? Dilo en inglés. |
 | Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «Can I try this on?», «Could I try it on?» y «May I try it on?»; el contexto dice que la pregunta es antes del probador; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 3 (Adivina) | Nota | opciones: los nombres llevan "a" ("a sweater", "a T-shirt", "a jacket", "a cap") para que "Did you buy {x}?" sirva con las seis tarjetas; el encabezado de la tabla los trae sin artículo |
+| Lección 4, paso 3 (Adivina) | Nota | preguntas nuevas, sacadas de los dibujos: los colores (green: sweater; yellow: T-shirt; black: jacket; blue: sneakers y cap; red: socks), Is it for your body? (sweater, T-shirt, jacket) y Does it have a hood? (jacket); y Was it cheap?, lo contrario de Was it expensive?, porque el modelo tomaba «cheap» por «expensive» y contestaba al revés (1 de noviembre de 2026) |
+| Lección 4, paso 3 (Adivina) | Nota | tambien: otras formas de las preguntas y otros nombres de las tarjetas (también en español de Colombia: medias, tenis, saco), para que Allison las entienda; el modelo no ve los dibujos y no las reconocía (1 de noviembre de 2026) |
 
 ## Parada 10 · Cardiff
 
@@ -377,7 +388,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "But last Saturday she stayed home and watched TV." → "Pero el sábado pasado se quedó en casa y vio televisión." |
 | Lección 1, paso 2 (Dilo en inglés) | Nota | aceptadas: también «learning how to cook» y «yesterday» al final; explicaciones para «I did rice», «learning cook» e «I'm learn» (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Reading (Leyendo) · Cooking dinner (Cocinando la cena) · Sleeping (Durmiendo) |
-| Lección 2, paso 1 (Escucha y elige) | Nota | opciones: f-priya-dormida es un dibujo nuevo, Priya dormida sin libro; antes tenía un libro abierto y se confundía con leer (cambio del 30 de octubre de 2026) |
+| Lección 2, paso 1 (Escucha y elige) | Nota | opciones: f-priya-durmiendo es un dibujo nuevo, Priya dormida sin libro; antes tenía un libro abierto y se confundía con leer (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Last night at nine, Priya was cooking dinner when her mom called." → "Anoche a las nueve, Priya estaba cocinando la cena cuando su mamá llamó." |
@@ -385,7 +396,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (¿Qué es esto?) | Situación en español | ¿Dónde ha estado Priya? Responde con una frase en inglés. |
 | Lección 2, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «Priya has been to Paris» y «Priya's been to Paris»; pista de en medio: la torre está en París; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Bake a cake (Hornear una torta) · Play soccer (Jugar fútbol) · Go to the movies (Ir a cine) |
-| Lección 3, paso 1 (Escucha y elige) | Nota | opciones: f-parque-futbol es un dibujo nuevo, solo niños jugando con el balón (cambio del 30 de octubre de 2026) |
+| Lección 3, paso 1 (Escucha y elige) | Nota | opciones: f-parque-ninos-futbol es un dibujo nuevo, solo niños jugando con el balón (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "Next Saturday Ben is going to play soccer with his friends." → "El próximo sábado Ben va a jugar fútbol con sus amigos." |

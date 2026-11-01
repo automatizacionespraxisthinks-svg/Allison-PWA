@@ -329,6 +329,14 @@ function revisarActividad(a, donde, imagenes) {
       if (!a.rondas?.length) fallo(donde, "sin rondas");
       for (const r of a.rondas ?? []) if (!nombres.includes(r)) fallo(donde, `la ronda "${r}" no es una de las tarjetas`);
       if (!a.preguntas?.length) fallo(donde, "sin tabla de preguntas");
+      // Las otras formas (tambien): una pregunta repetida en dos filas, o un
+      // nombre en dos tarjetas, dejaría al modelo sin saber cuál es.
+      const formas = (a.preguntas ?? []).flatMap((p) => [p.pregunta, ...(p.tambien ?? [])].map((x) => x?.trim().toLowerCase()));
+      if (formas.some((x) => !x)) fallo(donde, "una pregunta o una de sus otras formas está vacía");
+      for (const x of new Set(formas.filter((x, i) => formas.indexOf(x) !== i))) fallo(donde, `"${x}" está dos veces en la tabla`);
+      const nombresDe = (a.opciones ?? []).flatMap((o) => [o.nombre, ...(o.tambien ?? [])].map((x) => x?.trim().toLowerCase()));
+      if (nombresDe.some((x) => !x)) fallo(donde, "una tarjeta con otro nombre vacío");
+      for (const x of new Set(nombresDe.filter((x, i) => nombresDe.indexOf(x) !== i))) fallo(donde, `"${x}" es el nombre de dos tarjetas`);
       for (const p of a.preguntas ?? []) {
         for (const n of p.si ?? []) if (!nombres.includes(n)) fallo(donde, `"${p.pregunta}": "${n}" no es una de las tarjetas`);
         // La respuesta corta sale de la pregunta ("Do you…?" → "Yes, I do."): una que no se reconoce queda en "Yes!".

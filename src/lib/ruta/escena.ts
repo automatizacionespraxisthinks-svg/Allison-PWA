@@ -1914,48 +1914,69 @@ export function respuestaDeEntrevista(o: {
 //  adivina.ts). No sabe en qué piensa Allison, así que no puede soplarlo.
 // ---------------------------------------------------------------------
 
-const ESQUEMA_ADIVINA = {
+/** Lo que no es una pregunta de la tabla ni una tarjeta, en el esquema. */
+const NINGUNA = "none";
+
+/**
+ * La pregunta y la tarjeta van por su texto, de una lista cerrada (enum), y
+ * no por número: con dos listas numeradas el modelo las cruzaba ("Would you
+ * like to watch soccer?" → la tarjeta 6 tomada como la pregunta 6, "get
+ * some exercise"; 1 de noviembre de 2026).
+ */
+const esquemaAdivina = (a: Adivina) => ({
   type: Type.OBJECT,
   properties: {
     tipo: { type: Type.STRING, enum: ["pregunta", "adivina", "otra", "abierta", "otro"] },
-    fila: { type: Type.INTEGER },
-    opcion: { type: Type.INTEGER },
+    pregunta: { type: Type.STRING, enum: [NINGUNA, ...a.preguntas.map((p) => p.pregunta)] },
+    opcion: { type: Type.STRING, enum: [NINGUNA, ...a.opciones.map((o) => o.nombre)] },
     espanol: { type: Type.BOOLEAN },
   },
-  required: ["tipo", "fila", "opcion", "espanol"],
-  propertyOrdering: ["tipo", "fila", "opcion", "espanol"],
-};
+  required: ["tipo", "pregunta", "opcion", "espanol"],
+  propertyOrdering: ["tipo", "pregunta", "opcion", "espanol"],
+});
 
 export async function clasificarAdivina(o: {
   adivina: Adivina;
   transcripcion: string;
 }): Promise<LecturaAdivina & { tokensEntrada: number; tokensSalida: number; sinRespuesta?: boolean }> {
   const a = o.adivina;
-  const opciones = a.opciones.map((x, i) => `  ${i + 1}. ${x.nombre}`).join("\n");
-  const preguntas = a.preguntas.map((p, i) => `  ${i + 1}. ${p.pregunta}`).join("\n");
+  const tambien = (formas?: string[]) => (formas?.length ? ` (also: ${formas.map((f) => `"${f}"`).join(", ")})` : "");
+  const opciones = a.opciones.map((x) => `  - ${x.nombre}${tambien(x.tambien)}`).join("\n");
+  const preguntas = a.preguntas.map((p) => `  - ${p.pregunta}${tambien(p.tambien)}`).join("\n");
   const instruccion = `A Spanish-speaking student (English level A2) is playing a guessing game
-with their English teacher, Allison. Allison is thinking of one of these:
+with their English teacher, Allison. Allison is thinking of one of these
+options:
 ${opciones}
 The student asks yes or no questions to find out which one. These are
 the questions Allison can answer:
 ${preguntas}
-To guess, the student names one of them, like: "${preguntaDeAdivinar(a, a.opciones[0].nombre)}"
+To guess, the student names one of the options, like: "${preguntaDeAdivinar(a, a.opciones[0].nombre)}"
 
 Classify the student's message:
 - "tipo":
   "adivina" if it names one of the options as a guess (any form: a full
-  question, "${a.opciones[1]?.nombre ?? a.opciones[0].nombre}?", or with mistakes), also when it
+  question, "${a.opciones[1]?.nombre ?? a.opciones[0].nombre}?", one of its "also" names, or with mistakes), also when it
   asks something else in the same message ("Do you travel a lot? Are you a
   ${a.opciones[0].nombre.toLowerCase()}?"): the guess wins.
-  "pregunta" if it asks the same thing as one of the questions in the
-  list, even with other words, mistakes, very short ("Uniform?") or with
-  other verb forms ("Will you…?", "Do you want to…?", "How about…?").
-  "otra" if it is a yes or no question that is not in the list.
+  "pregunta" if it asks the same thing as one of the questions or one of
+  its "also" forms, even with other words, mistakes, very short
+  ("Uniform?") or with other verb forms ("Will you…?", "Do you want to…?",
+  "How about…?", "Are they…?"). If two questions fit, choose the one with
+  the same details: with "Do you have a dog?" and "Do you have a big dog?"
+  in the list, "Do you have a big dog?" is the big one.
+  "otra" if it is a yes or no question that is not in the list, or if it
+  adds a detail (a color, a size, a thing, a place) that no question in
+  the list has: Allison can't see that detail. With only "Do you have a
+  dog?" in the list, "Do you have a big dog?" is "otra". A question that
+  asks the opposite of one in the list is not that one: with only "Is it
+  big?" in the list, "Is it small?" is "otra".
   "abierta" if it is a question that cannot be answered with yes or no
   ("What do you do?", "Where…?").
   "otro" if it is not a question or cannot be understood.
-- "fila": the number of the question in the list (only with "pregunta"), or 0.
-- "opcion": the number of the option guessed (only with "adivina"), or 0.
+- "pregunta": the question from the list, copied exactly (only with
+  "pregunta"), or "${NINGUNA}".
+- "opcion": the option guessed, copied exactly from the options (only with
+  "adivina"), or "${NINGUNA}".
 - "espanol": true if the message is in Spanish. Even in Spanish, still
   say which question or option it means.`;
 
@@ -1965,7 +1986,7 @@ Classify the student's message:
     config: {
       systemInstruction: instruccion,
       responseMimeType: "application/json",
-      responseSchema: ESQUEMA_ADIVINA,
+      responseSchema: esquemaAdivina(a),
       temperature: 0,
       maxOutputTokens: TOPE_CLASIFICAR,
       abortSignal: AbortSignal.timeout(10_000),
@@ -1975,12 +1996,19 @@ Classify the student's message:
     tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
     tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
   };
-  const d = clasificacionDelModelo<{ tipo?: string; fila?: number; opcion?: number; espanol?: boolean }>(r);
+  const d = clasificacionDelModelo<{ tipo?: string; pregunta?: string; opcion?: string; espanol?: boolean }>(r);
   if (!d) return { tipo: "otro", fila: 0, opcion: 0, espanol: false, sinRespuesta: true, ...tokens };
   const tipos = ["pregunta", "adivina", "otra", "abierta"] as const;
   let tipo: LecturaAdivina["tipo"] = tipos.find((t) => t === d.tipo) ?? "otro";
-  const fila = tipo === "pregunta" && Number.isInteger(d.fila) && d.fila! >= 1 && d.fila! <= a.preguntas.length ? d.fila! : 0;
-  const opcion = tipo === "adivina" && Number.isInteger(d.opcion) && d.opcion! >= 1 && d.opcion! <= a.opciones.length ? d.opcion! : 0;
+  // Desde 1, como antes: la fila de la tabla y la tarjeta.
+  const filaDicha = a.preguntas.findIndex((p) => p.pregunta === d.pregunta) + 1;
+  const opcionDicha = a.opciones.findIndex((x) => x.nombre === d.opcion) + 1;
+  // El tipo va primero y a veces se adelanta: "pregunta" sin pregunta pero
+  // con la tarjeta ("Bikes?" → ride bikes) es adivinar. Al revés no: una
+  // tarjeta deducida de una pregunta regalaría la respuesta.
+  if (tipo === "pregunta" && !filaDicha && opcionDicha) tipo = "adivina";
+  const fila = tipo === "pregunta" ? filaDicha : 0;
+  const opcion = tipo === "adivina" ? opcionDicha : 0;
   // Sin la fila o la opción no se sabe qué contestar: es como si no se entendiera.
   if ((tipo === "pregunta" && !fila) || (tipo === "adivina" && !opcion)) tipo = "otro";
   return {

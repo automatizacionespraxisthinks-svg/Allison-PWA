@@ -124,7 +124,16 @@ export function Adivina({
 
       <ul className="grid grid-cols-3 gap-2" aria-label="Las tarjetas">
         {a.opciones.map((o) => (
-          <Tarjeta key={o.nombre} nombre={o.nombre} imagen={o.imagen} zona={o.zona} nivel={ctx.nivel} apagada={descartadas.includes(o.nombre)} ganadora={celebra === o.nombre} />
+          <Tarjeta
+            key={o.nombre}
+            nombre={o.nombre}
+            imagen={o.imagen}
+            zona={o.zona}
+            nivel={ctx.nivel}
+            apagada={descartadas.includes(o.nombre)}
+            ganadora={celebra === o.nombre}
+            onOir={() => void decir(o.nombre, { soloIngles: true })}
+          />
         ))}
       </ul>
 
@@ -194,7 +203,11 @@ export function Adivina({
   );
 }
 
-/** Una tarjeta: su dibujo (o la parte de la zona) y su nombre. Si el dibujo todavía no existe, solo el nombre. */
+/**
+ * Una tarjeta: su dibujo (o la parte de la zona) y su nombre. Si el dibujo
+ * todavía no existe, solo el nombre. Al tocarla, Allison dice su nombre
+ * ("take a boat on the river"), como las opciones de las demás actividades.
+ */
 function Tarjeta({
   nombre,
   imagen,
@@ -202,6 +215,7 @@ function Tarjeta({
   nivel,
   apagada,
   ganadora,
+  onOir,
 }: {
   nombre: string;
   imagen: string;
@@ -209,6 +223,7 @@ function Tarjeta({
   nivel: Nivel;
   apagada: boolean;
   ganadora: boolean;
+  onOir: () => void;
 }) {
   const [sinImagen, setSinImagen] = useState(false);
   const dibujo = (
@@ -223,30 +238,36 @@ function Tarjeta({
   );
   return (
     <li
-      aria-label={apagada ? `${nombre} (descartada)` : nombre}
-      className={`flex flex-col overflow-hidden rounded-2xl border-2 bg-superficie transition ${
+      className={`overflow-hidden rounded-2xl border-2 bg-superficie transition ${
         ganadora ? "border-menta shadow-[0_0_0_4px_var(--menta-suave)]" : "border-borde"
       } ${apagada ? "opacity-35 grayscale" : ""}`}
     >
-      <span className="relative block aspect-square overflow-hidden bg-superficie-2">
-        {sinImagen ? (
-          <span className="grid h-full place-items-center text-3xl font-black text-texto-suave uppercase" aria-hidden>
-            {nombre.slice(0, 1)}
-          </span>
-        ) : zona ? (
-          <span className="absolute" style={encuadreZona(zona)}>
-            {dibujo}
-          </span>
-        ) : (
-          dibujo
-        )}
-        {apagada && (
-          <span className="absolute inset-0 grid place-items-center" aria-hidden>
-            <Icono nombre="cerrar" className="size-10 stroke-[3] text-texto" />
-          </span>
-        )}
-      </span>
-      <b className={`px-1 py-1.5 text-center text-[13px] leading-tight font-extrabold ${apagada ? "line-through" : ""}`}>{nombre}</b>
+      <button
+        type="button"
+        onClick={onOir}
+        aria-label={`${apagada ? `${nombre} (descartada)` : nombre}. Toca para oírla`}
+        className="flex w-full flex-col text-left"
+      >
+        <span className="relative block aspect-square overflow-hidden bg-superficie-2">
+          {sinImagen ? (
+            <span className="grid h-full place-items-center text-3xl font-black text-texto-suave uppercase" aria-hidden>
+              {nombre.slice(0, 1)}
+            </span>
+          ) : zona ? (
+            <span className="absolute" style={encuadreZona(zona)}>
+              {dibujo}
+            </span>
+          ) : (
+            dibujo
+          )}
+          {apagada && (
+            <span className="absolute inset-0 grid place-items-center" aria-hidden>
+              <Icono nombre="cerrar" className="size-10 stroke-[3] text-texto" />
+            </span>
+          )}
+        </span>
+        <b className={`block w-full px-1 py-1.5 text-center text-[13px] leading-tight font-extrabold ${apagada ? "line-through" : ""}`}>{nombre}</b>
+      </button>
     </li>
   );
 }

@@ -338,16 +338,20 @@ export interface Adivina extends ActividadBase {
   /**
    * Las seis tarjetas. `nombre` es como se dice en inglés ("police officer").
    * Si son personas de una misma ilustración, `zona` es dónde está cada una:
-   * la tarjeta muestra esa parte ampliada.
+   * la tarjeta muestra esa parte ampliada. `tambien`: otros nombres con
+   * los que se adivina ("policeman" para police officer, "a hat" para a cap).
    */
-  opciones: { nombre: string; imagen: Ilustracion; zona?: Zona }[];
+  opciones: { nombre: string; imagen: Ilustracion; zona?: Zona; tambien?: string[] }[];
   /** En qué piensa Allison en cada ronda (nombres de `opciones`); el orden se baraja al empezar. */
   rondas: string[];
   /**
    * La tabla de respuestas: cada pregunta que se reconoce y las opciones
-   * para las que la respuesta es sí. Para las demás es no.
+   * para las que la respuesta es sí. Para las demás es no. `tambien`: otras
+   * formas de la misma pregunta, con un detalle que vale para todas las del
+   * sí ("Were you sitting on a bench?"); el modelo no ve los dibujos y sin
+   * ellas no las reconocía (1 de noviembre de 2026).
    */
-  preguntas: { pregunta: string; si: string[] }[];
+  preguntas: { pregunta: string; si: string[]; tambien?: string[] }[];
   /** Cómo se adivina, con {x} donde va la opción ("Are you a {x}?"). */
   adivinar: string;
   /** Lo que dice Allison si la pregunta no es de sí o no ("That's a secret! Ask me: Do you…?"). */

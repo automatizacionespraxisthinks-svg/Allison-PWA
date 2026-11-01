@@ -21,6 +21,9 @@ const { PARADA_04 } = await import("../src/lib/ruta/a1/parada-04.ts");
 const { PARADA_07 } = await import("../src/lib/ruta/a1/parada-07.ts");
 const { PARADA_08: A1_P08 } = await import("../src/lib/ruta/a1/parada-08.ts");
 const { PARADA_08: A2_P08 } = await import("../src/lib/ruta/a2/parada-08.ts");
+const { PARADA_03: A2_P03 } = await import("../src/lib/ruta/a2/parada-03.ts");
+const { PARADA_07: A2_P07 } = await import("../src/lib/ruta/a2/parada-07.ts");
+const { PARADA_09: A2_P09 } = await import("../src/lib/ruta/a2/parada-09.ts");
 const { VIAJES } = await import("../src/lib/ruta/viajes.ts");
 const { escenarioDeViaje, reglasDeViaje } = await import("../src/lib/ruta/viaje.ts");
 const { CATALOGO } = await import("../src/lib/escenarios/datos.ts");
@@ -341,6 +344,25 @@ for (let rep = 0; rep < reps; rep++) {
       c.tipo === tipo && c.fila === fila && c.opcion === opcion && !!es === c.espanol,
       JSON.stringify({ tipo: c.tipo, fila: c.fila, opcion: c.opcion, espanol: c.espanol })
     );
+  }
+  // Lo que fallaba el 1 de noviembre de 2026: la tarjeta 6 tomada por la
+  // pregunta 6, una forma con un detalle de más, un color, "cheap" por
+  // "expensive" y el tipo que se adelanta ("Bikes?" como pregunta).
+  const deParada = (p) => p.lecciones.flatMap((l) => l.actividades).find((x) => x.tipo === "adivina");
+  const MAS = [
+    [A2_P07, "Would you like to watch soccer?", ["pregunta:Would you like to watch a game?", "adivina:watch a soccer game"]],
+    [A2_P07, "Bikes?", ["adivina:ride bikes"]],
+    [A2_P03, "Were you sitting on a bench?", ["pregunta:Were you sitting?"]],
+    [A2_P03, "Were you wearing a red hat?", ["pregunta:Were you wearing a red hat?"]],
+    [A2_P03, "Were you wearing a blue hat?", ["otra"]],
+    [A2_P09, "Is it cheap?", ["pregunta:Was it cheap?"]],
+    [A2_P09, "Are they red?", ["pregunta:Is it red?"]],
+  ];
+  for (const [p, dice, validas] of MAS) {
+    const a = deParada(p);
+    const c = await clasificarAdivina({ adivina: a, transcripcion: dice });
+    const leida = c.tipo === "pregunta" ? `pregunta:${a.preguntas[c.fila - 1]?.pregunta}` : c.tipo === "adivina" ? `adivina:${a.opciones[c.opcion - 1]?.nombre}` : c.tipo;
+    revisar(`"${dice}" · ${validas.join(" o ")}`, validas.includes(leida), leida);
   }
 
   // Cuéntame (A2): cuenta frases y cita solo lo que el alumno dijo.

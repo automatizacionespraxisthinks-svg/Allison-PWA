@@ -307,20 +307,26 @@ export const PARADA_03: Parada = {
           // Respuestas del documento: "Yes, I was." / "No, I wasn't." para
           // Were you…?, y "Yes, I am." / "No, I'm not." para Are you…? Una
           // pregunta que no está en la tabla recibe "Hmm, I can't answer that
-          // one. Ask me another question!"
+          // one. Try this:" y una que sí está.
           preguntas: [
             { pregunta: "Are you a man?", si: ["Mr. Green", "Mr. Stone"] },
             { pregunta: "Are you a woman?", si: ["Mrs. Bell"] },
             { pregunta: "Are you a boy?", si: ["Tim"] },
             { pregunta: "Are you a girl?", si: ["Lily", "Anna"] },
-            { pregunta: "Were you sitting?", si: ["Mr. Green", "Tim"] },
-            { pregunta: "Were you reading?", si: ["Mr. Green"] },
-            { pregunta: "Were you eating?", si: ["Tim"] },
+            { pregunta: "Were you sitting?", si: ["Mr. Green", "Tim"], tambien: ["Were you sitting on a bench?"] },
+            { pregunta: "Were you reading?", si: ["Mr. Green"], tambien: ["Were you reading a newspaper?"] },
+            { pregunta: "Were you eating?", si: ["Tim"], tambien: ["Were you eating ice cream?"] },
             { pregunta: "Were you running?", si: ["Mr. Stone"] },
-            { pregunta: "Were you riding a bike?", si: ["Lily"] },
-            { pregunta: "Were you walking a dog?", si: ["Mrs. Bell"] },
-            { pregunta: "Were you taking photos?", si: ["Anna"] },
+            { pregunta: "Were you riding a bike?", si: ["Lily"], tambien: ["Were you on a bike?"] },
+            { pregunta: "Were you walking a dog?", si: ["Mrs. Bell"], tambien: ["Did you have a dog?", "Were you with a dog?", "Were you walking?"] },
+            { pregunta: "Were you taking photos?", si: ["Anna"], tambien: ["Were you taking pictures?", "Did you have a camera?"] },
             { pregunta: "Were you wearing a hat?", si: ["Mr. Green", "Mrs. Bell", "Anna"] },
+            // Desde aquí, preguntas que hacen los alumnos y se contestan con el dibujo (1 de noviembre de 2026).
+            { pregunta: "Are you old?", si: ["Mr. Green", "Mrs. Bell"], tambien: ["Were you old?"] },
+            { pregunta: "Were you wearing glasses?", si: ["Mr. Green"] },
+            { pregunta: "Were you wearing a cap?", si: ["Mr. Green"] },
+            { pregunta: "Were you wearing a red hat?", si: ["Anna"] },
+            { pregunta: "Were you wearing a purple hat?", si: ["Mrs. Bell"] },
           ],
           adivinar: "Are you {x}?",
           secreto: "That's a secret! Ask me: Were you…?",
@@ -328,6 +334,8 @@ export const PARADA_03: Parada = {
           porRevisar: [
             "opciones: las seis tarjetas usan f-parque-adivina y cada una muestra ampliada a su persona (puntos puestos el 18 de octubre de 2026 sobre la ilustración aprobada)",
             "rondas: Mrs. Bell en lugar de Mr. Green, porque Allison solo hace papeles de mujer (18 de octubre de 2026; también cambiado en el documento)",
+            "preguntas nuevas, sacadas del dibujo: Are you old? (Mr. Green y Mrs. Bell), Were you wearing glasses? y Were you wearing a cap? (Mr. Green), Were you wearing a red hat? (Anna) y Were you wearing a purple hat? (Mrs. Bell); antes «a red hat» podía contestarse como «a hat» (1 de noviembre de 2026)",
+            "tambien: otras formas de las preguntas y otros nombres de las tarjetas, para que Allison las entienda; el modelo no ve los dibujos y no las reconocía (1 de noviembre de 2026)",
           ],
         },
       ],

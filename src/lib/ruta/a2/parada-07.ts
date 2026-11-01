@@ -304,21 +304,23 @@ export const PARADA_07: Parada = {
           opciones: [
             { nombre: "have a picnic", imagen: "f-parque-picnic" },
             { nombre: "go to a concert", imagen: "f-plan-concierto" },
-            { nombre: "ride bikes", imagen: "f-parque-corredor-bici" },
+            // La bicicleta de A1: en el parque de antes se veía sobre todo a un hombre corriendo.
+            { nombre: "ride bikes", imagen: "a1/f-bicicleta", tambien: ["ride a bike"] },
             { nombre: "take a boat on the river", imagen: "f-plan-bote" },
             { nombre: "visit a museum", imagen: "f-plan-museo" },
-            { nombre: "watch a soccer game", imagen: "f-estadio-hotdogs" },
+            { nombre: "watch a soccer game", imagen: "f-estadio-hotdogs", tambien: ["watch soccer"] },
           ],
           rondas: ["go to a concert", "ride bikes"],
           preguntas: [
             { pregunta: "Would you like to be outside?", si: ["have a picnic", "ride bikes", "take a boat on the river", "watch a soccer game"] },
             { pregunta: "Would you like to be inside?", si: ["go to a concert", "visit a museum"] },
             { pregunta: "Would you like to sit on the grass?", si: ["have a picnic"] },
-            { pregunta: "Would you like to bring food?", si: ["have a picnic"] },
-            { pregunta: "Would you like to listen to music?", si: ["go to a concert"] },
-            { pregunta: "Would you like to get some exercise?", si: ["ride bikes"] },
-            { pregunta: "Would you like to go on the river?", si: ["take a boat on the river"] },
-            { pregunta: "Would you like to see art?", si: ["visit a museum"] },
+            { pregunta: "Would you like to bring food?", si: ["have a picnic"], tambien: ["Would you like to eat outside?"] },
+            { pregunta: "Would you like to listen to music?", si: ["go to a concert"], tambien: ["Would you like to hear music?", "Would you like to see a band?"] },
+            // El bote tiene remos: remar también es ejercicio.
+            { pregunta: "Would you like to get some exercise?", si: ["ride bikes", "take a boat on the river"], tambien: ["Would you like to do exercise?"] },
+            { pregunta: "Would you like to go on the river?", si: ["take a boat on the river"], tambien: ["Would you like to go on the water?"] },
+            { pregunta: "Would you like to see art?", si: ["visit a museum"], tambien: ["Would you like to see paintings?"] },
             { pregunta: "Would you like to watch a game?", si: ["watch a soccer game"] },
           ],
           adivinar: "Would you like to {x}?",
@@ -327,6 +329,9 @@ export const PARADA_07: Parada = {
           porRevisar: [
             'opciones: los nombres son los de "Qué aparece" (have a picnic, go to a concert…); el encabezado de la tabla los abrevia (picnic, concert, bikes, boat, museum, soccer game)',
             'rondas: el documento dice "concert y bikes"; son las tarjetas go to a concert y ride bikes',
+            "opciones: la tarjeta ride bikes es la bicicleta de A1 (a1/f-bicicleta); en f-parque-corredor-bici se veía sobre todo a un hombre corriendo (1 de noviembre de 2026)",
+            "preguntas: «Would you like to get some exercise?» incluye el bote, que tiene remos (1 de noviembre de 2026)",
+            "tambien: otras formas de las preguntas y otros nombres de las tarjetas, para que Allison las entienda; el modelo no ve los dibujos y no las reconocía (1 de noviembre de 2026)",
           ],
         },
       ],
@@ -427,8 +432,9 @@ export const PARADA_07: Parada = {
     {
       archivos: ["f-parque-corredor-bici", "f-cine", "a1/f-metro"],
       muestra: "Un parque con una bicicleta (de la parada 3), un cine (de la parada 2) y un vagón de metro (de A1)",
-      uso: "Lección 2 (paso 1); el parque también es la tarjeta ride bikes",
+      uso: "Lección 2 (paso 1)",
     },
+    { archivos: ["a1/f-bicicleta"], muestra: "Una bicicleta roja (de A1)", uso: "Lección 4 (paso 3): la tarjeta ride bikes" },
     {
       archivos: ["f-parque-cambridge"],
       muestra: "Un parque un domingo: una manta con sándwiches y limonada, unos muchachos jugando frisbee y un bote en el río",

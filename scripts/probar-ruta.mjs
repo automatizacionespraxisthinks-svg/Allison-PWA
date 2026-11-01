@@ -343,6 +343,11 @@ const adv = A2_P01.lecciones[3].actividades.find((a) => a.tipo === "adivina");
   ok("adivina: pregunta abierta → el secreto", abierta.respuesta === adv.secreto && abierta.fallo);
   const otra = respuestaDeAdivina(adv, { tipo: "otra", fila: 0, opcion: 0, espanol: false }, ronda);
   ok("adivina: fuera de la tabla no cuenta como fallo", !otra.fallo && !otra.entendida && otra.respuesta.startsWith("Hmm"));
+  ok(
+    "adivina: fuera de la tabla, Allison da una pregunta que sí sabe",
+    otra.respuesta === "Hmm, I can't answer that one. Try this: Do you work outside?",
+    otra.respuesta
+  );
   const es = respuestaDeAdivina(adv, { tipo: "pregunta", fila: 7, opcion: 0, espanol: true }, ronda);
   ok("adivina: en español, la pregunta en inglés (sin español)", es.respuesta === "Do you work in a school? Try it!" && es.fallo, es.respuesta);
   const esNada = respuestaDeAdivina(adv, { tipo: "otro", fila: 0, opcion: 0, espanol: true }, ronda);

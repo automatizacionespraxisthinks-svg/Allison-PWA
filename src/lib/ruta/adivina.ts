@@ -168,9 +168,10 @@ export function respuestaDeAdivina(a: Adivina, l: LecturaAdivina, r: RondaAdivin
   }
 
   if (l.tipo === "otra") {
-    // Una pregunta de sí o no que no está en la tabla: no gasta la ronda.
-    const otra = invita(a) ? "Invite me to something else!" : "Ask me another question!";
-    return { ...nada, respuesta: `Hmm, I can't answer that one. ${otra}`, fallo: false, entendida: false };
+    // Una pregunta de sí o no que no está en la tabla: no gasta la ronda, y
+    // Allison le da una que sí sabe contestar (antes solo "Ask me another
+    // question!": el alumno no sabía qué preguntar; 1 de noviembre de 2026).
+    return { ...nada, respuesta: `Hmm, I can't answer that one. Try this: ${preguntaDeEjemplo(a, r.descartadas, r.preguntadas)}`, fallo: false, entendida: false };
   }
   if (l.tipo === "abierta") return { ...nada, respuesta: a.secreto, fallo: true, entendida: false };
   return { ...nada, respuesta: "Sorry, I don't understand. Ask me a yes or no question!", fallo: true, entendida: false };
