@@ -178,7 +178,7 @@ export const PARADA_07: Parada = {
           palabrasAyuda: ["burger", "apple", "juice", "fries"],
           modelo: ["I see a burger.", "I see an apple.", "I see some juice."],
           aceptadas: ["I see some fries."],
-          cosas: ["burger", "apple", "juice", "fries"],
+          cosas: ["burger", "hamburger", "apple", "juice", "fries", "table"],
           minimo: 3,
         },
         {

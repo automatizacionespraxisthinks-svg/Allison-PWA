@@ -173,7 +173,7 @@ export const PARADA_08: Parada = {
           palabrasAyuda: ["park", "trees", "store", "bus stop"],
           modelo: ["There is a park.", "There are two trees.", "There is a bus stop."],
           aceptadas: ["The park is next to the house."],
-          cosas: ["park", "tree", "store", "bus stop", "house"],
+          cosas: ["park", "tree", "store", "shop", "bus stop", "house", "bench", "flower"],
           minimo: 3,
         },
         {

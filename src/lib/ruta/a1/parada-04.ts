@@ -178,7 +178,7 @@ export const PARADA_04: Parada = {
           palabrasAyuda: ["a clock", "a calendar", "three people"],
           modelo: ["I see a clock.", "I see a calendar.", "I see three people."],
           aceptadas: ["It's ten o'clock.", "Three people."],
-          cosas: ["clock", "calendar", "people"],
+          cosas: ["clock", "calendar", "people", "woman", "man", "girl", "backpack", "cap", "jacket"],
           minimo: 3,
         },
         // Nota del documento debajo de la tabla: "El teléfono que dice el alumno no se guarda ni se

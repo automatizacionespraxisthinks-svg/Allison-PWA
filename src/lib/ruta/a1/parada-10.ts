@@ -201,7 +201,7 @@ export const PARADA_10: Parada = {
           imagen: "f-calle-sf",
           pregunta: "Tell me 3 things.",
           plantillas: ["The ___ is next to / across from the ___."],
-          palabrasAyuda: [],
+          palabrasAyuda: ["hotel", "bank", "café", "park"],
           modelo: ["The bank is next to the hotel.", "The café is next to the bank.", "The park is across from the bank."],
           aceptadas: ["The bank is between the hotel and the café."],
           cosas: ["hotel", "bank", "café", "park"],

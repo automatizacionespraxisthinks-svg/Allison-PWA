@@ -106,9 +106,9 @@ export const REPASO_FINAL: Repaso = {
           plantillas: [],
           palabrasAyuda: [],
           modelo: ["There are two people.", "They're dancing.", "A man is selling fish."],
-          aceptadas: [],
+          aceptadas: ["A boy is eating ice cream.", "A woman is buying flowers.", "A man is playing the guitar."],
           tambienSeAcepta: "Cualquier frase correcta sobre la imagen",
-          cosas: ["man", "woman", "boy", "people", "fish", "flower", "ice cream", "guitar", "dance"],
+          cosas: ["man", "woman", "boy", "people", "fish", "flower", "ice cream", "guitar", "dance", "music", "market"],
           minimo: 3,
           porRevisar: [
             'modelo: el documento pide tres frases y da dos de ejemplo ("There are two people. They\'re dancing."); la tercera ("A man is selling fish.") sale de la parada 9, con la misma imagen',

@@ -177,7 +177,7 @@ export const PARADA_03: Parada = {
           palabrasAyuda: ["board", "desk", "backpack"],
           modelo: ["I see a board.", "I see a desk.", "I see a backpack."],
           aceptadas: ["I see a teacher.", "I see a student."],
-          cosas: ["board", "desk", "backpack", "teacher", "student"],
+          cosas: ["board", "chalkboard", "desk", "backpack", "bag", "teacher", "student", "woman", "boy", "window", "chair"],
           minimo: 3,
         },
         {

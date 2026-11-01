@@ -71,6 +71,12 @@ export function Describe({
   const [dichas, setDichas] = useState<string[]>([]);
   /** Las frases que Allison ya sugirió: no se repiten (antes podía pedir la misma en bucle). */
   const [dadas, setDadas] = useState<string[]>([]);
+  /**
+   * Todas las cosas del dibujo que salieron en lo que ya contó (en "She's
+   * talking on the phone." son phone y talking, aunque cuente una): Allison
+   * no le sugiere decir otra vez lo mismo.
+   */
+  const [mencionadas, setMencionadas] = useState<string[]>([]);
 
   // La consigna de la actividad: en A2 cambia ("Invite me to 3 things in
   // the picture.", "Tell me 3 rules at this pool."); antes siempre decía
@@ -86,22 +92,23 @@ export function Describe({
   const cosasDe = (frase: string) => a.cosas.filter((c) => ` ${norm(frase)} `.includes(` ${norm(c)}`));
 
   /**
-   * La frase que sugiere Allison: una de las modelo (o aceptadas) que no
-   * dio todavía y que nombra algo nuevo; si no queda ninguna, una cosa del
-   * dibujo que no nombró; si tampoco, cualquier frase que no dio. Antes, en
-   * la parada 10 (las tres modelo nombran "bank") o con una frase sin
-   * cosas ("They're dancing."), no quedaba ninguna o se repetía la misma.
+   * La frase que sugiere Allison, siempre una de las modelo o aceptadas:
+   * primero una que no tenga nada de lo que ya dijo, después una con algo
+   * nuevo (en la parada 10 las tres modelo nombran "bank"), después
+   * cualquiera que no dio y, si ya las dio todas, otra vez una de ellas.
+   * Antes, sin frases libres, armaba una con una cosa suelta y salían
+   * "She's phoneing.", "I see a selling." o "Would you like to lemonade?";
+   * y podía pedirle decir otra vez lo que ya había dicho (1 de noviembre de 2026).
    */
   function sugerencia(ya: string[]): string | null {
-    const libres = [...a.modelo, ...a.aceptadas].map((x) => fraseModelo(x, a.plantillas[0])).filter((f) => !dadas.includes(f));
-    const conNueva = libres.find((f) => cosasDe(f).some((c) => !ya.includes(c)));
-    if (conNueva) return conNueva;
-    const cosa = a.cosas.find((c) => !ya.includes(c));
-    if (cosa) {
-      const f = fraseModelo(cosa, a.plantillas.find((p) => (p.match(/___/g) ?? []).length === 1));
-      if (!dadas.includes(f)) return f;
-    }
-    return libres[0] ?? null;
+    const todas = [...new Set([...a.modelo, ...a.aceptadas].map((x) => fraseModelo(x, a.plantillas[0])))];
+    const libres = todas.filter((f) => !dadas.includes(f));
+    const nueva = (lista: string[]) =>
+      lista.find((f) => {
+        const c = cosasDe(f);
+        return c.length > 0 && c.every((x) => !ya.includes(x));
+      }) ?? lista.find((f) => cosasDe(f).some((x) => !ya.includes(x)));
+    return nueva(libres) ?? libres[0] ?? nueva(todas) ?? todas[0] ?? null;
   }
 
   async function responder(e: Entrada) {
@@ -132,6 +139,7 @@ export function Describe({
     if (nuevas.length) {
       const todas = [...nombradas, ...nuevas];
       setNombradas(todas);
+      setMencionadas((m) => [...new Set([...m, ...r.nombradas])]);
       setDichas((d) => [...d, r.transcripcion]);
       if (sugerida) setAyudadas((x) => [...x, sugerida]);
       setSugerida(null);
@@ -147,13 +155,14 @@ export function Describe({
       // cuenta ella misma; antes el contador podía no moverse).
       const nueva = cosasDe(sugerida).find((c) => !nombradas.includes(c)) ?? sugerida;
       setNombradas((x) => [...new Set([...x, nueva])]);
+      setMencionadas((m) => [...new Set([...m, ...cosasDe(sugerida)])]);
       setDichas((d) => [...d, sugerida]);
       setAyudadas((x) => [...x, sugerida]);
       setSugerida(null);
       setFallosSeguidos(0);
       return;
     }
-    const s = sugerencia(nombradas);
+    const s = sugerencia([...new Set([...nombradas, ...mencionadas])]);
     if (r.espanol) setMensaje("Lo dijiste en español. Ahora dilo en inglés.");
     if (s) {
       setSugerida(s);
