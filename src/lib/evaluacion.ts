@@ -748,6 +748,10 @@ const DE_GRAMATICA = new Set([
   "have", "has", "had", "will", "would", "can", "could", "should", "must",
   "it", "there", "i", "you", "he", "she", "we", "they", "me", "him", "her", "us", "them",
   "my", "your", "his", "its", "our", "their", "that", "this", "these", "those", "some", "any", "than", "as",
+  // El del pasado perfecto: "the thief left" → "the thief had already left"
+  // se descartaba como contenido inventado (1 de noviembre de 2026). Never,
+  // just o still no: cambian lo que dijo.
+  "already",
 ]);
 
 /**
@@ -1073,6 +1077,13 @@ export async function comentarNarracion(p: {
   modelo?: string;
   /** Los errores previstos de la actividad ("siDice"): no van al prompt; nunca son lo bien hecho. */
   previstas?: string[];
+  /**
+   * Las correcciones del documento (siDice → explicación). Van al prompt:
+   * sin ellas, "When the police arrived, the thief left" salía corregida
+   * como "…the girl left" y el alumno repetía otra historia (1 de
+   * noviembre de 2026).
+   */
+  correcciones?: { siDice: string; explicacion: string }[];
 }): Promise<ComentarioNarracion> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const props = {
@@ -1105,6 +1116,15 @@ Return:
 ${PEDIDO_FRASES}
 - "espanol": true if most of it is in Spanish.
 ${pedidoComentario(p.nivel)}
+In "mejorFrase" fix only the grammar: the same people do the same things
+as in the pictures.${
+    p.correcciones?.length
+      ? `
+The teacher's corrections for mistakes students often make here:
+${p.correcciones.map((x) => `  "${x.siDice}" → ${x.explicacion}`).join("\n")}
+If they make one of these mistakes, fix it the same way.`
+      : ""
+  }
 Never invent sentences they did not say.`;
 
   const r = await ai.models.generateContent({

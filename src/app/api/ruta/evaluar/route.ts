@@ -150,8 +150,10 @@ export async function POST(peticion: Request) {
       // could they do now?"). Se evalúa la historia que ya contó con lo
       // que agrega ahora. Viene del navegador, como lo escrito.
       if (transcripcion && previo && actividad.tipo === "narra") transcripcion = `${previo} ${transcripcion}`;
-      // El modelo de Allison y los errores previstos no van al prompt: el
-      // código los usa para no corregir lo que está bien ni elogiar un error.
+      // El modelo de Allison no va al prompt: el código lo usa para no
+      // corregir lo que está bien. Los errores previstos tampoco, para no
+      // elogiar un error; sus correcciones sí, para corregirlos igual que
+      // el documento (1 de noviembre de 2026).
       if (transcripcion && actividad.tipo === "narra") {
         narracion = await comentarNarracion({
           pregunta: actividad.pregunta,
@@ -161,6 +163,7 @@ export async function POST(peticion: Request) {
           nivel,
           modelo: actividad.modelo,
           previstas: (actividad.explicaciones ?? []).map((x) => x.siDice),
+          correcciones: actividad.explicaciones ?? [],
         });
         comentario = narracion;
       } else if (transcripcion && actividad.tipo === "cuentame") {
