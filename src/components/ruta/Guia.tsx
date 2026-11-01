@@ -6,7 +6,7 @@ import { useState } from "react";
 import type { Nivel } from "@/lib/tipos";
 import { Estampilla, type LugarSello } from "./Estampilla";
 import { Icono } from "./Iconos";
-import { BotonOir, useVoz } from "./leccion/comun";
+import { BotonOir, useVoz } from "./leccion/comun";
 import { sesionCerrada } from "@/lib/pedir";
 
 interface LeccionGuia {

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { CompetenciaDelColegio } from "@/lib/competencia";
-import { ganadores, minutosEnTexto, type SalonEnTabla } from "@/lib/competencia/tabla";
+import { ganadores, minutosEnTexto, type SalonEnTabla } from "@/lib/competencia/tabla";
 import { sesionCerrada } from "@/lib/pedir";
 
 /** "9A", "9A y 9B", "9A, 9B y 10A". */

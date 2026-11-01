@@ -34,12 +34,11 @@ export async function POST(peticion: Request) {
   const d = datos.data;
   const llave = llavePublicaAvisos();
 
+  // Sin la hora: la página de Ajustes ya la trae y la comparte con la meta.
   if (d.accion === "estado") {
-    const [u] = await sql`select to_char(recordatorio_hora, 'HH24:MI') as hora from users where id = ${alumno.id}`;
     return NextResponse.json({
       llave,
       activo: !!d.endpoint && (await tieneSuscripcion(alumno.id, d.endpoint)),
-      hora: (u?.hora as string | null) ?? null,
     });
   }
 

@@ -6,7 +6,7 @@ import { useCallback, useState } from "react";
 import type { Nivel } from "@/lib/tipos";
 import { Estampilla, type LugarSello } from "./Estampilla";
 import { Icono } from "./Iconos";
-import { Grabador, useVoz } from "./leccion/comun";
+import { Grabador, useVoz } from "./leccion/comun";
 import { sesionCerrada } from "@/lib/pedir";
 
 /** Cómo se describe cada nivel en el paso 1 (boceto aprobado). */

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AjustesAnimaciones, AjustesMeta, AvisosCelular, CerrarSesion } from "@/components/AjustesRuta";
+import { AjustesAnimaciones, AjustesRecordatorio, CerrarSesion } from "@/components/AjustesRuta";
 import { FormularioPerfil } from "@/components/FormularioPerfil";
 import { ConNavegacion } from "@/components/Navegacion";
 import { SelectorNivel } from "@/components/SelectorNivel";
@@ -43,9 +43,7 @@ export default async function PaginaAjustes() {
           <SelectorNivel nivel={nivel.actual} maximo={nivel.maximo} siguienteAbierto={nivel.siguienteAbierto} />
         </section>
 
-        <AjustesMeta meta={alumno.metaDiariaMin} hora={u?.hora ?? null} />
-
-        <AvisosCelular />
+        <AjustesRecordatorio meta={alumno.metaDiariaMin} hora={u?.hora ?? null} />
 
         <AjustesAnimaciones />
 

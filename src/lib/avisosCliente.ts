@@ -97,7 +97,6 @@ async function suscripcionActual(): Promise<PushSubscription | null> {
 /** El estado de los avisos en este aparato, y cómo cambiarlo. */
 export function useAvisos() {
   const [estado, setEstado] = useState<EstadoAvisos>("cargando");
-  const [hora, setHora] = useState<string | null>(null);
   const [llave, setLlave] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
 
@@ -107,7 +106,6 @@ export function useAvisos() {
     const sub = await suscripcionActual().catch(() => null);
     const r = await pedir({ accion: "estado", endpoint: sub?.endpoint ?? null });
     setLlave((r?.llave as string | null) ?? null);
-    setHora((r?.hora as string | null) ?? null);
     if (!r?.llave) return setEstado("sin-configurar");
     if (Notification.permission === "denied") return setEstado("bloqueado");
     setEstado(r.activo ? "activo" : "inactivo");
@@ -127,8 +125,11 @@ export function useAvisos() {
    * no hay servicio de avisos pushManager nunca responde. El botón se
    * quedaba en "Activando…" para siempre (auditoría, 30 de octubre de
    * 2026). 8 s y no 4: subscribe sí habla con el servicio de avisos.
+   *
+   * Si quedó activo, devuelve la hora del recordatorio: el servidor la
+   * pone a las 7 de la noche si no había, y la pantalla tiene que verla.
    */
-  const activar = useCallback(async (): Promise<{ ok: boolean; aviso?: string }> => {
+  const activar = useCallback(async (): Promise<{ ok: boolean; aviso?: string; hora?: string | null }> => {
     if (!llave) return { ok: false };
     setOcupado(true);
     try {
@@ -143,9 +144,8 @@ export function useAvisos() {
         (await conLimite(reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: aBytes(llave) }), 8000));
       const r = await pedir({ accion: "activar", suscripcion: sub.toJSON() });
       if (!r) return { ok: false, aviso: "No pudimos guardarlos. Revisa tu conexión e intenta otra vez." };
-      setHora((r.hora as string | null) ?? hora);
       setEstado("activo");
-      return { ok: true };
+      return { ok: true, hora: (r.hora as string | null) ?? null };
     } catch (e) {
       if (e instanceof Error && e.message === SIN_RESPUESTA) {
         return { ok: false, aviso: "Este navegador no respondió al activar los avisos. Intenta otra vez; en Android, prueba con Chrome." };
@@ -154,7 +154,7 @@ export function useAvisos() {
     } finally {
       setOcupado(false);
     }
-  }, [hora, llave]);
+  }, [llave]);
 
   const desactivar = useCallback(async () => {
     setOcupado(true);
@@ -170,5 +170,5 @@ export function useAvisos() {
     }
   }, []);
 
-  return { estado, hora, ocupado, activar, desactivar };
+  return { estado, ocupado, activar, desactivar };
 }

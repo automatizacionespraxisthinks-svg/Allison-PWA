@@ -3,25 +3,67 @@
 import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useAvisos } from "@/lib/avisosCliente";
-import { animacionesActivas, fijarAnimaciones, fijarSonidos, sonar, sonidosActivos } from "@/lib/sonidos";
+import { animacionesActivas, fijarAnimaciones, fijarSonidos, sonar, sonidosActivos } from "@/lib/sonidos";
 import { sesionCerrada } from "@/lib/pedir";
 
+/** "19:00" → "7:00 p. m.": la misma hora que muestra el selector de arriba. */
+function horaLegible(hhmm: string): string {
+  const [h, m] = hhmm.split(":").map(Number);
+  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "a. m." : "p. m."}`;
+}
+
+/**
+ * La meta, el recordatorio y los avisos del celular, con UNA sola hora
+ * guardada. Activar los avisos pone el recordatorio a las 7 p. m. si no
+ * había; antes la casilla de arriba seguía desmarcada, y un Guardar
+ * después lo borraba: la pantalla decía "Activados" y no llegaba nada
+ * (1 de noviembre de 2026).
+ */
+export function AjustesRecordatorio({ meta, hora: horaInicial }: { meta: number; hora: string | null }) {
+  const [hora, setHora] = useState(horaInicial);
+  return (
+    <>
+      <AjustesMeta meta={meta} hora={hora} alGuardar={setHora} />
+      <AvisosCelular hora={hora} alActivar={setHora} />
+    </>
+  );
+}
+
 /** La meta diaria y la hora del recordatorio de la racha (Perfil · Ajustes). */
-export function AjustesMeta({ meta: inicial, hora: horaInicial }: { meta: number; hora: string | null }) {
+function AjustesMeta({
+  meta: inicial,
+  hora: horaGuardada,
+  alGuardar,
+}: {
+  meta: number;
+  hora: string | null;
+  alGuardar: (hora: string | null) => void;
+}) {
   const [meta, setMeta] = useState(inicial);
-  const [con, setCon] = useState(!!horaInicial);
-  const [hora, setHora] = useState(horaInicial ?? "19:00");
+  const [con, setCon] = useState(!!horaGuardada);
+  const [hora, setHora] = useState(horaGuardada ?? "19:00");
   const [aviso, setAviso] = useState<string | null>(null);
+
+  // Si la hora guardada cambia desde afuera (al activar los avisos), la
+  // casilla y el selector la muestran.
+  const [vista, setVista] = useState(horaGuardada);
+  if (horaGuardada !== vista) {
+    setVista(horaGuardada);
+    setCon(!!horaGuardada);
+    if (horaGuardada) setHora(horaGuardada);
+  }
 
   async function guardar() {
     setAviso(null);
+    const nueva = con ? hora : null;
     const r = await fetch("/api/ruta/inicio", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accion: "ajustes", meta, hora: con ? hora : null }),
+      body: JSON.stringify({ accion: "ajustes", meta, hora: nueva }),
     }).catch(() => null);
     // Sesión cerrada: a entrar de nuevo (auditoría, 31 de octubre de 2026).
     if (sesionCerrada(r)) return;
+    if (r?.ok) alGuardar(nueva);
     setAviso(r?.ok ? "Guardado." : "No se pudo guardar. Intenta otra vez.");
   }
 
@@ -75,8 +117,8 @@ export function AjustesMeta({ meta: inicial, hora: horaInicial }: { meta: number
  * notificación. Va en vez del correo, uno al día como mucho. Para los
  * alumnos de colegio es el único posible: no tienen correo.
  */
-export function AvisosCelular() {
-  const { estado, hora, ocupado, activar, desactivar } = useAvisos();
+function AvisosCelular({ hora, alActivar }: { hora: string | null; alActivar: (hora: string | null) => void }) {
+  const { estado, ocupado, activar, desactivar } = useAvisos();
   const [aviso, setAviso] = useState<string | null>(null);
   // Sin las llaves del servidor no hay nada que ofrecer.
   if (estado === "cargando" || estado === "sin-configurar") return null;
@@ -85,7 +127,7 @@ export function AvisosCelular() {
     <section className="flex flex-col gap-3 rounded-3xl border border-borde bg-superficie p-5">
       <h2 className="font-bold">Avisos en este celular</h2>
       <p className="text-sm text-texto-suave">
-        Si tu racha está por perderse, te aviso aquí{hora ? ` a las ${hora}` : ""} en vez del correo. Uno al día como mucho.
+        Si tu racha está por perderse, te aviso aquí{hora ? ` a las ${horaLegible(hora)}` : ""} en vez del correo. Uno al día como mucho.
       </p>
       {estado === "activo" && (
         <div className="flex items-center justify-between gap-3">
@@ -100,18 +142,24 @@ export function AvisosCelular() {
           </button>
         </div>
       )}
+      {estado === "activo" && !hora && (
+        <p className="text-sm font-semibold text-oro">
+          El recordatorio está apagado: marca «Avisarme si mi racha está por perderse» arriba y guarda.
+        </p>
+      )}
       {estado === "inactivo" && (
         <button
           type="button"
           disabled={ocupado}
           onClick={() =>
-            void activar().then((r) =>
+            void activar().then((r) => {
+              if (r.ok) alActivar(r.hora ?? null);
               setAviso(
                 r.ok
                   ? "Listo: te aviso en este celular. La hora la cambias arriba."
                   : (r.aviso ?? "No se activaron. Si el celular preguntó, toca Permitir.")
-              )
-            )
+              );
+            })
           }
           className="rounded-xl bg-primario px-4 py-3 font-semibold text-white disabled:opacity-50"
         >
