@@ -24,6 +24,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Use hasn't: My bag hasn't arrived." → "Usa hasn't: My bag hasn't arrived." |
 | Lección 2, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Use hasn't: My bag hasn't arrived." → "Usa hasn't: My bag hasn't arrived." |
 | Lección 2, paso 2 (¿Qué es esto?) | Traducción de la explicación | "Use hasn't: My bag hasn't arrived." → "Usa hasn't: My bag hasn't arrived." |
+| Lección 2, paso 3 (Cuéntame) | Nota | regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past») |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: cada dibujo dice su nombre en inglés al elegirlo (dice), sin texto a la vista (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 2 (Narra la secuencia) | Qué muestra cada dibujo | 1. Esta mañana Zoe entrega su maleta en el aeropuerto de Toronto · 2. Zoe vuela a Vancouver · 3. Zoe espera una hora en la banda de equipaje · 4. Zoe en el mostrador de la aerolínea, sin maleta |
 | Lección 3, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. checked · 2. flew · 3. waited · 4. hasn't arrived |
@@ -60,6 +61,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Just say: I used to live." → "Di solo: I used to live." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "The adjective goes first: a small town." → "El adjetivo va primero: a small town." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "The adjective goes first: a big city." → "El adjetivo va primero: a big city." |
+| Lección 2, paso 3 (Cuéntame) | Nota | regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past») |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: sin «there weren't any cell phones», que hacía oír phones junto al dibujo del teléfono antiguo; ahora dice que la prima vivía lejos y que la abuela le escribía cartas. Cada dibujo suena al elegirlo (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: orden cambiado para que la correcta no sea siempre la primera |
 | Lección 3, paso 2 (Narra la secuencia) | Qué muestra cada dibujo | 1. La abuela de Liam, de niña, se levantaba temprano y miraba la nieve por la ventana · 2. La abuela de Liam caminaba al colegio con guantes y bufanda · 3. Después del colegio, la abuela de Liam patinaba en el lago congelado del parque con sus amigas · 4. En la noche, la abuela de Liam tomaba chocolate caliente en la cocina |
@@ -100,6 +102,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Say: arrived at the party, or got to the party." → "Di: arrived at the party, o got to the party." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "They left first: had already left." → "Se fueron primero: had already left." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "In the past, use had." → "En pasado, va had." |
+| Lección 2, paso 3 (Cuéntame) | Nota | regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past») |
 | Lección 3, paso 2 (Narra la secuencia) | Qué muestra cada dibujo | 1. A las 4:00, una muchacha deja su bicicleta roja con canasta en el parqueadero de bicicletas y entra al café · 2. Un muchacho de buzo verde y gorra negra abre el candado · 3. El muchacho se va en la bicicleta · 4. A las 4:20, llega la policía y la muchacha señala el lugar vacío |
 | Lección 3, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. left · 2. opened · 3. rode away · 4. had already left |
 | Lección 3, paso 2 (Narra la secuencia) | Gramática para el evaluador | "past simple for the events in order and past perfect (had + past participle) for what had already happened, with time connectors (first, then, after that, when)" |
@@ -136,6 +139,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Say it: I think it's too expensive." → "Dilo así: I think it's too expensive." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Say: too expensive." → "Di: too expensive." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Too means more than you want: too expensive." → "Demasiado es too: too expensive." |
+| Lección 2, paso 3 (Cuéntame) | Nota | regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past») |
 | Lección 3, paso 1 (Escucha y elige) | Nota | pregunta: «cataratas del Niágara», como el Niagara Falls que se oye (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 2 (Narra la secuencia) | Qué muestra cada dibujo | 1. El parque está sucio y sin luces · 2. Los vecinos en una reunión · 3. Unos vecinos con un dibujo de una pista de skate y otros con un dibujo de árboles · 4. El parque nuevo, con árboles, luces y una pista de skate pequeña |
 | Lección 3, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. was · 2. had a meeting · 3. wanted · 4. has |
@@ -177,6 +181,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "For a period of time, use for: for three years." → "Para un período de tiempo, usa for: for three years." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Say am: I'm still learning." → "Di am: I'm still learning." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Good! Now with been + -ing: I've been studying." → "¡Bien! Ahora con been + -ing: I've been studying." |
+| Lección 2, paso 3 (Cuéntame) | Nota | regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past») |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: 4:00, 7:00 y 10:00, bien distintas; entre las 4:00 y las 5:00 la aguja apenas se movía. Los relojes muestran la hora en números y suenan «At four o'clock» (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones.descripcion: "Un reloj que marca las…", como en A1 |
 | Lección 3, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. started cleaning · 2. has been cleaning · 3. has been listening · 4. is clean |
@@ -214,6 +219,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Steal, stole, stolen: My phone was stolen." → "Steal, stole, stolen: My phone was stolen." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Good! Now start with My phone: My phone was stolen." → "¡Bien! Ahora empieza con My phone: My phone was stolen." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Good! Now start with My phone: My phone was stolen." → "¡Bien! Ahora empieza con My phone: My phone was stolen." |
+| Lección 2, paso 3 (Cuéntame) | Nota | regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past») |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: 1876, 1950 y 2010; antes 1976 y 1786 tenían los mismos números revueltos. La pregunta dice que es el año y cada tarjeta suena «In 1876», como en la historia (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. was made · 2. was sent · 3. was sold · 4. was given |
 | Lección 3, paso 2 (Narra la secuencia) | Gramática para el evaluador | "passive voice in the past simple: was/were + past participle (was made, was sent)" |
@@ -247,6 +253,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "The movie causes the feeling: exciting." → "La película causa la sensación: exciting." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Say exciting: a movie that everyone finds exciting." → "Emocionante es exciting: a movie that everyone finds exciting." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "The ending causes the feeling: surprising." → "El final causa la sensación: surprising." |
+| Lección 2, paso 3 (Cuéntame) | Nota | regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past») |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: «It's funny.» en vez de «It's boring.»: el libro fue aburrido solo al comienzo (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. bought · 2. were excited · 3. screamed · 4. left |
 | Lección 3, paso 2 (Narra la secuencia) | Gramática para el evaluador | "-ed and -ing adjectives (excited, scary, exciting) and relative clauses (who, that, which, where), in the past simple" |
@@ -279,6 +286,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Use will: the river will get worse." → "Usa will: the river will get worse." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Use will: the river will get worse." → "Usa will: the river will get worse." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Say get: the river will get worse." → "Di get: the river will get worse." |
+| Lección 2, paso 3 (Cuéntame) | Nota | regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past») |
 | Lección 3, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. leave · 2. will smell · 3. will come · 4. will close |
 | Lección 3, paso 2 (Narra la secuencia) | Gramática para el evaluador | "first conditional: if + present, will + verb (an if in each part)" |
 | Lección 3, paso 2 (Narra la secuencia) | Traducción de la explicación | "After if, no will: If the bear smells the food." → "Después de if no va will: If the bear smells the food." |
@@ -322,6 +330,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Say: give us our money back." → "Di: give us our money back." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Good! To suggest politely: We could change rooms." → "¡Bien! Para proponer con amabilidad: We could change rooms." |
 | Lección 2, paso 3 (Cuéntame) | Nota | modelo: tenía 4 frases y el acierto pide 5; se agregó "You might even see a dinosaur there!" |
+| Lección 2, paso 3 (Cuéntame) | Nota | regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past») |
 | Lección 3, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. baked · 2. jumped · 3. fell · 4. could buy |
 | Lección 3, paso 2 (Narra la secuencia) | Gramática para el evaluador | "past simple for the story; then could or might + verb (no to) for two ideas" |
 | Lección 3, paso 2 (Narra la secuencia) | Traducción de la explicación | "No to after could: they could buy." → "Después de could no va to: they could buy." |
@@ -353,6 +362,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Prize ends with a z sound: the prize." → "Prize termina con sonido de z: the prize." |
 | Lección 2, paso 2 (Dilo en inglés) | Traducción de la explicación | "Say: travel around the world." → "Di: travel around the world." |
 | Lección 2, paso 2 (Dilo en inglés) | Nota | partes: la frase empieza por if y también lleva because; se partió justo antes de because, la palabra que une |
+| Lección 2, paso 3 (Cuéntame) | Nota | regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past») |
 | Lección 3, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. would start · 2. would be · 3. would give · 4. wouldn't give |
 | Lección 3, paso 2 (Narra la secuencia) | Gramática para el evaluador | "second conditional: if + past (if he were), would / wouldn't + verb" |
 | Lección 3, paso 2 (Narra la secuencia) | Traducción de la explicación | "It's imagined: school would start." → "Es algo imaginado: school would start." |
@@ -389,6 +399,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. left · 2. opened · 3. rode away · 4. had already left |
 | Lección 2, paso 2 (Narra la secuencia) | Gramática para el evaluador | "past simple and past perfect (had already + past participle) with time connectors (then, when), plus an opinion with I think, In my opinion or should" |
 | Lección 2, paso 2 (Narra la secuencia) | Traducción de la explicación | "He left first: the thief had already left." → "Él se fue primero: the thief had already left." |
+| Lección 2, paso 3 (Cuéntame) | Nota | regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past») |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: «They played a game with him.»; «They read a book to him.» invertía la historia (es Liam quien les lee) (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «Zoe has been walking the dog», «her dog», «it» y «doing it»; explicaciones para «She is walking the dog since September», «for two months» y la respuesta corta «Since September» (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "From then until now: she's been walking." → "Desde entonces hasta ahora: she's been walking." |
@@ -430,6 +441,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (Narra la secuencia) | Verbos de la ayuda | 1. leave · 2. will smell · 3. will come · 4. will close |
 | Lección 2, paso 2 (Narra la secuencia) | Gramática para el evaluador | "first conditional: if + present, will + verb; then one idea with could, might or may" |
 | Lección 2, paso 2 (Narra la secuencia) | Traducción de la explicación | "After if, no will: If the bear smells the food." → "Después de if, sin will: If the bear smells the food." |
+| Lección 2, paso 3 (Cuéntame) | Nota | regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past») |
 | Lección 3, paso 2 (¿Qué es esto?) | Nota | regla: vale sin repetir el if («I would watch a movie»), porque la pregunta ya lo trae, y dice que «If I am him» e «I will» no valen; se quitó la explicación «Good!» de If I was him, que salía solo cuando la respuesta había fallado (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It's imagined: If I were him." → "Es algo imaginado: If I were him." |
 | Lección 3, paso 2 (¿Qué es esto?) | Traducción de la explicación | "It's imagined, so use would: I would watch a movie." → "Es algo imaginado, así que va would: I would watch a movie." |

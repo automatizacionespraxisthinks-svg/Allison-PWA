@@ -177,6 +177,8 @@ export const PARADA_07: Parada = {
           segundos: 60,
           minimoSegundos: 40,
           minimoFrases: 5,
+          regla: { en: "Things are -ing (exciting); people feel -ed (excited).", es: "Las cosas llevan -ing (exciting); las personas, -ed (excited)." },
+          porRevisar: ["regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past»)"],
         },
       ],
     },

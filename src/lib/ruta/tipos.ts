@@ -383,6 +383,13 @@ export interface Cuentame extends ActividadBase {
   minimoSegundos: number;
   /** Cuántas frases que se entienden hacen falta (3). */
   minimoFrases: number;
+  /**
+   * B1: la regla de la gramática de la parada, en inglés muy simple y en
+   * español, escrita para la app. Si el error es de esa clase, Allison la
+   * dice tal cual; el modelo escribía la suya y a veces con términos que el
+   * alumno no conoce ("for unreal past"; 1 de noviembre de 2026).
+   */
+  regla?: { en: string; es: string };
 }
 
 /**

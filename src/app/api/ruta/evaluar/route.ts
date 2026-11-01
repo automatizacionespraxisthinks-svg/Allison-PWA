@@ -175,6 +175,8 @@ export async function POST(peticion: Request) {
           modelo: actividad.modelo,
           // Para que explique la gramática de la parada (1 de noviembre de 2026).
           ejemplo: ejemploDeCorreccion(actividad.siRespondeMal),
+          // B1: la regla aprobada, para ese error.
+          regla: actividad.regla,
         });
       }
       if (comentario) {

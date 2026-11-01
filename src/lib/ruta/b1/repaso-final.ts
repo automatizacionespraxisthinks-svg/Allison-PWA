@@ -189,6 +189,8 @@ export const REPASO_FINAL: Repaso = {
           segundos: 60,
           minimoSegundos: 40,
           minimoFrases: 5,
+          regla: { en: "After if, use the present, not will: if it rains.", es: "Después de if se usa el presente, no will: if it rains." },
+          porRevisar: ["regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past»)"],
         },
       ],
     },

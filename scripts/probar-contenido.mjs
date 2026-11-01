@@ -370,6 +370,17 @@ function revisarActividad(a, donde, imagenes) {
       if (frases < a.minimoFrases) fallo(donde, `el modelo tiene ${frases} frases y el mínimo es ${a.minimoFrases}`);
       // La corrección de ejemplo va al modelo para que explique la gramática de la parada.
       if (!ejemploDeCorreccion(a.siRespondeMal ?? "")) fallo(donde, "«Si responde mal» no trae la corrección de ejemplo (Ejemplo: \"…\" → …. Si habló…)");
+      // B1: la regla aprobada de la parada, corta y sin términos que el alumno no conoce.
+      if (desdeB1()) {
+        if (!a.regla?.en?.trim() || !a.regla?.es?.trim()) fallo(donde, "B1: falta la regla (en y es) de la gramática de la parada");
+        else {
+          const palabras = (t) => t.trim().split(/\s+/).length;
+          if (palabras(a.regla.en) > 12) aviso(donde, `regla en inglés de ${palabras(a.regla.en)} palabras (máximo 12)`);
+          if (palabras(a.regla.es) > 16) aviso(donde, `regla en español de ${palabras(a.regla.es)} palabras (máximo 16)`);
+          if (/unreal|subjunctive|clause|irreal|subjuntivo/i.test(`${a.regla.en} ${a.regla.es}`)) fallo(donde, "la regla usa un término que el alumno no conoce");
+          if (BRITANICO.test(a.regla.en)) fallo(donde, `inglés británico en la regla: "${a.regla.en}"`);
+        }
+      }
       break;
     }
     case "narra": {

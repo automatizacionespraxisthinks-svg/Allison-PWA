@@ -194,6 +194,8 @@ export const PARADA_04: Parada = {
           segundos: 60,
           minimoSegundos: 40,
           minimoFrases: 5,
+          regla: { en: "Say I agree, not I am agree.", es: "Agree ya es un verbo: se dice I agree, sin am." },
+          porRevisar: ["regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past»)"],
         },
       ],
     },

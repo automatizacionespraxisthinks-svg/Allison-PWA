@@ -682,8 +682,10 @@ ${bien}
   }
   return `${comun}
 - "mejorPorque": in very simple English, at most 10 words: the grammar
-  rule of THEIR mistake, with the right form.
-- "mejorPorqueEs": the same rule, in Spanish.
+  rule of THEIR mistake, with the right form, in words a teenager knows
+  (no terms like "unreal past", "clause" or "base verb"). If it is an
+  irregular verb, say so: "Swim is irregular: swam."
+- "mejorPorqueEs": the same rule, in Spanish ("Swim es irregular: swam.").
 ${bien}
 - "bienPorque": in very simple English, at most 8 words: what they did
   well in it ("You used the past perfect well.").
@@ -942,9 +944,17 @@ export async function comentarRelato(p: {
    * la explicación sigue la gramática de la parada.
    */
   ejemplo?: string | null;
+  /** B1: la regla aprobada de la parada; se dice tal cual si el error es de esa clase. */
+  regla?: { en: string; es: string } | null;
 }): Promise<ComentarioRelato> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  const props = camposComentario(p.nivel);
+  const conRegla = !!(enIngles(p.nivel) && p.ejemplo && p.regla);
+  // "deLaLeccion" va después de elegir la frase: dice si ese error es de la clase del ejemplo.
+  const props = Object.fromEntries(
+    Object.entries(camposComentario(p.nivel)).flatMap(([k, v]) =>
+      k === "mejorFrase" && conRegla ? [[k, v], ["deLaLeccion", { type: Type.BOOLEAN }]] : [[k, v]]
+    )
+  );
   const instruccion = `A Spanish-speaking teenager from Colombia (English level ${p.nivel}) talked
 for up to ${p.segundos ?? 30} seconds about this topic: "${p.tema}". The message is
 exactly what they said (or wrote), with their mistakes.${
@@ -961,7 +971,16 @@ like the example.`
 Return:
 ${PEDIDO_FRASES}
 - "espanol": true if most of it is in Spanish.
-${pedidoComentario(p.nivel)}
+${pedidoComentario(p.nivel)}${
+    conRegla
+      ? `
+- "deLaLeccion": true only if this rule explains exactly what was wrong
+  in "mejorDijo": "${p.regla!.en}". false if the mistake is something else
+  (a verb ending, is or are, an irregular verb like "swimmed" or "goed",
+  a wrong word), even in a sentence that also uses this grammar, or if
+  there is no mistake.`
+      : ""
+  }
 Never invent sentences they did not say. A wrong fact is not a mistake.`;
 
   const r = await ai.models.generateContent({
@@ -982,12 +1001,15 @@ Never invent sentences they did not say. A wrong fact is not a mistake.`;
       abortSignal: AbortSignal.timeout(15_000),
     },
   });
-  const d = jsonDelModelo<DatosComentario>(r);
+  const d = jsonDelModelo<DatosComentario & { deLaLeccion?: boolean }>(r);
   const c = await bienRevisado(comentarioVerificado(d, p.transcripcion, p.nivel, { modelo: p.modelo }), `"${p.tema}"`);
   const delDocumento = !enIngles(p.nivel) && p.ejemplo && c.mejora ? explicacionDelDocumento(p.ejemplo, c.mejora) : null;
+  // B1: un error de la gramática de la parada se explica con la regla aprobada, tal cual.
+  const deLaRegla = conRegla && d.deLaLeccion === true && c.mejora && p.regla ? { porque: p.regla.en, porqueEs: p.regla.es } : null;
   return {
     ...c,
     ...(delDocumento && c.mejora ? { mejora: { ...c.mejora, porque: delDocumento } } : {}),
+    ...(deLaRegla && c.mejora ? { mejora: { ...c.mejora, ...deLaRegla } } : {}),
     tokensEntrada: (r.usageMetadata?.promptTokenCount ?? 0) + c.tokensEntrada,
     tokensSalida: (r.usageMetadata?.candidatesTokenCount ?? 0) + c.tokensSalida,
   };

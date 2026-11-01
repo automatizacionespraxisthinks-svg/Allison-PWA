@@ -176,6 +176,8 @@ export const PARADA_02: Parada = {
           segundos: 60,
           minimoSegundos: 40,
           minimoFrases: 5,
+          regla: { en: "For old habits: used to + verb (used to play).", es: "Para costumbres del pasado: used to + verbo (used to play)." },
+          porRevisar: ["regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past»)"],
         },
       ],
     },

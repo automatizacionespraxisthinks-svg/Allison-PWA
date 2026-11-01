@@ -14,6 +14,8 @@ const { turnoDeEscenario, clasificarEntrevista, respuestaDeEntrevista, preguntaD
 const { comentarRelato, comentarNarracion, estaEnLoDicho } = await import("../src/lib/evaluacion.ts");
 const { PARADA_01: A2_P01 } = await import("../src/lib/ruta/a2/parada-01.ts");
 const { PARADA_01: B1_P01 } = await import("../src/lib/ruta/b1/parada-01.ts");
+const { PARADA_10: B1_P10 } = await import("../src/lib/ruta/b1/parada-10.ts");
+const { ejemploDeCorreccion } = await import("../src/lib/ruta/explicaciones.ts");
 const ZOE = B1_P01.lecciones.flatMap((l) => l.actividades).find((a) => a.tipo === "narra");
 const { esEspanolClaro, separarIdiomas } = await import("../src/lib/allison.ts");
 const { PARADA_01 } = await import("../src/lib/ruta/a1/parada-01.ts");
@@ -405,6 +407,37 @@ for (let rep = 0; rep < reps; rep++) {
   const bienDicho = "I go to school at six. I study math and science. After school I play soccer.";
   const c5 = await comentarRelato({ tema, transcripcion: bienDicho, nivel: "A2" });
   revisar("Relato bien dicho · sin corrección", !c5.mejora, JSON.stringify(c5.mejora));
+
+  // Cuéntame B1: un error de la gramática de la parada se explica con la
+  // regla aprobada; otro error, con la suya y sin términos raros ("for
+  // unreal past", "for regular verbs" con goed; 1 de noviembre de 2026).
+  const cuentameB1 = (p) => p.lecciones.flatMap((l) => l.actividades).find((x) => x.tipo === "cuentame");
+  const P10 = cuentameB1(B1_P10);
+  const deP10 = await comentarRelato({
+    tema: P10.tema,
+    transcripcion: "If I would have a whole year off, I would travel around the world. I would visit Japan and I would learn to surf.",
+    nivel: "B1",
+    segundos: P10.segundos,
+    modelo: P10.modelo,
+    ejemplo: ejemploDeCorreccion(P10.siRespondeMal),
+    regla: P10.regla,
+  });
+  revisar("Cuéntame B1 · error de la parada → su regla", deP10.mejora?.porque === P10.regla.en && deP10.mejora?.porqueEs === P10.regla.es, JSON.stringify(deP10.mejora));
+  const P1 = cuentameB1(B1_P01);
+  const otroError = await comentarRelato({
+    tema: P1.tema,
+    transcripcion: "I have been to Santa Marta two times. Last year we went there in December. The beach was very beautiful and I swimmed a lot.",
+    nivel: "B1",
+    segundos: P1.segundos,
+    modelo: P1.modelo,
+    ejemplo: ejemploDeCorreccion(P1.siRespondeMal),
+    regla: P1.regla,
+  });
+  revisar(
+    "Cuéntame B1 · otro error → su explicación, no la regla",
+    !!otroError.mejora && otroError.mejora.porque !== P1.regla.en && /irregular/i.test(otroError.mejora.porque),
+    JSON.stringify(otroError.mejora)
+  );
 
   // Narra la secuencia (B1): el orden lo pone el código y lo contado en
   // español no cuenta.

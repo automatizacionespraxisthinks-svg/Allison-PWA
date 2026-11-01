@@ -178,6 +178,8 @@ export const PARADA_10: Parada = {
           segundos: 60,
           minimoSegundos: 40,
           minimoFrases: 5,
+          regla: { en: "For imagined things: if + past, then would.", es: "Para imaginar: if + pasado, y después would (if I had…, I would…)." },
+          porRevisar: ["regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past»)"],
         },
       ],
     },

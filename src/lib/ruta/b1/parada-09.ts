@@ -190,7 +190,11 @@ export const PARADA_09: Parada = {
           segundos: 60,
           minimoSegundos: 40,
           minimoFrases: 5,
-          porRevisar: ["modelo: tenía 4 frases y el acierto pide 5; se agregó \"You might even see a dinosaur there!\""],
+          regla: { en: "After could, might or may, no to: could go.", es: "Después de could, might o may, el verbo va sin to: could go." },
+          porRevisar: [
+            "modelo: tenía 4 frases y el acierto pide 5; se agregó \"You might even see a dinosaur there!\"",
+            "regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past»)",
+          ],
         },
       ],
     },
