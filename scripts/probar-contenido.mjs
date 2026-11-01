@@ -300,6 +300,14 @@ function revisarActividad(a, donde, imagenes) {
       if (a.preguntas?.some((p) => !p.pregunta?.trim() || !p.modelo?.trim())) fallo(donde, "pregunta sin modelo");
       const segundos = nivelActual === "A1" ? 10 : nivelActual === "A2" ? 15 : 20;
       if (a.segundos !== segundos) aviso(donde, `segundos = ${a.segundos} (en ${nivelActual} son ${segundos})`);
+      // Lo que hace Allison con una respuesta corta tiene que ser lo que dice el documento.
+      const tambien = a.tambienSeAcepta ?? "";
+      const modo = /Tell me more/i.test(tambien) ? "detalle" : /Why\?/.test(tambien) ? "porque" : /frase completa/i.test(tambien) ? "completa" : undefined;
+      if (a.siCorta !== modo) fallo(donde, `siCorta = ${a.siCorta} y el documento pide ${modo ?? "nada"} («${tambien}»)`);
+      for (const p of a.preguntas ?? []) {
+        if (p.reloj && !/^\d{1,2}:\d{2}$/.test(p.reloj)) fallo(donde, `"${p.pregunta}": reloj "${p.reloj}" no es una hora`);
+        for (const x of p.explicaciones ?? []) if (!x.siDice?.trim() || !x.explicacion?.trim()) fallo(donde, `"${p.pregunta}": explicación incompleta`);
+      }
       break;
     }
     case "adivina": {

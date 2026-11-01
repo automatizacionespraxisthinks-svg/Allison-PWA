@@ -280,6 +280,7 @@ export const PARADA_04: Parada = {
           ],
           aceptadas: ["Yes."],
           segundos: 20,
+          siCorta: "porque",
         },
       ],
     },

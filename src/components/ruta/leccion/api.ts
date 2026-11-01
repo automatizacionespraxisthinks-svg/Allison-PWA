@@ -32,6 +32,8 @@ export interface ResultadoEvaluacion {
   nombradas: string[];
   /** Describe desde A2: la frase nombró algo con un error; `mejor` es como se dice, para repetirla. */
   mejora?: { dijo: string; mejor: string } | null;
+  /** Responde rápido desde A2: su respuesta corta, en frase completa. */
+  completa?: string | null;
   restantes?: number;
   /** Cuéntame: cuántas frases se entendieron, cuánto habló y el comentario de Allison. */
   relato?: {
@@ -67,7 +69,11 @@ export async function evaluar(
   paso: number,
   entrada: Entrada,
   indice = 0,
-  /** Narra: la historia ya contada, cuando contesta la pregunta de Allison por lo que faltó. */
+  /**
+   * Narra: la historia ya contada, cuando contesta la pregunta de Allison
+   * por lo que faltó. Responde rápido de B1: su primera respuesta, cuando
+   * contesta "Tell me more!" o "Why?".
+   */
   previo?: string
 ): Promise<ResultadoEvaluacion> {
   const f = new FormData();

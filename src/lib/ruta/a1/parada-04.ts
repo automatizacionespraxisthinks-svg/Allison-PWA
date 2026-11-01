@@ -190,10 +190,10 @@ export const PARADA_04: Parada = {
             "Cinco preguntas con diez segundos: What time is it? (con un reloj en pantalla) What day is today? When is your birthday? What's your phone number? How old are you?",
           siRespondeMal: "Se muestra una respuesta modelo y la pregunta vuelve al final.",
           preguntas: [
-            { pregunta: "What time is it?", modelo: "It's three o'clock." },
+            { pregunta: "What time is it?", modelo: "It's three o'clock.", reloj: "3:00" },
             { pregunta: "What day is today?", modelo: "It's Tuesday." },
             { pregunta: "When is your birthday?", modelo: "It's on March 3rd." },
-            { pregunta: "What's your phone number?", modelo: "310 555 0198." },
+            { pregunta: "What's your phone number?", modelo: "310 555 0198.", nota: "Puedes decir un número inventado." },
             { pregunta: "How old are you?", modelo: "I'm 15." },
           ],
           aceptadas: ["Three.", "Tuesday.", "March 3rd."],

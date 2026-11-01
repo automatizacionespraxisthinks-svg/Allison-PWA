@@ -262,6 +262,7 @@ export const PARADA_06: Parada = {
           ],
           aceptadas: ["In China."],
           segundos: 20,
+          siCorta: "completa",
         },
       ],
     },

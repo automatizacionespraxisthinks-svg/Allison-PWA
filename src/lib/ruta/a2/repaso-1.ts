@@ -74,6 +74,7 @@ export const REPASO_1: Repaso = {
           ],
           aceptadas: ["Homework.", "Guitar.", "Santa Marta."],
           segundos: 15,
+          siCorta: "completa",
         },
       ],
     },
@@ -228,6 +229,7 @@ export const REPASO_1: Repaso = {
           ],
           aceptadas: ["Studying.", "TV.", "Yes, I have."],
           segundos: 15,
+          siCorta: "completa",
         },
         {
           paso: 3,

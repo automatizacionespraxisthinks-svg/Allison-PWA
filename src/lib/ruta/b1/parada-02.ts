@@ -263,6 +263,7 @@ export const PARADA_02: Parada = {
           ],
           aceptadas: ["Yes, I did."],
           segundos: 20,
+          siCorta: "detalle",
         },
       ],
     },

@@ -87,6 +87,7 @@ export const REPASO_1: Repaso = {
           ],
           aceptadas: ["Not yet."],
           segundos: 20,
+          siCorta: "detalle",
         },
       ],
     },
@@ -287,6 +288,7 @@ export const REPASO_1: Repaso = {
           ],
           aceptadas: ["Three years."],
           segundos: 20,
+          siCorta: "completa",
         },
         {
           paso: 3,

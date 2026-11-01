@@ -232,6 +232,7 @@ export const PARADA_03: Parada = {
           ],
           aceptadas: ["Having breakfast.", "Yes, I was.", "No."],
           segundos: 15,
+          siCorta: "completa",
         },
       ],
     },

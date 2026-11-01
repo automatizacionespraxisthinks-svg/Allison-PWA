@@ -102,6 +102,7 @@ export const REPASO_FINAL: Repaso = {
           ],
           aceptadas: ["With corn."],
           segundos: 20,
+          siCorta: "detalle",
         },
       ],
     },
@@ -310,6 +311,7 @@ export const REPASO_FINAL: Repaso = {
           ],
           aceptadas: ["A pilot."],
           segundos: 20,
+          siCorta: "completa",
         },
         {
           paso: 3,

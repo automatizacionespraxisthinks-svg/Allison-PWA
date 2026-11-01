@@ -231,6 +231,7 @@ export const PARADA_05: Parada = {
           ],
           aceptadas: ["Soccer.", "No.", "Pizza."],
           segundos: 15,
+          siCorta: "completa",
         },
       ],
     },

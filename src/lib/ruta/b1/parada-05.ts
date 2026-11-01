@@ -265,10 +265,17 @@ export const PARADA_05: Parada = {
             { pregunta: "What have you been doing this week?", modelo: "I've been studying for my math test." },
             { pregunta: "How long have you been living in your city?", modelo: "I've been living in Pereira since I was born." },
             { pregunta: "What have you been learning at school lately?", modelo: "We've been learning about the solar system." },
-            { pregunta: "How long have you known your best friend?", modelo: "I've known her since first grade." },
+            {
+              pregunta: "How long have you known your best friend?",
+              modelo: "I've known her since first grade.",
+              explicaciones: [
+                { siDice: "been knowing", explicacion: "Know doesn't take -ing: I've known her.", es: "Know no lleva -ing: I've known her." },
+              ],
+            },
           ],
           aceptadas: ["For four years."],
           segundos: 20,
+          siCorta: "completa",
         },
       ],
     },

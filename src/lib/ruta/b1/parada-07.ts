@@ -267,6 +267,7 @@ export const PARADA_07: Parada = {
           ],
           aceptadas: ["Karol G."],
           segundos: 20,
+          siCorta: "completa",
         },
       ],
     },

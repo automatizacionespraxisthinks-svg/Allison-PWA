@@ -233,6 +233,7 @@ export const PARADA_09: Parada = {
           ],
           aceptadas: ["Three thousand pesos.", "One.", "No."],
           segundos: 15,
+          siCorta: "completa",
         },
       ],
     },

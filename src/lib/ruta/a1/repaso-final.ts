@@ -194,13 +194,13 @@ export const REPASO_FINAL: Repaso = {
           paso: 3,
           tipo: "responde",
           queAparece:
-            "What's your name? How do you spell it? When is your birthday? What time do you get up? What are you doing now?",
+            "What's your name? How do you spell your name? When is your birthday? What time do you get up? What are you doing now?",
           siRespondeMal:
             "Se muestra una respuesta modelo y la pregunta vuelve al final. Mezcla a propósito las paradas 1, 3, 4, 5 y 9.",
           // "Qué debe responder": "Respuestas cortas y con sentido". El documento no escribe respuestas en inglés.
           preguntas: [
             { pregunta: "What's your name?", modelo: "My name is Diego." },
-            { pregunta: "How do you spell it?", modelo: "D-I-E-G-O." },
+            { pregunta: "How do you spell your name?", modelo: "D-I-E-G-O." },
             { pregunta: "When is your birthday?", modelo: "It's on March 3rd." },
             { pregunta: "What time do you get up?", modelo: "I get up at six." },
             { pregunta: "What are you doing now?", modelo: "I'm studying English." },

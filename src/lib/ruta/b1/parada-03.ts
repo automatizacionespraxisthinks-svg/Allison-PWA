@@ -282,6 +282,7 @@ export const PARADA_03: Parada = {
           ],
           aceptadas: ["No, I hadn't."],
           segundos: 20,
+          siCorta: "detalle",
         },
       ],
     },

@@ -262,6 +262,7 @@ export const PARADA_10: Parada = {
           ],
           aceptadas: ["A cat."],
           segundos: 20,
+          siCorta: "completa",
         },
       ],
     },

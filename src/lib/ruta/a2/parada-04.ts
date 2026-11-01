@@ -227,6 +227,7 @@ export const PARADA_04: Parada = {
           ],
           aceptadas: ["Yes, I have.", "No.", "Cartagena."],
           segundos: 15,
+          siCorta: "completa",
           porRevisar: [
             'preguntas.modelo: el documento dice "Una frase a cada una" pero trae seis; "Yes, I have. I\'ve been to Santa Marta." se dejó junta para la primera',
           ],

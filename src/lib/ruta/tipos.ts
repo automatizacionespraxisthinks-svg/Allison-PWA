@@ -262,11 +262,27 @@ export interface Describe extends ActividadBase {
 /** Cinco preguntas con diez segundos cada una. Evaluación corta. */
 export interface Responde extends ActividadBase {
   tipo: "responde";
-  preguntas: { pregunta: string; modelo: string }[];
+  preguntas: {
+    pregunta: string;
+    modelo: string;
+    /** El reloj que dibuja la app ("3:00", A1 P4: "con un reloj en pantalla"): la hora que vale es la suya. */
+    reloj?: string;
+    /** Una nota en español debajo de la pregunta ("Puedes decir un número inventado."). */
+    nota?: string;
+    /** Lo que vale pero se dice distinto ("football" → "En Estados Unidos se dice soccer."). */
+    explicaciones?: Explicacion[];
+  }[];
   /** Ejemplos de respuestas cortas que también valen. */
   aceptadas: string[];
   /** Segundos por pregunta. */
   segundos: number;
+  /**
+   * Qué hace Allison con una respuesta corta que vale («También se acepta»
+   * del documento): "completa" la dice en frase completa ("Allison sugiere
+   * la frase completa"), "detalle" pide más ("Tell me more!") y "porque"
+   * pregunta "Why?". Sin esto (A1), "Good!" y sigue.
+   */
+  siCorta?: "completa" | "detalle" | "porque";
 }
 
 /** Arma preguntas para descubrir datos de Allison. Conversación con Allison. */

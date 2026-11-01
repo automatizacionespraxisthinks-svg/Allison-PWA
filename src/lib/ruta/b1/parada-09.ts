@@ -276,6 +276,7 @@ export const PARADA_09: Parada = {
           ],
           aceptadas: ["The movies."],
           segundos: 20,
+          siCorta: "completa",
         },
       ],
     },

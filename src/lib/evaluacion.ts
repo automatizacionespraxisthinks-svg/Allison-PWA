@@ -84,6 +84,15 @@ export interface PedidoEvaluacion {
    */
   clave?: string;
   /**
+   * Responde rápido desde A2 ("Allison sugiere la frase completa"): si la
+   * respuesta vale pero no es una frase, el modelo la devuelve completa.
+   */
+  completa?: boolean;
+  /** Responde rápido con reloj (A1 P4): la hora que marca ("3:00"). */
+  reloj?: string;
+  /** Responde rápido de B1: lo que añade después de "Tell me more!" o "Why?" a su primera respuesta. */
+  seguimiento?: { previo: string; pide: string };
+  /**
    * Lo escrito: se llama una vez, antes de la primera llamada al modelo
    * (juzgar o revisar la gramática), y cobra la intervención. Si devuelve
    * false (sin saldo), no se llama al modelo. Lo que el código resuelve
@@ -108,6 +117,8 @@ export interface ResultadoEvaluacion {
    * gramática; `mejor` es la misma frase bien dicha, para repetirla.
    */
   mejora?: { dijo: string; mejor: string };
+  /** Responde rápido desde A2: su respuesta corta, en frase completa ("Soccer." → "I'm going to play soccer."). */
+  completa?: string;
   /** Lo escrito necesitaba al modelo y no había saldo: no se calificó. */
   sinSaldo?: boolean;
   /**
@@ -131,12 +142,38 @@ is learning English.
 - "hayVoz": false if you hear only silence, noise or breathing. Then
   "transcripcion" is "" -- never invent words.`;
 
-/** Responde rápido: también se juzga si la respuesta tiene sentido. */
-const juzgarRespuesta = (pregunta: string, nivel: Nivel) => `
-- "correcto": the student (CEFR ${nivel}) was asked "${pregunta}". true if
+/**
+ * Responde rápido: también se juzga si la respuesta tiene sentido. Con
+ * reloj, la hora tiene que ser la suya (antes "Tuesday" valía para "What
+ * time is it?"). Desde A2, la respuesta corta vuelve en frase completa, y
+ * en B1 se juzga lo que añade después de "Tell me more!" o "Why?"
+ * (documento, «También se acepta»; 1 de noviembre de 2026).
+ */
+const juzgarRespuesta = (p: PedidoEvaluacion) =>
+  p.seguimiento
+    ? `
+- "correcto": the student (CEFR ${p.nivel}) was asked "${p.esperado}" and answered
+  "${p.seguimiento.previo}". Then the teacher said "${p.seguimiento.pide}". true if what
+  they said now ${p.seguimiento.pide === "Why?" ? "gives a reason" : "adds something more about their answer"}, in English, even with
+  small mistakes. false if it does not, is in Spanish, or is empty.`
+    : `
+- "correcto": the student (CEFR ${p.nivel}) was asked "${p.esperado}"${p.reloj ? ` while looking at a clock that shows ${p.reloj}` : ""}. true if
   what they said is a short, sensible answer to that question, in
-  English, even with small mistakes. false if it does not answer the
-  question, is in Spanish, or is empty.`;
+  English, even with small mistakes.${p.reloj ? " The time has to be the one on the clock." : ""} false if it does not answer the
+  question, is in Spanish, or is empty.${
+    p.completa
+      ? `
+- "completa": "" unless "correcto" is true and they did not say a complete
+  sentence (one word or a few words, like "Soccer." or "At six."). Then
+  their same answer as one short, complete sentence in simple American
+  English (CEFR ${p.nivel}), with contractions as people speak (I'm, I've,
+  can't), that repeats the words of the question ("Which is faster, a car
+  or a bike?" → "A car is faster than a bike."). Keep their meaning.
+  An invitation ("Would you like…?", "How about…?", "Let's…!"): a yes is
+  a happy yes ("Yes, I'd love to!"); a no is "Sorry, I can't." plus a
+  short reason ("Sorry, I can't. I have to study.").`
+      : ""
+  }`;
 
 function esquemaTranscripcion() {
   // "hayVoz" va primero: decidir antes si hay alguien hablando evita que
@@ -330,25 +367,35 @@ export async function transcribirACiegas(
  * español ("Tengo quince años" salía "I have fifteen years", correcto) y
  * le arreglaba los errores al alumno (auditoría, 28 de octubre de 2026).
  */
-async function juzgar(dicho: string, criterio: string): Promise<{ correcto: boolean; tokensEntrada: number; tokensSalida: number }> {
+async function juzgar(
+  dicho: string,
+  criterio: string,
+  /** Pide también "completa" (Responde rápido desde A2). */
+  conCompleta = false
+): Promise<{ correcto: boolean; completa: string; tokensEntrada: number; tokensSalida: number }> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  const properties: Record<string, unknown> = { correcto: { type: Type.BOOLEAN } };
+  if (conCompleta) properties.completa = { type: Type.STRING };
   const r = await ai.models.generateContent({
     model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
     contents: [{ role: "user", parts: [{ text: `The student said: ${dicho}` }] }],
     config: {
       systemInstruction: `You check one short answer of a Spanish-speaking student learning English. Judge only what is written, as it is.${criterio}`,
       responseMimeType: "application/json",
-      responseSchema: { type: Type.OBJECT, properties: { correcto: { type: Type.BOOLEAN } }, required: ["correcto"] },
+      responseSchema: { type: Type.OBJECT, properties, required: Object.keys(properties), propertyOrdering: Object.keys(properties) },
       temperature: 0,
-      maxOutputTokens: 40,
+      // La frase completa son unas 20 palabras.
+      maxOutputTokens: conCompleta ? 120 : 40,
       // Una evaluación tarda 1-3 s; en la prueba hubo una de 24 s por
       // la red. Mejor cortar y que la ruta devuelva la intervención que
       // dejar al alumno mirando la pantalla.
       abortSignal: AbortSignal.timeout(12_000),
     },
   });
+  const j = jsonDelModelo<{ correcto?: boolean; completa?: string }>(r);
   return {
-    correcto: jsonDelModelo<{ correcto?: boolean }>(r).correcto === true,
+    correcto: j.correcto === true,
+    completa: typeof j.completa === "string" ? j.completa.trim() : "",
     tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
     tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
   };
@@ -464,14 +511,16 @@ export async function evaluarRespuestaCorta(p: PedidoEvaluacion): Promise<Result
     if (permitido === null) permitido = await p.antesDelModelo!();
     return permitido;
   };
-  const conModelo = async (criterio: string) => {
+  const conModelo = async (criterio: string, conCompleta = false) => {
     if (!(await puedeUsarModelo())) {
       resultado.sinSaldo = true;
       return false;
     }
-    const j = await juzgar(transcripcion, criterio);
+    const j = await juzgar(transcripcion, criterio, conCompleta);
     resultado.tokensEntrada += j.tokensEntrada;
     resultado.tokensSalida += j.tokensSalida;
+    // Solo si vale y dice algo más que lo que ya dijo.
+    if (j.correcto && j.completa && normalizar(j.completa) !== normalizar(transcripcion)) resultado.completa = j.completa;
     return j.correcto;
   };
 
@@ -511,7 +560,7 @@ export async function evaluarRespuestaCorta(p: PedidoEvaluacion): Promise<Result
       break;
     }
     case "responde":
-      resultado.correcto = juzgable && (await conModelo(juzgarRespuesta(p.esperado, p.nivel)));
+      resultado.correcto = juzgable && (await conModelo(juzgarRespuesta(p), !!p.completa && !p.seguimiento));
       break;
     case "repite": {
       resultado.palabras = palabrasDeRepite(p.esperado, transcripcion);

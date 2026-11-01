@@ -238,6 +238,7 @@ export const PARADA_02: Parada = {
           ],
           aceptadas: ["Eggs.", "Yes, I did.", "At six."],
           segundos: 15,
+          siCorta: "completa",
         },
       ],
     },

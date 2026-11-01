@@ -521,9 +521,11 @@ export function Semaforo({ estado }: { estado: keyof typeof SEMAFORO }) {
 export function Reloj({ horas, minutos, etiqueta }: { horas: number; minutos: number; etiqueta: string }) {
   const aMin = (minutos / 60) * 360;
   const aHora = ((horas % 12) / 12) * 360 + (minutos / 60) * 30;
+  // Redondeado: el servidor y el navegador calculan seno y coseno con
+  // diferencias en el decimal 15, y React avisaba que el reloj no coincidía.
   const punta = (ang: number, largo: number) => {
     const r = ((ang - 90) * Math.PI) / 180;
-    return [50 + Math.cos(r) * largo, 50 + Math.sin(r) * largo];
+    return [Math.round((50 + Math.cos(r) * largo) * 100) / 100, Math.round((50 + Math.sin(r) * largo) * 100) / 100];
   };
   const [hx, hy] = punta(aHora, 22);
   const [mx, my] = punta(aMin, 32);

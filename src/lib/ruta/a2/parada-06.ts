@@ -219,6 +219,7 @@ export const PARADA_06: Parada = {
           ],
           aceptadas: ["Soccer.", "By bus.", "At seven."],
           segundos: 15,
+          siCorta: "completa",
         },
       ],
     },

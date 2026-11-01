@@ -184,14 +184,18 @@ export const PARADA_03: Parada = {
           paso: 3,
           tipo: "responde",
           queAparece:
-            "Cinco preguntas con diez segundos: What's your name? How do you spell it? Where do you live? What's your favorite sport? Who is your best friend?",
+            "Cinco preguntas con diez segundos: What's your name? How do you spell your name? Where do you live? What's your favorite sport? Who is your best friend?",
           siRespondeMal:
             'Se muestra una respuesta modelo y la pregunta vuelve al final. Si dice "football" para el fútbol, se acepta y el resumen dice: En Estados Unidos se dice soccer.',
           preguntas: [
             { pregunta: "What's your name?", modelo: "Diego." },
-            { pregunta: "How do you spell it?", modelo: "D-I-E-G-O." },
+            { pregunta: "How do you spell your name?", modelo: "D-I-E-G-O." },
             { pregunta: "Where do you live?", modelo: "I live in Tunja." },
-            { pregunta: "What's your favorite sport?", modelo: "Soccer." },
+            {
+              pregunta: "What's your favorite sport?",
+              modelo: "Soccer.",
+              explicaciones: [{ siDice: "football", explicacion: "En Estados Unidos se dice soccer." }],
+            },
             { pregunta: "Who is your best friend?", modelo: "My best friend is Andrés." },
           ],
           aceptadas: ["Tunja.", "Andrés."],

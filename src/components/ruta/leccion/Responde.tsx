@@ -2,11 +2,13 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { explicacionPara } from "@/lib/ruta/explicaciones";
 import type { Responde as Datos } from "@/lib/ruta/tipos";
 import { desdeB1 } from "@/lib/tipos";
 import { Icono } from "../Iconos";
 import { evaluar, type Contexto, type FinActividad } from "./api";
 import { BotonOir, Grabador, Hoja, NoDijeEso, useVoz, type Entrada } from "./comun";
+import { RelojConHora } from "./EscuchaElige";
 
 interface Ronda {
   /** Índice de la pregunta en el contenido. */
@@ -19,6 +21,37 @@ interface Respuesta {
   i: number;
   dijo: string | null;
   bien: boolean;
+  /** La nota prevista ("En Estados Unidos se dice soccer."): sale también en el resumen. */
+  nota?: string;
+}
+
+/** Lo que muestra Allison después de una respuesta que vale, antes de seguir. */
+interface Tras {
+  dijo: string;
+  /** Desde A2: su respuesta corta, en frase completa. */
+  completa: string | null;
+  nota: { en: string; es?: string } | null;
+  /** B1: "Tell me more!" o "Why?"; null si no pide nada. */
+  pide: string | null;
+  /** Ya contestó lo que pidió: "bien", o "casi" con un ejemplo. */
+  contesto: "bien" | "casi" | null;
+}
+
+/**
+ * B1 con «Allison pide el detalle»: una respuesta de pocas palabras ("No,
+ * I haven't.") pide más; con "Why?", no si ya trae la razón.
+ */
+function pideMas(dicho: string, modo: Datos["siCorta"]): string | null {
+  if (modo !== "detalle" && modo !== "porque") return null;
+  if (dicho.trim().split(/\s+/).length > 5) return null;
+  if (modo === "porque") return /\b(because|since|so|cause)\b/i.test(dicho) ? null : "Why?";
+  return "Tell me more!";
+}
+
+/** "3:00" → horas y minutos del reloj. */
+function horaDe(reloj: string): { horas: number; minutos: number } {
+  const [h, m] = reloj.split(":").map(Number);
+  return { horas: h, minutos: m || 0 };
 }
 
 /**
@@ -54,6 +87,9 @@ export function Responde({
   /** Cada vez que Allison pregunta: una pregunta vieja que termina tarde no arranca su reloj. */
   const generacion = useRef(0);
   const [oido, setOido] = useState<{ texto: string; escrito: boolean; yaFallada: boolean } | null>(null);
+  const [tras, setTras] = useState<Tras | null>(null);
+  /** La explicación prevista de lo que dijo, cuando no valió. */
+  const [explicacion, setExplicacion] = useState<{ en: string; es?: string } | null>(null);
 
   const actual = cola[0];
   const pregunta = actual ? a.preguntas[actual.i] : null;
@@ -65,10 +101,10 @@ export function Responde({
   }, []);
 
   const siguiente = useCallback(
-    (bien: boolean, dijo: string | null) => {
+    (bien: boolean, dijo: string | null, nota?: string) => {
       parar();
       if (!actual) return;
-      setRespuestas((r) => [...r.filter((x) => x.i !== actual.i), { i: actual.i, dijo, bien }]);
+      setRespuestas((r) => [...r.filter((x) => x.i !== actual.i), { i: actual.i, dijo, bien, ...(nota ? { nota } : {}) }]);
       setCola((c) => {
         const resto = c.slice(1);
         // La que falló vuelve al final, una sola vez.
@@ -88,6 +124,7 @@ export function Responde({
     // Lo oído es de la pregunta anterior: su "¿No dijiste eso?" ya no
     // aplica (deshacía el tiempo agotado de esta y la daba por acertada).
     setOido(null);
+    setExplicacion(null);
     await decir(pregunta.pregunta);
     if (mia !== generacion.current) return;
     parar();
@@ -141,9 +178,24 @@ export function Responde({
       void preguntar();
       return;
     }
+    const exp = explicacionPara(pregunta.explicaciones, r.transcripcion, pregunta.modelo);
+    const nota = exp ? { en: exp.explicacion, es: exp.es } : null;
     if (r.correcto) {
-      void decir("Good!");
-      siguiente(true, r.transcripcion);
+      // La frase completa (desde A2), la nota prevista o el "Tell me more!"
+      // de B1 que promete el documento: antes solo decía "Good!" (1 de
+      // noviembre de 2026).
+      const pide = pideMas(r.transcripcion, a.siCorta);
+      const completa = r.completa || null;
+      if (!completa && !nota && !pide) {
+        void decir("Good!");
+        siguiente(true, r.transcripcion);
+        return;
+      }
+      setTras({ dijo: r.transcripcion, completa, nota, pide, contesto: null });
+      void (async () => {
+        if (!(await decir(pide ? `Good! ${pide}` : "Good!"))) return;
+        if (completa) await decir(completa);
+      })();
       return;
     }
     const yaFallada = falladas.current.has(actual.i);
@@ -156,8 +208,35 @@ export function Responde({
       return;
     }
     setOido({ texto: r.transcripcion, escrito: "texto" in e, yaFallada });
+    setExplicacion(nota);
     setRespuestas((x) => [...x.filter((y) => y.i !== actual.i), { i: actual.i, dijo: r.transcripcion, bien: false }]);
     setModelo(pregunta.modelo);
+  }
+
+  /** B1: lo que añade después de "Tell me more!" o "Why?". La pregunta ya vale; esto es práctica de más. */
+  async function responderMas(e: Entrada) {
+    if (!tras || !actual) return;
+    setMensaje(null);
+    setOcupado(true);
+    const r = await evaluar(ctx, a.paso, e, actual.i, tras.dijo);
+    setOcupado(false);
+    if (r.sinSaldo) return onSinSaldo();
+    if (r.error) return setMensaje(r.error);
+    if (r.sinVoz) return setMensaje("No te oí. Inténtalo otra vez.");
+    if (r.espanol) return setMensaje("Lo dijiste en español. ¿Y en inglés?");
+    if (r.correcto) {
+      void decir("Great!");
+      setTras({ ...tras, dijo: `${tras.dijo} ${r.transcripcion}`, contesto: "bien" });
+      return;
+    }
+    setTras({ ...tras, contesto: "casi" });
+  }
+
+  function seguirTras() {
+    if (!tras) return;
+    setTras(null);
+    setMensaje(null);
+    siguiente(true, tras.dijo, tras.nota ? tras.nota.en : undefined);
   }
 
   /** "¿No dijiste eso?": el micrófono entendió mal; el intento no cuenta y la pregunta vuelve. */
@@ -166,6 +245,7 @@ export function Responde({
     if (!oido.yaFallada) falladas.current.delete(actual.i);
     setRespuestas((x) => x.filter((y) => y.i !== actual.i));
     setOido(null);
+    setExplicacion(null);
     setModelo(null);
   }
 
@@ -208,6 +288,7 @@ export function Responde({
                     {r?.dijo ? `"${r.dijo}"` : "Sin respuesta"}
                     {!ok && ` · modelo: "${p.modelo}"`}
                   </b>
+                  {r?.nota && <span className="block text-[12.5px] font-semibold text-texto-suave">{r.nota}</span>}
                 </span>
               </li>
             );
@@ -271,12 +352,64 @@ export function Responde({
       </div>
 
       <h2 className="text-center text-2xl font-black">{pregunta?.pregunta}</h2>
+      {/* A1 P4: «con un reloj en pantalla»; la hora que vale es la del reloj. */}
+      {pregunta?.reloj && (
+        <span className="mx-auto block size-28">
+          <RelojConHora {...horaDe(pregunta.reloj)} etiqueta={`Un reloj que marca las ${pregunta.reloj}`} />
+        </span>
+      )}
+      {pregunta?.nota && <p className="-mt-1.5 text-center text-sm font-bold text-texto-suave">{pregunta.nota}</p>}
 
-      {modelo ? (
+      {tras ? (
+        <Hoja
+          tono="bien"
+          titulo={tras.contesto === "bien" ? "Great!" : "Good!"}
+          boton={tras.pide && !tras.contesto ? "Siguiente sin responder" : "Siguiente"}
+          onBoton={seguirTras}
+        >
+          {tras.completa && (
+            <span className="flex flex-col gap-1 text-texto">
+              <small className="text-xs font-extrabold tracking-wide uppercase">En frase completa</small>
+              <span className="flex items-center gap-2">
+                <BotonOir tam="chico" onClick={() => void decir(tras.completa!)} />
+                <b className="text-lg font-extrabold">{tras.completa}</b>
+              </span>
+            </span>
+          )}
+          {tras.nota && (
+            <span className="text-texto">
+              {tras.nota.en}
+              {tras.nota.es && <small className="block text-texto-suave">{tras.nota.es}</small>}
+            </span>
+          )}
+          {tras.pide && !tras.contesto && (
+            <>
+              <span className="flex items-center gap-2 text-texto">
+                <BotonOir tam="chico" onClick={() => void decir(tras.pide!)} />
+                <b className="text-lg font-extrabold">{tras.pide}</b>
+              </span>
+              {mensaje && <span className="font-bold text-oro">{mensaje}</span>}
+              <Grabador onEntrada={responderMas} ocupado={ocupado} ayuda={tras.pide === "Why?" ? "Toca y di por qué" : "Toca y cuenta un poco más"} />
+            </>
+          )}
+          {tras.contesto === "casi" && pregunta && (
+            <span className="text-texto">
+              Por ejemplo: <b className="font-extrabold">&ldquo;{pregunta.modelo}&rdquo;</b>
+            </span>
+          )}
+        </Hoja>
+      ) : modelo ? (
         <Hoja tono="pista" titulo={restante === 0 ? "¡Se acabó el tiempo!" : "Casi. Así se puede responder:"} boton="Siguiente" onBoton={() => {
           setModelo(null);
+          setExplicacion(null);
           siguiente(false, respuestas.find((r) => r.i === actual?.i)?.dijo ?? null);
         }}>
+          {explicacion && (
+            <span className="text-texto">
+              {explicacion.en}
+              {explicacion.es && <small className="block text-texto-suave">{explicacion.es}</small>}
+            </span>
+          )}
           <span className="flex items-center gap-2 text-texto">
             <BotonOir tam="chico" onClick={() => void decir(modelo)} />
             <b className="text-lg font-extrabold">{modelo}</b>

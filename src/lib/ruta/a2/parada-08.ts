@@ -242,6 +242,7 @@ export const PARADA_08: Parada = {
           ],
           aceptadas: ["Yes, I do.", "Sleep.", "Water."],
           segundos: 15,
+          siCorta: "completa",
         },
       ],
     },

@@ -222,6 +222,7 @@ export const PARADA_01: Parada = {
           ],
           aceptadas: ["Homework.", "English.", "No.", "By bus."],
           segundos: 15,
+          siCorta: "completa",
         },
       ],
     },

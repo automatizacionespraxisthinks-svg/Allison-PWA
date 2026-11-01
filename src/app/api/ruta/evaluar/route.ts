@@ -304,7 +304,19 @@ export async function POST(peticion: Request) {
           { error: "No existe esa pregunta" },
           { status: 404 },
         );
-      pedido = { tipo: "responde", esperado: p.pregunta };
+      // B1: con "previo", lo que añade después de "Tell me more!" o "Why?"
+      // a su primera respuesta (documento, «También se acepta»).
+      const pide = actividad.siCorta === "porque" ? "Why?" : actividad.siCorta === "detalle" ? "Tell me more!" : null;
+      pedido = {
+        tipo: "responde",
+        esperado: p.pregunta,
+        ...(p.reloj ? { reloj: p.reloj } : {}),
+        ...(previo && pide
+          ? { seguimiento: { previo: previo.slice(0, 300), pide } }
+          : actividad.siCorta === "completa"
+            ? { completa: true }
+            : {}),
+      };
       break;
     }
     default:
@@ -444,6 +456,8 @@ export async function POST(peticion: Request) {
         : [],
     // Describe desde A2: la frase bien dicha, si tenía un error de gramática.
     mejora: resultado.mejora ?? null,
+    // Responde rápido desde A2: su respuesta corta, en frase completa.
+    completa: resultado.completa ?? null,
     restantes,
   });
 }

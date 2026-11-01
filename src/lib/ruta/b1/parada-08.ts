@@ -257,6 +257,7 @@ export const PARADA_08: Parada = {
           ],
           aceptadas: ["Watch movies."],
           segundos: 20,
+          siCorta: "completa",
         },
       ],
     },
