@@ -123,7 +123,7 @@ export const PARADA_08: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: Priya says: "I have a terrible headache." Ben says: "You should drink some water and rest." (no está escrito). ¿Qué le aconseja Ben? Elige entre un vaso de agua, un helado y unos tenis.',
+            'Allison cuenta: Priya says: "I have a terrible headache." Ben says: "You should drink some water and rest." (no está escrito). ¿Qué le aconseja Ben? Elige entre Priya descansando en el sofá con un vaso de agua, un helado y unos tenis.',
           siRespondeMal: "Se repite el diálogo despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ['Priya says: "I have a terrible headache."', 'Ben says: "You should drink some water and rest."'],
@@ -187,11 +187,11 @@ export const PARADA_08: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: The pharmacist says: "Take one pill twice a day. You must take it with food." (no está escrito). Elige entre tres tarjetas dibujadas por la app: "1 pill · 2 times a day · with food", "2 pills · 1 time a day · with food" y "1 pill · 2 times a day · no food".',
+            'Allison cuenta: The label says: "Take one pill twice a day. You must take it with food." (no está escrito). Elige entre tres tarjetas dibujadas por la app: "1 pill · twice a day", "2 pills · once a day" y "3 pills · at night".',
           siRespondeMal: "Se repite el audio despacio y elige otra vez.",
           quienHabla: "Allison",
-          audio: ['The pharmacist says: "Take one pill twice a day. You must take it with food."'],
-          traduccion: ['La farmacéutica dice: "Toma una pastilla dos veces al día. Tienes que tomarla con comida."'],
+          audio: ['The label says: "Take one pill twice a day. You must take it with food."'],
+          traduccion: ['La etiqueta dice: "Toma una pastilla dos veces al día. Tienes que tomarla con comida."'],
           pregunta: "¿Cómo se toma la medicina?",
           opciones: [
             { texto: "1 pill · twice a day", descripcion: "La tarjeta: una pastilla, dos veces al día", etiqueta: "One pill, twice a day", etiquetaEs: "1 pastilla, 2 veces al día" },
@@ -202,25 +202,27 @@ export const PARADA_08: Parada = {
           porRevisar: ["opciones: tarjetas cortas y bien distintas, con «twice a day» como se oye (antes «2 times a day», y la tercera solo cambiaba «with food» por «no food»). Cada tarjeta suena al elegirla (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", 
             "traduccion",
             'pregunta: el documento no la escribe; sale de "Toca \'1 pill · 2 times a day · with food\'"',
+            "audio: lo dice la etiqueta, no la farmacéutica: la parada enseña must para reglas escritas (al hablar, have to o can't) (auditoría final, 1 de noviembre de 2026)",
           ],
         },
         {
           paso: 2,
           tipo: "describe",
           queAparece:
-            'El letrero de una piscina con tres dibujos: una ducha, una persona corriendo tachada y una persona comiendo en el agua tachada. Allison: "Tell me 3 rules at this pool." Debajo: "You have to ___.", "You must not ___.", "You can\'t ___." y take a shower, run, eat in the pool.',
+            'El letrero de una piscina con tres dibujos: una ducha, una persona corriendo tachada y una persona comiendo en el agua tachada. Allison: "Tell me 3 rules at this pool." Debajo: "You ___." y have to take a shower, must not run, can\'t eat in the pool.',
           siRespondeMal:
             'Si dice "You must not to run", Allison repite bien la frase (You must not run.) y el alumno la dice. Si nombra menos de 3, Allison señala la ducha y pregunta "What do you have to do first?".',
           imagen: "f-reglas-piscina",
           pregunta: "Tell me 3 rules at this pool.",
-          plantillas: ["You have to ___.", "You must not ___.", "You can't ___."],
-          palabrasAyuda: ["take a shower", "run", "eat in the pool"],
+          plantillas: ["You ___."],
+          palabrasAyuda: ["have to take a shower", "must not run", "can't eat in the pool"],
           modelo: ["You have to take a shower.", "You must not run.", "You can't eat in the pool."],
           aceptadas: ["You can't run.", "You must not eat in the water.", "Take a shower first."],
           cosas: ["shower", "run", "running", "eat", "eating", "food"],
           minimo: 3,
           porRevisar: [
             'cosas: el documento no las nombra; salen de los tres dibujos del letrero (sin "pool" ni "water", que no son reglas)',
+            "plantillas: una sola, \"You ___.\", y cada palabra de ayuda trae su regla: con tres plantillas por turno salía \"You must not take a shower.\" (auditoría final, 1 de noviembre de 2026)",
           ],
         },
         {
@@ -255,19 +257,23 @@ export const PARADA_08: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "When I\'m stressed, I dance! Music always helps." (no está escrito). Elige entre una muchacha bailando, una mujer cocinando y una mujer caminando en un parque.',
+            'Allison cuenta: "When I\'m stressed, I dance! Music always helps." (no está escrito). Elige entre una mujer bailando, una mujer cocinando y una mujer caminando en un parque.',
           siRespondeMal: "Se repite el audio despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ["When I'm stressed, I dance!", "Music always helps."],
           traduccion: ["Cuando estoy estresada, ¡bailo!", "La música siempre ayuda."],
           pregunta: "¿Qué hace Allison cuando está estresada?",
           opciones: [
-            { imagen: "a1/f-bailar", descripcion: "Una muchacha bailando", etiqueta: "Dance", etiquetaEs: "Bailar" },
+            { imagen: "f-mujer-bailando", descripcion: "Una mujer bailando", etiqueta: "Dance", etiquetaEs: "Bailar" },
             { imagen: "a1/f-mujer-cocina", descripcion: "Una mujer cocinando", etiqueta: "Cook", etiquetaEs: "Cocinar" },
             { imagen: "a1/f-mujer-parque", descripcion: "Una mujer caminando en un parque", etiqueta: "Walk in the park", etiquetaEs: "Caminar en el parque" },
           ],
           correcta: 0,
-          porRevisar: ["traduccion", 'pregunta: el documento no la escribe; sale de "Toca a la muchacha bailando"'],
+          porRevisar: [
+            "traduccion",
+            'pregunta: el documento no la escribe; sale de "Toca a la muchacha bailando"',
+            "opciones: f-mujer-bailando, una mujer adulta; el baile de A1 era una niña pequeña y no parecía Allison (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 2,
@@ -330,6 +336,7 @@ export const PARADA_08: Parada = {
     },
   ],
   escenario: {
+    porRevisar: ["dialogo: \"You can't take more than six a day.\" (al hablar se dice can't; must es para reglas escritas) (auditoría final, 1 de noviembre de 2026)"],
     titulo: "Vas a la droguería en Brighton",
     imagen: "e-brighton-drogueria",
     contexto:
@@ -359,7 +366,7 @@ export const PARADA_08: Parada = {
       { quien: "alumno", dice: "What should I do?", tarea: 3 },
       { quien: "personaje", dice: "You should rest and drink a lot of water. And take these cough drops for your throat." },
       { quien: "alumno", dice: "How often do I have to take them?", tarea: 4 },
-      { quien: "personaje", dice: "One every four hours. You must not take more than six a day." },
+      { quien: "personaje", dice: "One every four hours. You can't take more than six a day." },
       { quien: "alumno", dice: "OK. Do I have to see a doctor?" },
       { quien: "personaje", dice: "Not now. But if you have a fever, you have to see a doctor." },
       { quien: "alumno", dice: "I understand. How much are the cough drops?" },
@@ -434,8 +441,8 @@ export const PARADA_08: Parada = {
       uso: "Lección 3 (paso 2)",
     },
     {
-      archivos: ["a1/f-bailar", "a1/f-mujer-cocina", "a1/f-mujer-parque"],
-      muestra: "Una muchacha bailando, una mujer cocinando y una mujer caminando en un parque (de A1)",
+      archivos: ["f-mujer-bailando", "a1/f-mujer-cocina", "a1/f-mujer-parque"],
+      muestra: "Una mujer bailando en la sala, una mujer cocinando y una mujer caminando en un parque (las dos últimas de A1)",
       uso: "Lección 4 (paso 1)",
     },
   ],

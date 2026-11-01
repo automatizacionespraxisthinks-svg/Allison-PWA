@@ -184,7 +184,7 @@ export const PARADA_09: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: Ben asks: "Do you have any blue jackets?" The salesclerk says: "Sorry, we don\'t have any blue ones. We have some black ones." (no está escrito). ¿De qué color hay chaquetas? Elige entre tres tarjetas de color dibujadas por la app: negro, azul y rojo.',
+            'Allison cuenta: Ben asks: "Do you have any blue jackets?" The salesclerk says: "Sorry, we don\'t have any blue ones. We have some black ones." (no está escrito). ¿De qué color hay chaquetas? Elige entre tres tarjetas de color dibujadas por la app: negro, verde y rojo.',
           siRespondeMal: "Se repite el diálogo despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ['Ben asks: "Do you have any blue jackets?"', 'The salesclerk says: "Sorry, we don\'t have any blue ones. We have some black ones."'],
@@ -213,9 +213,12 @@ export const PARADA_09: Parada = {
           palabrasAyuda: ["sweaters", "T-shirts", "caps", "jackets"],
           modelo: ["There are some sweaters.", "There are a lot of T-shirts.", "There aren't any jackets."],
           aceptadas: ["There are some caps.", "There are many T-shirts.", "There are no jackets."],
-          cosas: ["sweater", "T-shirt", "cap", "jacket"],
+          cosas: ["sweater", "T-shirt", "cap", "hat", "jacket"],
           minimo: 3,
-          porRevisar: ["cosas: el documento no las nombra; salen de las palabras de ayuda y de las frases modelo"],
+          porRevisar: [
+            "cosas: el documento no las nombra; salen de las palabras de ayuda y de las frases modelo",
+            "cosas: hat, porque a las gorras también se les dice \"hats\" (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 3,
@@ -335,12 +338,13 @@ export const PARADA_09: Parada = {
     },
   ],
   escenario: {
+    porRevisar: ["dialogo: el probador está \"on the right\", como en el dibujo; contexto y objetivo: \"50 libras\" en español (auditoría final, 1 de noviembre de 2026)"],
     titulo: "Compras ropa en Bath",
     imagen: "e-bath-tienda",
     contexto:
-      "En Bath hace más frío de lo que pensabas y necesitas ropa abrigada. Tienes 50 pounds. En una tienda te atiende Grace, la vendedora (Allison en su papel).",
+      "En Bath hace más frío de lo que pensabas y necesitas ropa abrigada. Tienes 50 libras. En una tienda te atiende Grace, la vendedora (Allison en su papel).",
     personaje: "Grace, la vendedora de una tienda de ropa en Bath",
-    objetivo: "Pedir ropa, preguntar tallas, colores y precios, y pagar sin pasarse de 50 pounds",
+    objetivo: "Pedir ropa, preguntar tallas, colores y precios, y pagar sin pasarse de 50 libras",
     tareas: [
       "Saluda y di qué buscas.",
       "Pregunta si lo tienen en otro color o talla.",
@@ -359,7 +363,7 @@ export const PARADA_09: Parada = {
       { quien: "alumno", dice: "It's nice! Do you have it in blue?", tarea: 2 },
       { quien: "personaje", dice: "Yes, we do. Here you go. Would you like to try it on?" },
       { quien: "alumno", dice: "Yes, please. Where's the fitting room?" },
-      { quien: "personaje", dice: "It's over there, on the left." },
+      { quien: "personaje", dice: "It's over there, on the right." },
       { quien: "alumno", dice: "It fits! How much is it?", tarea: 3 },
       { quien: "personaje", dice: "It's thirty-five pounds, but it's on sale today. It's only thirty!" },
       { quien: "alumno", dice: "Great! Do you have any warm socks?", tarea: 4 },

@@ -301,6 +301,13 @@ function revisarActividad(a, donde, imagenes) {
       if ((a.cosas?.length ?? 0) < a.minimo) fallo(donde, `solo ${a.cosas?.length} cosas para un mínimo de ${a.minimo}`);
       if (cosasNombradas(a.modelo.join(" "), a.cosas).length < a.minimo)
         fallo(donde, "el modelo no nombra el mínimo de cosas: la evaluación lo calificaría mal");
+      // "She's ___ing." con la ayuda "talking on the phone" armaba "talking on the phoneing"
+      // (auditoría final, 1 de noviembre de 2026).
+      for (const p of a.plantillas ?? []) {
+        const fin = p.match(/___(ing|ed)\b/)?.[1];
+        const choca = fin && (a.palabrasAyuda ?? []).find((w) => w.split(" ")[0].endsWith(fin));
+        if (choca) fallo(donde, `la plantilla "${p}" con la ayuda "${choca}" arma una palabra con doble -${fin}`);
+      }
       break;
     case "responde": {
       if (a.preguntas?.length !== 5) aviso(donde, `tiene ${a.preguntas?.length} preguntas (el plan dice cinco)`);

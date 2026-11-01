@@ -86,7 +86,7 @@ export const PARADA_02: Parada = {
           paso: 2,
           tipo: "que-es-esto",
           queAparece:
-            'Dibujo de Ben con un balón en el parque y un calendario que dice "Yesterday". Allison: "What did Ben do yesterday?" Debajo: "He ___ soccer."',
+            'Dibujo de Ben con un balón en el parque, junto a un caballete con una hoja que dice "Yesterday". Allison: "What did Ben do yesterday?" Debajo: "He ___ soccer."',
           siRespondeMal:
             'Pistas en inglés, una a la vez: "He has a ball." → "It ends with -ed." Sin pistas, Allison dice "He played soccer" y el alumno la repite. Si dice "He play": Ya pasó: played.',
           imagen: "f-ben-balon-ayer",
@@ -141,7 +141,7 @@ export const PARADA_02: Parada = {
           paso: 2,
           tipo: "dilo",
           queAparece:
-            'Frase en español: "El domingo fui al parque y comí helado." Dibujo de un helado. Las palabras de apoyo aparecen después del primer fallo: On, Sunday, I, went, to, the, park, and, ate, ice, cream.',
+            'Frase en español: "El domingo fui al parque y comí helado." Dibujo de un helado. Las palabras de apoyo aparecen después del primer fallo: On, Sunday, I, went, to, the, park, and, I, ate, ice, cream.',
           siRespondeMal:
             'Se marca la primera palabra que falla. Si dice "goed": Go es irregular: went. Si dice "eated": Eat es irregular: ate. Al segundo fallo dice la frase completa y el alumno la repite.',
           espanol: "El domingo fui al parque y comí helado.",
@@ -187,7 +187,7 @@ export const PARADA_02: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: Priya asks: "Did you go to the party, Ben?" Ben says: "No, I didn\'t. I studied for my test." (no está escrito). Elige entre tres imágenes de Ben: estudiando en su escritorio, bailando en una fiesta y durmiendo.',
+            'Allison cuenta: Priya asks: "Did you go to the party, Ben?" Ben says: "No, I didn\'t. I studied for my test." (no está escrito). Elige entre tres imágenes de Ben: estudiando en su escritorio, corriendo en un parque y durmiendo.',
           siRespondeMal: "Se repite el diálogo despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ['Priya asks: "Did you go to the party, Ben?"', 'Ben says: "No, I didn\'t. I studied for my test."'],
@@ -209,18 +209,21 @@ export const PARADA_02: Parada = {
           paso: 2,
           tipo: "describe",
           queAparece:
-            'Tres fotos del sábado de la familia de Ben: la mamá cocina el desayuno, el papá lava el carro y Ben juega videojuegos. Allison: "Tell me 3 things they did on Saturday." Debajo: "She ___ed." / "He ___ed." y cooked breakfast, washed the car, played video games.',
+            'Tres fotos del sábado de la familia de Ben: la mamá cocina el desayuno, el papá lava el carro y Ben juega videojuegos. Allison: "Tell me 3 things they did on Saturday." Debajo: "She ___." / "He ___." y cooked breakfast, washed the car, played video games.',
           siRespondeMal:
             'Si dice "He wash the car", Allison repite bien la frase (He washed the car.) y el alumno la dice. Si nombra menos de 3, Allison señala el carro y pregunta "What did he do?".',
           imagen: "f-sabado-familia-ben",
           pregunta: "Tell me 3 things they did on Saturday.",
-          plantillas: ["She ___ed.", "He ___ed."],
+          plantillas: ["She ___.", "He ___."],
           palabrasAyuda: ["cooked breakfast", "washed the car", "played video games"],
           modelo: ["She cooked breakfast.", "He washed the car.", "He played video games."],
           aceptadas: ["His mom cooked breakfast.", "The dad washed the car.", "Ben played video games."],
-          cosas: ["breakfast", "car", "video game", "cooked", "washed", "played"],
+          cosas: ["breakfast", "pancake", "car", "video game", "cooked", "made", "washed", "played"],
           minimo: 3,
-          porRevisar: ["cosas: el documento no las nombra; salen del dibujo y de las frases modelo"],
+          porRevisar: [
+            "cosas: el documento no las nombra; salen del dibujo y de las frases modelo",
+            "plantillas sin \"-ed\": las palabras de ayuda ya traen el pasado (\"She cooked breakfasted.\"); cosas: pancake y made (\"She made pancakes.\"), que se ven (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 3,
@@ -268,7 +271,7 @@ export const PARADA_02: Parada = {
         {
           paso: 2,
           tipo: "que-es-esto",
-          queAparece: 'Dibujo de un parque soleado. Allison: "This is my Sunday. What did I do?" Debajo: "You ___ in the park."',
+          queAparece: 'Dibujo de una mujer caminando en un parque. Allison: "This is my Sunday. What did I do?" Debajo: "You ___ in the park."',
           siRespondeMal:
             'Pistas en inglés, una a la vez: "I was in the park." → "It starts with w." Sin pistas, Allison dice "You walked in the park" y el alumno la repite. Si dice "You walk": Ya pasó: you walked.',
           imagen: "a1/f-mujer-parque",
@@ -292,7 +295,7 @@ export const PARADA_02: Parada = {
           ficha: "el fin de semana de Allison",
           datos: [
             { dato: "Qué hizo el sábado", pregunta: "What did you do on Saturday?", respuesta: "I visited my sister Emily." },
-            { dato: "Qué comieron", pregunta: "What did you eat?", respuesta: "We made arepas! They were delicious." },
+            { dato: "Qué comieron", pregunta: "What did you eat?", respuesta: "I ate arepas! Emily and I made them. They were delicious." },
             { dato: "Qué hizo el domingo", pregunta: "What did you do on Sunday?", respuesta: "I walked in the park. It was sunny!" },
             { dato: "Si vio una película", pregunta: "Did you watch a movie?", respuesta: "Yes, I watched a funny movie on Sunday night." },
             {
@@ -305,11 +308,13 @@ export const PARADA_02: Parada = {
           tambienSeAcepta: 'Cualquier pregunta que se entienda: "You visited your sister?", "What you eat?", "A movie?"',
           ayuda: "¿Qué quieres saber? ¿A qué hora me levanté? Say: What time did you get up?",
           minimoIntervenciones: 10,
+          porRevisar: ["respuesta: empieza con \"I ate\" (contesta \"What did you eat?\" y así Allison devuelve la pregunta) (auditoría final, 1 de noviembre de 2026)"],
         },
       ],
     },
   ],
   escenario: {
+    porRevisar: ["dialogo: \"Was the game fun?\" en vez de \"Are you tired today?\", que Sam ya había contestado dos veces (auditoría final, 1 de noviembre de 2026)"],
     titulo: "Lunes en el colegio de Manchester",
     imagen: "e-manchester-colegio",
     contexto:
@@ -341,8 +346,8 @@ export const PARADA_02: Parada = {
       { quien: "personaje", dice: "I played soccer on Saturday. My team won!" },
       { quien: "alumno", dice: "Congratulations! Did you score a goal?" },
       { quien: "personaje", dice: "No, I didn't. But I ran a lot! That's why I'm tired." },
-      { quien: "alumno", dice: "Ha! Are you tired today?" },
-      { quien: "personaje", dice: "Very tired! Oh, there's the bell. Class starts now." },
+      { quien: "alumno", dice: "Ha! Was the game fun?" },
+      { quien: "personaje", dice: "Yes, it was great! Oh, there's the bell. Class starts now." },
       { quien: "alumno", dice: "OK. See you in class, Sam!", tarea: 5 },
     ],
     resumen: "¡Lo lograste! Contaste tu fin de semana en inglés.",
@@ -399,7 +404,7 @@ export const PARADA_02: Parada = {
     },
     {
       archivos: ["f-ben-balon-ayer"],
-      muestra: 'Ben con un balón en el parque y un calendario que dice "Yesterday"',
+      muestra: 'Ben con un balón en el parque, junto a un caballete con una hoja que dice "Yesterday"',
       uso: "Lección 1 (paso 2)",
     },
     {
@@ -423,6 +428,6 @@ export const PARADA_02: Parada = {
       muestra: "Arepas, sushi y pizza (la pizza, de A1)",
       uso: "Lección 4 (paso 1)",
     },
-    { archivos: ["a1/f-mujer-parque"], muestra: "Un parque soleado (de A1, por confirmar)", uso: "Lección 4 (paso 2)" },
+    { archivos: ["a1/f-mujer-parque"], muestra: "Una mujer caminando en un parque (de A1)", uso: "Lección 4 (paso 2)" },
   ],
 };

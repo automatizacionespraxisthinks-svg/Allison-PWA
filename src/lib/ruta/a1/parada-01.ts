@@ -193,14 +193,15 @@ export const PARADA_01: Parada = {
           imagen: "a-fiesta",
           pregunta: "What do you see?",
           plantillas: ["I see a ___."],
-          palabrasAyuda: ["man", "woman", "music"],
+          palabrasAyuda: ["man", "woman", "balloon"],
           modelo: ["a man", "a woman", "I hear music."],
           aceptadas: ["party", "people", "friends"],
-          cosas: ["man", "woman", "music", "party", "people", "friend", "balloon", "table", "cookie", "lemonade", "juice", "radio", "speaker"],
+          cosas: ["man", "woman", "boy", "girl", "music", "party", "people", "friend", "balloon", "table", "cookie", "lemonade", "juice", "radio", "speaker"],
           minimo: 3,
           porRevisar: [
             'plantillas: la tabla de la parada no la da; "I see a ___." sale de la sección 6 y no sirve para music (se dice "I see music")',
             "palabrasAyuda: el documento no las nombra; se pusieron las tres cosas de la respuesta",
+            "palabrasAyuda: balloon en vez de music, que con \"I see a ___.\" armaba \"I see a music.\"; cosas: boy y girl, porque la pareja del dibujo se ve joven (auditoría final, 1 de noviembre de 2026)",
           ],
         },
         {
@@ -379,9 +380,14 @@ export const PARADA_01: Parada = {
     {
       archivos: ["a-saludo-salon"],
       muestra: "Sarah y Tom se saludan en un salón de clase",
-      uso: "Lección 2: el salón del diálogo; el documento no dice en qué pantalla va",
+      uso: "No se usa en esta parada; iba con el diálogo de Sarah y Tom de la lección 2, que cambió el 28 de octubre de 2026 (segunda verificación, 1 de noviembre de 2026)",
     },
-    { archivos: ["a-tom", "a-sarah", "a-profesora-tablero"], muestra: "Tom, Sarah y la profesora Ms. Lee junto al tablero (desde el 30 de octubre de 2026; antes con un libro), cada uno solo", uso: "Lección 2 (paso 1)" },
+    { archivos: ["a-tom", "a-sarah"], muestra: "Tom y Sarah, cada uno solo", uso: "Lección 2 (paso 1), junto con f-nino" },
+    {
+      archivos: ["a-profesora-tablero"],
+      muestra: "La profesora Ms. Lee junto al tablero (desde el 30 de octubre de 2026; antes con un libro)",
+      uso: "No se usa en esta parada; la usan A1 parada 3 y A2 parada 1 (auditoría final, 1 de noviembre de 2026)",
+    },
     { archivos: ["a-mucho-gusto"], muestra: "Dos personas dándose la mano", uso: "Lección 2 (paso 3)" },
     {
       archivos: ["a-bandera-canada", "a-bandera-colombia", "a-bandera-mexico"],
@@ -390,7 +396,7 @@ export const PARADA_01: Parada = {
     },
     {
       archivos: ["a-fiesta"],
-      muestra: "Una fiesta: un hombre y una mujer se dan la mano, hay música y una bandera",
+      muestra: "Una fiesta: un hombre y una mujer se dan la mano, hay música, globos y una mesa con galletas y jugo",
       uso: "Lección 3 (paso 2)",
     },
     {

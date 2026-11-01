@@ -38,6 +38,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "Yet goes at the end: I haven't found my gate yet." → "Yet va al final: I haven't found my gate yet." |
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "Use the verb: I've already checked in." → "Usa el verbo: I've already checked in." |
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "At the airport, it's the gate: my gate." → "En el aeropuerto, la puerta es gate: my gate." |
+| Lección 4, paso 3 (Enséñale a Allison) | Nota | siRespondeMal: si no sabe o nunca ha ido, Allison da la respuesta de ejemplo y se ve la ayuda (pedido del usuario, 1 de noviembre de 2026); antes la redirigía a otro tema ("Tell me about your city!"), que no encajaba con las preguntas siguientes |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | Have you been there more than once? → "Did you go there many times?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | When did you go the last time? → "When did you go?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | What did you do there? → "What did you do?" |
@@ -112,6 +113,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "He took it first: had taken." → "Él se la llevó primero: had taken." |
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "After had, say taken: had taken." → "Después de had, di taken: had taken." |
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "He took it with him: had taken it." → "Se la llevó: had taken it." |
+| Lección 4, paso 3 (Enséñale a Allison) | Nota | siRespondeMal: si no sabe o nunca ha ido, Allison da la respuesta de ejemplo y se ve la ayuda (pedido del usuario, 1 de noviembre de 2026); antes la redirigía a otro tema ("Tell me about your city!"), que no encajaba con las preguntas siguientes |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | When do people celebrate it? → "When is it?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | What do people do that night? → "What do people do?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | What did you do last year? → "What did you do?" |
@@ -195,6 +197,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "Say: waiting for the bus." → "Di: waiting for the bus." |
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "For a period of time, use for: for twenty minutes." → "Para un período de tiempo, usa for: for twenty minutes." |
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "From then until now: I've been waiting." → "Desde entonces hasta ahora: I've been waiting." |
+| Lección 4, paso 3 (Enséñale a Allison) | Nota | siRespondeMal: si no sabe o nunca ha ido, Allison da la respuesta de ejemplo y se ve la ayuda (pedido del usuario, 1 de noviembre de 2026); antes la redirigía a otro tema ("Tell me about your city!"), que no encajaba con las preguntas siguientes |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | When is the carnival? → "When is it?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | What do people wear? → "What do they wear?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | Have you ever been there, or have you watched it on TV? → "Have you been there?" |
@@ -265,6 +268,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "For number one, say the most: the singer I like the most." → "Para la que más, se dice the most: the singer I like the most." |
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "Say she: but she sings in English." → "Di she: but she sings in English." |
 | Lección 4, paso 2 (Dilo en inglés) | Traducción de la explicación | "Good! Now with who: The singer who I like the most…" → "¡Bien! Ahora con who: The singer who I like the most…" |
+| Lección 4, paso 3 (Enséñale a Allison) | Nota | siRespondeMal: si no sabe o nunca ha ido, Allison da la respuesta de ejemplo y se ve la ayuda (pedido del usuario, 1 de noviembre de 2026); antes la redirigía a otro tema ("Tell me about your city!"), que no encajaba con las preguntas siguientes |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | What instruments are used in vallenato? → "What instruments do they play?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | Who is a singer that I should listen to? → "Who is a good singer?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | What's a song that you love? → "What's your favorite song?" |
@@ -338,6 +342,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: «She could call…», «She could ask…» y «She might wait…» valen sin pasar por el modelo; la regla dice que «could to» no vale (el modelo dejaba pasar los errores pequeños) (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 2 (¿Qué es esto?) | Traducción de la explicación | "No to after could: She could call her mom." → "Después de could no va to: She could call her mom." |
 | Lección 4, paso 2 (¿Qué es esto?) | Traducción de la explicación | "No to after might: She might wait for her family." → "Después de might no va to: She might wait for her family." |
+| Lección 4, paso 3 (Enséñale a Allison) | Nota | siRespondeMal: si no sabe o nunca ha ido, Allison da la respuesta de ejemplo y se ve la ayuda (pedido del usuario, 1 de noviembre de 2026); antes la redirigía a otro tema ("Tell me about your city!"), que no encajaba con las preguntas siguientes |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | When is it? → "What month is it?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | What's a silletero? → "What does a silletero carry?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | What might I see if I go? → "What can I see there?" |

@@ -114,7 +114,7 @@ export const REPASO_FINAL: Repaso = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Next Saturday, Zoe and her friends are going to clean the beach again. If a lot of students come, they\'ll finish before lunch. But it might rain, so they could go on Sunday instead. Zoe is bringing gloves and bags for everyone!" (no está escrito). Pregunta: ¿qué podrían hacer si llueve? Elige entre tres tarjetas dibujadas por la app: Go on Sunday. / Stay home. / Clean the school.',
+            'Allison cuenta: "Next Saturday, Zoe and her friends are going to clean the beach again. If a lot of students come, they\'ll finish before lunch. But it might rain, so they could go on Sunday instead. Zoe is bringing gloves and bags for everyone!" (no está escrito). Pregunta: ¿qué podrían hacer si llueve? Elige entre tres tarjetas dibujadas por la app: Go on Sunday. / Go on Friday. / Clean the school.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
           audio: [
@@ -126,12 +126,15 @@ export const REPASO_FINAL: Repaso = {
           traduccion: [],
           pregunta: "¿Qué podrían hacer si llueve?",
           opciones: [
-            { texto: "Stay home.", descripcion: "Stay home." },
+            { texto: "Go on Friday.", descripcion: "Go on Friday." },
             { texto: "Go on Sunday.", descripcion: "Go on Sunday." },
             { texto: "Clean the school.", descripcion: "Clean the school." },
           ],
           correcta: 1,
-          porRevisar: ["opciones: orden cambiado para que la correcta no sea siempre la primera"],
+          porRevisar: [
+            "opciones: orden cambiado para que la correcta no sea siempre la primera",
+            "opciones: \"Go on Friday.\" en vez de \"Stay home.\", que también podía ser cierto si llueve (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 2,
@@ -189,8 +192,11 @@ export const REPASO_FINAL: Repaso = {
           segundos: 60,
           minimoSegundos: 40,
           minimoFrases: 5,
-          regla: { en: "After if, use the present, not will: if it rains.", es: "Después de if se usa el presente, no will: if it rains." },
-          porRevisar: ["regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past»)"],
+          regla: { en: "Future: after if, use the present, not will: if it rains.", es: "Para el futuro, después de if va el presente, no will: if it rains." },
+          porRevisar: [
+            "regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past»)",
+            "regla: solo para el futuro; en este repaso también se usa if + pasado para lo imaginado (If I had…) (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
       ],
     },
@@ -225,12 +231,12 @@ export const REPASO_FINAL: Repaso = {
           paso: 2,
           tipo: "que-es-esto",
           queAparece:
-            'El dibujo del muchacho que mira la lluvia por la ventana (f-lluvia-ventana, de la parada 10). Allison: "It\'s raining, and he\'s bored. What would you do if you were him?"',
+            'El dibujo del muchacho que mira la lluvia por la ventana (f-lluvia-ventana, de la parada 10). Allison: "It\'s raining, so he can\'t play soccer. What would you do if you were him?"',
           siRespondeMal:
             'Una sola pista en inglés: "Start with: If I were him…". Sin pista, Allison dice "If I were him, I would watch a movie" y el alumno la repite. Si dice "If I am him": "It\'s imagined: If I were him." Si dice "I will watch": "It\'s imagined: I would watch."',
           tambienSeAcepta: "Cualquier actividad para un día de lluvia con I would… o I'd…, con o sin If I were him (también vale If I was him): \"If I were him, I'd play video games.\" \"I would read a book.\" No vale \"If I am him\" ni \"I will\".",
           imagen: "f-lluvia-ventana",
-          pregunta: "It's raining, and he's bored. What would you do if you were him?",
+          pregunta: "It's raining, so he can't play soccer. What would you do if you were him?",
           respuesta: "If I were him, I would watch a movie.",
           aceptadas: ["If I were him, I'd play video games."],
           pistas: ["Start with: If I were him…"],
@@ -242,6 +248,7 @@ export const REPASO_FINAL: Repaso = {
             "regla: vale sin repetir el if («I would watch a movie»), porque la pregunta ya lo trae, y dice que «If I am him» e «I will» no valen; se quitó la explicación «Good!» de If I was him, que salía solo cuando la respuesta había fallado (cambio del 30 de octubre de 2026)",
             "explicaciones.es: traducciones",
             'explicaciones: la de "If I was him" sale de la nota para la docente (cuenta como bien; Allison solo dice cómo se dice en la app)',
+            "pregunta: \"so he can't play soccer\", como en el dibujo (el muchacho no se ve aburrido) (auditoría final, 1 de noviembre de 2026)",
           ],
         },
         {
@@ -337,12 +344,12 @@ export const REPASO_FINAL: Repaso = {
             {
               dato: "Qué música la pone a bailar (parada 7)",
               pregunta: "What's a kind of music that makes you want to dance?",
-              respuesta: "Pop! And I like reggaeton a little. They're great for dancing!",
+              respuesta: "I love pop, and I like reggaeton a little. They're great for dancing!",
             },
             {
               dato: "Qué hará si le da gripa (parada 8)",
               pregunta: "What will you do if you get a cold?",
-              respuesta: "If I get a cold, I'll drink hot tea with honey and rest a lot.",
+              respuesta: "I'll drink hot tea with honey and rest a lot if I get a cold.",
             },
             {
               dato: "Si podría ir a Medellín algún día (parada 9)",
@@ -370,17 +377,19 @@ export const REPASO_FINAL: Repaso = {
             'ficha: sale de "¿Cuánto recuerdas de Allison?"',
             'datos: la tabla del documento trae la parada (6 a 10) en vez del dato; cada dato sale de la lista de "Qué aparece"',
             "pistas: la primera es la del documento; las otras cuatro se escribieron con el mismo patrón",
+            "respuestas: empiezan con \"I\" (así Allison devuelve la pregunta) (auditoría final, 1 de noviembre de 2026)",
           ],
         },
       ],
     },
   ],
   escenario: {
+    porRevisar: ["tarea 3: pide una noche más de hotel; el contexto dice que el hotel es solo hasta mañana (el imprevisto habla del hotel) (auditoría final, 1 de noviembre de 2026)"],
     titulo: "El vuelo cancelado, el hotel lleno y el concierto",
     // "La portada de Vancouver (de la parada 4)".
     imagen: "vancouver",
     contexto:
-      "Hoy es martes y es el final de tu viaje por Canadá. Tu mamá, la que te acompañó en Halifax, llegó a Vancouver hace dos días para volver contigo a Colombia; como ella no habla inglés, tú haces la llamada. Esta noche van al concierto de la cantante colombiana que le encanta a Zoe (la de la parada 7): tienen las boletas desde hace tres meses. Mañana miércoles, a las siete de la mañana, vuelan a Bogotá. Pero esta mañana llegó un mensaje: el vuelo fue cancelado. Llamas a la aerolínea y te atiende Ms. Park (Allison en su papel).",
+      "Hoy es martes y es el final de tu viaje por Canadá. Tu mamá, la que te acompañó en Halifax, llegó a Vancouver hace dos días para volver contigo a Colombia; como ella no habla inglés, tú haces la llamada. Esta noche van al concierto de la cantante colombiana que le encanta a Zoe (la de la parada 7): tienen las boletas desde hace tres meses. Mañana miércoles, a las siete de la mañana, vuelan a Bogotá; su hotel en Vancouver es solo hasta mañana. Pero esta mañana llegó un mensaje: el vuelo fue cancelado. Llamas a la aerolínea y te atiende Ms. Park (Allison en su papel).",
     personaje: "Ms. Park, la agente de servicio al cliente de la aerolínea, por teléfono",
     objetivo:
       "Resolver solo un viaje con varios imprevistos usando todo B1: contar qué pasó, explicar por qué una opción no le sirve, escoger otra con una razón, pedir lo que necesita y proponer otra solución cuando el hotel está lleno",
@@ -391,7 +400,7 @@ export const REPASO_FINAL: Repaso = {
     tareas: [
       "Saluda y di qué pasó con tu vuelo.",
       "Explica por qué no te sirve la primera opción.",
-      "Escoge la otra opción y pide lo que necesitas.",
+      "Escoge la otra opción y pide una noche más de hotel.",
       "Tu hotel está lleno: propón otra solución para esa noche.",
       "Agradece y despídete.",
     ],
@@ -469,7 +478,7 @@ export const REPASO_FINAL: Repaso = {
     ayudas: [
       "Say what happened to your flight.",
       "Explain why the first option doesn't work for you.",
-      "Choose the other option and ask for what you need.",
+      "Choose the other option and ask for one more night at your hotel.",
       "Suggest another place to stay.",
       "Thank her and say goodbye.",
     ],
@@ -485,7 +494,7 @@ export const REPASO_FINAL: Repaso = {
     maximoIntervenciones: 24,
   },
   notas: [
-    'Nota para la docente: en Estados Unidos se escribe "canceled", con una sola l; "cancelled", con dos, es la forma de Canadá y del Reino Unido. Aunque el viaje es por Canadá, la app enseña la de Estados Unidos. Y "If I was him" cuenta como bien, como "If I was you" en la parada 10: Allison dice "Good! In the app we say: If I were him."',
+    'Nota para la docente: en Estados Unidos se escribe "canceled", con una sola l; "cancelled", con dos, es la forma de Canadá y del Reino Unido. Aunque el viaje es por Canadá, la app enseña la de Estados Unidos. Y "If I was him" cuenta como bien, como "If I was you" en la parada 10.',
     "Dato nuevo (aprobado el 18 de octubre de 2026). Ms. Park: solo en este escenario: la agente de servicio al cliente de la aerolínea en Vancouver.",
     "Dato nuevo (aprobado el 18 de octubre de 2026). Tu mamá: ya salió en la parada 9: no habla inglés y su apellido es Gómez. Nuevo aquí: se llama Marta y llegó a Vancouver para volver contigo a Colombia; no habla en la app.",
     "Dato nuevo (aprobado el 18 de octubre de 2026). La cantante de Zoe: la cantante colombiana de la parada 7 da un concierto en Vancouver al final del viaje; no habla en la app.",

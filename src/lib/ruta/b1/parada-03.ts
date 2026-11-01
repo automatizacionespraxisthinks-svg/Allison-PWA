@@ -217,7 +217,7 @@ export const PARADA_03: Parada = {
           paso: 2,
           tipo: "narra",
           queAparece:
-            'Cuatro dibujos en orden frente a un café de Ottawa, con un reloj dibujado por la app en el primero y el último: (1) 4:00, una muchacha deja su bicicleta roja con canasta en el parqueadero de bicicletas y entra al café; (2) un muchacho de buzo verde y gorra negra abre el candado; (3) se va en la bicicleta; (4) 4:20, llega la policía y la muchacha señala el lugar vacío. Allison: "Tell me the story. What had happened when the police arrived?" Debajo: first, then, after that, when.',
+            'Cuatro dibujos en orden frente a un café de Ottawa, con un reloj en el dibujo del primero (4:00) y del último (4:20): (1) 4:00, una muchacha deja su bicicleta roja con canasta en el parqueadero de bicicletas y entra al café; (2) un muchacho de buzo verde y gorra negra abre el candado; (3) se va en la bicicleta; (4) 4:20, llega la policía y la muchacha señala el lugar vacío. Allison: "Tell me the story. What had happened when the police arrived?" Debajo: first, then, after that, when.',
           siRespondeMal:
             'Si dice "When the police arrived, the thief left": "He left first: the thief had already left." Allison repite bien la frase y el alumno la dice. Si cuenta menos de 3 dibujos, Allison señala el que falta: "What happened next?"',
           tambienSeAcepta: "He stole the bike. By the time the police arrived, he had gone.",
@@ -341,7 +341,7 @@ export const PARADA_03: Parada = {
           queAparece:
             'Allison: "I\'ve never celebrated the Day of the Little Candles! Teach me about it." Cuatro preguntas en orden, de la lista de abajo. Dibujo de una calle con velitas y faroles de noche.',
           siRespondeMal:
-            'Si responde con una palabra: "Tell me more!" y repite la pregunta. Si habla en español: "In English, please!" y la pregunta más simple. Si no lo celebra: "Tell me about a holiday you celebrate in December!" y sigue la lista con esa fiesta.',
+            'Si responde con una palabra: "Tell me more!" y repite la pregunta. Si habla en español: "In English, please!" y la pregunta más simple. Si dice que no sabe, que nunca ha ido o que no lo conoce: Allison lo anima con la respuesta de ejemplo ("That\'s OK! For example: … Now you try!") y en pantalla se ve la ayuda. Hay además un botón Ayuda con la respuesta de ejemplo y su audio.',
           tambienSeAcepta: "Respuestas que se entienden aunque tengan errores",
           tema: "el Día de las Velitas",
           apertura: "I've never celebrated the Day of the Little Candles! Teach me about it.",
@@ -378,7 +378,10 @@ export const PARADA_03: Parada = {
           ],
           otraPregunta: "Good question! But today you're the teacher. Tell me more!",
           minimoRespuestas: 3,
-          porRevisar: ["preguntas.simple: versiones más simples escritas para la app"],
+          porRevisar: [
+            "siRespondeMal: si no sabe o nunca ha ido, Allison da la respuesta de ejemplo y se ve la ayuda (pedido del usuario, 1 de noviembre de 2026); antes la redirigía a otro tema (\"Tell me about your city!\"), que no encajaba con las preguntas siguientes",
+            "preguntas.simple: versiones más simples escritas para la app",
+          ],
         },
       ],
     },
@@ -507,7 +510,7 @@ export const PARADA_03: Parada = {
     {
       archivos: ["f-robo-1", "f-robo-2", "f-robo-3", "f-robo-4"],
       muestra:
-        "Los cuatro dibujos del robo frente al café, con el mismo fondo: la muchacha deja la bicicleta, el muchacho abre el candado, se va en ella, llega la policía",
+        "Los cuatro dibujos del robo frente al café (en el cuarto, la fachada es otra): la muchacha deja la bicicleta, el muchacho abre el candado, se va en ella, llega la policía",
       uso: "Lección 3 (paso 2)",
     },
     { archivos: ["a1/f-bicicleta"], muestra: "Una bicicleta (de A1)", uso: "Lección 4 (paso 2)" },

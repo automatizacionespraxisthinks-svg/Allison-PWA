@@ -329,7 +329,7 @@ export const PARADA_10: Parada = {
           paso: 3,
           tipo: "entrevista",
           queAparece:
-            '¿Qué haría Allison? Ficha con cinco datos por descubrir: qué ciudad de Colombia visitaría, a qué futbolista conocería, qué haría si ganara mucho dinero, qué haría con un día libre y qué cantaría si supiera cantar. Arma cada pregunta sin palabras de ayuda. Al acertar, el dato se llena, Allison responde y le devuelve la pregunta ("And you?"). Mínimo 10 intervenciones.',
+            '¿Qué haría Allison? Ficha con cinco datos por descubrir: qué ciudad de Colombia visitaría, a quién conocería del fútbol, qué haría si ganara mucho dinero, qué haría con un día libre y qué cantaría si supiera cantar. Arma cada pregunta sin palabras de ayuda. Al acertar, el dato se llena, Allison responde y le devuelve la pregunta ("And you?"). Mínimo 10 intervenciones.',
           siRespondeMal:
             'Una sola pista en inglés: "Ask me about Colombia! Start with: If you could visit…" Hay un botón de ayuda con la pregunta escrita.',
           tambienSeAcepta: 'Cualquier pregunta que se entienda: "Which city you would visit?", "If you win money, what you would do?"',
@@ -343,7 +343,7 @@ export const PARADA_10: Parada = {
               respuesta: "I would visit Cartagena, because I've never been there!",
             },
             {
-              dato: "Un futbolista",
+              dato: "A quién conocería del fútbol",
               pregunta: "If you could meet any soccer player, who would you meet?",
               respuesta: "I don't have a favorite player, so I would meet the whole Colombian team! Go Colombia!",
             },
@@ -377,6 +377,7 @@ export const PARADA_10: Parada = {
           porRevisar: [
             'ficha: sale de "¿Qué haría Allison?"',
             "pistas: la primera es la del documento; las otras cuatro se escribieron con el mismo patrón (sin signo de pregunta al final, como la primera)",
+            "dato: \"A quién conocería del fútbol\" (la respuesta es la selección entera, no un jugador) (auditoría final, 1 de noviembre de 2026)",
           ],
         },
       ],

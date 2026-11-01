@@ -68,19 +68,22 @@ export const PARADA_03: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "At eight o\'clock last night, Priya was reading in her room. Her little brother was playing video games." (no está escrito). Elige entre tres imágenes: Priya leyendo y su hermano jugando, Priya cocinando y Priya dormida.',
+            'Allison cuenta: "At ten o\'clock yesterday morning, Priya was reading on the sofa. Her little brother was playing video games." (no está escrito). Elige entre tres imágenes: Priya leyendo en el sofá y su hermano jugando, Priya cocinando y Priya dormida.',
           siRespondeMal: "Se repite el audio despacio y elige otra vez.",
           quienHabla: "Allison",
-          audio: ["At eight o'clock last night, Priya was reading on the sofa.", "Her little brother was playing video games."],
-          traduccion: ["Anoche a las ocho, Priya estaba leyendo en el sofá.", "Su hermanito estaba jugando videojuegos."],
-          pregunta: "¿Qué estaba haciendo Priya anoche a las ocho?",
+          audio: ["At ten o'clock yesterday morning, Priya was reading on the sofa.", "Her little brother was playing video games."],
+          traduccion: ["Ayer a las diez de la mañana, Priya estaba leyendo en el sofá.", "Su hermanito estaba jugando videojuegos."],
+          pregunta: "¿Qué estaba haciendo Priya ayer a las diez de la mañana?",
           opciones: [
             { imagen: "f-priya-leyendo-hermano", descripcion: "Priya leyendo y su hermano jugando", etiqueta: "Reading", etiquetaEs: "Leyendo" },
             { imagen: "f-priya-cocinando", descripcion: "Priya cocinando", etiqueta: "Cooking", etiquetaEs: "Cocinando" },
             { imagen: "f-priya-durmiendo", descripcion: "Priya dormida", etiqueta: "Sleeping", etiquetaEs: "Durmiendo" },
           ],
           correcta: 0,
-          porRevisar: ["opciones: f-priya-durmiendo es un dibujo nuevo, Priya dormida sin libro; antes tenía un libro abierto y se confundía con leer (cambio del 30 de octubre de 2026)", "audio: «on the sofa», que es lo que muestra el dibujo correcto (antes «in her room», y Priya dormida en su cuarto con un libro se parecía más). Etiquetas en -ing, como suenan (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a Priya leyendo"'],
+          porRevisar: [
+            "opciones: f-priya-durmiendo es un dibujo nuevo, Priya dormida sin libro; antes tenía un libro abierto y se confundía con leer (cambio del 30 de octubre de 2026)", "audio: «on the sofa», que es lo que muestra el dibujo correcto (antes «in her room», y Priya dormida en su cuarto con un libro se parecía más). Etiquetas en -ing, como suenan (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a Priya leyendo"',
+            "audio: a las diez de la mañana, porque en el dibujo es de día; a las ocho de la noche, el único dibujo de noche era el de la opción incorrecta (Priya dormida) (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 2,
@@ -203,18 +206,21 @@ export const PARADA_03: Parada = {
           paso: 2,
           tipo: "describe",
           queAparece:
-            'Dibujo de un andén cuando llega el tren: una mujer lee un libro, un hombre se come un sándwich y dos niños juegan. Allison: "Tell me 3 things people were doing when the train arrived." Debajo: "She was ___ing." / "They were ___ing." y reading a book, eating a sandwich, playing.',
+            'Dibujo de un andén cuando llega el tren: una mujer lee un libro, un hombre se come un sándwich y dos niños juegan. Allison: "Tell me 3 things people were doing when the train arrived." Debajo: "She was ___." / "He was ___." / "They were ___." y reading a book, eating a sandwich, playing.',
           siRespondeMal:
             'Si dice "They was playing", Allison repite bien la frase (They were playing.) y el alumno la dice. Si nombra menos de 3, Allison señala el sándwich y pregunta "What was he doing?".',
           imagen: "f-anden-tren",
           pregunta: "Tell me 3 things people were doing when the train arrived.",
-          plantillas: ["She was ___ing.", "They were ___ing."],
+          plantillas: ["She was ___.", "He was ___.", "They were ___."],
           palabrasAyuda: ["reading a book", "eating a sandwich", "playing"],
           modelo: ["She was reading a book.", "He was eating a sandwich.", "They were playing."],
           aceptadas: ["The woman was reading.", "The man was eating.", "The kids were playing."],
-          cosas: ["book", "sandwich", "reading", "eating", "playing"],
+          cosas: ["book", "sandwich", "reading", "eating", "playing", "sitting", "standing", "waiting", "clapping", "walking", "laughing"],
           minimo: 3,
-          porRevisar: ["cosas: el documento no las nombra; salen del dibujo y de las frases modelo"],
+          porRevisar: [
+            "cosas: el documento no las nombra; salen del dibujo y de las frases modelo",
+            "plantillas sin \"-ing\" (las palabras de ayuda ya lo traen) y con \"He was\" para el hombre del sándwich; cosas: lo que también se ve (sitting, standing, waiting, clapping, walking, laughing) (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 3,

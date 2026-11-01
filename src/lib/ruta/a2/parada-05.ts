@@ -90,12 +90,15 @@ export const PARADA_05: Parada = {
           pregunta: "Look at Priya. What is she going to do?",
           contexto: "Mira a Priya. ¿Qué va a hacer? Responde con una frase en inglés.",
           respuesta: "She's going to travel.",
-          aceptadas: ["is going to travel", "is going to fly", "is going to take a plane", "is going to take the plane", "is going to take a trip", "is going to go on a trip", "is going to go on vacation", "is going to get on the plane"],
+          aceptadas: ["is going to travel", "is going to fly", "is going to take a plane", "is going to take the plane", "is going to take a trip", "is going to go on a trip", "is going to go on vacation", "is going to get on the plane", "is going to get on a plane", "is going to take a flight"],
           pistas: ["She has a suitcase.", "She's at the airport.", "Start with: She's going to…"],
           explicaciones: [
             { siDice: "She going to", explicacion: "Antes de going to va is: she's going to travel." },
           ],
-          porRevisar: ["aceptadas: con is going to, también «Priya is going to travel» y «She's going to take a trip»; tercera pista con el comienzo; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
+          porRevisar: [
+            "aceptadas: con is going to, también «Priya is going to travel» y «She's going to take a trip»; tercera pista con el comienzo; explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)",
+            "aceptadas: también \"get on a plane\" y \"take a flight\" (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 3,
@@ -202,7 +205,7 @@ export const PARADA_05: Parada = {
           paso: 2,
           tipo: "describe",
           queAparece:
-            'Una calle un sábado por la mañana: un muchacho con una raqueta camino a la cancha de tenis, una muchacha con libros en la puerta de la biblioteca y un señor con una maleta en la estación de tren. Allison: "Tell me 3 things they\'re going to do." Debajo: "He\'s / She\'s going to ___." y play tennis, study, travel.',
+            'Una calle un sábado por la mañana: un muchacho con una raqueta camino a la cancha de tenis, una muchacha con libros frente a una puerta y un señor con una maleta saliendo de un edificio de piedra. Allison: "Tell me 3 things they\'re going to do." Debajo: "He\'s / She\'s going to ___." y play tennis, study, travel.',
           siRespondeMal:
             'Si dice "He going to play tennis", Allison repite bien la frase (He\'s going to play tennis.) y el alumno la dice. Si nombra menos de 3, Allison señala la maleta y pregunta "What\'s he going to do?".',
           imagen: "f-calle-planes",
@@ -210,10 +213,13 @@ export const PARADA_05: Parada = {
           plantillas: ["He's / She's going to ___."],
           palabrasAyuda: ["play tennis", "study", "travel"],
           modelo: ["He's going to play tennis.", "She's going to study.", "He's going to travel."],
-          aceptadas: ["The boy is going to play tennis.", "She's going to read.", "The man is going to take a train."],
-          cosas: ["tennis", "racket", "study", "read", "book", "library", "travel", "train", "suitcase"],
+          aceptadas: ["The boy is going to play tennis.", "She's going to read.", "The man is going to take a trip."],
+          cosas: ["tennis", "racket", "study", "read", "book", "library", "travel", "train", "trip", "vacation", "suitcase"],
           minimo: 3,
-          porRevisar: ["cosas: el documento no las nombra; salen del dibujo, de las frases modelo y de las aceptadas"],
+          porRevisar: [
+            "cosas: el documento no las nombra; salen del dibujo, de las frases modelo y de las aceptadas",
+            "aceptadas: \"take a trip\" en vez de \"take a train\" (en el dibujo no hay estación ni tren); cosas: trip y vacation (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 3,
@@ -269,12 +275,15 @@ export const PARADA_05: Parada = {
           pregunta: "He has a lot of books! What does she say?",
           contexto: "A él se le caen los libros y ella corre hacia él. ¿Qué le dice ella? Dilo en inglés.",
           respuesta: "I'll help you!",
-          aceptadas: ["I'll help", "Let me help", "I'll pick them up", "I'll get them", "I'll carry them"],
+          aceptadas: ["I'll help", "Let me help", "Can I help", "I'll pick them up", "I'll pick up", "I'll get them", "I'll carry them"],
           pistas: ["She wants to help.", "Start with: I'll…"],
           explicaciones: [
             { siDice: "I help you", explicacion: "Para ofrecer ayuda en el momento: I'll help you." },
           ],
-          porRevisar: ["aceptadas: también otras ofertas con I'll («I'll pick them up», «I'll carry them»); explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)"],
+          porRevisar: [
+            "aceptadas: también otras ofertas con I'll («I'll pick them up», «I'll carry them»); explicaciones: la del documento (Si dice…), que no estaba en los datos (cambio del 30 de octubre de 2026)",
+            "aceptadas: también \"Can I help you?\" y \"I'll pick up the books\" (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         // El párrafo del documento bajo la tabla ("Hmm, I can't answer that
         // one…" para una pregunta fuera de la tabla, y la misma pregunta con
@@ -438,7 +447,7 @@ export const PARADA_05: Parada = {
     {
       archivos: ["f-calle-planes"],
       muestra:
-        "Una calle un sábado por la mañana: un muchacho con una raqueta, una muchacha con libros en la puerta de la biblioteca y un señor con una maleta en la estación",
+        "Una calle un sábado por la mañana: un muchacho con una raqueta, una muchacha con libros frente a una puerta y un señor con una maleta saliendo de un edificio",
       uso: "Lección 3 (paso 2)",
     },
     { archivos: ["f-hermanas-pelicula"], muestra: "Dos mujeres viendo una película en un sofá, con palomitas", uso: "Lección 4 (paso 1)" },

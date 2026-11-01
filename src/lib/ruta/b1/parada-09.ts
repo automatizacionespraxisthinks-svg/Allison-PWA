@@ -336,7 +336,7 @@ export const PARADA_09: Parada = {
           queAparece:
             'Allison: "I\'ve never been to Medellín! Teach me about the Flower Festival." Cuatro preguntas en orden, de la lista de abajo. Dibujo de un silletero con una silleta de flores en la espalda.',
           siRespondeMal:
-            'Si responde con una palabra: "Tell me more!" y repite la pregunta. Si habla en español: "In English, please!" y la pregunta más simple. Si no la conoce: "Tell me about a festival in your region!" y sigue la lista con esa fiesta.',
+            'Si responde con una palabra: "Tell me more!" y repite la pregunta. Si habla en español: "In English, please!" y la pregunta más simple. Si dice que no sabe, que nunca ha ido o que no lo conoce: Allison lo anima con la respuesta de ejemplo ("That\'s OK! For example: … Now you try!") y en pantalla se ve la ayuda. Hay además un botón Ayuda con la respuesta de ejemplo y su audio.',
           tambienSeAcepta: "Respuestas que se entienden aunque tengan errores",
           tema: "la Feria de las Flores",
           apertura: "I've never been to Medellín! Teach me about the Flower Festival.",
@@ -367,7 +367,10 @@ export const PARADA_09: Parada = {
           ],
           otraPregunta: "Good question! But today you're the teacher. Tell me more!",
           // Las reacciones van "una después de cada respuesta, sin repetir".
-          porRevisar: ["preguntas.simple: las cuatro versiones simples no estaban en el documento"],
+          porRevisar: [
+            "siRespondeMal: si no sabe o nunca ha ido, Allison da la respuesta de ejemplo y se ve la ayuda (pedido del usuario, 1 de noviembre de 2026); antes la redirigía a otro tema (\"Tell me about your city!\"), que no encajaba con las preguntas siguientes",
+            "preguntas.simple: las cuatro versiones simples no estaban en el documento",
+          ],
         },
       ],
     },
@@ -493,7 +496,7 @@ export const PARADA_09: Parada = {
     {
       archivos: ["f-torta-1", "f-torta-2", "f-torta-3", "f-torta-4"],
       muestra:
-        "Los cuatro dibujos del cumpleaños de Zoe, con la misma cocina: la mamá hornea, el perro salta a la mesa, la torta en el piso, todos mirando la torta",
+        "Los cuatro dibujos del cumpleaños de Zoe (los tres primeros en la misma cocina; el cuarto, en otra): la mamá hornea, el perro salta a la mesa, la torta en el piso, todos mirando la torta",
       uso: "Lección 3 (paso 2)",
     },
     {

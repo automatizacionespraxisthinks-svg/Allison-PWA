@@ -230,14 +230,14 @@ export const PARADA_04: Parada = {
           paso: 2,
           tipo: "narra",
           queAparece:
-            'Cuatro dibujos en orden de un parque de Vancouver: (1) el parque está sucio y sin luces; (2) los vecinos en una reunión; (3) unos con un dibujo de una pista de skate y otros con un dibujo de árboles; (4) el parque nuevo, con árboles, luces y una pista de skate pequeña. Allison: "Tell me what happened to the park. Use because, so, but and although." Debajo: first, then, after that, now.',
+            'Cuatro dibujos en orden de un parque de Vancouver: (1) el parque está sucio y las luces están dañadas; (2) los vecinos en una reunión; (3) unos con un dibujo de una pista de skate y otros con un dibujo de árboles; (4) el parque nuevo, con árboles, luces y una pista de skate pequeña. Allison: "Tell me what happened to the park. Use because, so, but and although." Debajo: first, then, after that, now.',
           siRespondeMal:
             'Si dice "Although they didn\'t agree, but they found…": "With although, no but: Although they didn\'t agree, they found a solution." Allison repite bien la frase y el alumno la dice. Si cuenta menos de 3 dibujos, Allison señala el que falta: "What happened next?"',
           tambienSeAcepta:
             'Narraciones que usan los conectores aunque cambien las palabras: "The park was dirty, so they had a meeting."',
           imagenes: ["f-parque-vancouver-1", "f-parque-vancouver-2", "f-parque-vancouver-3", "f-parque-vancouver-4"],
           dibujos: [
-            "El parque está sucio y sin luces",
+            "El parque está sucio y las luces están dañadas",
             "Los vecinos en una reunión",
             "Unos vecinos con un dibujo de una pista de skate y otros con un dibujo de árboles",
             "El parque nuevo, con árboles, luces y una pista de skate pequeña",
@@ -245,7 +245,7 @@ export const PARADA_04: Parada = {
           pregunta: "Tell me what happened to the park. Use because, so, but and although.",
           debajo: ["first", "then", "after that", "now"],
           modelo:
-            "First, the park was dirty and it didn't have any lights, so the neighbors had a meeting. Some people wanted a skate park, because there was nothing for teenagers, but others wanted more trees. Although they didn't agree at first, they found a solution. Now the park has trees, lights and a small skate park.",
+            "First, the park was dirty and the lights didn't work, so the neighbors had a meeting. Some people wanted a skate park, because there was nothing for teenagers, but others wanted more trees. Although they didn't agree at first, they found a solution. Now the park has trees, lights and a small skate park.",
           verbos: ["was", "had a meeting", "wanted", "has"],
           gramatica:
             "past simple narration that joins ideas with the connectors because, so, but and although (never although… but), ending in the present with now",
@@ -264,6 +264,7 @@ export const PARADA_04: Parada = {
             "verbos: salen del modelo",
             "gramatica: escrita para el evaluador",
             "explicaciones.es: traducción",
+            "modelo: \"the lights didn't work\" (en el dibujo hay postes de luz, dañados) (auditoría final, 1 de noviembre de 2026)",
           ],
         },
         {
@@ -336,7 +337,7 @@ export const PARADA_04: Parada = {
           paso: 3,
           tipo: "entrevista",
           queAparece:
-            'Ficha de las opiniones de Allison con cinco datos por descubrir: qué opina de Nueva York, de los taxis, de los gatos y los perros, del reguetón y del invierno. Arma cada pregunta sin palabras de ayuda. Al acertar, el dato se llena, Allison da su opinión y le pregunta la suya ("What do you think?"). Mínimo 10 intervenciones.',
+            'Ficha de las opiniones de Allison con cinco datos por descubrir: qué opina de Nueva York, de los taxis, de los gatos y los perros, del reguetón y del invierno. Arma cada pregunta sin palabras de ayuda. Al acertar, el dato se llena, Allison da su opinión y le devuelve la pregunta ("And you?"). Mínimo 10 intervenciones.',
           siRespondeMal:
             'Una sola pista en inglés: "Ask me what I think! Start with: What do you think about…?" Hay un botón de ayuda con la pregunta escrita.',
           tambienSeAcepta:
@@ -351,7 +352,7 @@ export const PARADA_04: Parada = {
             {
               dato: "Los taxis",
               pregunta: "Do you think taxis are expensive in New York?",
-              respuesta: "Yes, I do! They're very expensive. I think the subway and the ferry are better.",
+              respuesta: "I think they're very expensive! The subway and the ferry are better.",
             },
             {
               dato: "Gatos o perros",
@@ -382,6 +383,7 @@ export const PARADA_04: Parada = {
           ],
           porRevisar: [
             "pistas: la primera es la del documento (es general, no nombra Nueva York); las otras cuatro siguen el patrón de la guía",
+            "respuesta de los taxis: \"I think…\" en vez de \"Yes, I do!\", que solo cuadraba con \"Do you think…?\" (auditoría final, 1 de noviembre de 2026)",
           ],
         },
       ],
@@ -391,6 +393,10 @@ export const PARADA_04: Parada = {
   // tarea 4 es la del imprevisto ("Elige una y defiéndela con dos
   // razones.") y su línea es la del diálogo marcada "(imprevisto)".
   escenario: {
+    porRevisar: [
+      "dialogo: \"Hello\" y \"Goodbye\" en vez de \"Good evening\" y \"Good night\", porque en el dibujo de la reunión es de día (auditoría final, 1 de noviembre de 2026)",
+      "dialogo: \"Today\" en vez de \"Tonight\" (el dibujo es de día) (segunda verificación, 1 de noviembre de 2026)",
+    ],
     titulo: "La reunión de vecinos",
     imagen: "e-vancouver-reunion",
     contexto:
@@ -413,13 +419,13 @@ export const PARADA_04: Parada = {
         "OK. Oh, wait. I've just received an email from the city. They only have money for one thing: a skate park or a dog park.",
     },
     dialogo: [
-      { quien: "personaje", dice: "Good evening, everyone! I'm Ms. Wong. Are you new in the neighborhood?" },
+      { quien: "personaje", dice: "Hello, everyone! I'm Ms. Wong. Are you new in the neighborhood?" },
       {
         quien: "alumno",
-        dice: "Good evening! Yes, I'm staying with the Lee family this summer. They asked me to come.",
+        dice: "Hello! Yes, I'm staying with the Lee family this summer. They asked me to come.",
         tarea: 1,
       },
-      { quien: "personaje", dice: "Welcome! Tonight we're talking about the new park. What do you think it needs?" },
+      { quien: "personaje", dice: "Welcome! Today we're talking about the new park. What do you think it needs?" },
       { quien: "alumno", dice: "I think it needs a skate park, because there's nothing for teenagers.", tarea: 2 },
       { quien: "personaje", dice: "Interesting. Do you skate?" },
       { quien: "alumno", dice: "Yes, I do. I skate every weekend in Bogotá." },
@@ -451,7 +457,7 @@ export const PARADA_04: Parada = {
       { quien: "personaje", dice: "Oh, that's too bad! Will you visit Vancouver again?" },
       { quien: "alumno", dice: "I hope so! I love this city." },
       { quien: "personaje", dice: "Thank you for coming. It was nice to hear your opinion." },
-      { quien: "alumno", dice: "Thank you, Ms. Wong. Good night!", tarea: 5 },
+      { quien: "alumno", dice: "Thank you, Ms. Wong. Goodbye!", tarea: 5 },
     ],
     ayudas: [
       "Say who you are and why you came.",
@@ -523,7 +529,7 @@ export const PARADA_04: Parada = {
     {
       archivos: ["f-parque-vancouver-1", "f-parque-vancouver-2", "f-parque-vancouver-3", "f-parque-vancouver-4"],
       muestra:
-        "Los cuatro dibujos del parque, con el mismo fondo: sucio y sin luces, la reunión de vecinos, los dos grupos con sus dibujos, el parque nuevo",
+        "Los cuatro dibujos del parque, con el mismo fondo: sucio y con las luces dañadas, la reunión de vecinos, los dos grupos con sus dibujos, el parque nuevo",
       uso: "Lección 3 (paso 2)",
     },
   ],

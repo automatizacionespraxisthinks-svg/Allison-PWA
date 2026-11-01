@@ -34,6 +34,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: el documento no nombra las tres banderas; se usaron Canadá, Colombia y México |
 | Lección 3, paso 2 (Describe la imagen) | Nota | plantillas: la tabla de la parada no la da; "I see a ___." sale de la sección 6 y no sirve para music (se dice "I see music") |
 | Lección 3, paso 2 (Describe la imagen) | Nota | palabrasAyuda: el documento no las nombra; se pusieron las tres cosas de la respuesta |
+| Lección 3, paso 2 (Describe la imagen) | Nota | palabrasAyuda: balloon en vez de music, que con "I see a ___." armaba "I see a music."; cosas: boy y girl, porque la pareja del dibujo se ve joven (auditoría final, 1 de noviembre de 2026) |
 | Lección 3, paso 3 (Responde rápido) | Nota | aceptadas: el documento no da ejemplos; se pusieron frases completas que ya están en la parada |
 | Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | See you! (¡Nos vemos!) · Nice to meet you! (¡Mucho gusto!) · Good morning! (¡Buenos días!) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "See you tomorrow" → "Nos vemos mañana" |
@@ -55,26 +56,32 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "Sarah says: "This is my grandma."" → "Sarah dice: "Esta es mi abuela."" |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Sarah te muestra la foto de su familia. ¿Quién es la persona de la flecha? Completa la frase. |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | pregunta: Allison cita a Sarah (una sola voz); dicho por ella parecía su mamá (segunda verificación, 1 de noviembre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Sister (Hermana) · Brother (Hermano) · Grandpa (Abuelo) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Tom says: "This is my sister. Her name is Emma."" → "Tom dice: "Esta es mi hermana. Se llama Emma."" |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: palabras de la familia, como en el audio (Sister, Brother, Grandpa); antes Girl, Boy y Older man (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 2 (Tu turno en el diálogo) | Nota | quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026) |
 | Lección 2, paso 2 (Tu turno en el diálogo) | Nota | dialogo: decía «This is my dad. His name is Mark.» (el papá de Sarah); Allison no tiene papá en su ficha, así que muestra a su mamá: «This is my mom. Her name is Susan.» (FICHA_ALLISON) |
+| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | dialogo: "Is this your mom?" justo después de "This is my mom" no señalaba nada: pasa a "Do you have a photo of your mom?" (auditoría final, 1 de noviembre de 2026) |
 | Lección 2, paso 3 (Dilo en inglés) | Nota | aceptadas: también dicha de corrido con and; explicaciones para «He name is Juan» y «He calls Juan» (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Two sisters and a dog (Dos hermanas y un perro) · Two brothers and a cat (Dos hermanos y un gato) · One sister and a dog (Una hermana y un perro) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "A boy says: "I have two sisters and a dog."" → "Un muchacho dice: "Tengo dos hermanas y un perro."" |
 | Lección 3, paso 1 (Escucha y elige) | Nota | etiquetas: con las palabras del audio (sisters); antes Two girls (cambio del 30 de octubre de 2026) |
+| Lección 3, paso 2 (Describe la imagen) | Nota | cosas: bicycle, puppy y kitten, que también nombran lo que se ve (segunda verificación, 1 de noviembre de 2026) |
+| Lección 3, paso 3 (Responde rápido) | Nota | modelo de "Do you have a pet?": "Yes, I have a dog." (I don't llega en la parada 5) (auditoría final, 1 de noviembre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | A cat (Una gata) · A dog (Un perro) · A bird (Un pájaro) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "This is my cat. Her name is Luna." → "Esta es mi gata. Se llama Luna." |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Sarah te muestra la foto de su familia. ¿Quién es la persona de la flecha? Completa la frase. |
 | Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: también granddad (cambio del 30 de octubre de 2026) |
+| Lección 4, paso 2 (¿Qué es esto?) | Nota | pregunta: Allison cita a Sarah (una sola voz); dicho por ella parecía su abuelo. Pista: "Sarah's mom's dad" (segunda verificación, 1 de noviembre de 2026) |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | Do you have any brothers or sisters? → "Yes, I have a sister." |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | What's her name? → "Her name is Emily." |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | How old is she? → "She is 31." |
-| Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | Does she have a pet? → "Yes, she has a dog. His name is Rocky." |
-| Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | What's your mom's name? → "Her name is Susan." |
+| Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | Do you have a pet? → "Yes, I have a cat. Her name is Luna." |
+| Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | What's your mom's name? → "My mom's name is Susan." |
+| Lección 4, paso 3 (Entrevista a Allison) | Nota | dato de la mascota: "Do you have a pet?" (la mascota de Allison, Luna) en vez de "Does she have a pet?" (la de su hermana): does se enseña en la parada 5, y Allison le devolvía al alumno una pregunta sobre su hermana; la de la mamá, "My mom's name is Susan.", sí se devuelve (el alumno puede contestarla) (segunda verificación, 1 de noviembre de 2026) |
 
 ## Parada 3 · Nueva York
 
@@ -88,6 +95,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quiénes hablan en el pasillo |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Tom te presenta a Ms. Lee. ¿Quién es ella para Tom? Completa la frase. |
 | Lección 1, paso 2 (¿Qué es esto?) | Nota | imagen: a-profesora-tablero (antes a-profesor) es Ms. Lee junto al tablero (recorte de f-salon-clase); antes una mujer leyendo un libro, que no se veía profesora. Si dice professor, Allison explica (cambio del 30 de octubre de 2026) |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | pregunta: Allison cita a Tom (una sola voz); dicho por ella parecía que Ms. Lee era su profesora (auditoría final, 1 de noviembre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Amy. A-M-Y. (Amy. A-M-Y.) · Ana. A-N-A. (Ana. A-N-A.) · Annie. A-N-N-I-E. (Annie. A-N-N-I-E.) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: el nombre y su deletreo, que Allison dice al elegir la tarjeta (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -99,9 +107,12 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "A boy asks: "Where do you live?"" → "Un muchacho pregunta: "¿Dónde vives?"" |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "A girl says: "I live in Chicago."" → "Una muchacha dice: "Vivo en Chicago."" |
 | Lección 3, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quiénes hablan |
+| Lección 3, paso 2 (Describe la imagen) | Nota | cosas: kid, child y classmate (el niño del pupitre) (segunda verificación, 1 de noviembre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Soccer (Fútbol) · Basketball (Baloncesto) · Baseball (Béisbol) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "My favorite sport is soccer." → "Mi deporte favorito es el fútbol." |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿Qué deporte se juega con este balón? Dilo en inglés. |
+| Lección 4, paso 3 (Entrevista a Allison) | Nota | respuesta de Allison sobre ella misma con "I" o "My": así le devuelve la pregunta al alumno ("And you?") (segunda verificación, 1 de noviembre de 2026) |
+| Escenario de cierre | Nota | dialogo: "Oh, my teacher too!" pasa a "Oh, she's my teacher too!" (auditoría final, 1 de noviembre de 2026) |
 
 ## Parada 4 · Washington
 
@@ -113,6 +124,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento solo dice "Oye:"; se puso Allison |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Mira el reloj. ¿Qué hora es? Responde en inglés. |
 | Lección 1, paso 2 (¿Qué es esto?) | Nota | el reloj muestra la hora en números, como en Escucha y elige; pistas que llevan a la hora («It's in the morning.» no se veía en el reloj) (cambio del 30 de octubre de 2026) |
+| Lección 1, paso 3 (Repite) | Nota | consejo de "thirty": la th sin voz, como en three (la de this suena con voz) (auditoría final, 1 de noviembre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Monday (Lunes) · Saturday (Sábado) · Sunday (Domingo) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: el día, que Allison dice al elegir la tarjeta (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -122,11 +134,15 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: el mes completo (JULY 4, APRIL 7) y MAY 4 en vez de JUN 4, que se veía y sonaba casi igual a JUL 4; cada tarjeta suena al elegirla (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "The concert is on July 4th." → "El concierto es el 4 de julio." |
 | Lección 3, paso 1 (Escucha y elige) | Nota | quienHabla: el documento solo dice "Oye:"; se puso Allison |
+| Lección 3, paso 1 (Escucha y elige) | Nota | queAparece: las opciones como están desde el 30 de octubre (JULY 4, APRIL 7 y MAY 4), sin la nota del 7/4 que la app no muestra (auditoría final, 1 de noviembre de 2026) |
+| Lección 3, paso 2 (Describe la imagen) | Nota | cosas: boy, kid y child, porque en el dibujo no se sabe si la tercera persona es niña o niño (auditoría final, 1 de noviembre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Four o'clock (Las cuatro) · Two o'clock (Las dos) · Four thirty (Las cuatro y media) |
 | Lección 4, paso 1 (Escucha y elige) | Nota | relojes: la hora va también en números debajo y cada reloj tiene su etiqueta, que suena al elegirlo (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "My English class is at four o'clock." → "Mi clase de inglés es a las cuatro." |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Hay nieve y un árbol de Navidad. ¿En qué mes estamos? Dilo en inglés. |
 | Lección 4, paso 2 (¿Qué es esto?) | Nota | pistas: primero la Navidad y el último mes del año; «It's cold in New York.» no llevaba al mes (cambio del 30 de octubre de 2026) |
+| Lección 4, paso 3 (Entrevista a Allison) | Nota | respuestas de Allison con "My…": así devuelve la pregunta ("And you?"), y con la ficha completa ya no le pregunta al alumno por Luna o Emily (auditoría final, 1 de noviembre de 2026) |
+| Escenario de cierre | Nota | tareas: «Deletrea tu apellido», como en el diálogo de ejemplo (Kate pregunta el apellido) (auditoría final, 1 de noviembre de 2026) |
 
 ## Parada 5 · Chicago
 
@@ -134,9 +150,11 @@ licenciado en inglés las revise junto con el resto de la parada.
 |---|---|---|
 | Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Get up (Levantarse) · Have breakfast (Desayunar) · Take the bus (Subir al bus) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
-| Lección 1, paso 1 (Escucha y elige) | Traducción | "Leo says: "I get up at six."" → "Leo dice: "Me levanto a las seis."" |
+| Lección 1, paso 1 (Escucha y elige) | Traducción | "Leo says: "I get up at seven."" → "Leo dice: "Me levanto a las siete."" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Leo, el muchacho de las imágenes |
+| Lección 1, paso 1 (Escucha y elige) | Nota | audio: Leo se levanta a las siete, la hora que marca el despertador del dibujo (decía six) (auditoría final, 1 de noviembre de 2026) |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | ¿Qué comida del día es esta? Dilo en inglés. |
+| Lección 1, paso 3 (Repite) | Nota | siRespondeMal: "show-er" llevaba a decir "show"; suena "sháuer" (auditoría final, 1 de noviembre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Ten o'clock (Las diez) · Two o'clock (Las dos) · Six o'clock (Las seis) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | relojes: la hora va también en números debajo y cada reloj tiene su etiqueta, que suena al elegirlo (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -153,6 +171,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Nota | opciones: la correcta era dos mujeres tomando café, que no es lo que dice el audio; ahora es un dibujo nuevo de dos hermanas que se abrazan en la puerta (f-visita-hermana). Sirve también para la entrevista de esta lección (I visit my sister, Emily) (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Mira la imagen: son las 10 de la noche. ¿Qué haces a esa hora? Responde en inglés. |
 | Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: también «I go to sleep», «I'm sleeping» y «I went to bed»; el contexto pide mirar la imagen (antes «¿Qué haces tú?» invitaba a «I watch TV», que salía mal) (cambio del 30 de octubre de 2026) |
+| Lección 4, paso 3 (Entrevista a Allison) | Nota | respuesta: sometimes antes del verbo, como enseña la parada (auditoría final, 1 de noviembre de 2026) |
 
 ## Parada 6 · Los Ángeles
 
@@ -161,8 +180,10 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Swim (Nadar) · Surf (Surfear) · Dance (Bailar) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla ("Oye:"); se puso una muchacha |
-| Lección 1, paso 1 (Escucha y elige) | Traducción | "A girl says: "I can swim."" → "Una muchacha dice: "Sé nadar."" |
+| Lección 1, paso 1 (Escucha y elige) | Traducción | "I can swim." → "Sé nadar." |
+| Lección 1, paso 1 (Escucha y elige) | Nota | audio: lo dice Allison, que sabe nadar (su ficha), sin "A girl says": en el dibujo no se sabe si quien nada es niña o niño, y la muchacha clara era la que baila (auditoría final, 1 de noviembre de 2026) |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Mira lo que toca el muchacho. ¿Qué instrumento sabe tocar? Completa la frase. |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | pistas: "It makes music."; una guitarra no es música (auditoría final, 1 de noviembre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Sing (Cantar) · Dance (Bailar) · Swim (Nadar) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién le pregunta a Sarah |
@@ -193,16 +214,22 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Sarah says: "I like pizza, but today I'd like a salad."" → "Sarah dice: "Me gusta la pizza, pero hoy quiero una ensalada."" |
+| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | palabras: "some juice", como enseña la parada; aceptadas: solo la primera respuesta (las preguntas van una a la vez) (auditoría final, 1 de noviembre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Some soup (Una sopa) · Some fries (Papas a la francesa) · A salad (Una ensalada) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "The waitress asks: "Would you like some fries?"" → "La mesera pregunta: "¿Quieres unas papas a la francesa?"" |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "Tom says: "No, thank you. I'd like some soup."" → "Tom dice: "No, gracias. Me gustaría una sopa."" |
 | Lección 3, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quiénes hablan |
+| Lección 3, paso 2 (Describe la imagen) | Nota | cosas: plate y glass, que se ven (segunda verificación, 1 de noviembre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Beignets and coffee (Beignets y café) · Ice cream (Helado) · Pizza (Pizza) |
 | Lección 4, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "In New Orleans, I always have beignets and a coffee!" → "¡En Nueva Orleans siempre como beignets y me tomo un café!" |
+| Lección 4, paso 1 (Escucha y elige) | Nota | pregunta: «en Nueva Orleans»; sin el lugar, la pizza y el helado también eran ciertos (le gustan, según su ficha) (segunda verificación, 1 de noviembre de 2026) |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿Qué postre es este? Dilo en inglés. |
+| Lección 4, paso 3 (Entrevista a Allison) | Nota | respuesta de Allison sobre ella misma con "I" o "My": así le devuelve la pregunta al alumno ("And you?") (segunda verificación, 1 de noviembre de 2026) |
+| Escenario de cierre | Nota | contexto: sin «La app muestra un menú con precios»: la app no muestra ningún menú (auditoría final, 1 de noviembre de 2026) |
+| Escenario de cierre | Nota | titulo y dialogo: almuerzo ("Hi! Welcome!", "Goodbye!") en vez de cena, porque el dibujo del restaurante es de día (auditoría final, 1 de noviembre de 2026) |
 
 ## Parada 8 · Boston
 
@@ -227,8 +254,12 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | A yard (Un patio) · A kitchen (Una cocina) · A bedroom (Un cuarto) |
 | Lección 4, paso 1 (Escucha y elige) | Nota | audio: nombra las tres cosas (la cocina, el cuarto y que no hay patio), así el audio dice qué hay y qué no; la pregunta resalta el NO (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "In my apartment, there's a small kitchen and a bedroom, but there isn't a yard." → "En mi apartamento hay una cocina pequeña y un cuarto, pero no hay patio." |
+| Lección 4, paso 1 (Escucha y elige) | Nota | queAparece: con el audio como está desde el 30 de octubre (auditoría final, 1 de noviembre de 2026) |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Mira la imagen. ¿Dónde está la ropa? Completa la frase. |
 | Lección 4, paso 2 (¿Qué es esto?) | Nota | pistas: «It's in your bedroom.» llevaba a responder bedroom; contexto sobre la imagen; aceptadas: también wardrobe (cambio del 30 de octubre de 2026) |
+| Lección 4, paso 3 (Entrevista a Allison) | Nota | respuesta: "on sunny Sundays", como su ficha (si llueve se queda en casa); dato: "Dónde está la cama de Luna" (Luna duerme a menudo en el sofá) (auditoría final, 1 de noviembre de 2026) |
+| Lección 4, paso 3 (Entrevista a Allison) | Nota | respuesta de Allison sobre ella misma con "I" o "My": así le devuelve la pregunta al alumno ("And you?") (segunda verificación, 1 de noviembre de 2026) |
+| Escenario de cierre | Nota | dialogo: el clóset está al lado de la ventana, como en el dibujo (no detrás de la puerta) (auditoría final, 1 de noviembre de 2026) |
 
 ## Parada 9 · Seattle
 
@@ -239,6 +270,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "She's wearing a yellow raincoat." → "Ella tiene puesto un impermeable amarillo." |
 | Lección 1, paso 1 (Escucha y elige) | Nota | opciones: el documento solo describe a la del impermeable; el señor y la mujer se describieron mirando f-tres-personas-ropa |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | ¿Qué son estos? Dilo en inglés. |
+| Lección 1, paso 3 (Repite) | Nota | consejo: wearing suena "uer-ing", no solo "uer" (auditoría final, 1 de noviembre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Getting up (Levantándose) · Having breakfast (Desayunando) · Taking the bus (Tomando el bus) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
@@ -250,11 +282,14 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "A boy is eating ice cream." → "Un niño está comiendo un helado." |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: el documento no dice cuáles tres personas se ofrecen; se tomaron las tres primeras de la escena, en el orden del paso 2 |
 | Lección 3, paso 2 (Describe la imagen) | Nota | cosas: son las palabras de ayuda más "eating" (el niño con el helado también está en la escena) |
+| Lección 3, paso 2 (Describe la imagen) | Nota | plantilla sin "-ing" (las palabras de ayuda ya lo traen: "A man is sellinging."); cosas: holding, walking, smiling, singing y standing, que se ven (segunda verificación, 1 de noviembre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Cooking (Cocinando) · Walking in the park (Caminando en el parque) · Having coffee (Tomando café) |
 | Lección 4, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "I'm cooking right now!" → "¡Estoy cocinando en este momento!" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Está lloviendo en Seattle. ¿Qué necesitas? Responde en inglés. |
 | Lección 4, paso 2 (¿Qué es esto?) | Nota | aceptadas: «umbrella» sin artículo (y «a umbrella») también vale (cambio del 30 de octubre de 2026) |
+| Lección 4, paso 3 (Entrevista a Allison) | Nota | respuesta sin "No": con "No" Allison le devolvía al alumno "Is it raining in New York?" (segunda verificación, 1 de noviembre de 2026) |
+| Escenario de cierre | Nota | imagen: e-seattle-mercado-lluvia, el mismo mercado con lluvia y gente (el señor del pescado, la pareja que baila, el guitarrista); el anterior era de sol y sin gente (auditoría final, 1 de noviembre de 2026) |
 
 ## Parada 10 · San Francisco
 
@@ -279,6 +314,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "In New York, take the subway. Don't take a taxi. It's expensive!" → "En Nueva York, toma el metro. No tomes taxi. ¡Es caro!" |
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | ¿En qué puedes montar en San Francisco? Completa la frase. |
+| Lección 4, paso 3 (Entrevista a Allison) | Nota | respuestas: "My favorite place…" para que Allison devuelva la pregunta; la del museo sin "No" (no tiene sentido devolver "Is the museum far?") (segunda verificación, 1 de noviembre de 2026) |
 
 ## Repaso 1 · Chicago
 
@@ -300,15 +336,18 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "The museum is on Saturday at eleven thirty." → "El museo es el sábado a las once y media." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento solo dice "Oye:"; se puso Allison |
 | Lección 2, paso 2 (Describe la imagen) | Nota | cosas: el documento no las nombra; salen de la imagen f-taquilla-museo |
+| Lección 2, paso 2 (Describe la imagen) | Nota | cosas: boy y kid, porque en el dibujo no se sabe si la tercera persona es niña o niño (auditoría final, 1 de noviembre de 2026) |
 | Lección 2, paso 3 (Tu turno en el diálogo) | Nota | plantilla: el documento no la escribe; dice "Su nombre, deletreado, y su cumpleaños con on" |
 | Lección 2, paso 3 (Tu turno en el diálogo) | Nota | modelo: el documento no lo escribe; sale de las paradas 3 y 4 |
 | Lección 2, paso 3 (Tu turno en el diálogo) | Nota | plantilla del deletreo: las letras del nombre del alumno, una por una (cambio del 1 de noviembre de 2026) |
 | Lección 2, paso 3 (Tu turno en el diálogo) | Nota | quien: habla Allison y no Mia: la voz es la suya (pedido del usuario, 1 de noviembre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Gets up (Se levanta) · Has breakfast (Desayuna) · Takes the bus (Toma el bus) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
-| Lección 3, paso 1 (Escucha y elige) | Traducción | "Leo always has breakfast at seven." → "Leo siempre desayuna a las siete." |
+| Lección 3, paso 1 (Escucha y elige) | Traducción | "Leo always has breakfast at eight." → "Leo siempre desayuna a las ocho." |
 | Lección 3, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison, porque la frase habla de Leo |
+| Lección 3, paso 1 (Escucha y elige) | Nota | audio: at eight; at seven era la hora del despertador de la opción incorrecta (levantarse) (auditoría final, 1 de noviembre de 2026) |
 | Lección 3, paso 3 (Dilo en inglés) | Nota | aceptadas: también «My mom never has coffee»; explicaciones para «takes coffee» (de «toma») y «doesn't drink» (sin never) (cambio del 30 de octubre de 2026) |
+| Lección 3, paso 3 (Dilo en inglés) | Nota | explicación: «Nunca» entre comillas; se leía al revés (auditoría final, 1 de noviembre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | A cat (Una gata) · A dog (Un perro) · A bird (Un pájaro) |
 | Lección 4, paso 1 (Escucha y elige) | Nota | audio: completo («I have a cat. She's three. Her name is Luna.», de la ficha) y con pregunta; antes terminaba en «Her name is…» (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 1 (Escucha y elige) | Traducción | "I have a cat. She's three. Her name is Luna." → "Tengo una gata. Tiene tres años. Se llama Luna." |
@@ -319,9 +358,11 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 2 (Responde rápido) | Respuesta modelo | Who is your best friend? → "My best friend is Andrés." |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | Where are you from? → "I'm from New York." |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | What's your sister's name? → "Her name is Emily." |
-| Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | What's your favorite food? → "Colombian food! My favorite is mute santandereano." |
-| Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | When is your birthday? → "It's on May 12th." |
+| Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | What's your favorite food? → "I love Colombian food! My favorite is mute santandereano." |
+| Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | When is your birthday? → "My birthday is on May 12th." |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | How do you go to work? → "I take the subway." |
+| Lección 4, paso 3 (Entrevista a Allison) | Nota | respuesta de Allison sobre ella misma con "I" o "My": así le devuelve la pregunta al alumno ("And you?") (segunda verificación, 1 de noviembre de 2026) |
+| Escenario de cierre | Nota | contexto: "tus últimos días" (Allison pregunta "Today or tomorrow?"); tarea 3 con today, tomorrow y at, como el diálogo; despedida "See you at the museum!" (auditoría final, 1 de noviembre de 2026) |
 
 ## Repaso final · Nueva York
 
@@ -344,6 +385,8 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento solo dice "Oye:"; se puso Allison |
 | Lección 2, paso 2 (Describe la imagen) | Nota | modelo: el documento pide tres frases y da dos de ejemplo ("There are two people. They're dancing."); la tercera ("A man is selling fish.") sale de la parada 9, con la misma imagen |
 | Lección 2, paso 2 (Describe la imagen) | Nota | cosas: el documento no las nombra; salen de la imagen f-mercado-escena. "dance" desde el 28 de octubre de 2026: la frase modelo "They're dancing." no contaba |
+| Lección 2, paso 2 (Describe la imagen) | Nota | modelo: "There are a lot of people." (en el mercado hay mucha gente, no dos) (auditoría final, 1 de noviembre de 2026) |
+| Lección 2, paso 2 (Describe la imagen) | Nota | cosas: girl, kid y child (la muchacha que baila y el niño del helado) (segunda verificación, 1 de noviembre de 2026) |
 | Lección 2, paso 3 (Tu turno en el diálogo) | Nota | plantilla: el documento no la escribe; dice "Respuestas sobre su lugar y su ropa" |
 | Lección 2, paso 3 (Tu turno en el diálogo) | Nota | modelo: el documento no lo escribe; sale de las paradas 8 y 9 |
 | Lección 2, paso 3 (Tu turno en el diálogo) | Nota | quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026) |
@@ -363,10 +406,14 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 2 (¿Qué es esto?) | Situación en español | Es la mascota de Allison. ¿Cómo se llama? Responde en inglés. |
 | Lección 4, paso 2 (¿Qué es esto?) | Nota | pregunta: solo el nombre («She's Luna.»); antes pedía tres cosas pero se califica una frase, y «She's Luna» salía mal (cambio del 30 de octubre de 2026) |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | Can you sing? → "No, I can't. I can't sing at all!" |
-| Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | What's your favorite food? → "Colombian food! My favorite is mute santandereano." |
-| Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | How many bedrooms are there in your apartment? → "There is one bedroom. It's small!" |
+| Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | What's your favorite food? → "I love Colombian food! My favorite is mute santandereano." |
+| Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | How many bedrooms are there in your apartment? → "My apartment is small. There is one bedroom." |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | What are you doing now? → "I'm talking with you!" |
 | Lección 4, paso 3 (Entrevista a Allison) | Respuesta de Allison | How do I get to your apartment? → "Take the subway to Brooklyn. My building is on the corner, next to a café." |
+| Lección 4, paso 3 (Entrevista a Allison) | Nota | dato: "Si sabe cantar" (la respuesta dice lo que no sabe hacer) (auditoría final, 1 de noviembre de 2026) |
+| Lección 4, paso 3 (Entrevista a Allison) | Nota | respuesta de Allison sobre ella misma con "I" o "My": así le devuelve la pregunta al alumno ("And you?") (segunda verificación, 1 de noviembre de 2026) |
+| Escenario de cierre | Nota | dialogo: Allison ya no pide que cocine para ella "one day" (nunca propone verse fuera de la app); en la calle, lo que se ve en el dibujo: taxis, no un guitarrista (auditoría final, 1 de noviembre de 2026) |
+| Escenario de cierre | Nota | momento Aeropuerto: e-nueva-york-aeropuerto, un aeropuerto de Nueva York (antes el de Miami, con palmeras) (auditoría final, 1 de noviembre de 2026) |
 
 ## Escenarios (catálogo de la pantalla 5)
 

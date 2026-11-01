@@ -205,7 +205,7 @@ export const PARADA_08: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison: "In my apartment, there\'s a small kitchen, but there isn\'t a yard." Pregunta: ¿qué no tiene el apartamento de Allison? Elige entre un patio, una cocina y un cuarto.',
+            'Allison: "In my apartment, there\'s a small kitchen and a bedroom, but there isn\'t a yard." Pregunta: ¿qué no tiene el apartamento de Allison? Elige entre un patio, una cocina y un cuarto.',
           siRespondeMal: "Se repite la frase despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ["In my apartment, there's a small kitchen and a bedroom, but there isn't a yard."],
@@ -217,7 +217,10 @@ export const PARADA_08: Parada = {
             { imagen: "f-cuarto", descripcion: "Un cuarto", etiqueta: "A bedroom", etiquetaEs: "Un cuarto" },
           ],
           correcta: 0,
-          porRevisar: ["audio: nombra las tres cosas (la cocina, el cuarto y que no hay patio), así el audio dice qué hay y qué no; la pregunta resalta el NO (cambio del 30 de octubre de 2026)", "traduccion"],
+          porRevisar: [
+            "audio: nombra las tres cosas (la cocina, el cuarto y que no hay patio), así el audio dice qué hay y qué no; la pregunta resalta el NO (cambio del 30 de octubre de 2026)", "traduccion",
+            "queAparece: con el audio como está desde el 30 de octubre (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 2,
@@ -237,7 +240,7 @@ export const PARADA_08: Parada = {
           paso: 3,
           tipo: "entrevista",
           queAparece:
-            'Ficha del apartamento de Allison con cinco datos por descubrir: dónde vive, cuántos cuartos hay, si hay un parque cerca, dónde duerme Luna y qué hay en la sala. Arma cada pregunta con palabras de ayuda. Al acertar, el dato se llena, Allison responde y le devuelve la pregunta ("And you?"). Mínimo 10 intervenciones.',
+            'Ficha del apartamento de Allison con cinco datos por descubrir: dónde vive, cuántos cuartos hay, si hay un parque cerca, dónde está la cama de Luna y qué hay en la sala. Arma cada pregunta con palabras de ayuda. Al acertar, el dato se llena, Allison responde y le devuelve la pregunta ("And you?"). Mínimo 10 intervenciones.',
           siRespondeMal:
             "Allison: ¿Qué quieres saber? ¿Si hay un parque cerca? Say: Is there a park near your apartment? Hay un botón de ayuda con la pregunta escrita.",
           ficha: "el apartamento de Allison",
@@ -247,32 +250,37 @@ export const PARADA_08: Parada = {
               pregunta: "Do you live in a house or an apartment?",
               respuesta: "I live in an apartment in Brooklyn, in New York.",
             },
-            { dato: "Cuántos cuartos hay", pregunta: "How many bedrooms are there?", respuesta: "There is one bedroom. It's small!" },
+            { dato: "Cuántos cuartos hay", pregunta: "How many bedrooms are there?", respuesta: "My apartment is small. There is one bedroom." },
             {
               dato: "Si hay un parque cerca",
               pregunta: "Is there a park near your apartment?",
-              respuesta: "Yes, there is. I always walk in the park on Sundays.",
+              respuesta: "Yes, there is. I walk in the park on sunny Sundays.",
             },
             {
-              dato: "Dónde duerme Luna",
+              dato: "Dónde está la cama de Luna",
               pregunta: "Where is Luna's bed?",
               respuesta: "Her bed is next to the window. She likes the sun.",
             },
             {
               dato: "Qué hay en la sala",
               pregunta: "What's in your living room?",
-              respuesta: "There's a sofa, a TV and a lot of plants.",
+              respuesta: "My living room has a sofa, a TV and a lot of plants.",
             },
           ],
           aceptadas: ["Park near your house?"],
           tambienSeAcepta: 'Cualquier pregunta que se entienda: "Park near your house?"',
           ayuda: "¿Qué quieres saber? ¿Si hay un parque cerca? Say: Is there a park near your apartment?",
           minimoIntervenciones: 10,
+          porRevisar: [
+            "respuesta: \"on sunny Sundays\", como su ficha (si llueve se queda en casa); dato: \"Dónde está la cama de Luna\" (Luna duerme a menudo en el sofá) (auditoría final, 1 de noviembre de 2026)",
+            "respuesta de Allison sobre ella misma con \"I\" o \"My\": así le devuelve la pregunta al alumno (\"And you?\") (segunda verificación, 1 de noviembre de 2026)",
+          ],
         },
       ],
     },
   ],
   escenario: {
+    porRevisar: ["dialogo: el clóset está al lado de la ventana, como en el dibujo (no detrás de la puerta) (auditoría final, 1 de noviembre de 2026)"],
     titulo: "Una habitación en Boston",
     imagen: "e-boston-habitacion",
     contexto:
@@ -294,7 +302,7 @@ export const PARADA_08: Parada = {
       { quien: "alumno", dice: "It's nice! Is there a desk?", tarea: 2 },
       { quien: "personaje", dice: "Yes, there is. It's next to the window." },
       { quien: "alumno", dice: "Is there a closet?" },
-      { quien: "personaje", dice: "Yes, there's a big closet behind the door." },
+      { quien: "personaje", dice: "Yes, there's a big closet next to the window." },
       { quien: "alumno", dice: "How many bathrooms are there?", tarea: 3 },
       { quien: "personaje", dice: "There are two bathrooms. One is next to your room." },
       { quien: "alumno", dice: "Cool. Is there a bus stop near here?", tarea: 4 },

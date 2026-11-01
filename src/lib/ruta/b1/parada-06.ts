@@ -87,14 +87,17 @@ export const PARADA_06: Parada = {
           imagen: "f-arepas-maiz",
           pregunta: "What are arepas made with?",
           respuesta: "They're made with corn.",
-          aceptadas: ["are made with corn", "are made from corn", "are made of corn", "is made with corn", "is made from corn", "is made of corn"],
+          aceptadas: ["are made with corn", "are made from corn", "are made of corn", "arepa is made with corn", "arepa is made from corn", "arepa is made of corn"],
           pistas: ["Start with: They're made…"],
           explicaciones: [
             { siDice: "They make with corn", explicacion: "Use are made: They're made with corn.", es: "Usa are made: They're made with corn." },
             { siDice: "They made with corn", explicacion: "Use are made: They're made with corn.", es: "Usa are made: They're made with corn." },
             { siDice: "are make", explicacion: "Use made: They're made with corn.", es: "Usa made: They're made with corn." },
           ],
-          porRevisar: ["aceptadas: también «made from corn», «made of corn» y «An arepa is made with corn»; explicaciones para «They made with corn» y «are make» (cambio del 30 de octubre de 2026)", "explicaciones.es: traducción"],
+          porRevisar: [
+            "aceptadas: también «made from corn», «made of corn» y «An arepa is made with corn»; explicaciones para «They made with corn» y «are make» (cambio del 30 de octubre de 2026)", "explicaciones.es: traducción",
+            "aceptadas: \"arepa is made…\" en vez de \"is made…\", que también daba por buena \"They is made with corn\" (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 3,
@@ -178,8 +181,11 @@ export const PARADA_06: Parada = {
           segundos: 60,
           minimoSegundos: 40,
           minimoFrases: 5,
-          regla: { en: "Passive: was or is + past participle (was made).", es: "Voz pasiva: was o is + participio (was made)." },
-          porRevisar: ["regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past»)"],
+          regla: { en: "Passive: is/are or was/were + past participle (was made).", es: "Voz pasiva: is/are o was/were + participio (was made)." },
+          porRevisar: [
+            "regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past»)",
+            "regla: también are y were, que la parada enseña (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
       ],
     },
@@ -277,7 +283,7 @@ export const PARADA_06: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Last month, all of Zoe\'s photos were deleted by mistake. Luckily, they were saved in the cloud. Now she checks her backup every week!" (no está escrito). Pregunta: ¿dónde estaban guardadas las fotos? Elige entre tres tarjetas dibujadas por la app: In the cloud / On her computer / On her mom\'s phone.',
+            'Allison cuenta: "Last month, all of Zoe\'s photos were deleted by mistake. Luckily, they were saved in the cloud. Now she checks her backup every week!" (no está escrito). Pregunta: ¿dónde estaban a salvo las fotos de Zoe? Elige entre tres tarjetas dibujadas por la app: In the cloud / On her computer / On her mom\'s phone.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
           audio: [
@@ -286,14 +292,17 @@ export const PARADA_06: Parada = {
             "Now she checks her backup every week!",
           ],
           traduccion: [],
-          pregunta: "¿Dónde estaban guardadas las fotos?",
+          pregunta: "¿Dónde estaban a salvo las fotos de Zoe?",
           opciones: [
             { texto: "On her computer", descripcion: "On her computer" },
             { texto: "In the cloud", descripcion: "In the cloud" },
             { texto: "On her mom's phone", descripcion: "On her mom's phone" },
           ],
           correcta: 1,
-          porRevisar: ["opciones: orden cambiado para que la correcta no sea siempre la primera"],
+          porRevisar: [
+            "opciones: orden cambiado para que la correcta no sea siempre la primera",
+            "pregunta: \"a salvo\"; con \"guardadas\", \"On her computer\" (de donde se borraron) también podía servir (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 2,
@@ -319,7 +328,7 @@ export const PARADA_06: Parada = {
           paso: 3,
           tipo: "entrevista",
           queAparece:
-            'Nueva York, la ciudad de Allison: ficha con cinco datos de la ciudad por descubrir, todos con la pasiva: cuándo se abrió el puente de Brooklyn, de qué está hecha la Estatua de la Libertad, dónde se hizo, cuándo se abrió la primera línea del metro y cómo le dicen a Nueva York. Arma cada pregunta sin palabras de ayuda. Al acertar, el dato se llena, Allison responde y le pregunta por su ciudad ("And your city?"). Mínimo 10 intervenciones.',
+            'Nueva York, la ciudad de Allison: ficha con cinco datos de la ciudad por descubrir, todos con la pasiva: cuándo se abrió el puente de Brooklyn, de qué está hecha la Estatua de la Libertad, dónde se hizo, cuándo se abrió la primera línea del metro y cómo le dicen a Nueva York. Arma cada pregunta sin palabras de ayuda. Al acertar, el dato se llena, Allison responde y le pregunta por su ciudad ("Is there a famous bridge in your city?"). Mínimo 10 intervenciones.',
           siRespondeMal:
             'Una sola pista en inglés: "Ask me about the bridge! Start with: When was…?" Hay un botón de ayuda con la pregunta escrita.',
           tambienSeAcepta:
@@ -332,27 +341,27 @@ export const PARADA_06: Parada = {
             {
               dato: "El puente de Brooklyn",
               pregunta: "When was the Brooklyn Bridge opened?",
-              respuesta: "It was opened in 1883. It connects Manhattan and Brooklyn. I live in Brooklyn!",
+              respuesta: "It was opened in 1883. It connects Manhattan and Brooklyn. I live in Brooklyn! Is there a famous bridge in your city?",
             },
             {
               dato: "La Estatua de la Libertad",
               pregunta: "What is the Statue of Liberty made of?",
-              respuesta: "It's made of copper. That's why it's green!",
+              respuesta: "It's made of copper. That's why it's green! Is there a famous statue in your city?",
             },
             {
               dato: "Dónde se hizo",
               pregunta: "Where was the Statue of Liberty made?",
-              respuesta: "It was made in France and sent to New York in pieces!",
+              respuesta: "It was made in France and sent to New York in pieces! What is your city famous for?",
             },
             {
               dato: "El metro",
               pregunta: "When was the first subway line opened?",
-              respuesta: "It was opened in 1904. And I take the subway to work every day!",
+              respuesta: "It was opened in 1904. And I take the subway to work every day! How do you get to school?",
             },
             {
               dato: "El apodo",
               pregunta: "What else is New York called?",
-              respuesta: "It's also called the Big Apple!",
+              respuesta: "It's also called the Big Apple! Does your city have a nickname?",
             },
           ],
           aceptadas: ["When the bridge was opened?", "Statue made of what?", "New York's name?"],
@@ -368,6 +377,7 @@ export const PARADA_06: Parada = {
           ],
           porRevisar: [
             "pistas: solo la primera está en el documento; las otras cuatro siguen su patrón",
+            "respuestas: cada una termina con una pregunta sobre la ciudad del alumno (como el repaso final); antes ninguna le preguntaba nada (auditoría final, 1 de noviembre de 2026)",
           ],
         },
       ],
@@ -375,6 +385,7 @@ export const PARADA_06: Parada = {
   ],
   // Escenario: todo sale del documento; no hay textos por revisar.
   escenario: {
+    porRevisar: ["dialogo: \"It was in the water for a few seconds.\" (\"fell\" es de un instante) (auditoría final, 1 de noviembre de 2026)"],
     titulo: "Tu celular dejó de funcionar",
     imagen: "e-victoria-soporte",
     contexto:
@@ -401,7 +412,7 @@ export const PARADA_06: Parada = {
       { quien: "personaje", dice: "Hi! Welcome to Tech Help. How can I help you?" },
       { quien: "alumno", dice: "Hi! My phone doesn't work. The screen is completely black.", tarea: 1 },
       { quien: "personaje", dice: "Oh no. What happened to it?" },
-      { quien: "alumno", dice: "I dropped it at the harbor yesterday. It fell in the water for a few seconds.", tarea: 2 },
+      { quien: "alumno", dice: "I dropped it at the harbor yesterday. It was in the water for a few seconds.", tarea: 2 },
       { quien: "personaje", dice: "I see. Have you charged it since then?" },
       { quien: "alumno", dice: "Yes, I have. It was plugged in all night, but it still doesn't turn on.", tarea: 2 },
       { quien: "personaje", dice: "Let me check it… OK, the battery is fine, but the screen is broken." },

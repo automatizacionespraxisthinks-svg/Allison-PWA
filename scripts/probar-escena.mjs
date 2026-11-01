@@ -115,7 +115,7 @@ const GUIONES = [
     "Parada 7 · restaurante",
     PARADA_07.escenario,
     [
-      ["Good evening! A table for two, please.", [[1]]],
+      ["Hi! A table for two, please.", [[1]]],
       ["I wants a burger and fries, please.", [[2]], { error: true }],
       ["A lemonade, please.", [[3]]],
       ["No, thank you.", [[4]]],

@@ -57,7 +57,7 @@ export const PARADA_04: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Priya has been to Paris, but she has never been to Spain." (no está escrito). Elige entre tres imágenes de Priya: frente a la torre Eiffel, frente a la Sagrada Familia y frente al Coliseo.',
+            'Allison cuenta: "Priya has been to Paris. She has seen the Eiffel Tower!" (no está escrito). Elige entre tres imágenes de Priya: frente a la torre Eiffel, frente a la Sagrada Familia y frente al Coliseo.',
           siRespondeMal: "Se repite el audio despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ["Priya has been to Paris.", "She has seen the Eiffel Tower!"],
@@ -113,7 +113,7 @@ export const PARADA_04: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Ben has never flown in a plane, but he has traveled by train a lot." (no está escrito). Elige entre tres imágenes: un tren, un avión y un barco.',
+            'Allison cuenta: "Ben has never flown in a plane, but he has traveled by train a lot." (no está escrito). Elige entre tres imágenes: un tren, un bus rojo de dos pisos y un barco.',
           siRespondeMal: "Se repite el audio despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ["Ben has never flown in a plane, but he has traveled by train a lot."],
@@ -207,9 +207,12 @@ export const PARADA_04: Parada = {
           palabrasAyuda: ["been to the beach", "ridden a camel", "been on a boat"],
           modelo: ["She has been to the beach.", "She has ridden a camel.", "She has been on a boat."],
           aceptadas: ["She's ridden a camel.", "Priya has been on a boat.", "She went to the beach."],
-          cosas: ["beach", "camel", "boat", "sea", "ship"],
+          cosas: ["beach", "camel", "boat", "sea", "ship", "desert"],
           minimo: 3,
-          porRevisar: ["cosas: el documento no las nombra; salen de las fotos y de las frases modelo"],
+          porRevisar: [
+            "cosas: el documento no las nombra; salen de las fotos y de las frases modelo",
+            "cosas: desert, porque en la foto del camello se ven las dunas (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 3,
@@ -243,7 +246,7 @@ export const PARADA_04: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "I\'ve been to Colombia! I\'ve tried a lot of Colombian food." (no está escrito). Elige entre tres platos: unas arepas, una hamburguesa y una pizza.',
+            'Allison cuenta: "I\'ve been to Colombia! I\'ve eaten a lot of arepas there. I love them!" (no está escrito). Elige entre tres platos: unas arepas, una hamburguesa y una pizza.',
           siRespondeMal: "Se repite el audio despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ["I've been to Colombia!", "I've eaten a lot of arepas there. I love them!"],
@@ -315,10 +318,14 @@ export const PARADA_04: Parada = {
     },
   ],
   escenario: {
-    titulo: "Tu primera noche en un hostal de Edimburgo",
+    porRevisar: [
+      "titulo y dialogo de día (\"first day\", \"Bye\"), porque el dibujo del hostal es de día; Chloe dice \"Wow! I've never seen it.\" en vez de \"I've never been to South America.\", que ya contestaba la pregunta de la tarea 3 (Colombia) (auditoría final, 1 de noviembre de 2026)",
+      "dialogo: \"I want to see the castle now\" y \"See you later!\": going to y have to llegan en paradas posteriores (segunda verificación, 1 de noviembre de 2026)",
+    ],
+    titulo: "Tu primer día en un hostal de Edimburgo",
     imagen: "e-edimburgo-hostal",
     contexto:
-      "Es tu primera noche en un hostal de Edimburgo. En la sala común conoces a Chloe (Allison en su papel), una viajera de Canadá que recorre Europa.",
+      "Es tu primer día en un hostal de Edimburgo. En la sala común conoces a Chloe (Allison en su papel), una viajera de Canadá que recorre Europa.",
     personaje: "Chloe, una viajera de Canadá que recorre Europa",
     objetivo: "Contar lo que ha vivido y lo que nunca ha hecho, y preguntarle a Chloe por sus viajes",
     tareas: [
@@ -329,7 +336,7 @@ export const PARADA_04: Parada = {
       "Despídete y deséale buen viaje.",
     ],
     dialogo: [
-      { quien: "personaje", dice: "Hi! Is this your first night here?" },
+      { quien: "personaje", dice: "Hi! Is this your first day here?" },
       { quien: "alumno", dice: "Yes, it is. Hi! I'm Diego. I'm from Colombia.", tarea: 1 },
       { quien: "personaje", dice: "Nice to meet you, Diego! I'm Chloe, from Canada. Have you been to Scotland before?" },
       { quien: "alumno", dice: "No, I haven't. This is my first time." },
@@ -337,7 +344,7 @@ export const PARADA_04: Parada = {
       { quien: "alumno", dice: "Not a lot. But I've been to Mexico and Peru.", tarea: 2 },
       { quien: "personaje", dice: "Cool! Have you ever seen Machu Picchu?" },
       { quien: "alumno", dice: "Yes, I have! It was amazing." },
-      { quien: "personaje", dice: "I've never been to South America." },
+      { quien: "personaje", dice: "Wow! I've never seen it." },
       { quien: "alumno", dice: "Have you ever been to Colombia?", tarea: 3 },
       { quien: "personaje", dice: "No, never! What's it like?" },
       { quien: "alumno", dice: "It's beautiful. You can visit Cartagena and the Coffee Region." },
@@ -347,8 +354,8 @@ export const PARADA_04: Parada = {
       { quien: "alumno", dice: "No, I've never eaten haggis. Is it good?", tarea: 4 },
       { quien: "personaje", dice: "Some people love it! I tried it yesterday." },
       { quien: "alumno", dice: "Maybe I can try it tomorrow!" },
-      { quien: "personaje", dice: "OK! It's late. Good night, Diego!" },
-      { quien: "alumno", dice: "Good night, Chloe! Have a good trip!", tarea: 5 },
+      { quien: "personaje", dice: "OK! I want to see the castle now. Bye, Diego!" },
+      { quien: "alumno", dice: "Bye, Chloe! Have a good trip!", tarea: 5 },
     ],
     resumen: "¡Lo lograste! Hablaste en inglés de lo que has vivido y de lo que nunca has hecho.",
     recompensa: "Tres estrellas si no usó la ayuda, y la estampilla de Edimburgo en el pasaporte.",
@@ -381,7 +388,7 @@ export const PARADA_04: Parada = {
       {
         situacion: "Pasa de 18 intervenciones sin cumplir las tareas",
         accion: "Cierra la escena con amabilidad y propone repasar",
-        ejemplo: "It's late! Good night! Vamos a repasar el presente perfecto y lo intentas de nuevo.",
+        ejemplo: "See you later! Vamos a repasar el presente perfecto y lo intentas de nuevo.",
       },
     ],
     minimoIntervenciones: 10,

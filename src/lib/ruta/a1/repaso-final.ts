@@ -105,14 +105,16 @@ export const REPASO_FINAL: Repaso = {
           pregunta: "Tell me 3 things.",
           plantillas: [],
           palabrasAyuda: [],
-          modelo: ["There are two people.", "They're dancing.", "A man is selling fish."],
+          modelo: ["There are a lot of people.", "Two people are dancing.", "A man is selling fish."],
           aceptadas: ["A boy is eating ice cream.", "A woman is buying flowers.", "A man is playing the guitar."],
           tambienSeAcepta: "Cualquier frase correcta sobre la imagen",
-          cosas: ["man", "woman", "boy", "people", "fish", "flower", "ice cream", "guitar", "dance", "music", "market"],
+          cosas: ["man", "woman", "boy", "girl", "kid", "child", "people", "fish", "flower", "ice cream", "guitar", "dance", "music", "market"],
           minimo: 3,
           porRevisar: [
             'modelo: el documento pide tres frases y da dos de ejemplo ("There are two people. They\'re dancing."); la tercera ("A man is selling fish.") sale de la parada 9, con la misma imagen',
             'cosas: el documento no las nombra; salen de la imagen f-mercado-escena. "dance" desde el 28 de octubre de 2026: la frase modelo "They\'re dancing." no contaba',
+            "modelo: \"There are a lot of people.\" (en el mercado hay mucha gente, no dos) (auditoría final, 1 de noviembre de 2026)",
+            "cosas: girl, kid y child (la muchacha que baila y el niño del helado) (segunda verificación, 1 de noviembre de 2026)",
           ],
         },
         {
@@ -255,20 +257,20 @@ export const REPASO_FINAL: Repaso = {
           paso: 3,
           tipo: "entrevista",
           queAparece:
-            "Ficha final con cinco datos tapados, uno de cada parte del viaje: qué sabe hacer, qué le gusta comer, cómo es su apartamento, qué está haciendo ahora y cómo llegar a su casa. Sin palabras de ayuda. Mínimo 10 intervenciones.",
-          siRespondeMal: "Allison: ¿Qué quieres saber? y muestra las palabras de ayuda solo para esa pregunta.",
+            "Ficha final con cinco datos tapados, uno de cada parte del viaje: si sabe cantar, qué le gusta comer, cómo es su apartamento, qué está haciendo ahora y cómo llegar a su casa. Arma cada pregunta con palabras de ayuda. Mínimo 10 intervenciones.",
+          siRespondeMal: "Allison: ¿Qué quieres saber? y le da la pregunta para repetir; el botón Ayuda la muestra escrita.",
           ficha: "Allison (ficha final)",
           datos: [
-            { dato: "Qué sabe hacer", pregunta: "Can you sing?", respuesta: "No, I can't. I can't sing at all!" },
+            { dato: "Si sabe cantar", pregunta: "Can you sing?", respuesta: "No, I can't. I can't sing at all!" },
             {
               dato: "Qué le gusta comer",
               pregunta: "What's your favorite food?",
-              respuesta: "Colombian food! My favorite is mute santandereano.",
+              respuesta: "I love Colombian food! My favorite is mute santandereano.",
             },
             {
               dato: "Cómo es su apartamento",
               pregunta: "How many bedrooms are there in your apartment?",
-              respuesta: "There is one bedroom. It's small!",
+              respuesta: "My apartment is small. There is one bedroom.",
             },
             { dato: "Qué está haciendo ahora", pregunta: "What are you doing now?", respuesta: "I'm talking with you!" },
             {
@@ -283,12 +285,18 @@ export const REPASO_FINAL: Repaso = {
           minimoIntervenciones: 10,
           porRevisar: [
             "datos.respuesta: las respuestas de Allison salen de su ficha y de las paradas 3, 6, 8, 9 y 10; el repaso no las escribe",
+            "dato: \"Si sabe cantar\" (la respuesta dice lo que no sabe hacer) (auditoría final, 1 de noviembre de 2026)",
+            "respuesta de Allison sobre ella misma con \"I\" o \"My\": así le devuelve la pregunta al alumno (\"And you?\") (segunda verificación, 1 de noviembre de 2026)",
           ],
         },
       ],
     },
   ],
   escenario: {
+    porRevisar: [
+      "dialogo: Allison ya no pide que cocine para ella \"one day\" (nunca propone verse fuera de la app); en la calle, lo que se ve en el dibujo: taxis, no un guitarrista (auditoría final, 1 de noviembre de 2026)",
+      "momento Aeropuerto: e-nueva-york-aeropuerto, un aeropuerto de Nueva York (antes el de Miami, con palmeras) (auditoría final, 1 de noviembre de 2026)",
+    ],
     titulo: "Un día en Nueva York",
     imagen: "e-nueva-york-dia",
     contexto:
@@ -323,7 +331,7 @@ export const REPASO_FINAL: Repaso = {
       { momento: "Restaurante", quien: "alumno", dice: "I'd like a burger and some fries. And a soda, please.", tarea: 4 },
       { momento: "Restaurante", quien: "personaje", dice: "Good choice! Do you like New York food?" },
       { momento: "Restaurante", quien: "alumno", dice: "Yes, I like pizza. And I can cook arepas!", tarea: 5 },
-      { momento: "Restaurante", quien: "personaje", dice: "Really? Can you cook for me one day?" },
+      { momento: "Restaurante", quien: "personaje", dice: "Really? I love arepas! Can you cook other Colombian food?" },
       { momento: "Restaurante", quien: "alumno", dice: "Yes, I can!" },
       { momento: "Calle", quien: "personaje", dice: "So, where would you like to go now?" },
       { momento: "Calle", quien: "alumno", dice: "How do I get to the Statue of Liberty?", tarea: 6 },
@@ -332,7 +340,7 @@ export const REPASO_FINAL: Repaso = {
         quien: "personaje",
         dice: "Go straight to the water and take the ferry. Look! What's happening there?",
       },
-      { momento: "Calle", quien: "alumno", dice: "A man is playing the guitar and people are dancing.", tarea: 7 },
+      { momento: "Calle", quien: "alumno", dice: "A lot of yellow taxis are going down the street.", tarea: 7 },
       { momento: "Calle", quien: "personaje", dice: "It's New York! So, are you ready for the next trip?" },
       { momento: "Calle", quien: "alumno", dice: "Yes! Thank you for everything, Allison." },
       { momento: "Calle", quien: "personaje", dice: "See you in the UK!" },
@@ -343,7 +351,7 @@ export const REPASO_FINAL: Repaso = {
     // de San Francisco (e-san-francisco-calle, f-calle-sf); para la calle se usa el
     // fondo general, e-nueva-york-dia, que ya es una calle de Nueva York.
     momentos: [
-      { nombre: "Aeropuerto", tareas: [1], imagen: "e-miami-aeropuerto" },
+      { nombre: "Aeropuerto", tareas: [1], imagen: "e-nueva-york-aeropuerto" },
       { nombre: "Hotel", tareas: [2, 3], imagen: "c-hotel", repasar: "paradas 3 y 4" },
       { nombre: "Restaurante", tareas: [4, 5], imagen: "c-restaurante", repasar: "parada 7" },
       { nombre: "Calle", tareas: [6, 7, 8], imagen: "e-nueva-york-dia", repasar: "parada 10" },

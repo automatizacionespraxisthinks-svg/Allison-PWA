@@ -82,10 +82,11 @@ export const PARADA_04: Parada = {
           tipo: "repite",
           queAparece: 'Audio de Allison: "It\'s nine thirty in the morning."',
           siRespondeMal:
-            'Si no se entiende "thirty": Escucha: thir-ty. La lengua sale un poquito entre los dientes, como en this. Luego la frase completa.',
+            'Si no se entiende "thirty": Escucha: thir-ty. La lengua sale un poquito entre los dientes y solo sale aire, como en three. Luego la frase completa.',
           frase: "It's nine thirty in the morning.",
           palabraDificil: "thirty",
-          consejo: "La lengua sale un poquito entre los dientes, como en this.",
+          consejo: "La lengua sale un poquito entre los dientes y solo sale aire, como en three.",
+          porRevisar: ["consejo de \"thirty\": la th sin voz, como en three (la de this suena con voz) (auditoría final, 1 de noviembre de 2026)"],
         },
       ],
     },
@@ -155,7 +156,7 @@ export const PARADA_04: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Oye: "The concert is on July 4th." (no está escrito). Elige entre tres hojas de calendario: JUL 4, APR 7 y JUN 4. Al acertar aparece la frase con su traducción y una nota: En Estados Unidos, 7/4 es el 4 de julio: primero va el mes.',
+            'Oye: "The concert is on July 4th." (no está escrito). Elige entre tres hojas de calendario: JULY 4, APRIL 7 y MAY 4. Al acertar aparece la frase con su traducción.',
           siRespondeMal: "Se repite la frase despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ["The concert is on July 4th."],
@@ -166,7 +167,10 @@ export const PARADA_04: Parada = {
             { texto: "MAY 4", descripcion: "La hoja de calendario del 4 de mayo", etiqueta: "May fourth", etiquetaEs: "4 de mayo" },
           ],
           correcta: 0,
-          porRevisar: ["opciones: el mes completo (JULY 4, APRIL 7) y MAY 4 en vez de JUN 4, que se veía y sonaba casi igual a JUL 4; cada tarjeta suena al elegirla (cambio del 30 de octubre de 2026)", "traduccion", "quienHabla: el documento solo dice \"Oye:\"; se puso Allison"],
+          porRevisar: [
+            "opciones: el mes completo (JULY 4, APRIL 7) y MAY 4 en vez de JUN 4, que se veía y sonaba casi igual a JUL 4; cada tarjeta suena al elegirla (cambio del 30 de octubre de 2026)", "traduccion", "quienHabla: el documento solo dice \"Oye:\"; se puso Allison",
+            "queAparece: las opciones como están desde el 30 de octubre (JULY 4, APRIL 7 y MAY 4), sin la nota del 7/4 que la app no muestra (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 2,
@@ -181,8 +185,9 @@ export const PARADA_04: Parada = {
           palabrasAyuda: ["a clock", "a calendar", "three people"],
           modelo: ["I see a clock.", "I see a calendar.", "I see three people."],
           aceptadas: ["It's ten o'clock.", "Three people."],
-          cosas: ["clock", "calendar", "people", "woman", "man", "girl", "backpack", "cap", "jacket"],
+          cosas: ["clock", "calendar", "people", "woman", "man", "girl", "boy", "kid", "child", "backpack", "cap", "jacket"],
           minimo: 3,
+          porRevisar: ["cosas: boy, kid y child, porque en el dibujo no se sabe si la tercera persona es niña o niño (auditoría final, 1 de noviembre de 2026)"],
         },
         // Nota del documento debajo de la tabla: "El teléfono que dice el alumno no se guarda ni se
         // envía a nadie; solo se evalúa que diga los números."
@@ -252,12 +257,12 @@ export const PARADA_04: Parada = {
             "Allison: ¿Qué quieres saber? ¿Cuándo es mi cumpleaños? Say: When is your birthday? Hay un botón de ayuda con la pregunta escrita.",
           ficha: "Allison",
           datos: [
-            { dato: "Su cumpleaños", pregunta: "When is your birthday?", respuesta: "It's on May 12th." },
-            { dato: "Su día favorito", pregunta: "What's your favorite day?", respuesta: "Saturday! It's my day with my sister." },
+            { dato: "Su cumpleaños", pregunta: "When is your birthday?", respuesta: "My birthday is on May 12th." },
+            { dato: "Su día favorito", pregunta: "What's your favorite day?", respuesta: "My favorite day is Saturday! It's my day with my sister." },
             {
               dato: "Su mes favorito",
               pregunta: "What's your favorite month?",
-              respuesta: "December. New York is beautiful in December!",
+              respuesta: "My favorite month is December. New York is beautiful in December!",
             },
             { dato: "La edad de Luna", pregunta: "How old is Luna?", respuesta: "She is three." },
             { dato: "El cumpleaños de Emily", pregunta: "When is Emily's birthday?", respuesta: "It's on July 4th, Independence Day!" },
@@ -266,11 +271,13 @@ export const PARADA_04: Parada = {
           tambienSeAcepta: 'Cualquier pregunta que se entienda: "Your birthday?", "Luna is how old?"',
           ayuda: "¿Qué quieres saber? ¿Cuándo es mi cumpleaños? Say: When is your birthday?",
           minimoIntervenciones: 10,
+          porRevisar: ["respuestas de Allison con \"My…\": así devuelve la pregunta (\"And you?\"), y con la ficha completa ya no le pregunta al alumno por Luna o Emily (auditoría final, 1 de noviembre de 2026)"],
         },
       ],
     },
   ],
   escenario: {
+    porRevisar: ["tareas: «Deletrea tu apellido», como en el diálogo de ejemplo (Kate pregunta el apellido) (auditoría final, 1 de noviembre de 2026)"],
     titulo: "Reserva un tour por teléfono",
     imagen: "e-washington-oficina",
     contexto:
@@ -282,7 +289,7 @@ export const PARADA_04: Parada = {
       "Di qué día.",
       "Di a qué hora.",
       "Di cuántas personas son.",
-      "Deletrea tu nombre y di tu teléfono.",
+      "Deletrea tu apellido y di tu teléfono.",
       "Despídete.",
     ],
     dialogo: [

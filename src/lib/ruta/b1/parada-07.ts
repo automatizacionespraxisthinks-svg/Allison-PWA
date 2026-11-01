@@ -124,7 +124,7 @@ export const PARADA_07: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Zoe loves a band that plays at a small café in Toronto every Friday. The singer is a girl who goes to her school! Zoe says their songs are amazing." (no está escrito). Pregunta: ¿dónde toca la banda? Elige entre tres tarjetas dibujadas por la app: At a small café / At her school / At a stadium.',
+            'Allison cuenta: "Zoe loves a band that plays at a small café in Toronto every Friday. The singer is a girl who goes to her school! Zoe says their songs are amazing." (no está escrito). Pregunta: ¿dónde toca la banda? Elige entre tres tarjetas dibujadas por la app: At a small café / At a park / At a stadium.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
           audio: [
@@ -135,12 +135,15 @@ export const PARADA_07: Parada = {
           traduccion: [],
           pregunta: "¿Dónde toca la banda?",
           opciones: [
-            { texto: "At her school", descripcion: "At her school" },
+            { texto: "At a park", descripcion: "At a park" },
             { texto: "At a small café", descripcion: "At a small café" },
             { texto: "At a stadium", descripcion: "At a stadium" },
           ],
           correcta: 1,
-          porRevisar: ["opciones: orden cambiado para que la correcta no sea siempre la primera"],
+          porRevisar: [
+            "opciones: orden cambiado para que la correcta no sea siempre la primera",
+            "opciones: \"At a park\" en vez de \"At her school\", que repetía palabras del audio (\"goes to her school\") (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 2,
@@ -166,19 +169,22 @@ export const PARADA_07: Parada = {
           paso: 3,
           tipo: "cuentame",
           queAparece:
-            'Allison: "Recommend a movie, a series or a book to me." Tres preguntas guía: What\'s it about? Who is in it? Why should I watch it? Un reloj de un minuto.',
+            'Allison: "Recommend a movie, a series or a book to me." Tres preguntas guía: What\'s it about? Who is in it? Why do you recommend it? Un reloj de un minuto.',
           siRespondeMal:
             'Allison dice una cosa que hizo bien y una por mejorar, con su frase y la mejor. Ejemplo: "The movie was very excited" → Better: The movie was very exciting. Si habló menos de 40 segundos, lo anima con una pregunta guía y puede intentarlo otra vez.',
           tambienSeAcepta: "Cualquier relato de 40 segundos o más, en inglés, con 5 frases o más que se entienden",
           tema: "Recommend a movie, a series or a book to me.",
-          guias: ["What's it about?", "Who is in it?", "Why should I watch it?"],
+          guias: ["What's it about?", "Who is in it?", "Why do you recommend it?"],
           modelo:
             "You should watch Encanto. It's a movie that takes place in Colombia. It's about a girl who lives with her family in a magic house. The music is amazing, and the ending is really surprising. I was so excited when I watched it. I think everyone who loves music will like it.",
           segundos: 60,
           minimoSegundos: 40,
           minimoFrases: 5,
-          regla: { en: "Things are -ing (exciting); people feel -ed (excited).", es: "Las cosas llevan -ing (exciting); las personas, -ed (excited)." },
-          porRevisar: ["regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past»)"],
+          regla: { en: "Things are -ing (exciting); people feel -ed (excited).", es: "Las cosas llevan -ing (exciting); lo que sienten las personas lleva -ed (excited)." },
+          porRevisar: [
+            "regla: escrita para la app (1 de noviembre de 2026): Allison la dice si el error es de la gramática de la parada; antes la escribía el modelo y a veces con términos que el alumno no conoce («for unreal past»)",
+            "guias: \"Why do you recommend it?\" (un libro no se mira); regla.es: \"lo que sienten las personas\", como en inglés (una persona también puede ser boring) (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
       ],
     },
@@ -327,7 +333,7 @@ export const PARADA_07: Parada = {
           queAparece:
             'Allison: "I love music, but I don\'t know much about vallenato! Teach me about it." Cuatro preguntas en orden, de la lista de abajo. Dibujo de un acordeón, una caja y una guacharaca.',
           siRespondeMal:
-            'Si responde con una palabra: "Tell me more!" y repite la pregunta. Si habla en español: "In English, please!" y la pregunta más simple. Si no conoce el vallenato: "Tell me about a kind of music from your city!" y sigue la lista con esa música.',
+            'Si responde con una palabra: "Tell me more!" y repite la pregunta. Si habla en español: "In English, please!" y la pregunta más simple. Si dice que no sabe, que nunca ha ido o que no lo conoce: Allison lo anima con la respuesta de ejemplo ("That\'s OK! For example: … Now you try!") y en pantalla se ve la ayuda. Hay además un botón Ayuda con la respuesta de ejemplo y su audio.',
           tambienSeAcepta: "Respuestas que se entienden aunque tengan errores",
           tema: "el vallenato",
           apertura: "I love music, but I don't know much about vallenato! Teach me about it.",
@@ -361,7 +367,10 @@ export const PARADA_07: Parada = {
             { siPregunta: "qué música le gusta", respuesta: "I love pop, and I like reggaeton a little. They're great for dancing!" },
           ],
           otraPregunta: "Good question! But today you're the teacher. Tell me more!",
-          porRevisar: ["preguntas.simple: las cuatro versiones simples no están en el documento"],
+          porRevisar: [
+            "siRespondeMal: si no sabe o nunca ha ido, Allison da la respuesta de ejemplo y se ve la ayuda (pedido del usuario, 1 de noviembre de 2026); antes la redirigía a otro tema (\"Tell me about your city!\"), que no encajaba con las preguntas siguientes",
+            "preguntas.simple: las cuatro versiones simples no están en el documento",
+          ],
         },
       ],
     },
@@ -482,6 +491,6 @@ export const PARADA_07: Parada = {
         "Los cuatro dibujos de la noche de cine de Zoe: compran boletas, comen crispetas emocionados, gritan en una escena de miedo, salen riendo",
       uso: "Lección 3 (paso 2)",
     },
-    { archivos: ["f-vallenato"], muestra: "Un acordeón, una caja y una guacharaca", uso: "Lección 4 (paso 3)" },
+    { archivos: ["f-vallenato"], muestra: "Un acordeón, una caja y una guacharaca con su trinche (parece un tenedor)", uso: "Lección 4 (paso 3)" },
   ],
 };

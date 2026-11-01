@@ -112,13 +112,13 @@ export const PARADA_07: Parada = {
           paso: 2,
           tipo: "tu-turno",
           queAparece:
-            'La mesera: "Hi! What would you like to drink?" En pantalla: "I\'d like ___, please." y las palabras some water, a juice, a soda. Luego: "Would you like some ice?"',
+            'La mesera: "Hi! What would you like to drink?" En pantalla: "I\'d like ___, please." y las palabras some water, some juice, a soda. Luego: "Would you like some ice?"',
           siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
           dialogo: [{ quien: "La mesera", dice: "Hi! What would you like to drink?" }],
           plantilla: "I'd like ___, please.",
           modelo: "I'd like some water, please.",
-          aceptadas: ["I'd like a soda. No, thank you."],
-          palabras: ["some water", "a juice", "a soda"],
+          aceptadas: ["I'd like a soda, please."],
+          palabras: ["some water", "some juice", "a soda"],
           // "Luego: Would you like some ice?": la segunda pregunta, después de su línea.
           siguientes: [
             {
@@ -127,6 +127,7 @@ export const PARADA_07: Parada = {
               modelo: "Yes, please.",
             },
           ],
+          porRevisar: ["palabras: \"some juice\", como enseña la parada; aceptadas: solo la primera respuesta (las preguntas van una a la vez) (auditoría final, 1 de noviembre de 2026)"],
         },
         {
           paso: 3,
@@ -183,8 +184,9 @@ export const PARADA_07: Parada = {
           palabrasAyuda: ["burger", "apple", "juice", "fries"],
           modelo: ["I see a burger.", "I see an apple.", "I see some juice."],
           aceptadas: ["I see some fries."],
-          cosas: ["burger", "hamburger", "apple", "juice", "fries", "table"],
+          cosas: ["burger", "hamburger", "apple", "juice", "fries", "table", "plate", "glass"],
           minimo: 3,
+          porRevisar: ["cosas: plate y glass, que se ven (segunda verificación, 1 de noviembre de 2026)"],
         },
         {
           paso: 3,
@@ -214,19 +216,22 @@ export const PARADA_07: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison: "In New Orleans, I always have beignets and a coffee!" Pregunta: ¿qué come Allison? Elige entre los beignets, el helado y la pizza.',
+            'Allison: "In New Orleans, I always have beignets and a coffee!" Pregunta: ¿qué come Allison en Nueva Orleans? Elige entre los beignets, el helado y la pizza.',
           siRespondeMal: "Se repite la frase despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ["In New Orleans, I always have beignets and a coffee!"],
           traduccion: ["¡En Nueva Orleans siempre como beignets y me tomo un café!"],
-          pregunta: "¿Qué come Allison?",
+          pregunta: "¿Qué come Allison en Nueva Orleans?",
           opciones: [
             { imagen: "f-beignets", descripcion: "Los beignets", etiqueta: "Beignets and coffee", etiquetaEs: "Beignets y café" },
             { imagen: "f-helado", descripcion: "El helado", etiqueta: "Ice cream", etiquetaEs: "Helado" },
             { imagen: "f-pizza", descripcion: "La pizza", etiqueta: "Pizza", etiquetaEs: "Pizza" },
           ],
           correcta: 0,
-          porRevisar: ["etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "traduccion"],
+          porRevisar: [
+            "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "traduccion",
+            "pregunta: «en Nueva Orleans»; sin el lugar, la pizza y el helado también eran ciertos (le gustan, según su ficha) (segunda verificación, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 2,
@@ -254,7 +259,7 @@ export const PARADA_07: Parada = {
             {
               dato: "Su bebida favorita",
               pregunta: "What's your favorite drink?",
-              respuesta: "Coffee! I always drink coffee in the morning.",
+              respuesta: "My favorite drink is coffee! I always drink it in the morning.",
             },
             {
               dato: "Qué quiere cenar hoy",
@@ -268,15 +273,20 @@ export const PARADA_07: Parada = {
           tambienSeAcepta: 'Cualquier pregunta que se entienda: "Pizza, you like?"',
           ayuda: "¿Qué quieres saber? ¿Si me gusta la pizza? Say: Do you like pizza?",
           minimoIntervenciones: 10,
+          porRevisar: ["respuesta de Allison sobre ella misma con \"I\" o \"My\": así le devuelve la pregunta al alumno (\"And you?\") (segunda verificación, 1 de noviembre de 2026)"],
         },
       ],
     },
   ],
   escenario: {
-    titulo: "Cena en Nueva Orleans",
+    porRevisar: [
+      "contexto: sin «La app muestra un menú con precios»: la app no muestra ningún menú (auditoría final, 1 de noviembre de 2026)",
+      "titulo y dialogo: almuerzo (\"Hi! Welcome!\", \"Goodbye!\") en vez de cena, porque el dibujo del restaurante es de día (auditoría final, 1 de noviembre de 2026)",
+    ],
+    titulo: "Almuerzo en Nueva Orleans",
     imagen: "e-nueva-orleans-restaurante",
     contexto:
-      "Entras con un amigo a un restaurante de Nueva Orleans. Grace, la mesera (Allison en su papel), los atiende. La app muestra un menú con dibujos y precios en dólares.",
+      "Entras con un amigo a un restaurante de Nueva Orleans. Grace, la mesera (Allison en su papel), los atiende.",
     personaje: "Grace, la mesera del restaurante de Nueva Orleans",
     objetivo: "Pedir comida y bebida, responder ofrecimientos y pedir la cuenta",
     tareas: [
@@ -288,8 +298,8 @@ export const PARADA_07: Parada = {
       "Da las gracias y despídete.",
     ],
     dialogo: [
-      { quien: "personaje", dice: "Good evening! Welcome!" },
-      { quien: "alumno", dice: "Good evening! A table for two, please.", tarea: 1 },
+      { quien: "personaje", dice: "Hi! Welcome!" },
+      { quien: "alumno", dice: "Hi! A table for two, please.", tarea: 1 },
       { quien: "personaje", dice: "Sure, this way. Here's the menu. What would you like?" },
       { quien: "alumno", dice: "I'd like a burger and some fries, please.", tarea: 2 },
       { quien: "personaje", dice: "Good choice! And for your friend?" },
@@ -307,9 +317,9 @@ export const PARADA_07: Parada = {
       { quien: "personaje", dice: "Me too!" },
       { quien: "alumno", dice: "Can I have the check, please? How much is it?", tarea: 5 },
       { quien: "personaje", dice: "It's thirty-two dollars." },
-      { quien: "alumno", dice: "Thank you, Grace! Good night!", tarea: 6 },
+      { quien: "alumno", dice: "Thank you, Grace! Goodbye!", tarea: 6 },
     ],
-    resumen: "¡Lo lograste! Pediste una cena completa en inglés.",
+    resumen: "¡Lo lograste! Pediste un almuerzo completo en inglés.",
     recompensa: "Tres estrellas si no usó la ayuda, y la estampilla de Nueva Orleans en el pasaporte.",
     siSeAtasca: [
       {
@@ -340,7 +350,7 @@ export const PARADA_07: Parada = {
       {
         situacion: "Pasa de 18 intervenciones sin cumplir las tareas",
         accion: "Allison cierra la escena con amabilidad y propone repasar la lección que faltó",
-        ejemplo: "Have a nice night! Vamos a repasar cómo pedir y lo intentas de nuevo.",
+        ejemplo: "Have a nice day! Vamos a repasar cómo pedir y lo intentas de nuevo.",
       },
     ],
     minimoIntervenciones: 10,

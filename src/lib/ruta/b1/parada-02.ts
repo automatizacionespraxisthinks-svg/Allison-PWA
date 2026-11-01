@@ -215,7 +215,7 @@ export const PARADA_02: Parada = {
             'Cuatro dibujos en orden de un día de invierno de la abuela de Liam cuando era niña, en Montreal: (1) se levantaba temprano y miraba la nieve por la ventana; (2) caminaba al colegio con guantes y bufanda; (3) después del colegio patinaba en el lago congelado del parque con sus amigas; (4) en la noche tomaba chocolate caliente en la cocina. Allison: "Tell me about a winter day when Liam\'s grandma was a girl." Debajo: first, then, after school, at night.',
           siRespondeMal:
             'Si dice "She use to skate", Allison repite bien la frase ("She used to skate on the frozen lake in the park.") y el alumno la dice. Si cuenta menos de 3 dibujos, Allison señala el que falta: "What happened next?"',
-          tambienSeAcepta: 'El pasado simple en algunas frases: "After school, she skated on the river."',
+          tambienSeAcepta: 'El pasado simple en algunas frases: "After school, she skated on the frozen lake."',
           imagenes: ["f-abuela-invierno-1", "f-abuela-invierno-2", "f-abuela-invierno-3", "f-abuela-invierno-4"],
           dibujos: [
             "La abuela de Liam, de niña, se levantaba temprano y miraba la nieve por la ventana",
@@ -278,7 +278,7 @@ export const PARADA_02: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Zoe used to be afraid of the dark. She used to sleep with the light on every night. Now she sleeps with the window open!" (no está escrito). Pregunta: ¿de qué tenía miedo Zoe? Elige entre una habitación oscura, un perro y una piscina.',
+            'Allison cuenta: "Zoe used to be afraid of the dark. She used to sleep with the light on every night. Now she sleeps with the window open!" (no está escrito). Pregunta: ¿de qué tenía miedo Zoe? Elige entre una habitación oscura, un perro y una persona nadando.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
           audio: [
@@ -290,7 +290,7 @@ export const PARADA_02: Parada = {
           pregunta: "¿De qué tenía miedo Zoe?",
           opciones: [
             { imagen: "a1/f-perro", descripcion: "Un perro", dice: "Dogs" },
-            { imagen: "a1/f-nadar", descripcion: "Una piscina", dice: "Swimming" },
+            { imagen: "a1/f-nadar", descripcion: "Una persona nadando", dice: "Swimming" },
             { imagen: "f-habitacion-oscura", descripcion: "Una habitación oscura", dice: "The dark" },
           ],
           correcta: 2,
@@ -352,7 +352,7 @@ export const PARADA_02: Parada = {
             {
               dato: "Qué hacía en verano",
               pregunta: "What did you use to do in the summer?",
-              respuesta: "We used to go to the beach at Coney Island. I loved swimming!",
+              respuesta: "I used to go to the beach at Coney Island with my mom and Emily. I loved swimming!",
             },
           ],
           aceptadas: ["Where you lived when you were a kid?", "You had a pet?", "What you played?"],
@@ -368,6 +368,7 @@ export const PARADA_02: Parada = {
           ],
           porRevisar: [
             "pistas: solo la del verano (la quinta) está en el documento; las otras cuatro siguen su patrón",
+            "respuesta: empieza con \"I used to\" (así Allison devuelve la pregunta) y dice con quién iba (auditoría final, 1 de noviembre de 2026)",
           ],
         },
       ],
@@ -480,7 +481,7 @@ export const PARADA_02: Parada = {
     },
     {
       archivos: ["e-montreal-comedor"],
-      muestra: "El comedor de una casa antigua con la mesa servida y nieve por la ventana",
+      muestra: "El comedor con la mesa servida, las lámparas encendidas y nieve por la ventana",
       uso: "Escenario",
     },
     {
@@ -521,6 +522,6 @@ export const PARADA_02: Parada = {
       muestra: "Una habitación oscura con una niña asustada bajo la cobija",
       uso: "Lección 4 (paso 1)",
     },
-    { archivos: ["a1/f-perro", "a1/f-nadar"], muestra: "Un perro; una piscina (de A1)", uso: "Lección 4 (paso 1)" },
+    { archivos: ["a1/f-perro", "a1/f-nadar"], muestra: "Un perro; una persona nadando (de A1)", uso: "Lección 4 (paso 1)" },
   ],
 };

@@ -185,10 +185,11 @@ export const PARADA_10: Parada = {
           tema: "Tell me about the best place in your town.",
           guias: ["What's the best place?", "Why is it better than other places?", "What's the most fun thing to do there?"],
           modelo:
-            "The best place in my town is the main square. It's bigger and more beautiful than the other parks. On Sundays there's a market, and the arepas there are the most delicious in town!",
+            "The best place in my town is the main square. It's bigger and more beautiful than the other places. On Sundays there's a market, and the arepas there are the most delicious in town!",
           segundos: 30,
           minimoSegundos: 20,
           minimoFrases: 3,
+          porRevisar: ["modelo: \"than the other places\" (una plaza no es un parque) (auditoría final, 1 de noviembre de 2026)"],
         },
       ],
     },
@@ -201,7 +202,7 @@ export const PARADA_10: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "The train is faster than the bus, and it\'s more comfortable. But the bus is cheaper." (no está escrito). Pregunta: ¿cuál es el más barato? Elige entre un tren, un avión y un bus.',
+            'Allison cuenta: "The train is faster than the bus, and it\'s more comfortable. But the bus is cheaper." (no está escrito). Pregunta: ¿Cuál es más barato? Elige entre un tren, un avión y un bus.',
           siRespondeMal: "Se repite el audio despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ["The train is faster than the bus, and it's more comfortable.", "But the bus is cheaper."],
@@ -228,10 +229,11 @@ export const PARADA_10: Parada = {
           palabrasAyuda: ["bigger", "cheaper", "more beautiful", "more expensive"],
           modelo: ["The left room is bigger than the right one.", "The right room is cheaper.", "The left room is more beautiful."],
           aceptadas: ["The big room is more expensive.", "The small one is cheaper.", "I prefer the big room."],
-          cosas: ["bigger", "smaller", "cheaper", "more expensive", "more beautiful", "more comfortable", "better", "prefer"],
+          cosas: ["bigger", "smaller", "cheaper", "more expensive", "more beautiful", "more comfortable", "better", "worse", "nicer", "prefer"],
           minimo: 3,
           porRevisar: [
             'cosas: el documento no las nombra; salen de las palabras de ayuda, las frases modelo y lo que también se acepta ("I prefer the big room")',
+            "cosas: worse (del vocabulario de la parada) y nicer (auditoría final, 1 de noviembre de 2026)",
           ],
         },
         {
@@ -263,7 +265,7 @@ export const PARADA_10: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "My apartment is small, but it\'s across from a park. My sister\'s apartment is bigger." (no está escrito). ¿Dónde está el apartamento de Allison? Elige entre una calle con un parque al lado, una playa y una granja.',
+            'Allison cuenta: "My apartment is small, but it\'s across from a park. My sister\'s apartment is bigger." (no está escrito). ¿Dónde está el apartamento de Allison? Elige entre un edificio de apartamentos frente a un parque, una playa y una granja.',
           siRespondeMal: "Se repite el audio despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ["My apartment is small, but it's across from a park.", "My sister's apartment is bigger."],
@@ -312,7 +314,7 @@ export const PARADA_10: Parada = {
             {
               dato: "Si su apartamento es más grande que el de Emily",
               pregunta: "Is your apartment bigger than Emily's?",
-              respuesta: "No! Emily's apartment is bigger. Mine is small, but it's across from a park.",
+              respuesta: "Emily's apartment is bigger! Mine is small, but it's across from a park.",
             },
             { dato: "Quién es mayor, ella o Emily", pregunta: "Who is older, you or Emily?", respuesta: "Emily is older. She's 31!" },
             {
@@ -323,18 +325,19 @@ export const PARADA_10: Parada = {
             {
               dato: "Cuál es la comida colombiana más rica",
               pregunta: "What's the most delicious Colombian food?",
-              respuesta: "Mute santandereano! It's my favorite.",
+              respuesta: "I think mute santandereano is the most delicious. It's my favorite!",
             },
             {
               dato: "Qué es mejor, el metro o el taxi",
               pregunta: "Which is better, the subway or a taxi?",
-              respuesta: "The subway! It's cheaper than a taxi.",
+              respuesta: "I think the subway is better. It's cheaper than a taxi!",
             },
           ],
           aceptadas: ["Your apartment is bigger?", "Who is older?", "Best month?"],
           tambienSeAcepta: "Cualquier pregunta que se entienda",
           ayuda: "¿Qué quieres saber? ¿Quién es mayor? Say: Who is older, you or Emily?",
           minimoIntervenciones: 10,
+          porRevisar: ["respuestas: Allison devuelve (\"And you?\") la comida y el metro o el taxi, que el alumno puede contestar; la del apartamento ya no empieza con \"No!\", porque \"Is your apartment bigger than Emily's?\" no tiene sentido para el alumno (auditoría final, 1 de noviembre de 2026)"],
         },
       ],
     },
@@ -426,7 +429,7 @@ export const PARADA_10: Parada = {
     { archivos: ["cardiff"], muestra: "Portada de la ciudad: el castillo, el estadio y la bahía", uso: "Portada de la parada" },
     {
       archivos: ["e-cardiff-apartamentos"],
-      muestra: 'Una calle con dos edificios con el letrero "For rent" y la agente con las llaves',
+      muestra: 'Una calle con dos edificios con el letrero "For rent": uno junto a la muralla del castillo y otro con un jardín pequeño; al fondo, un parque',
       uso: "Escenario",
     },
     {
@@ -447,7 +450,7 @@ export const PARADA_10: Parada = {
     },
     {
       archivos: ["f-tren", "f-avion", "f-bus"],
-      muestra: "Un tren, un avión y un bus rojo de dos pisos (de la parada 4)",
+      muestra: "Un tren y un bus rojo de dos pisos (de la parada 4), y un avión",
       uso: "Lección 3 (paso 1)",
     },
     {

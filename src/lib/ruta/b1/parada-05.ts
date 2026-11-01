@@ -234,7 +234,7 @@ export const PARADA_05: Parada = {
           pregunta: "Tell me about Zoe's morning. Her mom asks: What have you been doing?",
           debajo: ["first", "then", "after that", "now"],
           modelo:
-            "At seven, Zoe started cleaning her room. She's been cleaning for three hours. She's been listening to music all morning. Now her room is clean, but she's very tired.",
+            "At seven, Zoe started cleaning her room. She's been cleaning for three hours. She's been listening to music for hours. Now her room is clean, but she's very tired.",
           verbos: ["started cleaning", "has been cleaning", "has been listening", "is clean"],
           gramatica:
             "present perfect continuous: have/has been + -ing, with for, since or all morning (past simple only for when it started)",
@@ -252,6 +252,7 @@ export const PARADA_05: Parada = {
             "verbos: salen del modelo, uno por frase en el orden del modelo; \"she's been\" va como \"has been\"",
             "gramatica: escrita para el evaluador a partir de la gramática de la parada",
             "explicaciones.es: traducción",
+            "modelo: \"for hours\" (en el dibujo de las 7:00 Zoe todavía no tiene audífonos) (auditoría final, 1 de noviembre de 2026)",
           ],
         },
         {
@@ -339,7 +340,7 @@ export const PARADA_05: Parada = {
           queAparece:
             'Allison: "I\'ve never been to the Barranquilla Carnival! Teach me about it." Cuatro preguntas en orden, de la lista de abajo. Dibujo de un desfile del Carnaval con disfraces de colores y máscaras.',
           siRespondeMal:
-            'Si responde con una palabra: "Tell me more!" y repite la pregunta. Si habla en español: "In English, please!" y la pregunta más simple. Si no lo conoce: "Tell me about a festival in your city!" y sigue la lista con esa fiesta.',
+            'Si responde con una palabra: "Tell me more!" y repite la pregunta. Si habla en español: "In English, please!" y la pregunta más simple. Si dice que no sabe, que nunca ha ido o que no lo conoce: Allison lo anima con la respuesta de ejemplo ("That\'s OK! For example: … Now you try!") y en pantalla se ve la ayuda. Hay además un botón Ayuda con la respuesta de ejemplo y su audio.',
           tambienSeAcepta:
             'Respuestas que se entienden aunque tengan errores. Si no sabe desde cuándo: "I don\'t know, but I think for a long time."',
           tema: "el Carnaval de Barranquilla",
@@ -374,6 +375,7 @@ export const PARADA_05: Parada = {
           otraPregunta: "Good question! But today you're the teacher. Tell me more!",
           minimoRespuestas: 3,
           porRevisar: [
+            "siRespondeMal: si no sabe o nunca ha ido, Allison da la respuesta de ejemplo y se ve la ayuda (pedido del usuario, 1 de noviembre de 2026); antes la redirigía a otro tema (\"Tell me about your city!\"), que no encajaba con las preguntas siguientes",
             "preguntas.simple: versiones más simples, no estaban en el documento",
             "reacciones: «I want to dance there!» pasa a la tercera y «Wow!» a la cuarta: antes del cierre «Now I want to dance at the Carnival!» se repetía (1 de noviembre de 2026)",
           ],

@@ -61,19 +61,22 @@ export const PARADA_01: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Zoe has been to Vancouver twice. The last time, she went in July with her family. They saw whales!" (no está escrito). Pregunta: ¿en qué mes fue Zoe a Vancouver la última vez? Elige entre tres tarjetas dibujadas por la app: July, March y January.',
+            'Allison cuenta: "Emma has been to Vancouver twice. The last time, she went in July with her family. They saw whales!" (no está escrito). Pregunta: ¿en qué mes fue Emma a Vancouver la última vez? Elige entre tres tarjetas dibujadas por la app: July, March y January.',
           siRespondeMal: "Se repite el audio despacio, una sola vez, y elige otra vez.",
           quienHabla: "Allison",
-          audio: ["Zoe has been to Vancouver twice.", "The last time, she went in July with her family.", "They saw whales!"],
+          audio: ["Emma has been to Vancouver twice.", "The last time, she went in July with her family.", "They saw whales!"],
           traduccion: [],
-          pregunta: "¿En qué mes fue Zoe a Vancouver la última vez?",
+          pregunta: "¿En qué mes fue Emma a Vancouver la última vez?",
           opciones: [
             { texto: "March", descripcion: "March" },
             { texto: "July", descripcion: "July" },
             { texto: "January", descripcion: "January" },
           ],
           correcta: 1,
-          porRevisar: ["opciones: March en vez de June, que sonaba y se veía casi igual a July; la pregunta dice que es el mes de Vancouver (cambio del 30 de octubre de 2026)", "opciones: orden cambiado para que la correcta no sea siempre la primera"],
+          porRevisar: [
+            "opciones: March en vez de June, que sonaba y se veía casi igual a July; la pregunta dice que es el mes de Vancouver (cambio del 30 de octubre de 2026)", "opciones: orden cambiado para que la correcta no sea siempre la primera",
+            "audio: Emma en vez de Zoe; en la lección 3 Zoe vuela a Vancouver esta mañana, y no cuadraba con «la última vez, en julio» (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 2,
@@ -323,7 +326,7 @@ export const PARADA_01: Parada = {
           queAparece:
             'Allison: "I\'ve never been to Cartagena, but I really want to go! Tell me about a place in Colombia you\'ve been to." Cuatro preguntas en orden, de la lista de abajo.',
           siRespondeMal:
-            'Si responde con una palabra: "Tell me more!" y repite la pregunta. Si habla en español: "In English, please!" y la pregunta más simple. Si nunca ha viajado: "Tell me about your city!" y sigue la lista con su ciudad.',
+            'Si responde con una palabra: "Tell me more!" y repite la pregunta. Si habla en español: "In English, please!" y la pregunta más simple. Si dice que no sabe, que nunca ha ido o que no lo conoce: Allison lo anima con la respuesta de ejemplo ("That\'s OK! For example: … Now you try!") y en pantalla se ve la ayuda. Hay además un botón Ayuda con la respuesta de ejemplo y su audio.',
           tambienSeAcepta:
             "Cualquier lugar de Colombia, también su ciudad; respuestas que se entienden aunque tengan errores",
           tema: "un lugar de Colombia donde has estado",
@@ -358,6 +361,7 @@ export const PARADA_01: Parada = {
           otraPregunta: "Good question! But today you're the teacher. Tell me more!",
           minimoRespuestas: 3,
           porRevisar: [
+            "siRespondeMal: si no sabe o nunca ha ido, Allison da la respuesta de ejemplo y se ve la ayuda (pedido del usuario, 1 de noviembre de 2026); antes la redirigía a otro tema (\"Tell me about your city!\"), que no encajaba con las preguntas siguientes",
             "preguntas.simple: las cuatro versiones simples",
             "reacciones: en otro orden, una por pregunta: «That sounds delicious!» iba después de «What did you do there?» y ahora va con la comida (1 de noviembre de 2026)",
           ],
@@ -369,6 +373,7 @@ export const PARADA_01: Parada = {
   // texto entre comillas de la celda Imprevisto); el título va con
   // mayúscula inicial.
   escenario: {
+    porRevisar: ["imprevisto: sin \"Welcome to Canada!\", que la app decía justo después de describir la maleta; en el diálogo, \"first time in Canada\" va antes de la tarea 3, y al final Ms. Patel pregunta qué va a hacer en Toronto (ya sabía que es su primera vez) (auditoría final, 1 de noviembre de 2026)"],
     titulo: "La aerolínea perdió tu maleta",
     imagen: "e-toronto-equipaje",
     contexto:
@@ -387,7 +392,7 @@ export const PARADA_01: Parada = {
       tarea: 4,
       texto:
         'Después de la tarea 3, Ms. Patel revisa el sistema: la maleta se quedó en Bogotá y llega mañana en la noche. Ahí aparece la tarea 4: "La maleta llega mañana: pide lo que necesitas para esta noche."',
-      linea: "Welcome to Canada! Let me check… OK, I've found it. Your bag is still in Bogotá. It will arrive tomorrow night.",
+      linea: "Let me check… OK, I've found it. Your bag is still in Bogotá. It will arrive tomorrow night.",
     },
     dialogo: [
       { quien: "personaje", dice: "Hi there! How can I help you?" },
@@ -396,14 +401,11 @@ export const PARADA_01: Parada = {
       { quien: "alumno", dice: "I flew from Bogotá. I checked my bag there this morning.", tarea: 2 },
       { quien: "personaje", dice: "OK. Can I see your boarding pass?" },
       { quien: "alumno", dice: "Sure. Here it is." },
-      { quien: "personaje", dice: "Thank you. What does your bag look like?" },
-      { quien: "alumno", dice: "It's a big red suitcase. It has a yellow tag.", tarea: 3 },
-      { quien: "personaje", dice: "Have you ever lost a bag before?" },
+      { quien: "personaje", dice: "Thank you. Have you ever lost a bag before?" },
       { quien: "alumno", dice: "No, I haven't. It's my first time in Canada!" },
-      {
-        quien: "personaje",
-        dice: "Welcome to Canada! Let me check… OK, I've found it. Your bag is still in Bogotá. It will arrive tomorrow night.",
-      },
+      { quien: "personaje", dice: "Welcome to Canada! What does your bag look like?" },
+      { quien: "alumno", dice: "It's a big red suitcase. It has a yellow tag.", tarea: 3 },
+      { quien: "personaje", dice: "Let me check… OK, I've found it. Your bag is still in Bogotá. It will arrive tomorrow night." },
       { quien: "alumno", dice: "Tomorrow night? But I don't have any clothes!" },
       { quien: "personaje", dice: "I'm so sorry. What do you need for tonight?" },
       { quien: "alumno", dice: "I need a toothbrush and a T-shirt. Can you help me?", tarea: 4 },
@@ -413,8 +415,8 @@ export const PARADA_01: Parada = {
       { quien: "alumno", dice: "I'm staying with a host family. The address is 25 King Street.", tarea: 5 },
       { quien: "personaje", dice: "Perfect. We'll send your bag there tomorrow night." },
       { quien: "alumno", dice: "Great. Thank you very much!" },
-      { quien: "personaje", dice: "You're welcome. Have you been to Toronto before?" },
-      { quien: "alumno", dice: "No, I've never been here. I'm very excited!" },
+      { quien: "personaje", dice: "You're welcome. What are you going to do in Toronto?" },
+      { quien: "alumno", dice: "I'm going to study English this summer. I'm very excited!" },
       { quien: "personaje", dice: "You'll love it! Have a great summer!" },
       { quien: "alumno", dice: "Thanks! Goodbye!", tarea: 5 },
     ],
@@ -509,7 +511,7 @@ export const PARADA_01: Parada = {
     {
       archivos: ["f-zoe-viaje-1", "f-zoe-viaje-2", "f-zoe-viaje-3", "f-zoe-viaje-4"],
       muestra:
-        "Los cuatro dibujos del viaje de Zoe, con el mismo fondo de aeropuerto: entrega la maleta, vuela, espera en la banda, en el mostrador sin maleta",
+        "Los cuatro dibujos del viaje de Zoe: entrega la maleta en el aeropuerto de Toronto (la CN Tower por la ventana), vuela (la ventanilla del avión), espera en la banda y está en el mostrador sin maleta en el aeropuerto de Vancouver (montañas por la ventana)",
       uso: "Lección 3 (paso 2)",
     },
     {

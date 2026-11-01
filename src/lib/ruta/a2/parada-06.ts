@@ -115,13 +115,14 @@ export const PARADA_06: Parada = {
           opciones: [
             { imagen: "f-cine", descripcion: "Un cine", etiqueta: "To the movies", etiquetaEs: "A cine" },
             { imagen: "f-estadio-hotdogs", descripcion: "Un estadio", etiqueta: "To the stadium", etiquetaEs: "Al estadio" },
-            { imagen: "f-priya-museo", descripcion: "Un museo", etiqueta: "To the museum", etiquetaEs: "Al museo" },
+            { imagen: "f-plan-museo", descripcion: "Un museo", etiqueta: "To the museum", etiquetaEs: "Al museo" },
           ],
           correcta: 0,
           porRevisar: ["etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", 
             "traduccion",
             'pregunta: el documento no la escribe; sale de "Toca el cine"',
             'opciones: el documento dice "un museo"; el dibujo de la tabla (f-priya-museo, de la parada 2) es Priya en un museo',
+            "opciones: el museo sin Priya (f-plan-museo); con Priya, la opción incorrecta era la que más llamaba (auditoría final, 1 de noviembre de 2026)",
           ],
         },
         {
@@ -149,17 +150,18 @@ export const PARADA_06: Parada = {
           paso: 3,
           tipo: "cuentame",
           queAparece:
-            'Allison: "Tell me about your plans for next week." Preguntas guía: What are you doing on Monday? Who are you meeting this week? What are you doing on the weekend?',
+            'Allison: "Tell me about your plans for next week." Preguntas guía: What are you doing on Monday? Who are you meeting next week? What are you doing on the weekend?',
           siRespondeMal:
             'Una cosa que hizo bien y una por mejorar. Ejemplo: "On Wednesday I playing soccer" → Para lo arreglado: on Wednesday I\'m playing soccer. Si habló menos de 20 segundos, una pregunta guía para seguir.',
           tambienSeAcepta: "Cualquier relato de 20 segundos o más, en inglés, con 3 frases o más que se entienden",
           tema: "Tell me about your plans for next week.",
-          guias: ["What are you doing on Monday?", "Who are you meeting this week?", "What are you doing on the weekend?"],
+          guias: ["What are you doing on Monday?", "Who are you meeting next week?", "What are you doing on the weekend?"],
           modelo:
             "On Monday I'm having a math test. On Wednesday I'm playing soccer with my team. On Saturday I'm visiting my cousins in Paipa, and on Sunday we're having lunch with my grandparents.",
           segundos: 30,
           minimoSegundos: 20,
           minimoFrases: 3,
+          porRevisar: ["guias: \"next week\", como el tema (antes \"this week\") (auditoría final, 1 de noviembre de 2026)"],
         },
       ],
     },
@@ -172,11 +174,11 @@ export const PARADA_06: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Anuncio de la estación: "The 9:15 train to Cambridge is leaving from track 4." (no está escrito). Elige entre tres tarjetas dibujadas por la app: 9:15 · track 4, 9:50 · track 4 y 9:15 · track 14.',
+            'Allison cuenta: The announcement says: "The 9:15 train to Cambridge is leaving from track 4." (no está escrito). Elige entre tres tarjetas dibujadas por la app: 9:15 · track 4, 10:30 · track 2 y 7:45 · track 8.',
           siRespondeMal: "Se repite el anuncio despacio y elige otra vez.",
-          quienHabla: "El anuncio de la estación",
-          audio: ["The 9:15 train to Cambridge is leaving from track 4."],
-          traduccion: ["El tren de las 9:15 a Cambridge sale de la vía 4."],
+          quienHabla: "Allison",
+          audio: ['The announcement says: "The 9:15 train to Cambridge is leaving from track 4."'],
+          traduccion: ['El anuncio dice: "El tren de las 9:15 a Cambridge sale de la vía 4."'],
           pregunta: "¿A qué hora y de qué vía sale el tren a Cambridge?",
           opciones: [
             { texto: "9:15 · track 4", descripcion: "El tren de las 9:15, vía 4", etiqueta: "9:15, track 4", etiquetaEs: "9:15, vía 4" },
@@ -184,24 +186,30 @@ export const PARADA_06: Parada = {
             { texto: "7:45 · track 8", descripcion: "El tren de las 7:45, vía 8", etiqueta: "7:45, track 8", etiquetaEs: "7:45, vía 8" },
           ],
           correcta: 0,
-          porRevisar: ["opciones: horas y vías bien distintas (10:30 · track 2 y 7:45 · track 8); antes 9:50 y track 14 sonaban casi igual a 9:15 y track 4. Cada tarjeta suena al elegirla (cambio del 30 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca 9:15 · track 4"'],
+          porRevisar: [
+            "opciones: horas y vías bien distintas (10:30 · track 2 y 7:45 · track 8); antes 9:50 y track 14 sonaban casi igual a 9:15 y track 4. Cada tarjeta suena al elegirla (cambio del 30 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca 9:15 · track 4"',
+            "audio: lo cuenta Allison (una sola voz), que cita el anuncio de la estación (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 2,
           tipo: "describe",
           queAparece:
-            'El calendario de Ben en la pared: el lunes una muela a las 4:00, el miércoles un balón de fútbol y el viernes una torta de cumpleaños con "Grandma". Allison: "Tell me 3 things Ben is doing this week." Debajo: "On ___ he\'s ___." y going to the dentist, playing soccer, having dinner with his grandma.',
+            'El calendario de Ben en la pared: el lunes una muela a las 4:00, el miércoles un balón de fútbol y el viernes una torta de cumpleaños con "Grandma". Allison: "Tell me 3 things Ben is doing this week." Debajo: "On ___ he\'s ___." y going to the dentist, playing soccer, going to his grandma\'s birthday party.',
           siRespondeMal:
             'Si dice "On Monday he go to the dentist", Allison repite bien la frase (On Monday he\'s going to the dentist.) y el alumno la dice. Si nombra menos de 3, Allison señala la torta y pregunta "What\'s he doing on Friday?".',
           imagen: "f-agenda-ben",
           pregunta: "Tell me 3 things Ben is doing this week.",
           plantillas: ["On ___ he's ___."],
-          palabrasAyuda: ["going to the dentist", "playing soccer", "having dinner with his grandma"],
-          modelo: ["On Monday he's going to the dentist.", "On Wednesday he's playing soccer.", "On Friday he's having dinner with his grandma."],
+          palabrasAyuda: ["going to the dentist", "playing soccer", "going to his grandma's birthday party"],
+          modelo: ["On Monday he's going to the dentist.", "On Wednesday he's playing soccer.", "On Friday he's going to his grandma's birthday party."],
           aceptadas: ["He's seeing the dentist on Monday.", "On Friday he's visiting his grandma.", "It's her birthday."],
-          cosas: ["dentist", "soccer", "dinner", "grandma", "birthday"],
+          cosas: ["dentist", "soccer", "grandma", "birthday", "party", "cake"],
           minimo: 3,
-          porRevisar: ["cosas: el documento no las nombra; salen del dibujo y de las frases modelo"],
+          porRevisar: [
+            "cosas: el documento no las nombra; salen del dibujo y de las frases modelo",
+            "el viernes del calendario es un cumpleaños (torta con velas y Grandma), no una cena: palabras de ayuda, modelo y cosas (party, cake) (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 3,
@@ -357,7 +365,7 @@ export const PARADA_06: Parada = {
       {
         situacion: "Pasa de 18 intervenciones sin cumplir las tareas",
         accion: "Cierra la escena con amabilidad y propone repasar",
-        ejemplo: "The train is here! Have a good trip! Vamos a repasar el presente continuo para planes y lo intentas de nuevo.",
+        ejemplo: "Sorry, the ticket window is closing now. Have a good trip! Vamos a repasar el presente continuo para planes y lo intentas de nuevo.",
       },
     ],
     minimoIntervenciones: 10,
@@ -367,7 +375,7 @@ export const PARADA_06: Parada = {
   ilustraciones: [
     {
       archivos: ["york"],
-      muestra: "Portada de la ciudad: la muralla antigua, la catedral y una calle estrecha de piedra",
+      muestra: "Portada de la ciudad: la muralla antigua, la catedral, casas de entramado de madera y el río con botes",
       uso: "Portada de la parada",
     },
     { archivos: ["e-york-estacion"], muestra: "La ventanilla de tiquetes de la estación, con el tablero de horarios", uso: "Escenario" },
@@ -378,8 +386,8 @@ export const PARADA_06: Parada = {
     },
     { archivos: ["f-tiquete-tren"], muestra: 'El tiquete de tren de Ben: "London → Cambridge · Saturday · 10:30"', uso: "Lección 1 (paso 2)" },
     {
-      archivos: ["f-cine", "f-estadio-hotdogs", "f-priya-museo"],
-      muestra: "Un cine, un estadio y un museo (de la parada 2)",
+      archivos: ["f-cine", "f-estadio-hotdogs", "f-plan-museo"],
+      muestra: "Un cine, un estadio y un museo (de las paradas 2 y 5)",
       uso: "Lección 2 (paso 1)",
     },
     {

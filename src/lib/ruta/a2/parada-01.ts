@@ -69,9 +69,9 @@ export const PARADA_01: Parada = {
         {
           paso: 2,
           tipo: "que-es-esto",
-          queAparece: 'Dibujo de Ben frente a su computador. Allison: "What is Ben doing?" Debajo: "He\'s ___ on his computer."',
+          queAparece: 'Dibujo de Ben frente a su computador. Allison: "What is Ben doing?" Debajo, las rayas de "He\'s working."',
           siRespondeMal:
-            'Pistas en inglés, una a la vez: "He has a computer." → "It starts with w." Sin pistas, Allison dice "He\'s working on his computer" y el alumno la repite. Si dice "He work": Lo de ahora mismo va con is y -ing: he\'s working.',
+            'Pistas en inglés, una a la vez: "He has a computer." → "It starts with w." Sin pistas, Allison dice "He\'s working." y el alumno la repite. Si dice "He work": Lo de ahora mismo va con is y -ing: he\'s working.',
           imagen: "f-ben-computador",
           pregunta: "What is Ben doing?",
           contexto: "¿Qué está haciendo Ben en este momento? Responde con una frase en inglés.",
@@ -105,7 +105,7 @@ export const PARADA_01: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Ben\'s mom is a nurse. She works at a hospital. She works at night." (no está escrito). Elige entre tres imágenes: una enfermera en un hospital de noche, una profesora en un salón y una chef en una cocina.',
+            'Allison cuenta: "Ben\'s mom is a nurse. She works at a hospital. She works at night." (no está escrito). Elige entre tres imágenes: una enfermera en un hospital de noche, una profesora en un salón y un chef en una cocina.',
           siRespondeMal: "Se repite el audio despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ["Ben's mom is a nurse.", "She works at a hospital.", "She works at night."],
@@ -193,18 +193,22 @@ export const PARADA_01: Parada = {
           paso: 2,
           tipo: "describe",
           queAparece:
-            'Dibujo de una oficina en Londres: una mujer habla por teléfono, un hombre toma café y una muchacha escribe en un computador. Allison: "Tell me 3 things people are doing." Debajo: "She\'s ___ing." / "He\'s ___ing." y talking on the phone, drinking coffee, working on a computer.',
+            'Dibujo de una oficina en Londres: una mujer habla por teléfono, un hombre toma café y una muchacha escribe en un computador. Allison: "Tell me 3 things people are doing." Debajo: "She\'s ___." / "He\'s ___." / "She\'s ___." y talking on the phone, drinking coffee, working on a computer.',
           siRespondeMal:
             'Si dice "He drink coffee", Allison repite bien la frase (He\'s drinking coffee.) y el alumno la dice. Si nombra menos de 3, Allison señala el café y pregunta "What is he doing?".',
           imagen: "f-oficina-londres",
           pregunta: "Tell me 3 things people are doing.",
-          plantillas: ["She's ___ing.", "He's ___ing."],
+          plantillas: ["She's ___.", "He's ___.", "She's ___."],
           palabrasAyuda: ["talking on the phone", "drinking coffee", "working on a computer"],
           modelo: ["She's talking on the phone.", "He's drinking coffee.", "She's working on a computer."],
           aceptadas: ["The woman is talking on the phone.", "The man is drinking coffee.", "The girl is typing.", "The girl is using a computer."],
-          cosas: ["phone", "coffee", "computer", "talking", "drinking", "typing"],
+          cosas: ["phone", "coffee", "computer", "talking", "drinking", "typing", "working", "writing", "calling", "sitting", "standing"],
           minimo: 3,
-          porRevisar: ["cosas: el documento no las nombra; salen del dibujo y de las frases modelo"],
+          porRevisar: [
+            "cosas: el documento no las nombra; salen del dibujo y de las frases modelo",
+            "plantillas sin \"-ing\": las palabras de ayuda ya lo traen (\"She's talking on the phoneing.\"); cosas: working, writing, calling, sitting y standing, que también se ven (auditoría final, 1 de noviembre de 2026)",
+            "plantillas: la tercera es \"She's\", como el modelo (la muchacha trabaja en el computador); con dos, salía \"He's working on a computer.\" (segunda verificación, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 3,
@@ -235,19 +239,22 @@ export const PARADA_01: Parada = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Ben\'s dad is a police officer. He works in the city. Right now he\'s driving to work." (no está escrito). Elige entre tres imágenes: un policía en una patrulla, un granjero con vacas y un piloto en un avión.',
+            'Allison cuenta: "Ben\'s dad is a police officer. He works in the city. Right now he\'s working." (no está escrito). Elige entre tres imágenes: un policía junto a su patrulla, una granjera con vacas y una piloto junto a un avión.',
           siRespondeMal: "Se repite el audio despacio y elige otra vez.",
           quienHabla: "Allison",
-          audio: ["Ben's dad is a police officer.", "He works in the city.", "Right now he's driving to work."],
-          traduccion: ["El papá de Ben es policía.", "Trabaja en la ciudad.", "Ahora mismo va manejando al trabajo."],
+          audio: ["Ben's dad is a police officer.", "He works in the city.", "Right now he's working."],
+          traduccion: ["El papá de Ben es policía.", "Trabaja en la ciudad.", "Ahora mismo está trabajando."],
           pregunta: "¿Qué hace el papá de Ben?",
           opciones: [
-            { imagen: "f-policia-patrulla", descripcion: "Un policía en una patrulla", etiqueta: "A police officer", etiquetaEs: "Un policía" },
+            { imagen: "f-policia-patrulla", descripcion: "Un policía junto a su patrulla", etiqueta: "A police officer", etiquetaEs: "Un policía" },
             { imagen: "f-granjero-vacas", descripcion: "Una granjera con vacas", etiqueta: "A farmer", etiquetaEs: "Una granjera" },
             { imagen: "f-piloto-avion", descripcion: "Una piloto junto a un avión", etiqueta: "A pilot", etiquetaEs: "Una piloto" },
           ],
           correcta: 0,
-          porRevisar: ["etiquetas: como suenan; la granjera y la piloto de los dibujos son mujeres (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca al policía"'],
+          porRevisar: [
+            "etiquetas: como suenan; la granjera y la piloto de los dibujos son mujeres (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca al policía"',
+            "audio: \"Right now he's working.\"; en el dibujo el policía está de pie junto a la patrulla, no manejando (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 2,
@@ -419,7 +426,7 @@ export const PARADA_01: Parada = {
     },
     {
       archivos: ["f-policia-patrulla", "f-granjero-vacas", "f-piloto-avion"],
-      muestra: "Un policía en una patrulla, un granjero con vacas y un piloto en un avión",
+      muestra: "Un policía junto a su patrulla, una granjera con vacas y una piloto junto a un avión en el aeropuerto",
       uso: "Lección 4 (paso 1) y las tarjetas de Adivina",
     },
   ],

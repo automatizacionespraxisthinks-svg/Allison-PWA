@@ -327,17 +327,17 @@ export const PARADA_08: Parada = {
             {
               dato: "Si hace sol el domingo",
               pregunta: "What will you do if it's sunny on Sunday?",
-              respuesta: "If it's sunny, I'll walk in the park. It's my favorite place in New York!",
+              respuesta: "I'll walk in the park if it's sunny. It's my favorite place in New York!",
             },
             {
               dato: "Si llueve el fin de semana",
               pregunta: "What will you do if it rains this weekend?",
-              respuesta: "If it rains, I'll stay home and watch a movie.",
+              respuesta: "I'll stay home and watch a movie if it rains.",
             },
             {
               dato: "Si le da gripa",
               pregunta: "What will you do if you get a cold?",
-              respuesta: "If I get a cold, I'll drink hot tea with honey and rest a lot.",
+              respuesta: "I'll drink hot tea with honey and rest a lot if I get a cold.",
             },
             {
               dato: "Si Emily la visita",
@@ -347,7 +347,7 @@ export const PARADA_08: Parada = {
             {
               dato: "Si tiene una tarde libre",
               pregunta: "What will you do if you have a free afternoon?",
-              respuesta: "If I have a free afternoon, I'll cook something Colombian.",
+              respuesta: "I'll cook something Colombian if I have a free afternoon.",
             },
           ],
           aceptadas: ["If sunny, what you do?", "And if it rains?", "Emily visits, what you will do?"],
@@ -361,7 +361,10 @@ export const PARADA_08: Parada = {
             "Ask me about Emily! Start with: What will you do if…?",
             "Ask me about a free afternoon! Start with: What will you do if…?",
           ],
-          porRevisar: ["pistas: solo la primera (Sunday) está en el documento; las otras cuatro siguen su patrón"],
+          porRevisar: [
+            "pistas: solo la primera (Sunday) está en el documento; las otras cuatro siguen su patrón",
+            "respuestas de Allison con \"I'll… if…\": así le devuelve la pregunta (\"And you?\"); la de Emily sigue con \"If\", porque esa no se le devuelve al alumno (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
       ],
     },
@@ -488,7 +491,7 @@ export const PARADA_08: Parada = {
     {
       archivos: ["f-oso-1", "f-oso-2", "f-oso-3", "f-oso-4"],
       muestra:
-        "Los cuatro dibujos de la cadena en el campamento, con el mismo fondo: la basura y la comida, el oso huele, el oso llega, la guardaparques cierra el campamento",
+        "Los cuatro dibujos de la cadena en un campamento junto al lago, con montañas: la basura y la comida, el oso huele, el oso llega, la guardaparques cierra el campamento",
       uso: "Lección 3 (paso 2)",
     },
   ],

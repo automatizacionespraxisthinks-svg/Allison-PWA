@@ -683,7 +683,7 @@ function Resultado({
 
       {verModelo ? (
         <div className="flex flex-col gap-1 rounded-3xl border border-borde px-4 py-3">
-          <small className="text-[11px] font-extrabold tracking-[0.06em] text-texto-suave uppercase">Así lo contaría Allison</small>
+          <small className="text-[11px] font-extrabold tracking-[0.06em] text-texto-suave uppercase">Así lo podrías contar</small>
           <p className="flex items-start gap-2 text-[15px] font-semibold">
             <BotonOir tam="chico" onClick={() => onOir(a.modelo)} />
             {a.modelo}
@@ -691,7 +691,7 @@ function Resultado({
         </div>
       ) : (
         <button type="button" onClick={onVerModelo} className="self-center text-sm font-extrabold text-primario">
-          Ver cómo lo contaría Allison
+          Ver cómo podrías contarlo
         </button>
       )}
 

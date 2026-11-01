@@ -143,19 +143,22 @@ export const REPASO_1: Repaso = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Next Saturday Ben is going to play soccer with his friends. After the game, they\'re going to eat pizza." (no está escrito). Elige entre Ben y su abuela horneando una torta (f-plan-torta), niños jugando fútbol en un parque (f-parque-ninos-futbol) y un cine (f-cine).',
+            'Allison cuenta: "Next Saturday Ben is going to play soccer with his friends. After the game, they\'re going to eat pizza." (no está escrito). Elige entre alguien nadando (a1/f-nadar), niños jugando fútbol en un parque (f-parque-ninos-futbol) y un cine (f-cine).',
           siRespondeMal: "Se repite el audio despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ["Next Saturday Ben is going to play soccer with his friends.", "After the game, they're going to eat pizza."],
           traduccion: ["El próximo sábado Ben va a jugar fútbol con sus amigos.", "Después del partido, van a comer pizza."],
           pregunta: "¿Qué va a hacer Ben el próximo sábado?",
           opciones: [
-            { imagen: "f-plan-torta", descripcion: "Ben y su abuela horneando una torta", etiqueta: "Bake a cake", etiquetaEs: "Hornear una torta" },
+            { imagen: "a1/f-nadar", descripcion: "Alguien nadando", etiqueta: "Go swimming", etiquetaEs: "Ir a nadar" },
             { imagen: "f-parque-ninos-futbol", descripcion: "Niños jugando fútbol en un parque", etiqueta: "Play soccer", etiquetaEs: "Jugar fútbol" },
             { imagen: "f-cine", descripcion: "Un cine", etiqueta: "Go to the movies", etiquetaEs: "Ir a cine" },
           ],
           correcta: 1,
-          porRevisar: ["opciones: f-parque-ninos-futbol es un dibujo nuevo, solo niños jugando con el balón (cambio del 30 de octubre de 2026)", "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a los niños jugando fútbol"'],
+          porRevisar: [
+            "opciones: f-parque-ninos-futbol es un dibujo nuevo, solo niños jugando con el balón (cambio del 30 de octubre de 2026)", "etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026)", "audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a los niños jugando fútbol"',
+            "opciones: nadar en vez de Ben horneando con su abuela; Ben solo salía en la opción incorrecta (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 2,
@@ -199,7 +202,7 @@ export const REPASO_1: Repaso = {
           paso: 1,
           tipo: "escucha-elige",
           queAparece:
-            'Allison cuenta: "Last Sunday it was sunny, so I walked in the park." (no está escrito). Elige entre una mujer caminando en un parque (f-mujer-parque), dos mujeres tomando café (f-amigas-cafe) y dos mujeres viendo una película (f-hermanas-pelicula).',
+            'Allison cuenta: "Last Sunday it was sunny, so I walked in the park." (no está escrito). Elige entre una mujer caminando en un parque (f-mujer-parque), una muchacha cantando (a1/f-cantar) y una muchacha bailando (a1/f-bailar).',
           siRespondeMal: "Se repite el audio despacio y elige otra vez.",
           quienHabla: "Allison",
           audio: ["Last Sunday it was sunny, so I walked in the park."],
@@ -207,11 +210,14 @@ export const REPASO_1: Repaso = {
           pregunta: "¿Qué hizo Allison el domingo pasado?",
           opciones: [
             { imagen: "a1/f-mujer-parque", descripcion: "Una mujer caminando en un parque", etiqueta: "Walk in the park", etiquetaEs: "Caminar en el parque" },
-            { imagen: "a1/f-amigas-cafe", descripcion: "Dos mujeres tomando café", etiqueta: "Have coffee", etiquetaEs: "Tomar café" },
+            { imagen: "a1/f-cantar", descripcion: "Una muchacha cantando", etiqueta: "Sing", etiquetaEs: "Cantar" },
             { imagen: "a1/f-bailar", descripcion: "Una muchacha bailando", etiqueta: "Dance", etiquetaEs: "Bailar" },
           ],
           correcta: 0,
-          porRevisar: ["opciones: «Watch a movie» también era verdad (en la ficha, Allison vio una película ese domingo en la noche); ahora es bailar (cambio del 30 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a la mujer en el parque"'],
+          porRevisar: [
+            "opciones: «Watch a movie» también era verdad (en la ficha, Allison vio una película ese domingo en la noche); ahora es bailar (cambio del 30 de octubre de 2026)", "traduccion", 'pregunta: el documento no la escribe; sale de "Toca a la mujer en el parque"',
+            "opciones: cantar en vez de tomar café: Allison toma café todas las mañanas (ficha), así que también era cierto; no sabe cantar (auditoría final, 1 de noviembre de 2026)",
+          ],
         },
         {
           paso: 2,
@@ -268,10 +274,11 @@ export const REPASO_1: Repaso = {
     },
   ],
   escenario: {
+    porRevisar: ["contexto: \"a mitad de tu viaje\" (el viaje sigue hasta Cardiff); dialogo: \"anything interesting\" (perder la maleta no es chistoso) (auditoría final, 1 de noviembre de 2026)"],
     titulo: "Reencuentro en Londres",
     imagen: "londres",
     contexto:
-      "Vuelves a Londres al final de tu viaje. Cerca del Big Ben te encuentras por casualidad con Mia (Allison en su papel), tu compañera de Brasil de la escuela de idiomas de Nueva York. No se veían hace dos años.",
+      "Vuelves a Londres a mitad de tu viaje. Cerca del Big Ben te encuentras por casualidad con Mia (Allison en su papel), tu compañera de Brasil de la escuela de idiomas de Nueva York. No se veían hace dos años.",
     personaje: "Mia, tu compañera de Brasil de la escuela de idiomas de Nueva York, que ahora vive en Londres",
     objetivo: "Usar en una sola conversación todo lo de las paradas 1 a 5",
     tareas: [
@@ -289,7 +296,7 @@ export const REPASO_1: Repaso = {
       { quien: "alumno", dice: "I'm traveling around the UK. These days I'm learning a lot of English.", tarea: 1 },
       { quien: "personaje", dice: "That's great! Where did you go?" },
       { quien: "alumno", dice: "I went to Manchester. I watched a soccer game there.", tarea: 2 },
-      { quien: "personaje", dice: "Soccer! Our favorite sport! Did anything funny happen on your trip?" },
+      { quien: "personaje", dice: "Soccer! Our favorite sport! Did anything interesting happen on your trip?" },
       { quien: "alumno", dice: "Yes! In Liverpool I was waiting for the train when I lost my bag.", tarea: 3 },
       { quien: "personaje", dice: "Oh no! Did you find it?" },
       { quien: "alumno", dice: "Yes, I did. It was at the lost and found office." },
