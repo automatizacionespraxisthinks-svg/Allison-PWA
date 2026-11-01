@@ -200,6 +200,10 @@ ok("salto: 1 estrella no pasa", !pasaElSalto(1, 0));
 ok("corrección: I from → I'm from", esCorreccionDe("I from Colombia.", "I'm from Colombia."));
 ok("corrección: no es otra respuesta", !esCorreccionDe("I am fine.", "My name is..."));
 ok("corrección: igual no cuenta", !esCorreccionDe("Good morning!", "Good morning."));
+ok("corrección: mover una frase no cuenta", !esCorreccionDe("In Colombia we eat arepas with corn.", "We eat arepas with corn in Colombia."));
+ok("corrección: with → and no cuenta", !esCorreccionDe("we eat arepas with corn", "we eat arepas and corn"));
+ok("corrección: in → on sí cuenta", esCorreccionDe("I go to school in the bus.", "I go to school on the bus."));
+ok("corrección: el orden de la pregunta sí cuenta", esCorreccionDe("Where you are from?", "Where are you from?"));
 ok("tarea obvia: saluda", JSON.stringify(tareasObvias(PARADA_01.escenario, "Hello!")) === "[1]");
 ok("tarea obvia: despídete", JSON.stringify(tareasObvias(PARADA_01.escenario, "Thank you. Goodbye!")) === "[7]");
 ok(

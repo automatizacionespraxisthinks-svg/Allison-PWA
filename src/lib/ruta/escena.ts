@@ -260,8 +260,10 @@ THE JSON
   mistake in the student's last English message: their exact words and
   the same sentence said correctly, with the same meaning (a statement
   stays a statement), at most 12 words each (only the part with the
-  mistake). A wrong ANSWER is not a mistake. "" and "" if there is no
-  mistake or they spoke Spanish.`;
+  mistake). A wrong ANSWER is not a mistake. A correct sentence you would
+  say another way is not a mistake either: never move a phrase that is in
+  a correct place and never change what they meant ("with" is not "and").
+  "" and "" if there is no mistake or they spoke Spanish.`;
 }
 
 function recordatorioEscenario(t: {
@@ -1264,15 +1266,32 @@ export function sinEcoDelAlumno(linea: string, dicho: string): string {
   return comunes >= 1 && nuevas === 0 ? oraciones.slice(1).join(" ") : linea;
 }
 
+const UNEN = new Set(["and", "or", "but"]);
+const PREPOSICIONES = new Set(["with", "without", "in", "on", "at", "for", "to", "from", "of", "by", "about"]);
+
 /**
  * ¿"mejor" es la misma frase de "dijo", corregida? Comparten al menos la
  * mitad de las palabras y no son iguales. Así no pasa por error una
  * respuesta que no cumplía la tarea ("I am fine." → "My name is...").
+ * Tampoco cuenta lo que no es un error, aunque el modelo lo "corrija"
+ * (México, 1 de noviembre de 2026): mover una frase del principio al
+ * final ("In Colombia we eat…" → "We eat… in Colombia") ni cambiar una
+ * preposición por "and", que cambia lo que quiso decir ("arepas with
+ * corn" → "arepas and corn").
  */
 export function esCorreccionDe(dijo: string, mejor: string): boolean {
   const a = palabras(dijo);
-  const b = new Set(palabras(mejor));
-  if (!a.length || a.join(" ") === [...palabras(mejor)].join(" ")) return false;
+  const m = palabras(mejor);
+  const b = new Set(m);
+  if (!a.length || a.join(" ") === m.join(" ")) return false;
+  if (a.length === m.length && [...a.keys()].some((k) => k > 0 && [...a.slice(k), ...a.slice(0, k)].join(" ") === m.join(" "))) return false;
+  if (a.length === m.length) {
+    const distintas = [...a.keys()].filter((k) => a[k] !== m[k]);
+    if (distintas.length === 1) {
+      const [x, y] = [a[distintas[0]], m[distintas[0]]];
+      if ((PREPOSICIONES.has(x) && UNEN.has(y)) || (UNEN.has(x) && PREPOSICIONES.has(y))) return false;
+    }
+  }
   const comunes = a.filter((w) => b.has(w)).length;
   return comunes * 2 >= a.length && !/\.\.\.|…/.test(mejor);
 }
