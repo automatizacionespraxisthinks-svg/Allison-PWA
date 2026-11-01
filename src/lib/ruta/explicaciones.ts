@@ -30,3 +30,14 @@ export function explicacionPara<T extends { siDice: string }>(lista: T[] | undef
     return !antes || !d.includes(` ${antes} ${partes[0]} `);
   });
 }
+
+/**
+ * Cuéntame: la corrección de ejemplo del documento, tal cual viene en «Si
+ * responde mal» ('"I going to visit my grandma" → Para planes: I'm going to
+ * visit my grandma'). Va al modelo para que explique la gramática de la
+ * parada: sin ella explicaba otra regla ("presente progresivo" para going
+ * to; "unreal past" para If I had…; 1 de noviembre de 2026). null si no la trae.
+ */
+export function ejemploDeCorreccion(siRespondeMal: string): string | null {
+  return siRespondeMal.match(/Ejemplo: ("[^"]+" → .+?)\. Si habló/)?.[1] ?? null;
+}

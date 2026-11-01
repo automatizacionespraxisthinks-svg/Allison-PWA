@@ -4,6 +4,7 @@ import { palabrasDeFrase } from "./ruta/rayas.ts";
 import { limpiarTranscripcion } from "./transcripcion.ts";
 import { hablaEspanol, mezclaEspanol } from "./ruta/escena.ts";
 import { esInglesClaro } from "./allison.ts";
+import { conPunto } from "./habla.ts";
 import { comoSeOye, normalizar, palabraNormalizada } from "./normalizar.ts";
 
 /**
@@ -680,10 +681,9 @@ ${bien}
   ("Usaste bien el presente simple.").`;
   }
   return `${comun}
-- "mejorPorque": in very simple English, at most 10 words: the rule
-  ("After if, no will: if it rains.").
-- "mejorPorqueEs": the same rule, in Spanish ("Después de if no va will:
-  if it rains.").
+- "mejorPorque": in very simple English, at most 10 words: the grammar
+  rule of THEIR mistake, with the right form.
+- "mejorPorqueEs": the same rule, in Spanish.
 ${bien}
 - "bienPorque": in very simple English, at most 8 words: what they did
   well in it ("You used the past perfect well.").
@@ -933,12 +933,26 @@ export async function comentarRelato(p: {
   segundos?: number;
   /** El relato modelo de Allison: no va al prompt; una frase suya nunca se corrige. */
   modelo?: string;
+  /**
+   * La corrección de ejemplo del documento (ejemploDeCorreccion): con ella
+   * la explicación sigue la gramática de la parada.
+   */
+  ejemplo?: string | null;
 }): Promise<ComentarioRelato> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const props = camposComentario(p.nivel);
   const instruccion = `A Spanish-speaking teenager from Colombia (English level ${p.nivel}) talked
 for up to ${p.segundos ?? 30} seconds about this topic: "${p.tema}". The message is
-exactly what they said (or wrote), with their mistakes.
+exactly what they said (or wrote), with their mistakes.${
+    p.ejemplo
+      ? `
+This lesson practices one grammar point. The teacher's example correction:
+${p.ejemplo}. If their mistake is of that kind, fix it the same way and
+explain that same rule with the teacher's words. If it is another kind of
+mistake, explain its own rule. Never pick a sentence just because it looks
+like the example.`
+      : ""
+  }
 
 Return:
 ${PEDIDO_FRASES}
@@ -966,11 +980,36 @@ Never invent sentences they did not say. A wrong fact is not a mistake.`;
   });
   const d = jsonDelModelo<DatosComentario>(r);
   const c = await bienRevisado(comentarioVerificado(d, p.transcripcion, p.nivel, { modelo: p.modelo }), `"${p.tema}"`);
+  const delDocumento = !enIngles(p.nivel) && p.ejemplo && c.mejora ? explicacionDelDocumento(p.ejemplo, c.mejora) : null;
   return {
     ...c,
+    ...(delDocumento && c.mejora ? { mejora: { ...c.mejora, porque: delDocumento } } : {}),
     tokensEntrada: (r.usageMetadata?.promptTokenCount ?? 0) + c.tokensEntrada,
     tokensSalida: (r.usageMetadata?.candidatesTokenCount ?? 0) + c.tokensSalida,
   };
+}
+
+/**
+ * Hasta A2, si Allison corrigió un error del mismo tipo que el ejemplo del
+ * documento (cambia las mismas palabras: "in" por "to", "much" por
+ * "many"), la explicación es la del documento con su frase ("Para lugares:
+ * I have been to Medellín."). El modelo la reescribía y a veces confundía
+ * ("Para lugares se dice 'to' o 'at'"; 1 de noviembre de 2026). Sin una
+ * explicación en el ejemplo ("Mejor:", "Better:"), null.
+ */
+function explicacionDelDocumento(ejemplo: string, mejora: { dijo: string; mejor: string }): string | null {
+  const m = ejemplo.match(/^"([^"]+)" → ([^:]+): (.+)$/);
+  if (!m || /^(mejor|better)$/i.test(m[2].trim())) return null;
+  const palabras = (t: string) => new Set(normalizar(t).trim().split(" ").filter(Boolean));
+  const cambio = (antes: string, despues: string) => {
+    const a = palabras(antes);
+    const b = palabras(despues);
+    return { quita: [...a].filter((x) => !b.has(x)), pone: [...b].filter((x) => !a.has(x)) };
+  };
+  const doc = cambio(m[1], m[3]);
+  const suyo = cambio(mejora.dijo, mejora.mejor);
+  const mismo = doc.quita.some((x) => suyo.quita.includes(x)) || doc.pone.some((x) => suyo.pone.includes(x));
+  return mismo ? `${m[2].trim()}: ${conPunto(mejora.mejor.trim())}` : null;
 }
 
 export interface ComentarioNarracion extends ComentarioRelato {

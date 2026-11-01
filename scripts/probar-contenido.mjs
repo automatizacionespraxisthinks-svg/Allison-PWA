@@ -28,6 +28,7 @@ const { contieneAlguna, cosasNombradas, normalizar } = await import("../src/lib/
 /** Las palabras tal como están escritas: minúsculas, sin signos, con sus apóstrofos. */
 const tal = (t) => ` ${t.toLowerCase().replace(/[’‘]/g, "'").replace(/[^a-z0-9' ]+/g, " ").replace(/\s+/g, " ").trim()} `;
 const { respuestaCorta } = await import("../src/lib/ruta/adivina.ts");
+const { ejemploDeCorreccion } = await import("../src/lib/ruta/explicaciones.ts");
 const { LUGARES, MAPA_VACIO, mapaDe, sumarLinea, trazarMapa } = await import("../src/lib/ruta/indicaciones.ts");
 /** Lo que la app sabe dibujar: los colores de las tarjetas y las horas ("7:30"). */
 const COLORES = ["negro", "azul", "rojo", "verde", "amarillo", "blanco"];
@@ -353,6 +354,8 @@ function revisarActividad(a, donde, imagenes) {
       if (!(a.minimoFrases >= 1)) fallo(donde, "sin mínimo de frases");
       const frases = (a.modelo.match(/[^.!?]+[.!?]+/g) ?? []).length;
       if (frases < a.minimoFrases) fallo(donde, `el modelo tiene ${frases} frases y el mínimo es ${a.minimoFrases}`);
+      // La corrección de ejemplo va al modelo para que explique la gramática de la parada.
+      if (!ejemploDeCorreccion(a.siRespondeMal ?? "")) fallo(donde, "«Si responde mal» no trae la corrección de ejemplo (Ejemplo: \"…\" → …. Si habló…)");
       break;
     }
     case "narra": {

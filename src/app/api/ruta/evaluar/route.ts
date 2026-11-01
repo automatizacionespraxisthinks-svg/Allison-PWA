@@ -11,6 +11,7 @@ import {
 import { hablaEspanol } from "@/lib/ruta/escena";
 import { CUERPO_MUY_GRANDE, cuerpoExcede, limitar } from "@/lib/limite";
 import { contenidoDe, pasoDe } from "@/lib/ruta/estado";
+import { ejemploDeCorreccion } from "@/lib/ruta/explicaciones";
 import { mejoraDeEscena } from "@/lib/ruta/conversacion";
 import { itemDeRepaso, preguntaDe } from "@/lib/ruta/repaso";
 import { seguimientoDeNarra, traeLaParte } from "@/lib/ruta/seguimiento";
@@ -169,6 +170,8 @@ export async function POST(peticion: Request) {
           nivel,
           segundos: actividad.segundos,
           modelo: actividad.modelo,
+          // Para que explique la gramática de la parada (1 de noviembre de 2026).
+          ejemplo: ejemploDeCorreccion(actividad.siRespondeMal),
         });
       }
       if (comentario) {
