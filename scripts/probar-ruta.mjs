@@ -16,7 +16,10 @@ const {
   actividadPrincipal,
 } = await import("../src/lib/ruta/estado.ts");
 const { RUTA_A1 } = await import("../src/lib/ruta/index.ts");
-const { esCorreccionDe, tareasObvias, respuestaDeEntrevista, tareasDelTurno, otraClaseDePregunta, otraPersona } = await import("../src/lib/ruta/escena.ts");
+const { esCorreccionDe, tareasObvias, respuestaDeEntrevista, tareasDelTurno, otraClaseDePregunta, otraPersona, respuestaDeEnsenale } = await import(
+  "../src/lib/ruta/escena.ts"
+);
+const { PARADA_01: B1_P01 } = await import("../src/lib/ruta/b1/parada-01.ts");
 const { PARADA_01 } = await import("../src/lib/ruta/a1/parada-01.ts");
 const { PARADA_02 } = await import("../src/lib/ruta/a1/parada-02.ts");
 const { PARADA_07 } = await import("../src/lib/ruta/a1/parada-07.ts");
@@ -308,6 +311,38 @@ ok("actividad principal", actividadPrincipal(PARADA_01.lecciones[0].actividades)
   ok("escena: una tarea de dos líneas, dichas en dos turnos, se cumple", primera.aMedias.some((a) => a.tarea === 4) && segunda.tareas.includes(4), JSON.stringify([primera, segunda]));
   ok("escena: a medias, la respuesta afirmativa que sigue la completa (\"Since yesterday.\")", turno(A2_P08.escenario, [2, 3], "Since yesterday.", [], [{ tarea: 2, falta: "since when" }]).tareas.includes(2));
   ok("escena: a medias por la despedida, otra frase no la completa", !turno(A2_P04.escenario, [5], "I like Scotland a lot.", [], [{ tarea: 5, falta: "say goodbye" }]).tareas.includes(5));
+}
+
+// --- Enséñale a Allison (B1) ----------------------------------------------
+{
+  const ens = B1_P01.lecciones.flatMap((l) => l.actividades).find((a) => a.tipo === "ensenale");
+  const leer = (tipo, extra = {}) => ({ tipo, pregunta: 0, espanol: false, ...extra });
+  const no = respuestaDeEnsenale({ ensenale: ens, lectura: leer("nosabe"), actual: 0, intentos: 0 });
+  ok(
+    "enséñale: si no sabe, el ejemplo y la ayuda",
+    no.respuesta === `That's OK! For example: "${ens.preguntas[0].modelo}" Now you try!` && no.conAyuda && !no.respondida && no.actual === 0 && no.intentos === 1,
+    no.respuesta
+  );
+  const bien = respuestaDeEnsenale({ ensenale: ens, lectura: leer("respuesta"), actual: 2, intentos: 0 });
+  ok(
+    "enséñale: la reacción va con su pregunta y sigue la siguiente",
+    bien.respuesta === `Wow, that sounds amazing! ${ens.preguntas[3].pregunta}` && bien.respondida && !bien.conAyuda,
+    bien.respuesta
+  );
+  const corta = respuestaDeEnsenale({ ensenale: ens, lectura: leer("corta"), actual: 1, intentos: 0 });
+  ok("enséñale: corta pide más", corta.respuesta === `Tell me more! ${ens.preguntas[1].simple}` && !corta.respondida, corta.respuesta);
+  const otraCorta = respuestaDeEnsenale({ ensenale: ens, lectura: leer("corta"), actual: 1, intentos: 1 });
+  ok("enséñale: corta otra vez ya cuenta", otraCorta.respondida && otraCorta.actual === 2);
+  const es = respuestaDeEnsenale({ ensenale: ens, lectura: leer("respuesta", { espanol: true }), actual: 0, intentos: 0 });
+  ok("enséñale: en español, en inglés con la simple", es.respuesta === `In English, please! ${ens.preguntas[0].simple}` && !es.respondida, es.respuesta);
+  const pide = respuestaDeEnsenale({ ensenale: ens, lectura: leer("pregunta"), actual: 1, intentos: 0 });
+  ok("enséñale: otra pregunta vuelve a la suya", pide.respuesta === `${ens.otraPregunta} ${ens.preguntas[1].pregunta}` && pide.intentos === 0, pide.respuesta);
+  const yResponde = respuestaDeEnsenale({ ensenale: ens, lectura: leer("pregunta", { pregunta: 1, responde: true }), actual: 2, intentos: 0 });
+  ok("enséñale: responde y pregunta: cuenta y contesta con su ficha", yResponde.respondida && yResponde.respuesta.startsWith(ens.respuestasDeAllison[0].respuesta), yResponde.respuesta);
+  const dos = respuestaDeEnsenale({ ensenale: ens, lectura: leer("otro"), actual: 0, intentos: 1 });
+  ok("enséñale: al segundo intento se ve la ayuda", dos.conAyuda && !dos.respondida && dos.intentos === 2);
+  const tres = respuestaDeEnsenale({ ensenale: ens, lectura: leer("nosabe"), actual: 0, intentos: 2 });
+  ok("enséñale: al tercero pasa a la siguiente sin contarla", tres.actual === 1 && !tres.respondida && tres.respuesta.startsWith("Thank you! Let's try another one."), tres.respuesta);
 }
 
 // --- Adivina (A2) --------------------------------------------------------

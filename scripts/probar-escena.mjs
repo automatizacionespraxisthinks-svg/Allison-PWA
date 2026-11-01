@@ -8,7 +8,7 @@
  *   node --env-file=.env scripts/probar-escena.mjs [repeticiones]
  *   VER=1 ...   muestra cada respuesta
  */
-const { turnoDeEscenario, clasificarEntrevista, respuestaDeEntrevista, preguntaDeLaTarea, llevaPregunta, clasificarAdivina, EN_INGLES } = await import(
+const { turnoDeEscenario, clasificarEntrevista, respuestaDeEntrevista, preguntaDeLaTarea, llevaPregunta, clasificarAdivina, clasificarEnsenale, EN_INGLES } = await import(
   "../src/lib/ruta/escena.ts"
 );
 const { comentarRelato, comentarNarracion, estaEnLoDicho } = await import("../src/lib/evaluacion.ts");
@@ -363,6 +363,26 @@ for (let rep = 0; rep < reps; rep++) {
     const c = await clasificarAdivina({ adivina: a, transcripcion: dice });
     const leida = c.tipo === "pregunta" ? `pregunta:${a.preguntas[c.fila - 1]?.pregunta}` : c.tipo === "adivina" ? `adivina:${a.opciones[c.opcion - 1]?.nombre}` : c.tipo;
     revisar(`"${dice}" · ${validas.join(" o ")}`, validas.includes(leida), leida);
+  }
+
+  // Enséñale (B1): no sabe → la ayuda; una o dos palabras → corta; y solo
+  // contesta con su ficha lo que su ficha contesta (1 de noviembre de 2026).
+  console.log(`Enséñale (vuelta ${rep + 1})`);
+  const ens = B1_P01.lecciones.flatMap((l) => l.actividades).find((x) => x.tipo === "ensenale");
+  const ENS = [
+    [0, "Yes, I have been to Santa Marta three times.", "respuesta"],
+    [0, "I have never traveled.", "nosabe"],
+    [1, "Last year.", "corta"],
+    [2, "Have you been to Colombia?", "pregunta:1"],
+    [2, "Where do you live?", "pregunta:0"],
+    [2, "Can you repeat the question?", "aclarar"],
+    [3, "I don't know.", "nosabe"],
+    [3, "Comí pescado frito.", "es"],
+  ];
+  for (const [i, dice, esperado] of ENS) {
+    const c = await clasificarEnsenale({ ensenale: ens, pregunta: ens.preguntas[i].pregunta, transcripcion: dice });
+    const leida = c.espanol ? "es" : c.tipo === "pregunta" ? `pregunta:${c.pregunta}` : c.tipo;
+    revisar(`enséñale "${dice}" · ${esperado}`, leida === esperado, leida);
   }
 
   // Cuéntame (A2): cuenta frases y cita solo lo que el alumno dijo.

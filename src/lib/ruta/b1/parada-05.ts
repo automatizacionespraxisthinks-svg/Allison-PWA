@@ -365,12 +365,16 @@ export const PARADA_05: Parada = {
               modelo: "People have been celebrating it for more than a hundred years.",
             },
           ],
-          reacciones: ["That sounds so fun!", "I love colorful costumes!", "Wow!", "I want to dance there!"],
+          // "I want to dance there!" antes del cierre ("Now I want to dance at the Carnival!") se repetía.
+          reacciones: ["That sounds so fun!", "I love colorful costumes!", "I want to dance there!", "Wow!"],
           cierre: "Thank you! Now I want to dance at the Carnival!",
           respuestasDeAllison: [{ siPregunta: "si le gusta bailar", respuesta: "Yes! I love to dance. When I'm stressed, I dance!" }],
           otraPregunta: "Good question! But today you're the teacher. Tell me more!",
           minimoRespuestas: 3,
-          porRevisar: ["preguntas.simple: versiones más simples, no estaban en el documento"],
+          porRevisar: [
+            "preguntas.simple: versiones más simples, no estaban en el documento",
+            "reacciones: «I want to dance there!» pasa a la tercera y «Wow!» a la cuarta: antes del cierre «Now I want to dance at the Carnival!» se repetía (1 de noviembre de 2026)",
+          ],
         },
       ],
     },

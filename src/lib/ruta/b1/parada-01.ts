@@ -344,7 +344,8 @@ export const PARADA_01: Parada = {
               modelo: "The best thing I've eaten there is fried fish.",
             },
           ],
-          reacciones: ["Wow, that sounds amazing!", "I want to go there too!", "That sounds delicious!", "I didn't know that!"],
+          // Una por pregunta, en su orden: "That sounds delicious!" iba después de "What did you do there?".
+          reacciones: ["I didn't know that!", "I want to go there too!", "Wow, that sounds amazing!", "That sounds delicious!"],
           cierre: "Thank you! Now I really want to go back to Colombia!",
           respuestasDeAllison: [
             {
@@ -354,7 +355,10 @@ export const PARADA_01: Parada = {
           ],
           otraPregunta: "Good question! But today you're the teacher. Tell me more!",
           minimoRespuestas: 3,
-          porRevisar: ["preguntas.simple: las cuatro versiones simples"],
+          porRevisar: [
+            "preguntas.simple: las cuatro versiones simples",
+            "reacciones: en otro orden, una por pregunta: «That sounds delicious!» iba después de «What did you do there?» y ahora va con la comida (1 de noviembre de 2026)",
+          ],
         },
       ],
     },

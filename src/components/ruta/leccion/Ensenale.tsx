@@ -19,7 +19,8 @@ import { AllisonAro, BotonOir, Grabador, Hoja, IlustracionCompleta, oirGrabacion
  * en español, la pide en inglés con la pregunta más simple. Termina
  * después de las cuatro preguntas; es un acierto responder al menos tres
  * con frases que se entienden. Cada respuesta es una intervención,
- * también escrita.
+ * también escrita. La Ayuda muestra la respuesta de ejemplo aprobada; sale
+ * sola si dice que no sabe o ya van dos intentos (1 de noviembre de 2026).
  */
 export function Ensenale({
   a,
@@ -39,6 +40,9 @@ export function Ensenale({
   const [actual, setActual] = useState(0);
   const [ultimo, setUltimo] = useState<{ yo: string; url?: string; allison: string } | null>(null);
   const [fin, setFin] = useState(false);
+  /** La ayuda (la respuesta de ejemplo): la pidió con el botón, o Allison vio que no sabe. */
+  const [verAyuda, setVerAyuda] = useState(false);
+  const [conAyuda, setConAyuda] = useState(false);
   const [ocupado, setOcupado] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [sinAbrir, setSinAbrir] = useState(false);
@@ -79,6 +83,8 @@ export function Ensenale({
     }
     setRespondidas(r.estado.cumplidas);
     setActual(r.estado.ensenale?.actual ?? actual);
+    setVerAyuda(false);
+    setConAyuda(!!r.estado.ensenale?.conAyuda);
     setUltimo({ yo: r.transcripcion, url: "url" in e ? e.url : undefined, allison: r.respuesta });
     setFin(r.metaCumplida || r.cerrada);
     void decir(r.respuestaVoz);
@@ -87,6 +93,7 @@ export function Ensenale({
   const total = a.preguntas.length;
   const logrado = respondidas.length >= a.minimoRespuestas;
   const dice = ultimo?.allison ?? apertura;
+  const ejemplo = a.preguntas[Math.min(actual, total - 1)]?.modelo ?? "";
 
   return (
     <div className="flex flex-col gap-3">
@@ -136,6 +143,32 @@ export function Ensenale({
         </span>
         {fin ? `Respondiste ${respondidas.length} de ${total} preguntas` : `Pregunta ${Math.min(actual + 1, total)} de ${total}`}
       </div>
+
+      {/* La ayuda: una respuesta de ejemplo aprobada. Se ve sola cuando no sabe o ya van dos intentos. */}
+      {!fin && conversacion && ejemplo && (
+        verAyuda || conAyuda ? (
+          <div
+            className={`flex flex-col items-center gap-1 rounded-2xl px-3 py-2 text-center ${
+              conAyuda && !verAyuda ? "bg-oro-suave text-oro" : "text-primario"
+            }`}
+          >
+            <small className="text-xs font-bold text-texto-suave">Puedes responder algo así:</small>
+            <p className="flex items-center justify-center gap-2 text-[17px] font-black">
+              <BotonOir tam="chico" onClick={() => void decir(ejemplo, { soloIngles: true })} />
+              {ejemplo}
+            </p>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setVerAyuda(true)}
+            className="inline-flex items-center gap-1.5 self-center rounded-full border border-borde px-3.5 py-2 text-[13px] font-extrabold"
+          >
+            <Icono nombre="ayuda" className="size-4" />
+            Ayuda
+          </button>
+        )
+      )}
 
       {mensaje && <p className="text-center text-sm font-bold text-oro">{mensaje}</p>}
       {sinAbrir && (

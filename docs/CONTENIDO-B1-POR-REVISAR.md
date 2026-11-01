@@ -41,6 +41,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | When did you go the last time? → "When did you go?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | What did you do there? → "What did you do?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | What's the best thing you've eaten there? → "What food did you eat there?" |
+| Lección 4, paso 3 (Enséñale a Allison) | Nota | reacciones: en otro orden, una por pregunta: «That sounds delicious!» iba después de «What did you do there?» y ahora va con la comida (1 de noviembre de 2026) |
 
 ## Parada 2 · Montreal
 
@@ -193,6 +194,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | What do people wear? → "What do they wear?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | Have you ever been there, or have you watched it on TV? → "Have you been there?" |
 | Lección 4, paso 3 (Enséñale a Allison) | Pregunta más simple | How long have people been celebrating it? → "How old is the carnival?" |
+| Lección 4, paso 3 (Enséñale a Allison) | Nota | reacciones: «I want to dance there!» pasa a la tercera y «Wow!» a la cuarta: antes del cierre «Now I want to dance at the Carnival!» se repetía (1 de noviembre de 2026) |
 
 ## Parada 6 · Victoria
 

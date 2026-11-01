@@ -391,6 +391,10 @@ function revisarActividad(a, donde, imagenes) {
       if (a.preguntas?.some((p) => !p.pregunta?.trim() || !p.simple?.trim() || !p.modelo?.trim()))
         fallo(donde, "una pregunta sin su versión simple o sin modelo");
       if (!a.reacciones?.length) fallo(donde, "sin reacciones");
+      // Una reacción por pregunta, en su orden ("That sounds delicious!" va con la comida).
+      else if (a.reacciones.length < (a.preguntas?.length ?? 0)) aviso(donde, "faltan reacciones: va una por pregunta");
+      // El ejemplo va entre comillas en la línea de Allison ("That's OK! For example: "…"").
+      if (a.preguntas?.some((p) => p.modelo?.includes('"'))) fallo(donde, "un modelo con comillas dobles");
       if (!(a.minimoRespuestas >= 1 && a.minimoRespuestas <= (a.preguntas?.length ?? 0))) fallo(donde, "minimoRespuestas fuera de rango");
       if (a.imagen) imagenes.push(a.imagen);
       break;

@@ -80,7 +80,7 @@ export interface EstadoEscena {
   devuelta?: string | null;
   adivina?: EstadoAdivina;
   /** Enséñale: la pregunta de Allison en curso (desde 0) y los intentos que no sirvieron en ella. */
-  ensenale?: { actual: number; intentos: number };
+  ensenale?: { actual: number; intentos: number; conAyuda?: boolean };
   /** Errores anotados en silencio, para el resumen y el repaso sorpresa. */
   errores?: { dijo: string; mejor: string }[];
   /**
@@ -616,10 +616,10 @@ export async function turnoDeEscena(
     tokensSalida += l.tokensSalida;
     if (l.sinRespuesta) return fallaDeLaIA(transcripcion, tokensEntrada, tokensSalida);
     const a = respuestaDeEnsenale({ ensenale: u.ensenale, lectura: l, actual: juego.actual, intentos: juego.intentos });
-    // Si no respondió (en español, muy corto o sin entenderse), Allison le
-    // dio la pregunta más simple: cuenta como ayuda.
-    if (!a.respondida && (l.espanol || l.tipo === "corta" || l.tipo === "otro")) estado.ayudas += 1;
-    estado.ensenale = { actual: a.actual, intentos: a.intentos };
+    // Si no respondió (en español, muy corto, sin entenderse o sin saber),
+    // Allison le dio la pregunta más simple o un ejemplo: cuenta como ayuda.
+    if (!a.respondida && (l.espanol || l.tipo === "corta" || l.tipo === "otro" || l.tipo === "nosabe")) estado.ayudas += 1;
+    estado.ensenale = { actual: a.actual, intentos: a.intentos, conAyuda: a.conAyuda };
     r = {
       ...vacio,
       transcripcion,

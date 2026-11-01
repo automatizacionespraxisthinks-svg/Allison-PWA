@@ -20,7 +20,7 @@ export interface EstadoEscena {
     ganadas: string[];
   };
   /** Enséñale: la pregunta de Allison en curso (desde 0) y los intentos que no sirvieron en ella. */
-  ensenale?: { actual: number; intentos: number };
+  ensenale?: { actual: number; intentos: number; conAyuda?: boolean };
   /** Entrevista: la pregunta que Allison le devolvió al alumno ("And you?"), si espera su respuesta. */
   devuelta?: string | null;
 }

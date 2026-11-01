@@ -2036,9 +2036,10 @@ export interface LecturaEnsenale {
    * "respuesta": responde la pregunta con una frase que se entiende;
    * "corta": responde con una o dos palabras; "pregunta": le pregunta algo
    * a Allison; "aclarar": pide que le repita o le explique la pregunta;
-   * "otro": no responde o no se entiende.
+   * "nosabe": dice que no sabe, que nunca ha ido o que no lo celebra, en
+   * vez de responder; "otro": no responde o no se entiende.
    */
-  tipo: "respuesta" | "corta" | "pregunta" | "aclarar" | "otro";
+  tipo: "respuesta" | "corta" | "pregunta" | "aclarar" | "nosabe" | "otro";
   /** Si preguntó algo de la lista de Allison: cuál (desde 1), o 0. */
   pregunta: number;
   /** Una pregunta que además responde la de Allison ("I swam in the sea. What do you like to do?"). */
@@ -2050,17 +2051,22 @@ export interface LecturaEnsenale {
   tokensSalida: number;
 }
 
-const ESQUEMA_ENSENALE = {
+/**
+ * Lo que preguntó va por su texto, de una lista cerrada (enum), como en
+ * Adivina: con el número, "Where do you live?" salía como la 1 ("si ha
+ * estado en Colombia") y Allison contestaba otra cosa (1 de noviembre de 2026).
+ */
+const esquemaEnsenale = (suyas: { siPregunta: string }[]) => ({
   type: Type.OBJECT,
   properties: {
-    tipo: { type: Type.STRING, enum: ["respuesta", "corta", "pregunta", "aclarar", "otro"] },
-    pregunta: { type: Type.INTEGER },
+    tipo: { type: Type.STRING, enum: ["respuesta", "corta", "pregunta", "aclarar", "nosabe", "otro"] },
+    pregunta: { type: Type.STRING, enum: [NINGUNA, ...suyas.map((x) => x.siPregunta)] },
     responde: { type: Type.BOOLEAN },
     espanol: { type: Type.BOOLEAN },
   },
   required: ["tipo", "pregunta", "responde", "espanol"],
   propertyOrdering: ["tipo", "pregunta", "responde", "espanol"],
-};
+});
 
 export async function clasificarEnsenale(o: {
   ensenale: Ensenale;
@@ -2069,7 +2075,7 @@ export async function clasificarEnsenale(o: {
   transcripcion: string;
 }): Promise<LecturaEnsenale> {
   const suyas = o.ensenale.respuestasDeAllison ?? [];
-  const lista = suyas.map((x, i) => `  ${i + 1}. ${x.siPregunta}`).join("\n");
+  const lista = suyas.map((x) => `  - ${x.siPregunta} (her answer: "${x.respuesta}")`).join("\n");
   const instruccion = `A Spanish-speaking teenager from Colombia (English level B1) is teaching
 their English teacher, Allison, about ${o.ensenale.tema} (a Colombian topic).
 Allison just asked: "${o.pregunta}"
@@ -2079,15 +2085,24 @@ Classify the student's message:
   "respuesta" if it answers Allison's question with at least one
   understandable sentence in English (mistakes are OK; a wrong or
   surprising fact is OK too: Allison is learning from them).
+  An answer that says "no" to her question is an answer too ("Have you
+  been there?" → "No, I haven't, but I watched it on TV.").
   "corta" if it answers with only one or two words ("In August.",
   "Flowers.").
-  "pregunta" if the student asks Allison a question, also when they
-  answer first ("I swam in the sea. What do you like to do?").
+  "pregunta" if the student asks Allison any question, about her or
+  about anything ("Where do you live?"), also when they answer first ("I
+  swam in the sea. What do you like to do?").
   "aclarar" if the student asks Allison to repeat or explain her
   question ("What?", "Can you repeat?", "What do you mean?").
+  "nosabe" if, instead of answering, the student says they don't know,
+  they have never been to any place or there, they don't celebrate it or
+  they don't know the topic ("I don't know.", "I have never traveled.",
+  "I don't celebrate it.", "I don't know what to say.").
   "otro" if it does not answer, or it cannot be understood.
-- "pregunta": if "tipo" is "pregunta" and it asks one of these things,
-  its number; otherwise 0.
+- "pregunta": if "tipo" is "pregunta" and it asks Allison one of these
+  things (written in Spanish), copy it exactly; otherwise "${NINGUNA}". Only
+  when her answer really answers the student's question: if it would not
+  ("Where do you live?" answered with "I've been to Bogotá"), "${NINGUNA}".
 ${lista || "  (none)"}
 - "responde": true if the message also answers Allison's question.
 - "espanol": true if the message is in Spanish. Even in Spanish, still say
@@ -2099,7 +2114,7 @@ ${lista || "  (none)"}
     config: {
       systemInstruction: instruccion,
       responseMimeType: "application/json",
-      responseSchema: ESQUEMA_ENSENALE,
+      responseSchema: esquemaEnsenale(suyas),
       temperature: 0,
       maxOutputTokens: TOPE_CLASIFICAR,
       abortSignal: AbortSignal.timeout(10_000),
@@ -2109,14 +2124,19 @@ ${lista || "  (none)"}
     tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
     tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
   };
-  const d = clasificacionDelModelo<{ tipo?: string; pregunta?: number; responde?: boolean; espanol?: boolean }>(r);
+  const d = clasificacionDelModelo<{ tipo?: string; pregunta?: string; responde?: boolean; espanol?: boolean }>(r);
   if (!d) return { tipo: "otro", pregunta: 0, espanol: false, sinRespuesta: true, ...tokens };
-  const tipos = ["respuesta", "corta", "pregunta", "aclarar"] as const;
+  const tipos = ["respuesta", "corta", "pregunta", "aclarar", "nosabe"] as const;
   let tipo: LecturaEnsenale["tipo"] = tipos.find((t) => t === d.tipo) ?? "otro";
   // "It's in August." es una frase: el modelo a veces la toma por corta y
   // Allison volvía a hacer la misma pregunta (auditoría, 28 de octubre de 2026).
-  if (tipo === "corta" && o.transcripcion.trim().split(/\s+/).length >= 3) tipo = "respuesta";
-  const n = Number.isInteger(d.pregunta) && d.pregunta! >= 1 && d.pregunta! <= suyas.length ? d.pregunta! : 0;
+  // Y al revés: "Accordion." o "Diomedes Díaz." pasaban como respuesta;
+  // el documento pide "Tell me more!" con una o dos palabras (1 de noviembre de 2026).
+  const palabras = o.transcripcion.trim().split(/\s+/).filter(Boolean).length;
+  if (tipo === "corta" && palabras >= 3) tipo = "respuesta";
+  if (tipo === "respuesta" && palabras <= 2) tipo = "corta";
+  // Desde 1, como antes; 0 si no es una de las suyas.
+  const n = suyas.findIndex((x) => x.siPregunta === d.pregunta) + 1;
   return {
     tipo,
     pregunta: tipo === "pregunta" ? n : 0,
@@ -2143,23 +2163,29 @@ export function respuestaDeEnsenale(o: {
   /** La pregunta en curso (desde 0) y los intentos que no sirvieron en ella. */
   actual: number;
   intentos: number;
-}): { respuesta: string; respondida: boolean; actual: number; intentos: number; terminada: boolean } {
+}): { respuesta: string; respondida: boolean; actual: number; intentos: number; terminada: boolean; conAyuda: boolean } {
   const e = o.ensenale;
   const p = e.preguntas[o.actual];
   const siguiente = (respondida: boolean, antes: string) => {
     const n = o.actual + 1;
     const fin = n >= e.preguntas.length;
     const sigue = fin ? e.cierre : e.preguntas[n].pregunta;
-    return { respuesta: `${antes} ${sigue}`.trim(), respondida, actual: n, intentos: 0, terminada: fin };
+    return { respuesta: `${antes} ${sigue}`.trim(), respondida, actual: n, intentos: 0, terminada: fin, conAyuda: false };
   };
-  const quedarse = (texto: string, cuenta: boolean) => {
+  const quedarse = (texto: string, cuenta: boolean, ayuda = false) => {
     const intentos = cuenta ? o.intentos + 1 : o.intentos;
     // Tres intentos sin respuesta: pasa a la siguiente sin contarla.
     if (intentos >= INTENTOS_POR_PREGUNTA) return siguiente(false, "Thank you! Let's try another one.");
-    return { respuesta: texto, respondida: false, actual: o.actual, intentos, terminada: false };
+    // La ayuda (la respuesta de ejemplo) se ve si no sabe o si ya van dos intentos.
+    return { respuesta: texto, respondida: false, actual: o.actual, intentos, terminada: false, conAyuda: ayuda || intentos >= 2 };
   };
 
   const l = o.lectura;
+  // No sabe, nunca ha ido o no lo celebra: Allison lo anima con la
+  // respuesta de ejemplo aprobada y la pantalla muestra la ayuda. Antes
+  // repetía la pregunta tres veces y la saltaba, y a "No, I haven't
+  // traveled" contestaba "Wow, that sounds amazing!" (1 de noviembre de 2026).
+  if (l.tipo === "nosabe" && !l.espanol) return quedarse(`That's OK! For example: "${p.modelo}" Now you try!`, true, true);
   // En español: lo entiende, pero lo pide en inglés, con la pregunta más simple.
   if (l.espanol) return quedarse(`In English, please! ${p.simple}`, true);
   if (l.tipo === "respuesta") {
