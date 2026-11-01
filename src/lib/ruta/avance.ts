@@ -1,4 +1,5 @@
 import { sql } from "../db";
+import { entraATodo } from "../entraATodo";
 import type { Nivel } from "../tipos";
 import {
   contenidoDe,
@@ -18,7 +19,7 @@ import {
 
 export async function estadoRutaDe(userId: string, nivel: Nivel): Promise<EstadoDeRuta | null> {
   const prefijo = `${nivel.toLowerCase()}-%`;
-  const [lecciones, paradas] = await Promise.all([
+  const [lecciones, paradas, todoAbierto] = await Promise.all([
     sql`
       select parada, leccion, paso, estrellas, completada_en is not null as completada
         from ruta_lecciones
@@ -31,6 +32,7 @@ export async function estadoRutaDe(userId: string, nivel: Nivel): Promise<Estado
         from ruta_paradas
        where user_id = ${userId} and parada like ${prefijo}
     `,
+    entraATodo(userId),
   ]);
   return estadoDeRuta(
     nivel,
@@ -48,7 +50,8 @@ export async function estadoRutaDe(userId: string, nivel: Nivel): Promise<Estado
       saltada: f.saltada,
       anterior: f.anterior,
       saltoHoy: f.salto_hoy,
-    })) as FilaParada[]
+    })) as FilaParada[],
+    { todoAbierto }
   );
 }
 

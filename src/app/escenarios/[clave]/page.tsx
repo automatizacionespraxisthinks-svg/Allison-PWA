@@ -17,7 +17,7 @@ export default async function PaginaEscenario({ params }: { params: Promise<{ cl
   const encontrado = await buscarEscenario(alumno.id, clave);
   if (!encontrado) notFound();
   // Respeta su nivel mínimo (plan, sección 22), aunque no dependa de Mi ruta.
-  if (!encontrado.abierto(alumno.nivel)) redirect("/escenarios");
+  if (!(await encontrado.abierto(alumno.nivel))) redirect("/escenarios");
 
   const e = encontrado.escenario;
   const delCatalogo = CATALOGO.find((c) => c.clave === clave);

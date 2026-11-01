@@ -1,5 +1,6 @@
 import { META_LOGROS, unidadesDe } from "../curriculo";
 import { sql } from "../db";
+import { entraATodo } from "../entraATodo";
 import { progresoLecciones } from "../progreso";
 import type { Nivel } from "../tipos";
 import { MAPAS } from "./mapas";
@@ -22,7 +23,8 @@ export interface ParadaProvisional {
   clave: string;
   logros: number;
   meta: number;
-  estado: "hecha" | "actual" | "bloqueada";
+  /** "disponible": la abre el administrador sin haber hecho las de antes. */
+  estado: "hecha" | "actual" | "disponible" | "bloqueada";
 }
 
 export interface RutaProvisional {
@@ -34,9 +36,10 @@ export interface RutaProvisional {
 
 export async function rutaProvisionalDe(userId: string, nivel: Nivel): Promise<RutaProvisional> {
   const unidades = unidadesDe(nivel);
-  const [avance, sellos] = await Promise.all([
+  const [avance, sellos, todoAbierto] = await Promise.all([
     progresoLecciones(userId),
     sql`select parada from ruta_paradas where user_id = ${userId} and sello_en is not null and parada like ${`${nivel.toLowerCase()}-%`}`,
+    entraATodo(userId),
   ]);
   const conSello = new Set(sellos.map((f) => f.parada as string));
   const mapa = MAPAS[nivel];
@@ -49,7 +52,7 @@ export async function rutaProvisionalDe(userId: string, nivel: Nivel): Promise<R
     const hecha = !!a?.completada || conSello.has(`${nivel.toLowerCase()}-p${String(u.orden).padStart(2, "0")}`);
     let estado: ParadaProvisional["estado"] = "hecha";
     if (!hecha) {
-      estado = actualMarcada ? "bloqueada" : "actual";
+      estado = !actualMarcada ? "actual" : todoAbierto ? "disponible" : "bloqueada";
       actualMarcada = true;
     }
     return {

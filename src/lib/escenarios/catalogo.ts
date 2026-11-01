@@ -1,4 +1,5 @@
 import { sql } from "../db";
+import { entraATodo } from "../entraATodo";
 import type { Escenario } from "../ruta/tipos";
 import type { Nivel } from "../tipos";
 import { rutaDeEscenario, type TarjetaEscenario } from "./categorias";
@@ -15,7 +16,8 @@ export { CATALOGO } from "./datos";
 export interface EscenarioEncontrado {
   escenario: Escenario;
   nivelMinimo: Nivel;
-  abierto: (nivel: Nivel) => boolean;
+  /** Respeta el nivel mínimo, salvo para el administrador (src/lib/entraATodo.ts). */
+  abierto: (nivel: Nivel) => Promise<boolean>;
 }
 
 /** Un escenario del catálogo o uno propio del alumno ("propio:<id>"). */
@@ -25,7 +27,7 @@ export async function buscarEscenario(userId: string, clave: string): Promise<Es
     return {
       escenario: delCatalogo.escenario,
       nivelMinimo: delCatalogo.nivelMinimo,
-      abierto: (n) => nivelAbierto(delCatalogo.nivelMinimo, n),
+      abierto: async (n) => nivelAbierto(delCatalogo.nivelMinimo, n) || (await entraATodo(userId)),
     };
   }
   const id = clave.startsWith("propio:") ? clave.slice(7) : "";
@@ -38,7 +40,7 @@ export async function buscarEscenario(userId: string, clave: string): Promise<Es
   return {
     escenario: escenarioPropio(p as unknown as Parameters<typeof escenarioPropio>[0]),
     nivelMinimo: p.nivel as Nivel,
-    abierto: () => true,
+    abierto: async () => true,
   };
 }
 
@@ -59,12 +61,13 @@ export function escenarioPropio(p: { titulo: string; lugar: string; papel: strin
  * escenarios propios del alumno, con sus estrellas y si ya los hizo.
  */
 export async function tarjetasDe(userId: string, nivel: Nivel): Promise<TarjetaEscenario[]> {
-  const [avance, propios] = await Promise.all([
+  const [avance, propios, todoAbierto] = await Promise.all([
     sql`select escenario, estrellas, veces from escenarios_avance where user_id = ${userId}`,
     sql`
       select id, titulo, lugar, papel, tareas from escenarios_propios
        where user_id = ${userId} order by creado_en desc limit 30
     `,
+    entraATodo(userId),
   ]);
   const de = new Map(avance.map((f) => [f.escenario as string, f]));
   const conAvance = (clave: string) => ({ estrellas: (de.get(clave)?.estrellas as number) ?? 0, veces: (de.get(clave)?.veces as number) ?? 0 });
@@ -96,7 +99,7 @@ export async function tarjetasDe(userId: string, nivel: Nivel): Promise<TarjetaE
         papelCorto: c.papelCorto,
         tareas: c.escenario.tareas.length,
         nivelMinimo: c.nivelMinimo,
-        abierto: nivelAbierto(c.nivelMinimo, nivel),
+        abierto: todoAbierto || nivelAbierto(c.nivelMinimo, nivel),
         ...conAvance(c.clave),
       })
     ),

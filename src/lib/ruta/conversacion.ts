@@ -199,7 +199,7 @@ export async function iniciarEscena(
     if (!p.viajes.find((v) => v.numero === pedido.viaje)?.abierto) return { ok: false, error: "bloqueada" };
   } else if (pedido.actividad === "catalogo") {
     const c = await buscarEscenario(userId, pedido.clave ?? "");
-    if (!c || !c.abierto(nivel)) return { ok: false, error: "bloqueada" };
+    if (!c || !(await c.abierto(nivel))) return { ok: false, error: "bloqueada" };
   } else {
     if (u.nivel !== nivel) return { ok: false, error: "no_existe" };
     const ruta = await estadoRutaDe(userId, nivel);
@@ -219,7 +219,8 @@ export async function iniciarEscena(
          where ruta_paradas.intento_salto_en is null or ruta_paradas.intento_salto_en::date < current_date
         returning parada
       `;
-      if (!anotado.length) return { ok: false, error: "salto_hoy" };
+      // El administrador lo prueba las veces que quiera.
+      if (!anotado.length && !ruta?.todoAbierto) return { ok: false, error: "salto_hoy" };
     } else if (pedido.actividad === "escenario") {
       if (parada.escenario.estado === "bloqueado") return { ok: false, error: "bloqueada" };
     } else {

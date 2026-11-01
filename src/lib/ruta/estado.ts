@@ -104,6 +104,8 @@ export interface EstadoDeRuta {
   completa: boolean;
   /** Lecciones que faltan fuera del Repaso final (lo mantienen cerrado). */
   leccionesPendientes: number;
+  /** El administrador: nada tiene candado (src/lib/entraATodo.ts). */
+  todoAbierto: boolean;
 }
 
 /** La clave estable de un paso de la ruta: "a1-p03", "a1-r1", "a1-rf". */
@@ -134,10 +136,18 @@ export function actividadPrincipal(actividades: Actividad[]): TipoActividad {
 
 export { NOMBRE_ACTIVIDAD, usaIntervenciones } from "./nombres.ts";
 
+/**
+ * Con `todoAbierto` (el administrador) nada tiene candado: las paradas de
+ * más adelante se abren con sus lecciones sin orden y su "Salta hasta
+ * aquí", el escenario no espera a las lecciones, el Repaso final no
+ * espera a las saltadas y el salto no espera a mañana. Lo hecho, las
+ * estampillas y el paso siguiente se cuentan igual que a un alumno.
+ */
 export function estadoDeRuta(
   nivel: Nivel,
   lecciones: FilaLeccion[],
-  paradas: FilaParada[]
+  paradas: FilaParada[],
+  { todoAbierto = false }: { todoAbierto?: boolean } = {}
 ): EstadoDeRuta | null {
   const ruta = rutaDe(nivel);
   if (!ruta) return null;
@@ -161,7 +171,8 @@ export function estadoDeRuta(
     // versión anterior) nunca se ve bloqueado, aunque esté más adelante de
     // la parada en curso: un alumno actual con las unidades 6 a 10 hechas
     // las ve saltadas, no con candado.
-    const bloqueada = iActual >= 0 && i > iActual && !superada(clave);
+    const masAdelante = iActual >= 0 && i > iActual && !superada(clave);
+    const bloqueada = masAdelante && !todoAbierto;
     const enCurso = i === iActual;
 
     let actualMarcada = false;
@@ -174,7 +185,7 @@ export function estadoDeRuta(
       else if (enCurso) {
         // En la parada en curso van en orden: la primera sin hacer es la
         // actual y las de después esperan.
-        estado = actualMarcada ? "bloqueada" : "actual";
+        estado = !actualMarcada ? "actual" : todoAbierto ? "disponible" : "bloqueada";
         actualMarcada = true;
       } else estado = "disponible";
       return {
@@ -197,7 +208,9 @@ export function estadoDeRuta(
           : enCurso
             ? todasHechas
               ? "actual"
-              : "bloqueado"
+              : todoAbierto
+                ? "disponible"
+                : "bloqueado"
             : "disponible",
       estrellas: fila?.estrellas ?? 0,
     };
@@ -224,8 +237,8 @@ export function estadoDeRuta(
       anterior: !!fila?.anterior,
       lecciones: leccionesEnMapa,
       escenario,
-      puedeSaltar: bloqueada && !esFinal,
-      saltoHoy: !!fila?.saltoHoy,
+      puedeSaltar: masAdelante && !esFinal,
+      saltoHoy: !!fila?.saltoHoy && !todoAbierto,
     };
   });
 
@@ -255,7 +268,7 @@ export function estadoDeRuta(
   const pendientes = mapa
     .slice(0, -1)
     .flatMap((p) => p.lecciones.filter((l) => l.estado !== "hecha").map((l) => ({ parada: p.clave, leccion: l.numero })));
-  if (!final.sello && pendientes.length && final.escenario.estado !== "bloqueado") {
+  if (!final.sello && pendientes.length && final.escenario.estado !== "bloqueado" && !todoAbierto) {
     final.escenario.estado = "bloqueado";
   }
   if (siguiente?.parada === final.clave && siguiente.leccion === "escenario" && pendientes.length) {
@@ -273,6 +286,7 @@ export function estadoDeRuta(
     totalSellos: mapa.length,
     completa,
     leccionesPendientes: pendientes.length,
+    todoAbierto,
   };
 }
 

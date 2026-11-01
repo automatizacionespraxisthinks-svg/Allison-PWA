@@ -154,6 +154,24 @@ ok("pasoDe de una clave inventada", pasoDe("a1-p99") === null && pasoDe("b2-p01"
   ok("completo: 12 de 12", e.sellos === 12);
 }
 
+// El administrador entra a todo para probarlo (src/lib/entraATodo.ts)
+{
+  const filasRF = Array.from({ length: leccionesDe("a1-rf") }, (_, i) => hecha("a1-rf", i + 1));
+  const e = estadoDeRuta("A1", filasRF, [sello("a1-p01", { saltoHoy: true })], { todoAbierto: true });
+  const lecciones = e.paradas.flatMap((p) => p.lecciones);
+  ok("admin: ninguna lección con candado", lecciones.every((l) => l.estado !== "bloqueada"), lecciones.map((l) => l.estado).join(","));
+  ok("admin: ningún escenario con candado", e.paradas.every((p) => p.escenario.estado !== "bloqueado"), e.paradas.map((p) => p.escenario.estado).join(","));
+  ok("admin: ninguna parada con candado", e.paradas.every((p) => p.estado !== "bloqueada"));
+  ok("admin: en la parada en curso, las de después se abren", e.paradas[1].lecciones[1].estado === "disponible", e.paradas[1].lecciones[1].estado);
+  ok("admin: el paso siguiente es el mismo", e.siguiente?.parada === "a1-p02" && e.siguiente?.leccion === 1, JSON.stringify(e.siguiente));
+  ok("admin: puede saltar a las de más adelante", e.paradas[4].puedeSaltar && !e.paradas[1].puedeSaltar && !e.paradas[11].puedeSaltar);
+  ok("admin: el salto no espera a mañana", e.paradas.every((p) => !p.saltoHoy));
+  ok("admin: el repaso final sin esperar a las pendientes", e.paradas[11].escenario.estado === "disponible" && e.leccionesPendientes > 0);
+  ok("admin: no gana estampillas ni completa el nivel", e.sellos === 1 && !e.completa && e.todoAbierto);
+  const alumno = estadoDeRuta("A1", filasRF, [sello("a1-p01", { saltoHoy: true })]);
+  ok("alumno: sigue con candados", !alumno.todoAbierto && alumno.paradas[4].estado === "bloqueada" && alumno.paradas[1].lecciones[1].estado === "bloqueada");
+}
+
 // Otros niveles: todavía sin ruta escrita. B2, que no la tiene: A2 y B1
 // sí, y en producción están encendidas (RUTA_A2 y RUTA_B1, 31 de octubre de 2026).
 ok("B2 sin ruta escrita", estadoDeRuta("B2", [], []) === null);

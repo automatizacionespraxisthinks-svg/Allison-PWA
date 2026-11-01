@@ -1,4 +1,5 @@
 import { sql } from "../db";
+import { entraATodo } from "../entraATodo";
 import type { Nivel } from "../tipos";
 import { lugarDeViaje } from "./viaje";
 import { VIAJES } from "./viajes";
@@ -35,14 +36,17 @@ export interface PasaporteDeViajes {
 }
 
 export async function pasaporteDeViajes(userId: string, nivel: Nivel): Promise<PasaporteDeViajes> {
-  const filas = await sql`select viaje, estrellas, sello_en is not null as ganado from viajes_avance where user_id = ${userId}`;
+  const [filas, todoAbierto] = await Promise.all([
+    sql`select viaje, estrellas, sello_en is not null as ganado from viajes_avance where user_id = ${userId}`,
+    entraATodo(userId),
+  ]);
   const porViaje = new Map(filas.map((f) => [f.viaje as number, f]));
   let anteriorGanado = true;
   const viajes = VIAJES.map((v): ViajeEnPasaporte => {
     const f = porViaje.get(v.numero);
     const ganado = !!f?.ganado;
     const nivelOk = ORDEN.indexOf(v.nivelMinimo) <= ORDEN.indexOf(nivel);
-    const abierto = ganado || (nivelOk && anteriorGanado);
+    const abierto = ganado || todoAbierto || (nivelOk && anteriorGanado);
     const motivo = abierto ? null : !nivelOk ? "nivel" : "anterior";
     anteriorGanado = ganado;
     return {

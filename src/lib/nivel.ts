@@ -31,8 +31,10 @@ export interface OpcionesDeNivel {
 }
 
 export async function opcionesDeNivel(userId: string): Promise<OpcionesDeNivel | null> {
-  const [u] = await sql`select nivel, coalesce(nivel_maximo, nivel) as maximo from users where id = ${userId}`;
+  const [u] = await sql`select nivel, coalesce(nivel_maximo, nivel) as maximo, rol = 'admin' as admin from users where id = ${userId}`;
   if (!u) return null;
+  // El administrador entra a cualquier nivel para probarlo (src/lib/entraATodo.ts).
+  if (u.admin) return { actual: u.nivel as Nivel, maximo: ORDEN[ORDEN.length - 1], siguienteAbierto: null };
   const maximo = u.maximo as Nivel;
   const siguiente = ORDEN[posicion(maximo) + 1] ?? null;
   return {

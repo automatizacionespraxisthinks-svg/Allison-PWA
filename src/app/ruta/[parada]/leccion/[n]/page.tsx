@@ -57,6 +57,7 @@ export default async function PaginaLeccion({
       }}
       ctx={{ nivel: alumno.nivel, nombre: alumno.nombre }}
       primera={primera === "1"}
+      admin={!!estado?.todoAbierto}
     />
   );
 }

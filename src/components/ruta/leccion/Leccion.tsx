@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { NOMBRE_CORTO } from "@/lib/ruta/nombres";
 import type { Actividad } from "@/lib/ruta/tipos";
 import { Estampilla, type LugarSello } from "../Estampilla";
 import { Estrella, Icono } from "../Iconos";
@@ -52,11 +53,14 @@ export function Leccion({
   datos,
   ctx,
   primera = false,
+  admin = false,
 }: {
   datos: DatosLeccion;
   ctx: Omit<Contexto, "parada" | "leccion">;
   /** Primera sesión guiada: solo la primera actividad, y a Mi ruta. */
   primera?: boolean;
+  /** El administrador salta a cualquier actividad para probarla (src/lib/entraATodo.ts). */
+  admin?: boolean;
 }) {
   const router = useRouter();
   const contexto: Contexto = { ...ctx, parada: datos.parada, leccion: datos.numero };
@@ -147,18 +151,19 @@ export function Leccion({
     } else setFin(resultado);
   }
 
-  /** "Repetir para subir estrellas": la misma lección desde la primera actividad. */
-  function repetir() {
-    setIndice(0);
+  /** La lección desde una actividad: "Repetir para subir estrellas" (la primera) o el salto del administrador. */
+  function irA(k: number) {
+    setIndice(k);
     setRepasos([]);
     setEnRepaso(null);
     setFin(null);
+    setSinGuardar(null);
     desde.current = Date.now();
     window.scrollTo({ top: 0 });
   }
 
   if (primeraLista) return <PrimeraEstrella nombre={ctx.nombre} nivel={ctx.nivel} />;
-  if (fin) return <Celebracion datos={datos} fin={fin} nombre={ctx.nombre} onRepetir={repetir} />;
+  if (fin) return <Celebracion datos={datos} fin={fin} nombre={ctx.nombre} onRepetir={() => irA(0)} />;
 
   const avance = enRepaso !== null ? 1 : indice / total;
   const comun = { ctx: contexto, onTerminar: alTerminar, onSinSaldo: () => setSinSaldo(true) };
@@ -180,6 +185,23 @@ export function Leccion({
         </div>
         {enRepaso !== null ? "Repaso" : `${indice + 1} de ${total}`}
       </div>
+      {admin && !primera && (
+        <nav aria-label="Ir a una actividad" className="flex flex-wrap items-center gap-1.5 text-xs font-bold text-texto-suave">
+          Administrador:
+          {datos.actividades.map((x, k) => (
+            <button
+              key={k}
+              type="button"
+              onClick={() => irA(k)}
+              disabled={guardando}
+              aria-current={enRepaso === null && k === indice ? "step" : undefined}
+              className={`rounded-lg px-2 py-1 ${enRepaso === null && k === indice ? "bg-primario text-white" : "bg-superficie-2 hover:brightness-95"}`}
+            >
+              {k + 1}. {NOMBRE_CORTO[x.tipo]}
+            </button>
+          ))}
+        </nav>
+      )}
       {enRepaso !== null && (
         <p className="rounded-2xl bg-oro-suave px-4 py-2 text-center text-sm font-bold text-oro">Una vez más: esta se te escapó.</p>
       )}
