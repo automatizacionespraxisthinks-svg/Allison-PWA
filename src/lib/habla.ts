@@ -180,6 +180,26 @@ export function prepararParaVoz(texto: unknown): string {
   return typeof texto === "string" ? normalizarMarcadores(limpiarParaVoz(texto)) : "";
 }
 
+/**
+ * Una letra del abecedario, como la dice la voz de Allison. El motor de
+ * la API (Kokoro) toma la "A" suelta por el artículo ("a book") y la dice
+ * como un "a" corto y apagado, no "ei": así sonaba en "A, A." y en
+ * "A, N, N, I, E" (1 de noviembre de 2026). "eh" está en su diccionario
+ * con el sonido de la letra y sin esa regla. Las otras 25 letras las
+ * dice con su nombre del abecedario.
+ */
+export const letraParaVoz = (letra: string) => (letra.toUpperCase() === "A" ? "eh" : letra.toUpperCase());
+
+/**
+ * Un deletreo con guiones ("A-M-Y") la voz lo lee de corrido, como una
+ * palabra: con comas suena letra por letra ("eh, M, Y"). Vale para todo
+ * lo que suena, como "My name is Amy. A-M-Y." en Escucha y elige, y para
+ * las respuestas de las escenas. "T-shirt" no cambia: cada parte tiene
+ * que ser una sola letra.
+ */
+export const deletreoParaVoz = (t: string) =>
+  t.replace(/\b[A-Za-z](?:-[A-Za-z]){2,}\b/g, (m) => m.split("-").map(letraParaVoz).join(", "));
+
 /** Una parte de lo que se dice, toda en un idioma. */
 export interface SegmentoVoz {
   texto: string;

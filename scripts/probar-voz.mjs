@@ -24,8 +24,19 @@ process.env.TTS_ESPERA_TURNO_MS = "300";
 
 const { ErrorTts, registrarVoz, sintetizar, ttsConfigurado, turnosEnCurso, validarTextoVoz, vozPedida } =
   await import("../src/lib/tts.ts");
-const { conPunto, estimarSegundos, idiomaDe, limpiarParaVoz, nuevoIdPeticion, prepararParaVoz, puntuarParaVoz, tiempoDeEsperaMs, tramosDeVoz } =
-  await import("../src/lib/habla.ts");
+const {
+  conPunto,
+  deletreoParaVoz,
+  estimarSegundos,
+  idiomaDe,
+  letraParaVoz,
+  limpiarParaVoz,
+  nuevoIdPeticion,
+  prepararParaVoz,
+  puntuarParaVoz,
+  tiempoDeEsperaMs,
+  tramosDeVoz,
+} = await import("../src/lib/habla.ts");
 const { segmentosParaVoz } = await import("../src/lib/voz-idiomas.ts");
 const { todaLaRuta } = await import("../src/lib/ruta/index.ts");
 
@@ -257,6 +268,22 @@ probar("detecta español por palabras", idiomaDe("el perro de la casa es muy gra
 probar("lo demás es inglés, incluida la duda", idiomaDe("I don't have money for the ticket") === "en" && idiomaDe("Tuesday") === "en" && idiomaDe("el") === "en");
 probar("estimación de duración: ~15 caracteres por segundo", estimarSegundos("x".repeat(300)) === 20 && estimarSegundos("hi") === 1);
 probar("ids de petición únicos", nuevoIdPeticion() !== nuevoIdPeticion());
+// Las letras: la "A" suelta el motor la dice como el artículo; "eh" suena "ei".
+probar("la A del abecedario va como eh", letraParaVoz("A") === "eh" && letraParaVoz("a") === "eh" && letraParaVoz("b") === "B");
+probar(
+  "un deletreo suena letra por letra, con la A como eh",
+  deletreoParaVoz("Annie. A-N-N-I-E.") === "Annie. eh, N, N, I, E." && deletreoParaVoz("A-L-L-I-S-O-N.") === "eh, L, L, I, S, O, N." &&
+    deletreoParaVoz("D-I-E-G-O.") === "D, I, E, G, O.",
+  deletreoParaVoz("Annie. A-N-N-I-E.")
+);
+probar("T-shirt no es un deletreo",deletreoParaVoz("A T-shirt, please.") === "A T-shirt, please.");
+probar(
+  "las letras suenan en inglés, también la Y",
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").every((l) => {
+    const { segmentos } = segmentosParaVoz(prepararParaVoz(`${letraParaVoz(l)}, ${letraParaVoz(l)}.`), "en");
+    return segmentos.length === 1 && segmentos[0].idioma === "en";
+  }) && segmentosParaVoz(prepararParaVoz(deletreoParaVoz("Annie. A-N-N-I-E.")), "auto").segmentos.every((s) => s.idioma === "en")
+);
 
 // ---------------------------------------------------------------------
 console.log("\nReintentos, como pide la guía:");

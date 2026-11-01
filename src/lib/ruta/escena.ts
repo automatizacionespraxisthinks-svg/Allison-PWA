@@ -1,7 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { esEspanolClaro, esInglesClaro, separarIdiomas } from "../allison.ts";
 import { estaEnLoDicho } from "../evaluacion.ts";
-import { conPunto, MARCADOR_EN, MARCADOR_ES, quitarMarcadores } from "../habla.ts";
+import { conPunto, deletreoParaVoz, MARCADOR_EN, MARCADOR_ES, quitarMarcadores } from "../habla.ts";
 import type { Nivel } from "../tipos.ts";
 import { preguntaDeAdivinar, type LecturaAdivina } from "./adivina.ts";
 import type { Adivina, Ensenale, Entrevista, Escenario } from "./tipos.ts";
@@ -1794,8 +1794,6 @@ const preguntaDeAllison = (e: Entrevista, turno: number, anterior?: string | nul
   return lista[turno % lista.length];
 };
 
-/** Deletreo con guiones ("A-L-L-I-S-O-N"): la voz lo lee de corrido; con comas, letra por letra. */
-const deletreoParaVoz = (t: string) => t.replace(/\b[A-Za-z](?:-[A-Za-z]){2,}\b/g, (m) => m.toUpperCase().split("-").join(", "));
 
 export function respuestaDeEntrevista(o: {
   entrevista: Entrevista;

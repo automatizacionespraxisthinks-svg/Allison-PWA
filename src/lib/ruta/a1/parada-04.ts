@@ -114,9 +114,10 @@ export const PARADA_04: Parada = {
         {
           paso: 2,
           tipo: "tu-turno",
-          queAparece: 'Sarah: "When is your birthday?" En pantalla: "My birthday is on ___." con un selector de mes y día.',
+          queAparece: 'Allison: "When is your birthday?" En pantalla: "My birthday is on ___." con un selector de mes y día.',
           siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
-          dialogo: [{ quien: "Sarah", dice: "When is your birthday?" }],
+          dialogo: [{ quien: "Allison", dice: "When is your birthday?" }],
+          porRevisar: ["quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026)"],
           plantilla: "My birthday is on ___.",
           modelo: "My birthday is on March 3rd.",
           // "Con un selector de mes y día": arma la fecha de la línea.

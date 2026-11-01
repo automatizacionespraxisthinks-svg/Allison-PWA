@@ -114,9 +114,13 @@ export const PARADA_02: Parada = {
           paso: 2,
           tipo: "tu-turno",
           queAparece:
-            'Sarah: "This is my dad. His name is Mark. Is this your mom?" En pantalla: "Yes, this is my mom. Her name is ___."',
+            'Allison: "This is my mom. Her name is Susan. Is this your mom?" En pantalla: "Yes, this is my mom. Her name is ___."',
           siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
-          dialogo: [{ quien: "Sarah", dice: "This is my dad. His name is Mark. Is this your mom?" }],
+          dialogo: [{ quien: "Allison", dice: "This is my mom. Her name is Susan. Is this your mom?" }],
+          porRevisar: [
+            "quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026)",
+            "dialogo: decía «This is my dad. His name is Mark.» (el papá de Sarah); Allison no tiene papá en su ficha, así que muestra a su mamá: «This is my mom. Her name is Susan.» (FICHA_ALLISON)",
+          ],
           plantilla: "Yes, this is my mom. Her name is ___.",
           modelo: "Yes, this is my mom. Her name is Rosa.",
           aceptadas: ["Yes. Her name is Rosa."],

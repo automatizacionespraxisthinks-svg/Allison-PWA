@@ -23,6 +23,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "This is Tom. He is a happy boy in a green hoodie." → "Este es Tom. Es un muchacho alegre con un saco verde." |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "He says: "Hi! My name is Tom."" → "Dice: "¡Hola! Me llamo Tom."" |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: dos muchachos (f-nino y a-tom) y una muchacha (a-sarah), para que no baste saber que Tom es nombre de hombre; el documento no dice cuáles son las tres imágenes (cambio del 28 de octubre de 2026) |
+| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026) |
 | Lección 2, paso 3 (Dilo en inglés) | Nota | aceptadas: también «Glad to meet you»; explicaciones para «Nice to know you», «Nice to see you» y «Much pleasure» (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Canada (Canadá) · Colombia (Colombia) · Mexico (México) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -58,6 +59,8 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Tom says: "This is my sister. Her name is Emma."" → "Tom dice: "Esta es mi hermana. Se llama Emma."" |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: palabras de la familia, como en el audio (Sister, Brother, Grandpa); antes Girl, Boy y Older man (cambio del 30 de octubre de 2026) |
+| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026) |
+| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | dialogo: decía «This is my dad. His name is Mark.» (el papá de Sarah); Allison no tiene papá en su ficha, así que muestra a su mamá: «This is my mom. Her name is Susan.» (FICHA_ALLISON) |
 | Lección 2, paso 3 (Dilo en inglés) | Nota | aceptadas: también dicha de corrido con and; explicaciones para «He name is Juan» y «He calls Juan» (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Two sisters and a dog (Dos hermanas y un perro) · Two brothers and a cat (Dos hermanos y un gato) · One sister and a dog (Una hermana y un perro) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -84,13 +87,13 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Traducción | "A girl says: "She's my teacher. Her name is Ms. Lee."" → "Una muchacha dice: "Es mi profesora. Se llama Ms. Lee."" |
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quiénes hablan en el pasillo |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | Tom te presenta a Ms. Lee. ¿Quién es ella para Tom? Completa la frase. |
-| Lección 1, paso 2 (¿Qué es esto?) | Nota | imagen: a-profesor ahora es Ms. Lee junto al tablero (recorte de f-salon-clase); antes una mujer leyendo un libro, que no se veía profesora. Si dice professor, Allison explica (cambio del 30 de octubre de 2026) |
+| Lección 1, paso 2 (¿Qué es esto?) | Nota | imagen: a-profesora-tablero (antes a-profesor) es Ms. Lee junto al tablero (recorte de f-salon-clase); antes una mujer leyendo un libro, que no se veía profesora. Si dice professor, Allison explica (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Amy. A-M-Y. (Amy. A-M-Y.) · Ana. A-N-A. (Ana. A-N-A.) · Annie. A-N-N-I-E. (Annie. A-N-N-I-E.) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: el nombre y su deletreo, que Allison dice al elegir la tarjeta (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "A girl says: "My name is Amy. A-M-Y."" → "Una muchacha dice: "Me llamo Amy. A-M-Y."" |
-| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | plantilla: el documento no la escribe; dice que en pantalla va el nombre del alumno con un espacio por letra |
-| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | dialogo: en el documento el alumno dice su nombre entre las dos líneas de Sarah; aquí quedan seguidas y el modelo responde las dos |
+| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | plantilla: en pantalla van las letras del nombre del alumno, una por una (su primer nombre; "___-___-___…" solo si no tiene nombre), y el abecedario (cambio del 1 de noviembre de 2026) |
+| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Chicago (Chicago) · Miami (Miami) · New York (Nueva York) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "A boy asks: "Where do you live?"" → "Un muchacho pregunta: "¿Dónde vives?"" |
@@ -114,6 +117,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: el día, que Allison dice al elegir la tarjeta (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "The party is on Saturday." → "La fiesta es el sábado." |
+| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | July fourth (4 de julio) · April seventh (7 de abril) · May fourth (4 de mayo) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: el mes completo (JULY 4, APRIL 7) y MAY 4 en vez de JUN 4, que se veía y sonaba casi igual a JUL 4; cada tarjeta suena al elegirla (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "The concert is on July 4th." → "El concierto es el 4 de julio." |
@@ -139,6 +143,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Leo says: "I usually go to bed at ten."" → "Leo dice: "Casi siempre me acuesto a las diez."" |
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Leo, el muchacho de la rutina |
 | Lección 2, paso 1 (Escucha y elige) | Nota | opciones: el documento dice "con una luna al lado" sin aclarar si va junto a cada reloj; aquí va en los tres |
+| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Gets up (Se levanta) · Has breakfast (Desayuna) · Takes the bus (Toma el bus) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "Leo takes the bus to school." → "Leo va al colegio en bus." |
@@ -163,7 +168,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién le pregunta a Sarah |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Tom asks: "Can you dance, Sarah?"" → "Tom pregunta: "¿Sabes bailar, Sarah?"" |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Sarah says: "No, I can't. But I can sing!"" → "Sarah dice: "No, no sé. ¡Pero sé cantar!"" |
-| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | dialogo: la segunda pregunta de Sarah ("Can you cook?") no cabe en el tipo, que tiene una sola línea del alumno; queda solo en queAparece |
+| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026) |
 | Lección 2, paso 3 (Dilo en inglés) | Nota | aceptadas: también «can speak very good English»; explicaciones para «can to», «talk English» y «English very good» (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Surf (Surfear) · Swim (Nadar) · Play the guitar (Tocar la guitarra) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -188,7 +193,6 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Sarah says: "I like pizza, but today I'd like a salad."" → "Sarah dice: "Me gusta la pizza, pero hoy quiero una ensalada."" |
-| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | dialogo: después de la línea del alumno la mesera pregunta "Would you like some ice?" y el alumno responde "Yes, please." / "No, thank you."; el tipo solo guarda las líneas antes de la del alumno |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Some soup (Una sopa) · Some fries (Papas a la francesa) · A salad (Una ensalada) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | audio: ahora lo cuenta Allison, la única voz de la app (cambio del 17 de octubre de 2026) |
@@ -210,9 +214,10 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
 | Lección 1, paso 2 (¿Qué es esto?) | Situación en español | ¿Qué parte de la casa es esta? Dilo en inglés. |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Under the bed (Debajo de la cama) · On the bed (Encima de la cama) · Next to the bed (Al lado de la cama) |
-| Lección 2, paso 1 (Escucha y elige) | Nota | opciones: el dibujo del gato al lado de la cama es nuevo (f-gato-alado): la cama tiene el mismo estilo y ángulo que en los otros dos, y el gato está en el piso a su lado; antes estaba delante de la cama, que se leía como in front of (cambio del 30 de octubre de 2026) |
+| Lección 2, paso 1 (Escucha y elige) | Nota | opciones: el dibujo del gato al lado de la cama es nuevo (f-gato-al-lado): la cama tiene el mismo estilo y ángulo que en los otros dos, y el gato está en el piso a su lado; antes estaba delante de la cama, que se leía como in front of (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "The cat is under the bed." → "El gato está debajo de la cama." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
+| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026) |
 | Lección 2, paso 3 (Dilo en inglés) | Nota | aceptadas: también «beside the bed»; explicaciones para «There are a lamp» y «next of» (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | A drugstore (Una droguería) · A supermarket (Un supermercado) · A bank (Un banco) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: el banco es un dibujo nuevo, cuadrado (f-banco); el recorte de c-banco no mostraba nada de un banco (cambio del 30 de octubre de 2026) |
@@ -238,6 +243,7 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "Leo is having breakfast." → "Leo está desayunando." |
+| Lección 2, paso 2 (Tu turno en el diálogo) | Nota | quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Selling fish (Vendiendo pescado) · Buying flowers (Comprando flores) · Eating ice cream (Comiendo helado) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | quienHabla: el documento no dice quién habla; se puso Allison |
@@ -296,7 +302,8 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 2, paso 2 (Describe la imagen) | Nota | cosas: el documento no las nombra; salen de la imagen f-taquilla-museo |
 | Lección 2, paso 3 (Tu turno en el diálogo) | Nota | plantilla: el documento no la escribe; dice "Su nombre, deletreado, y su cumpleaños con on" |
 | Lección 2, paso 3 (Tu turno en el diálogo) | Nota | modelo: el documento no lo escribe; sale de las paradas 3 y 4 |
-| Lección 2, paso 3 (Tu turno en el diálogo) | Nota | dialogo: Mia hace una pregunta a la vez; aquí quedan seguidas y el modelo responde las tres |
+| Lección 2, paso 3 (Tu turno en el diálogo) | Nota | plantilla del deletreo: las letras del nombre del alumno, una por una (cambio del 1 de noviembre de 2026) |
+| Lección 2, paso 3 (Tu turno en el diálogo) | Nota | quien: habla Allison y no Mia: la voz es la suya (pedido del usuario, 1 de noviembre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Gets up (Se levanta) · Has breakfast (Desayuna) · Takes the bus (Toma el bus) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | etiquetas: como suenan en la frase; al elegir una opción, Allison la dice (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "Leo always has breakfast at seven." → "Leo siempre desayuna a las siete." |
@@ -332,21 +339,21 @@ licenciado en inglés las revise junto con el resto de la parada.
 | Lección 1, paso 3 (Responde rápido) | Respuesta modelo | Can your dad cook? → "Yes, he can." |
 | Lección 1, paso 3 (Responde rápido) | Respuesta modelo | Would you like some ice cream? → "Yes, please." |
 | Lección 2, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Under the bed (Debajo de la cama) · On the bed (Encima de la cama) · Next to the bed (Al lado de la cama) |
-| Lección 2, paso 1 (Escucha y elige) | Nota | opciones: el dibujo del gato al lado de la cama es nuevo (f-gato-alado): la cama tiene el mismo estilo y ángulo que en los otros dos, y el gato está en el piso a su lado; antes estaba delante de la cama, que se leía como in front of (cambio del 30 de octubre de 2026) |
+| Lección 2, paso 1 (Escucha y elige) | Nota | opciones: el dibujo del gato al lado de la cama es nuevo (f-gato-al-lado): la cama tiene el mismo estilo y ángulo que en los otros dos, y el gato está en el piso a su lado; antes estaba delante de la cama, que se leía como in front of (cambio del 30 de octubre de 2026) |
 | Lección 2, paso 1 (Escucha y elige) | Traducción | "The cat is next to the bed." → "El gato está al lado de la cama." |
 | Lección 2, paso 1 (Escucha y elige) | Nota | quienHabla: el documento solo dice "Oye:"; se puso Allison |
 | Lección 2, paso 2 (Describe la imagen) | Nota | modelo: el documento pide tres frases y da dos de ejemplo ("There are two people. They're dancing."); la tercera ("A man is selling fish.") sale de la parada 9, con la misma imagen |
 | Lección 2, paso 2 (Describe la imagen) | Nota | cosas: el documento no las nombra; salen de la imagen f-mercado-escena. "dance" desde el 28 de octubre de 2026: la frase modelo "They're dancing." no contaba |
 | Lección 2, paso 3 (Tu turno en el diálogo) | Nota | plantilla: el documento no la escribe; dice "Respuestas sobre su lugar y su ropa" |
 | Lección 2, paso 3 (Tu turno en el diálogo) | Nota | modelo: el documento no lo escribe; sale de las paradas 8 y 9 |
-| Lección 2, paso 3 (Tu turno en el diálogo) | Nota | dialogo: Sarah hace una pregunta a la vez; aquí quedan seguidas y el modelo responde las tres |
+| Lección 2, paso 3 (Tu turno en el diálogo) | Nota | quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Palabras debajo de los dibujos | Turn right. Across from the park. (Gira a la derecha. Frente al parque.) · Turn right. Next to the park. (Gira a la derecha. Al lado del parque.) · Turn left. Across from the park. (Gira a la izquierda. Frente al parque.) |
 | Lección 3, paso 1 (Escucha y elige) | Nota | con pregunta, y cada edificio dice su camino al tocarlo (cambio del 30 de octubre de 2026) |
 | Lección 3, paso 1 (Escucha y elige) | Traducción | "Go straight one block and turn right. The hotel is across from the park." → "Sigue derecho una cuadra y gira a la derecha. El hotel está frente al parque." |
 | Lección 3, paso 1 (Escucha y elige) | Nota | quienHabla: el documento solo dice "Oye:"; se puso Allison |
 | Lección 3, paso 1 (Escucha y elige) | Nota | opciones: el documento no dice dónde están los edificios del mapa; las posiciones de los dos incorrectos son una propuesta |
 | Lección 3, paso 3 (Responde rápido) | Respuesta modelo | What's your name? → "My name is Diego." |
-| Lección 3, paso 3 (Responde rápido) | Respuesta modelo | How do you spell it? → "D-I-E-G-O." |
+| Lección 3, paso 3 (Responde rápido) | Respuesta modelo | How do you spell your name? → "D-I-E-G-O." |
 | Lección 3, paso 3 (Responde rápido) | Respuesta modelo | When is your birthday? → "It's on March 3rd." |
 | Lección 3, paso 3 (Responde rápido) | Respuesta modelo | What time do you get up? → "I get up at six." |
 | Lección 3, paso 3 (Responde rápido) | Respuesta modelo | What are you doing now? → "I'm studying English." |

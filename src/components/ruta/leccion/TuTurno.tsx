@@ -1,6 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { letraParaVoz } from "@/lib/habla";
 import { mapaDe, trazarMapa } from "@/lib/ruta/indicaciones";
 import type { TuTurno as Datos, TurnoDeTuTurno } from "@/lib/ruta/tipos";
 import { detenerVoz, reproducirGrabacionEntera } from "@/lib/voz";
@@ -12,6 +14,23 @@ import { AllisonAro, BotonOir, Grabador, Hoja, oirGrabacion, useVoz, type Entrad
 const MESES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const DIAS_DEL_MES = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 const LETRAS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+/** Una letra como suena en el abecedario, dos veces: "B, B." (la A va como "eh": letraParaVoz). */
+const oirLetra = (l: string) => `${letraParaVoz(l)}, ${letraParaVoz(l)}.`;
+
+/**
+ * El primer nombre del alumno, para la línea del deletreo ("en pantalla:
+ * el nombre del alumno con un espacio por letra", A1 P3) y los ejemplos:
+ * "Diego" en el contenido es el nombre del alumno. Sin tildes ni eñe al
+ * deletrear (José: J-O-S-E). null si no sirve (vacío, con números o muy
+ * largo): quedan la plantilla y el ejemplo del contenido.
+ */
+function nombreDelAlumno(nombre: string): { visto: string; letras: string[] } | null {
+  const primero = nombre.trim().split(/\s+/)[0] ?? "";
+  const letras = primero.normalize("NFD").replace(/\p{M}/gu, "").toUpperCase().split("");
+  if (letras.length < 2 || letras.length > 20 || !letras.every((l) => LETRAS.includes(l))) return null;
+  return { visto: primero.charAt(0).toUpperCase() + primero.slice(1).toLowerCase(), letras };
+}
 
 /** 1 → "1st", 2 → "2nd", 3 → "3rd", 11 → "11th", 22 → "22nd": como se dice una fecha en EE. UU. */
 function ordinal(n: number): string {
@@ -71,9 +90,10 @@ function SelectorFecha({ plantilla, decir }: { plantilla: string; decir: (texto:
 /**
  * "Si no sabe una letra, toca la letra y la oye" (A1 P3): el abecedario
  * en botones. La letra va dos veces y con coma, como los deletreos que la
- * voz lee letra por letra ("A, A."): sola, "A" sonaba como el artículo.
+ * voz lee letra por letra ("B, B."), siempre en inglés ("Y, Y." sonaba en
+ * español) y la A como "eh, eh." (letraParaVoz: "A" sonaba como el artículo).
  */
-function Abecedario({ decir }: { decir: (texto: string) => Promise<boolean> }) {
+function Abecedario({ decir }: { decir: (texto: string, opciones?: { soloIngles?: boolean }) => Promise<boolean> }) {
   return (
     <div className="flex flex-col gap-1.5">
       <small className="text-center text-xs font-bold text-texto-suave">Toca una letra para oírla</small>
@@ -82,7 +102,7 @@ function Abecedario({ decir }: { decir: (texto: string) => Promise<boolean> }) {
           <button
             key={l}
             type="button"
-            onClick={() => void decir(`${l}, ${l}.`)}
+            onClick={() => void decir(oirLetra(l), { soloIngles: true })}
             aria-label={`Oír la letra ${l}`}
             className="rounded-lg bg-superficie-2 py-1.5 text-[15px] font-black"
           >
@@ -102,13 +122,23 @@ function Abecedario({ decir }: { decir: (texto: string) => Promise<boolean> }) {
  */
 export function TuTurno({ a, ctx, onTerminar }: { a: Datos; ctx: Contexto; onTerminar: (f: FinActividad) => void }) {
   const { decir, hablando } = useVoz(ctx.nivel);
-  /** El primer turno y los que siguen. */
+  const suNombre = useMemo(() => nombreDelAlumno(ctx.nombre), [ctx.nombre]);
+  /** El primer turno y los que siguen, con los ejemplos en su nombre ("My name is Diego." → el suyo, deletreado). */
   const turnos: TurnoDeTuTurno[] = useMemo(
-    () => [
-      { dialogo: a.dialogo, plantilla: a.plantilla, modelo: a.modelo, palabras: a.palabras, deletrear: a.deletrear, fecha: a.fecha },
-      ...(a.siguientes ?? []),
-    ],
-    [a]
+    () =>
+      [
+        { dialogo: a.dialogo, plantilla: a.plantilla, modelo: a.modelo, palabras: a.palabras, deletrear: a.deletrear, fecha: a.fecha },
+        ...(a.siguientes ?? []),
+      ].map((t) =>
+        suNombre
+          ? {
+              ...t,
+              // El deletreo ya letra por letra ("M, eh, R, I, eh."): deletreoParaVoz no toca los de dos letras ("B-O").
+              modelo: t.deletrear ? `${suNombre.letras.map(letraParaVoz).join(", ")}.` : t.modelo.replace(/\bDiego\b/g, suNombre.visto),
+            }
+          : t
+      ),
+    [a, suNombre]
   );
   const [paso, setPaso] = useState(0);
   /** Las líneas del turno actual que ya se ven. */
@@ -184,9 +214,13 @@ export function TuTurno({ a, ctx, onTerminar }: { a: Datos; ctx: Contexto; onTer
           <Fragment key={k}>
             {(k < paso ? t.dialogo : t.dialogo.slice(0, visibles)).map((l, i) => (
               <div key={i} className="flex items-end gap-2.5">
-                <span className="grid size-10 flex-none place-items-center rounded-full bg-oro-suave font-black text-oro" title={l.quien}>
-                  {inicial(l.quien)}
-                </span>
+                {l.quien === "Allison" ? (
+                  <Image src="/allison.png" alt="" width={40} height={40} title="Allison" className="size-10 flex-none rounded-full object-cover" />
+                ) : (
+                  <span className="grid size-10 flex-none place-items-center rounded-full bg-oro-suave font-black text-oro" title={l.quien}>
+                    {inicial(l.quien)}
+                  </span>
+                )}
                 <button
                   type="button"
                   onClick={() => void decir(l.dice)}
@@ -210,8 +244,29 @@ export function TuTurno({ a, ctx, onTerminar }: { a: Datos; ctx: Contexto; onTer
               k === paso &&
               suTurno && (
                 <div className="self-end rounded-[18px_18px_4px_18px] border-[1.5px] border-dashed border-primario bg-primario-suave px-4 py-2.5 text-primario">
-                  <b className="text-lg font-black">{t.plantilla}</b>
-                  <small className="block text-xs font-semibold text-texto-suave">Tu turno: dilo con tus datos</small>
+                  {t.deletrear && suNombre ? (
+                    // Su nombre, letra por letra: lo que tiene que decir. Cada letra suena al tocarla.
+                    <span className="flex flex-wrap gap-1.5" aria-label={`Deletrea ${suNombre.visto}`}>
+                      {suNombre.letras.map((l, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => void decir(oirLetra(l), { soloIngles: true })}
+                          aria-label={`Oír la letra ${l}`}
+                          className="grid h-10 min-w-9 place-items-center rounded-lg bg-superficie px-2 text-xl font-black"
+                        >
+                          {l}
+                        </button>
+                      ))}
+                    </span>
+                  ) : (
+                    <b className="text-lg font-black">{t.plantilla}</b>
+                  )}
+                  <small className="mt-1 block text-xs font-semibold text-texto-suave">
+                    {t.deletrear && suNombre
+                      ? `Tu turno: deletrea ${suNombre.visto}, letra por letra. Toca una letra para oírla.`
+                      : "Tu turno: dilo con tus datos"}
+                  </small>
                 </div>
               )
             )}
@@ -253,7 +308,8 @@ export function TuTurno({ a, ctx, onTerminar }: { a: Datos; ctx: Contexto; onTer
         suTurno && (
           <>
             <div className="flex justify-center">
-              <BotonOir onClick={() => void decir(turno.modelo)} texto="Oír un ejemplo" />
+              {/* Un deletreo, solo en inglés: letras como "Y, O" se tomarían por español. */}
+              <BotonOir onClick={() => void decir(turno.modelo, { soloIngles: !!turno.deletrear })} texto="Oír un ejemplo" />
             </div>
             <Grabador key={paso} onEntrada={responder} ayuda="Toca y di tu línea" />
           </>

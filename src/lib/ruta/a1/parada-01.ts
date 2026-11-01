@@ -125,9 +125,10 @@ export const PARADA_01: Parada = {
         {
           paso: 2,
           tipo: "tu-turno",
-          queAparece: 'Sarah dice: "Hi! What\'s your name?" En pantalla: "My name is ___."',
+          queAparece: 'Allison dice: "Hi! What\'s your name?" En pantalla: "My name is ___."',
           siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
-          dialogo: [{ quien: "Sarah", dice: "Hi! What's your name?" }],
+          dialogo: [{ quien: "Allison", dice: "Hi! What's your name?" }],
+          porRevisar: ["quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026)"],
           plantilla: "My name is ___.",
           modelo: "My name is Diego.",
           aceptadas: ["I'm Diego.", "Diego."],

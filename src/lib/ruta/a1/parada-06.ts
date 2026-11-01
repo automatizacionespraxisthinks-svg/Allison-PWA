@@ -104,13 +104,14 @@ export const PARADA_06: Parada = {
           paso: 2,
           tipo: "tu-turno",
           queAparece:
-            'Sarah: "Can you ride a bike?" En pantalla: "Yes, I can. / No, I can\'t." Luego Sarah: "Can you cook?"',
+            'Allison: "Can you ride a bike?" En pantalla: "Yes, I can. / No, I can\'t." Luego Allison: "Can you cook?"',
           siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
-          dialogo: [{ quien: "Sarah", dice: "Can you ride a bike?" }],
+          dialogo: [{ quien: "Allison", dice: "Can you ride a bike?" }],
+          porRevisar: ["quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026)"],
           plantilla: "Yes, I can. / No, I can't.",
           modelo: "Yes, I can.",
-          // "Luego Sarah: Can you cook?": la segunda pregunta, después de su línea.
-          siguientes: [{ dialogo: [{ quien: "Sarah", dice: "Can you cook?" }], plantilla: "Yes, I can. / No, I can't.", modelo: "No, I can't." }],
+          // "Luego Allison: Can you cook?": la segunda pregunta, después de su línea.
+          siguientes: [{ dialogo: [{ quien: "Allison", dice: "Can you cook?" }], plantilla: "Yes, I can. / No, I can't.", modelo: "No, I can't." }],
           aceptadas: ["Yes, I can ride a bike.", "I can cook a little."],
         },
         {

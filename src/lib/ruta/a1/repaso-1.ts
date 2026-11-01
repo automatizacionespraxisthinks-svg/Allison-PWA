@@ -116,21 +116,23 @@ export const REPASO_1: Repaso = {
           paso: 3,
           tipo: "tu-turno",
           queAparece:
-            'Mia: "Hi! What\'s your name? How do you spell it? When is your birthday?" Una pregunta a la vez.',
+            'Allison: "Hi! What\'s your name? How do you spell it? When is your birthday?" Una pregunta a la vez.',
           siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
           // "Una pregunta a la vez": el nombre, el deletreo y el cumpleaños.
-          dialogo: [{ quien: "Mia", dice: "Hi! What's your name?" }],
+          dialogo: [{ quien: "Allison", dice: "Hi! What's your name?" }],
           plantilla: "My name is ___.",
           modelo: "My name is Diego.",
           siguientes: [
-            { dialogo: [{ quien: "Mia", dice: "How do you spell it?" }], plantilla: "___-___-___…", modelo: "D-I-E-G-O.", deletrear: true },
-            { dialogo: [{ quien: "Mia", dice: "When is your birthday?" }], plantilla: "My birthday is on ___.", modelo: "My birthday is on March 3rd.", fecha: true },
+            { dialogo: [{ quien: "Allison", dice: "How do you spell it?" }], plantilla: "___-___-___…", modelo: "D-I-E-G-O.", deletrear: true },
+            { dialogo: [{ quien: "Allison", dice: "When is your birthday?" }], plantilla: "My birthday is on ___.", modelo: "My birthday is on March 3rd.", fecha: true },
           ],
           aceptadas: [],
           tambienSeAcepta: "Respuestas cortas",
           porRevisar: [
             'plantilla: el documento no la escribe; dice "Su nombre, deletreado, y su cumpleaños con on"',
             "modelo: el documento no lo escribe; sale de las paradas 3 y 4",
+            "plantilla del deletreo: las letras del nombre del alumno, una por una (cambio del 1 de noviembre de 2026)",
+            "quien: habla Allison y no Mia: la voz es la suya (pedido del usuario, 1 de noviembre de 2026)",
           ],
         },
       ],

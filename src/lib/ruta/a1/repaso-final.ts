@@ -119,21 +119,22 @@ export const REPASO_FINAL: Repaso = {
           paso: 3,
           tipo: "tu-turno",
           queAparece:
-            'Sarah, en videollamada: "Where are you? What are you wearing? Is there a park near you?" Una pregunta a la vez.',
+            'Allison, en videollamada: "Where are you? What are you wearing? Is there a park near you?" Una pregunta a la vez.',
           siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
           // "Una pregunta a la vez": dónde está, qué tiene puesto y si hay un parque.
-          dialogo: [{ quien: "Sarah", dice: "Where are you?" }],
+          dialogo: [{ quien: "Allison", dice: "Where are you?" }],
           plantilla: "I'm at ___.",
           modelo: "I'm at home.",
           siguientes: [
-            { dialogo: [{ quien: "Sarah", dice: "What are you wearing?" }], plantilla: "I'm wearing ___.", modelo: "I'm wearing jeans." },
-            { dialogo: [{ quien: "Sarah", dice: "Is there a park near you?" }], plantilla: "Yes, there is. / No, there isn't.", modelo: "Yes, there is." },
+            { dialogo: [{ quien: "Allison", dice: "What are you wearing?" }], plantilla: "I'm wearing ___.", modelo: "I'm wearing jeans." },
+            { dialogo: [{ quien: "Allison", dice: "Is there a park near you?" }], plantilla: "Yes, there is. / No, there isn't.", modelo: "Yes, there is." },
           ],
           aceptadas: [],
           tambienSeAcepta: "Respuestas cortas",
           porRevisar: [
             'plantilla: el documento no la escribe; dice "Respuestas sobre su lugar y su ropa"',
             "modelo: el documento no lo escribe; sale de las paradas 8 y 9",
+            "quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026)",
           ],
         },
       ],

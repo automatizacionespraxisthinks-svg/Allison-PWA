@@ -109,9 +109,10 @@ export const PARADA_09: Parada = {
           paso: 2,
           tipo: "tu-turno",
           queAparece:
-            'Sarah, en videollamada: "Hi! What are you doing?" En pantalla: "I\'m ___." y las palabras studying, eating, watching TV.',
+            'Allison, en videollamada: "Hi! What are you doing?" En pantalla: "I\'m ___." y las palabras studying, eating, watching TV.',
           siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
-          dialogo: [{ quien: "Sarah", dice: "Hi! What are you doing?" }],
+          dialogo: [{ quien: "Allison", dice: "Hi! What are you doing?" }],
+          porRevisar: ["quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026)"],
           plantilla: "I'm ___.",
           modelo: "I'm studying.",
           aceptadas: ["I'm eating.", "I'm watching TV."],

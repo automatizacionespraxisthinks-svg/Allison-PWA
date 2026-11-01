@@ -101,9 +101,10 @@ export const PARADA_05: Parada = {
           paso: 2,
           tipo: "tu-turno",
           queAparece:
-            'Sarah: "Do you take the bus to school?" En pantalla: "I always / usually / sometimes / never take the bus."',
+            'Allison: "Do you take the bus to school?" En pantalla: "I always / usually / sometimes / never take the bus."',
           siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
-          dialogo: [{ quien: "Sarah", dice: "Do you take the bus to school?" }],
+          dialogo: [{ quien: "Allison", dice: "Do you take the bus to school?" }],
+          porRevisar: ["quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026)"],
           plantilla: "I always / usually / sometimes / never take the bus.",
           modelo: "I usually take the bus.",
           aceptadas: ["I walk to school."],

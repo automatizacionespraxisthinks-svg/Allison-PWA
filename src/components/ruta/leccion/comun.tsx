@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { sonar } from "@/lib/sonidos";
 import { fijarVolumen, useVolumenGrabacion } from "@/lib/volumen";
 import { estimarSegundos } from "@/lib/habla";
-import { desbloquearVoz, detenerVoz, hablarEspanol, hablarIngles, hablarInglesLento, reproducirGrabacion } from "@/lib/voz";
+import { desbloquearVoz, detenerVoz, hablarEspanol, hablarIngles, hablarInglesLento, hablarSoloIngles, reproducirGrabacion } from "@/lib/voz";
 import { srcIlustracion } from "@/lib/ruta/ilustracion";
 import type { Zona } from "@/lib/ruta/tipos";
 import type { Nivel } from "@/lib/tipos";
@@ -79,7 +79,7 @@ export function useVoz(nivel: Nivel) {
    * explicación cortada y sonaba encima de la grabación).
    */
   const decir = useCallback(
-    async (texto: string, opciones: { lento?: boolean; espanol?: boolean } = {}): Promise<boolean> => {
+    async (texto: string, opciones: { lento?: boolean; espanol?: boolean; soloIngles?: boolean } = {}): Promise<boolean> => {
       // Una respuesta del servidor que llega después de salir no habla.
       if (!montado.current) return false;
       const mio = ++turno.current;
@@ -89,7 +89,9 @@ export function useVoz(nivel: Nivel) {
           ? hablarEspanol(texto)
           : opciones.lento
             ? hablarInglesLento(texto, nivel)
-            : hablarIngles(texto, nivel);
+            : opciones.soloIngles
+              ? hablarSoloIngles(texto, nivel)
+              : hablarIngles(texto, nivel);
         const limite = 8000 + estimarSegundos(texto) * 2500;
         let vencio = false;
         const sono = await Promise.race([habla, new Promise<false>((r) => setTimeout(() => ((vencio = true), r(false)), limite))]);

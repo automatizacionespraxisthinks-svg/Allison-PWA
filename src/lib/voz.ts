@@ -1,6 +1,6 @@
 "use client";
 
-import { idiomaBase, prepararParaVoz, tramosDeVoz, type IdiomaVoz, type SegmentoVoz } from "./habla";
+import { deletreoParaVoz, idiomaBase, prepararParaVoz, tramosDeVoz, type IdiomaVoz, type SegmentoVoz } from "./habla";
 import { pedir } from "./pedir";
 import type { Nivel } from "./tipos";
 import {
@@ -201,6 +201,15 @@ export function hablarInglesLento(texto: string, nivel: Nivel, opciones?: Opcion
   return hablar(texto, "auto", velocidadLenta(nivel), opciones);
 }
 
+/**
+ * Solo en inglés, sin deducir el idioma del texto: las letras del
+ * abecedario ("Y, Y." se tomaba por la "y" del español y sonaba con la
+ * voz en español).
+ */
+export function hablarSoloIngles(texto: string, nivel: Nivel, opciones?: OpcionesHabla): Promise<boolean> {
+  return hablar(texto, "en", velocidadBase(nivel), opciones);
+}
+
 /** Lo mismo en español: la bienvenida. */
 export function hablarEspanol(texto: string, opciones?: OpcionesHabla): Promise<boolean> {
   return hablar(texto, "es", 1, opciones);
@@ -215,15 +224,6 @@ function segmentosValidos(x: unknown): SegmentoVoz[] | null {
   return ok ? (x as SegmentoVoz[]) : null;
 }
 
-/**
- * Un deletreo con guiones ("A-M-Y") la voz lo lee de corrido, como una
- * palabra: con comas suena letra por letra ("A, M, Y"). Las escenas ya lo
- * hacían en el servidor (escena.ts); aquí vale para todo lo que suena, como
- * "My name is Amy. A-M-Y." en Escucha y elige (30 de octubre de 2026).
- * "T-shirt" no cambia: cada parte tiene que ser una sola letra.
- */
-export const deletreoParaVoz = (t: string) =>
-  t.replace(/\b[A-Za-z](?:-[A-Za-z]){2,}\b/g, (m) => m.toUpperCase().split("-").join(", "));
 
 async function hablar(
   texto: string,

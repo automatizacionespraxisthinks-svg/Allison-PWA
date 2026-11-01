@@ -107,9 +107,10 @@ export const PARADA_08: Parada = {
           paso: 2,
           tipo: "tu-turno",
           queAparece:
-            'Sarah: "Where is your backpack?" En pantalla: "It\'s on / under / next to the ___." y las palabras bed, desk, chair.',
+            'Allison: "Where is your backpack?" En pantalla: "It\'s on / under / next to the ___." y las palabras bed, desk, chair.',
           siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
-          dialogo: [{ quien: "Sarah", dice: "Where is your backpack?" }],
+          dialogo: [{ quien: "Allison", dice: "Where is your backpack?" }],
+          porRevisar: ["quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026)"],
           plantilla: "It's on / under / next to the ___.",
           modelo: "It's under the desk.",
           aceptadas: ["It's on my bed."],

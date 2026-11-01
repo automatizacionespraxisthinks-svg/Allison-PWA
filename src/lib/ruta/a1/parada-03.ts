@@ -107,19 +107,20 @@ export const PARADA_03: Parada = {
           paso: 2,
           tipo: "tu-turno",
           queAparece:
-            'Sarah: "Hi! What\'s your name?" → el alumno dice su nombre. Sarah: "How do you spell it?" En pantalla: el nombre del alumno con un espacio por letra.',
+            'Allison: "Hi! What\'s your name?" → el alumno dice su nombre. Allison: "How do you spell it?" En pantalla: el nombre del alumno con un espacio por letra.',
           siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez. Si no sabe una letra, toca la letra y la oye.",
-          dialogo: [{ quien: "Sarah", dice: "Hi! What's your name?" }],
+          dialogo: [{ quien: "Allison", dice: "Hi! What's your name?" }],
           plantilla: "My name is ___.",
           modelo: "My name is Diego.",
           // Una pregunta a la vez: el nombre y después el deletreo, con el abecedario.
           siguientes: [
-            { dialogo: [{ quien: "Sarah", dice: "How do you spell it?" }], plantilla: "___-___-___…", modelo: "D-I-E-G-O.", deletrear: true },
+            { dialogo: [{ quien: "Allison", dice: "How do you spell it?" }], plantilla: "___-___-___…", modelo: "D-I-E-G-O.", deletrear: true },
           ],
           aceptadas: [],
           tambienSeAcepta: "Solo el nombre. Cualquier nombre deletreado.",
           porRevisar: [
-            'plantilla: el documento no la escribe; dice que en pantalla va el nombre del alumno con un espacio por letra (va "___-___-___…" y el abecedario)',
+            'plantilla: en pantalla van las letras del nombre del alumno, una por una (su primer nombre; "___-___-___…" solo si no tiene nombre), y el abecedario (cambio del 1 de noviembre de 2026)',
+            "quien: habla Allison y no Sarah: la voz es la suya (pedido del usuario, 1 de noviembre de 2026)",
           ],
         },
         {
