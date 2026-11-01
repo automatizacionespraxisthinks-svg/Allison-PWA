@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { sesionCerrada } from "./pedir";
 
 /**
@@ -72,6 +72,23 @@ function conLimite<T>(promesa: Promise<T>, ms = 4000): Promise<T> {
   return Promise.race([promesa, new Promise<never>((_, no) => setTimeout(() => no(new Error(SIN_RESPUESTA)), ms))]);
 }
 
+/**
+ * Por qué el navegador no dejó suscribir este aparato, con el detalle
+ * técnico al final para soporte. Antes decía solo "No se activaron", y
+ * con el permiso concedido y las llaves bien no había cómo saber qué
+ * revisar (1 de noviembre de 2026). DOMException hereda de Error.
+ */
+function motivoDeFalla(e: unknown): string {
+  const nombre = e instanceof Error ? e.name : "";
+  const consejo =
+    nombre === "NotAllowedError"
+      ? "El celular no deja que el navegador muestre notificaciones: actívalas en los ajustes del celular, en Aplicaciones › Chrome › Notificaciones."
+      : nombre === "AbortError"
+        ? "El navegador no pudo conectarse con su servicio de avisos. Revisa que esté actualizado y prueba con otra conexión (wifi o datos)."
+        : "No se activaron. Intenta otra vez.";
+  return `${consejo} (Detalle: ${e instanceof Error ? `${e.name}: ${e.message}` : String(e)})`;
+}
+
 async function suscripcionActual(): Promise<PushSubscription | null> {
   const reg = await conLimite(navigator.serviceWorker.getRegistration());
   return (await conLimite(reg?.pushManager.getSubscription() ?? Promise.resolve(null))) ?? null;
@@ -133,7 +150,7 @@ export function useAvisos() {
       if (e instanceof Error && e.message === SIN_RESPUESTA) {
         return { ok: false, aviso: "Este navegador no respondió al activar los avisos. Intenta otra vez; en Android, prueba con Chrome." };
       }
-      return { ok: false };
+      return { ok: false, aviso: motivoDeFalla(e) };
     } finally {
       setOcupado(false);
     }
