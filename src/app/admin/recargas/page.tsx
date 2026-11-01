@@ -82,7 +82,7 @@ export default async function PaginaRecargas() {
                     {r.alumno}
                     <span className="block text-[11px] text-texto-suave">{[r.colegio ?? "Particular", r.curso].filter(Boolean).join(" · ")}</span>
                   </td>
-                  <td className="py-2 text-right">{r.tipo === "plan" ? `${r.intervenciones} al mes` : r.intervenciones}</td>
+                  <td className="py-2 text-right">{r.tipo === "plan" ? `${r.intervenciones.toLocaleString("es-CO")} al mes` : r.intervenciones.toLocaleString("es-CO")}</td>
                   <td className="py-2 text-right">
                     {pesos(r.montoCop)}
                     {r.tipo === "plan" && <span className="block text-[11px] text-texto-suave">plan mensual</span>}

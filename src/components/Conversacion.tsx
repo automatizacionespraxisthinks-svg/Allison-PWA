@@ -467,7 +467,7 @@ export function Conversacion({
           }`}
           title="Recargar"
         >
-          {mensajesRestantes} {enPrueba ? "de prueba" : "disponibles"}
+          {mensajesRestantes.toLocaleString("es-CO")} {enPrueba ? "de prueba" : "disponibles"}
         </Link>
       </div>
 

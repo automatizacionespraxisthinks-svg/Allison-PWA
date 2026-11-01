@@ -274,7 +274,7 @@ export function BuscadorUsuarios({
                     const c = calcularRecarga(monto, cfg);
                     return (
                       <span className="text-sm">
-                        = <strong>{c.total}</strong> intervenciones
+                        = <strong>{c.total.toLocaleString("es-CO")}</strong> intervenciones
                         {c.bono > 0 && (
                           <span className="text-exito"> (+{c.bono} de bono)</span>
                         )}

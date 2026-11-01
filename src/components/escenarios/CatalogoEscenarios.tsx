@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Estrella, Estrellas, Icono } from "@/components/ruta/Iconos";
-import { CATEGORIAS, ESTILO_CATEGORIA, rutaDeEscenario, type Categoria, type TarjetaEscenario } from "@/lib/escenarios/categorias";
+import { CATEGORIAS, ESTILO_CATEGORIA, rutaDeEscenario, type Categoria, type TarjetaEscenario } from "@/lib/escenarios/categorias";
 import { sesionCerrada } from "@/lib/pedir";
 
 /** Ideas para el escenario propio (se tocan y quedan escritas). */
@@ -299,7 +299,7 @@ function CreaTuPropio({ saldo }: { saldo: number }) {
           ))}
         </div>
         <span className="text-[12px] font-semibold text-texto-suave">
-          Allison arma la escena a tu nivel, con unas 6 tareas. Crearla usa 1 intervención (tienes {saldo}).
+          Allison arma la escena a tu nivel, con unas 6 tareas. Crearla usa 1 intervención (tienes {saldo.toLocaleString("es-CO")}).
         </span>
         {error && (
           <p role="alert" className="text-sm font-bold text-oro">

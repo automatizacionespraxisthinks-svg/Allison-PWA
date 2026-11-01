@@ -165,7 +165,7 @@ export function RecargaManual({ cfg, plan }: { cfg: ConfigPrecios; plan: { preci
                 tipo === "recarga" && valor === v ? "border-primario bg-primario text-white" : "border-borde"
               }`}
             >
-              {pesos(v)} · {calcularRecarga(v, cfg).total}
+              {pesos(v)} · {calcularRecarga(v, cfg).total.toLocaleString("es-CO")}
             </button>
           ))}
           {plan && (
@@ -174,7 +174,7 @@ export function RecargaManual({ cfg, plan }: { cfg: ConfigPrecios; plan: { preci
               onClick={() => setTipo("plan")}
               className={`rounded-full border px-3 py-1.5 font-medium ${tipo === "plan" ? "border-primario bg-primario text-white" : "border-borde"}`}
             >
-              Plan mensual {pesos(plan.precio)} · {plan.mensajes} al mes
+              Plan mensual {pesos(plan.precio)} · {plan.mensajes.toLocaleString("es-CO")} al mes
             </button>
           )}
         </div>
@@ -192,9 +192,9 @@ export function RecargaManual({ cfg, plan }: { cfg: ConfigPrecios; plan: { preci
         )}
         <span className="text-xs text-texto-suave">
           {tipo === "plan"
-            ? `${plan?.mensajes} intervenciones al mes, como el plan en línea.`
+            ? `${plan?.mensajes.toLocaleString("es-CO")} intervenciones al mes, como el plan en línea.`
             : calculo
-              ? `${calculo.total} intervenciones (${calculo.base}${calculo.bono ? ` + ${calculo.bono} de bono` : ""}). Mínimo ${pesos(cfg.minima)}.`
+              ? `${calculo.total.toLocaleString("es-CO")} intervenciones (${calculo.base.toLocaleString("es-CO")}${calculo.bono ? ` + ${calculo.bono.toLocaleString("es-CO")} de bono` : ""}). Mínimo ${pesos(cfg.minima)}.`
               : ""}
         </span>
       </div>

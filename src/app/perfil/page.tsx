@@ -71,7 +71,7 @@ export default async function PaginaPerfil() {
         >
           <div className="flex items-end justify-between gap-3">
             <div className="leading-tight">
-              <b className="text-4xl font-black">{saldo}</b>
+              <b className="text-4xl font-black">{saldo.toLocaleString("es-CO")}</b>
               <span className="block text-sm font-bold opacity-90">
                 {alumno.enPrueba ? "de prueba" : pocas ? "Te quedan pocas" : "intervenciones"}
               </span>

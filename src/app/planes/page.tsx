@@ -21,7 +21,7 @@ export default async function PaginaPlanes() {
   const [suscripcion] = await sql`
     select p.nombre, p.mensajes_por_mes,
            to_char(s.fin_en at time zone 'America/Bogota', 'DD/MM/YYYY') as hasta,
-           to_char(s.periodo_fin at time zone 'America/Bogota', 'DD/MM/YYYY') as proximo_mes,
+           to_char(s.periodo_fin at time zone 'America/Bogota', 'DD/MM/YYYY') as fin_del_mes,
            s.periodo_fin < s.fin_en as quedan_meses
       from suscripciones s join planes p on p.id = s.plan_id
      where s.user_id = ${alumno.id} and s.estado = 'activa'
@@ -56,18 +56,42 @@ export default async function PaginaPlanes() {
       <div>
         <h1 className="text-2xl font-bold">Planes</h1>
         <p className="mt-1 text-texto-suave">
-          Conversa con Allison todos los días. Al acabarse el mes te
-          preguntamos si quieres seguir — sin cobros automáticos.
+          Conversa con Allison todos los días.
         </p>
+        {/* Antes decía "al acabarse el mes te preguntamos si quieres
+         *  seguir", y nadie pregunta nada; y no decía que lo del plan vence
+         *  cada mes (1 de noviembre de 2026). */}
+        <ul className="mt-2 flex list-disc flex-col gap-1 pl-5 text-sm text-texto-suave">
+          <li>
+            Las intervenciones del plan llegan cada mes y{" "}
+            <strong>vencen al terminar ese mes</strong>: las que sobran no pasan
+            al siguiente.
+          </li>
+          <li>Las de recarga no vencen nunca.</li>
+          <li>Sin cobros automáticos: cuando se acabe tu plan, eliges si sigues.</li>
+        </ul>
       </div>
 
       {suscripcion && (
-        <p className="rounded-xl bg-primario-suave p-3 text-sm text-primario">
-          Ya tienes el <strong>{suscripcion.nombre}</strong> activo hasta el{" "}
-          {suscripcion.hasta}.
-          {suscripcion.quedan_meses &&
-            ` Tus próximas ${suscripcion.mensajes_por_mes} intervenciones llegan el ${suscripcion.proximo_mes}.`}
-        </p>
+        <div className="flex flex-col gap-1 rounded-xl bg-primario-suave p-3 text-sm text-primario">
+          <p>
+            Ya tienes el <strong>{suscripcion.nombre}</strong> activo hasta el{" "}
+            {suscripcion.hasta}.
+          </p>
+          <p>
+            {alumno.mensajesPlan > 0 ? (
+              <>
+                Te quedan <strong>{alumno.mensajesPlan.toLocaleString("es-CO")}</strong>{" "}
+                {alumno.mensajesPlan === 1 ? "intervención" : "intervenciones"} del plan
+                este mes; vencen el {suscripcion.fin_del_mes}.
+              </>
+            ) : (
+              "Ya usaste las intervenciones del plan de este mes."
+            )}
+            {suscripcion.quedan_meses &&
+              `${alumno.mensajesPlan > 0 ? " Ese día" : ` El ${suscripcion.fin_del_mes}`} llegan ${suscripcion.mensajes_por_mes.toLocaleString("es-CO")} nuevas.`}
+          </p>
+        </div>
       )}
 
       {conMeses && (
@@ -116,7 +140,7 @@ export default async function PaginaPlanes() {
                   <p className="text-sm text-texto-suave">
                     {total.toLocaleString("es-CO")} intervenciones
                     {p.duracion_meses > 1
-                      ? ` · ${p.mensajes_por_mes} cada mes`
+                      ? ` · ${p.mensajes_por_mes.toLocaleString("es-CO")} cada mes`
                       : " al mes"}
                   </p>
                   <p className="text-sm font-medium text-primario">

@@ -20,7 +20,7 @@ export default async function PaginaRecargar() {
           ← Volver
         </Link>
         <span className="text-sm text-texto-suave">
-          Tienes {saldo} {saldo === 1 ? "intervención" : "intervenciones"}
+          Tienes {saldo.toLocaleString("es-CO")} {saldo === 1 ? "intervención" : "intervenciones"}
         </span>
       </header>
 
