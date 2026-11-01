@@ -106,11 +106,11 @@ export const PARADA_08: Parada = {
           tipo: "repite",
           queAparece: 'Audio de Allison: "I have a stomachache." Se practica la palabra stomachache.',
           siRespondeMal:
-            'Si pronuncia la ch como en español: Escucha: stomachache. Suena "stómakeik": las dos ch suenan k. Say it: stomachache. Luego la frase completa.',
+            'Si pronuncia la ch como en español: Escucha: stomachache. Suena "stámakeik": las dos ch suenan k. Say it: stomachache. Luego la frase completa.',
           tambienSeAcepta: "Pequeñas fallas en el resto de la frase",
           frase: "I have a stomachache.",
           palabraDificil: "stomachache",
-          consejo: 'Suena "stómakeik": las dos ch suenan k.',
+          consejo: 'Suena "stámakeik": las dos ch suenan k.',
         },
       ],
     },

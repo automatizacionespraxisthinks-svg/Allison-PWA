@@ -6,6 +6,50 @@ import { desdeB1 } from "@/lib/tipos";
 import { evaluar, type Contexto, type FinActividad } from "./api";
 import { AllisonAro, BotonOir, Explicado, Grabador, Hoja, NoDijeEso, oirGrabacion, useVoz, type Entrada } from "./comun";
 
+/** La palabra para practicar, con su consejo y el audio normal y lento. */
+function TarjetaPalabra({
+  tono,
+  titulo,
+  palabra,
+  consejo,
+  consejoEs,
+  decir,
+}: {
+  /** Dorada si hay que mejorarla; verde para recordarla después de un acierto. */
+  tono: "oro" | "menta";
+  titulo: string;
+  palabra: string;
+  consejo?: string;
+  consejoEs?: string;
+  decir: (texto: string, opciones?: { lento?: boolean }) => Promise<boolean>;
+}) {
+  const c =
+    tono === "oro"
+      ? { caja: "border-oro bg-oro-suave", texto: "text-oro", boton: "!bg-oro" }
+      : { caja: "border-menta bg-menta-suave", texto: "text-menta", boton: "!bg-menta" };
+  return (
+    <div className={`flex items-center gap-3 rounded-3xl border-2 px-4 py-3 ${c.caja}`}>
+      <div className="min-w-0 flex-1">
+        <small className={`block text-[12.5px] font-extrabold ${c.texto}`}>{titulo}</small>
+        <b className="block text-3xl leading-tight font-black">{palabra}</b>
+        {consejo && (
+          <small className={`block text-[12.5px] font-bold ${c.texto}`}>
+            {consejoEs ? <Explicado en={consejo} es={consejoEs} className="!items-start" /> : consejo}
+          </small>
+        )}
+      </div>
+      <span className={`flex flex-col items-center gap-1 text-[11.5px] font-extrabold ${c.texto}`}>
+        <BotonOir onClick={() => void decir(palabra)} className={c.boton} />
+        Normal
+      </span>
+      <span className={`flex flex-col items-center gap-1 text-[11.5px] font-extrabold ${c.texto}`}>
+        <BotonOir onClick={() => void decir(palabra, { lento: true })} lento className={c.boton} />
+        Lento
+      </span>
+    </div>
+  );
+}
+
 /**
  * Repite (pantalla 4): oye la frase de Allison y la repite. Después de
  * hablar, cada palabra lleva una barra: verde si se entendió, dorada si
@@ -78,9 +122,9 @@ export function Repite({
 
   const claras = palabras?.filter((p) => p.estado === "bien").length ?? 0;
   /**
-   * "Falta una palabra" solo si falta una (antes lo decía aunque fuera
+   * "Practica una palabra" solo si es una (antes lo decía aunque fuera
    * otra frase). Desde A2 solo cuenta la palabra difícil ("Pequeñas
-   * fallas en el resto de la frase"): esa es la que falta.
+   * fallas en el resto de la frase"): esa es la que se practica.
    */
   const porMejorar = /pequeñas fallas/i.test(a.tambienSeAcepta ?? "") ? 1 : (palabras?.length ?? 0) - claras;
   // Desde B1 Allison habla en inglés: sin la línea en español debajo.
@@ -106,8 +150,9 @@ export function Repite({
             </>
           ) : mejorar ? (
             <>
-              Almost! One more word.
-              {!b1 && <small className="block font-semibold text-texto-suave">¡Casi! Falta una palabra.</small>}
+              {/* "Falta una palabra" confundía: la dijo, pero no se entendió (1 de noviembre de 2026). */}
+              Almost! Practice one word.
+              {!b1 && <small className="block font-semibold text-texto-suave">¡Casi! Practica una palabra.</small>}
             </>
           ) : (
             <>
@@ -136,26 +181,23 @@ export function Repite({
         <BotonOir onClick={() => void decir(a.frase, { lento: true })} texto="Más despacio" lento />
       </div>
 
-      {mejorar && (
-        <div className="flex items-center gap-3 rounded-3xl border-2 border-oro bg-oro-suave px-4 py-3">
-          <div className="min-w-0 flex-1">
-            <small className="block text-[12.5px] font-extrabold text-oro">Practica esta palabra</small>
-            <b className="block text-3xl leading-tight font-black">{mejorar}</b>
-            {consejo && (
-              <small className="block text-[12.5px] font-bold text-oro">
-                {a.consejoEs ? <Explicado en={consejo} es={a.consejoEs} className="!items-start" /> : consejo}
-              </small>
-            )}
-          </div>
-          <span className="flex flex-col items-center gap-1 text-[11.5px] font-extrabold text-oro">
-            <BotonOir onClick={() => void decir(mejorar)} className="!bg-oro" />
-            Normal
-          </span>
-          <span className="flex flex-col items-center gap-1 text-[11.5px] font-extrabold text-oro">
-            <BotonOir onClick={() => void decir(mejorar, { lento: true })} lento className="!bg-oro" />
-            Lento
-          </span>
-        </div>
+      {mejorar ? (
+        <TarjetaPalabra tono="oro" titulo="Practica esta palabra" palabra={mejorar} consejo={consejo} consejoEs={a.consejoEs} decir={decir} />
+      ) : (
+        // La palabra difícil, siempre: la transcripción no nota la t de
+        // castle ni la -ed de fixed, y el consejo solo salía si la palabra
+        // no se entendía. Casi nadie lo veía (1 de noviembre de 2026).
+        (palabras || escrita) &&
+        a.palabraDificil && (
+          <TarjetaPalabra
+            tono="menta"
+            titulo="Recuerda esta palabra"
+            palabra={a.palabraDificil}
+            consejo={a.consejo}
+            consejoEs={a.consejoEs}
+            decir={decir}
+          />
+        )
       )}
 
       {palabras && (

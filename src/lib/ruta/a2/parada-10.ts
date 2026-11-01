@@ -115,11 +115,11 @@ export const PARADA_10: Parada = {
           tipo: "repite",
           queAparece: 'Audio de Allison: "This sofa is more comfortable." Se practica la palabra comfortable.',
           siRespondeMal:
-            'Si dice "com-for-ta-ble" en cuatro sílabas: Escucha: comfortable. Suena "cómftabl": la or casi no suena. Say it: comfortable. Luego la frase completa.',
+            'Si dice "com-for-ta-ble" en cuatro sílabas: Escucha: comfortable. Suena "kámfterbl": la or casi no suena. Say it: comfortable. Luego la frase completa.',
           tambienSeAcepta: "Pequeñas fallas en el resto de la frase",
           frase: "This sofa is more comfortable.",
           palabraDificil: "comfortable",
-          consejo: 'Suena "cómftabl": la or casi no suena.',
+          consejo: 'Suena "kámfterbl": la or casi no suena.',
         },
       ],
     },
