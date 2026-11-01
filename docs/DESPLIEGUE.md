@@ -152,6 +152,16 @@ Se hacen **desde dentro del contenedor** (Dokploy → tu aplicación →
 Terminal), que es la forma de tocar producción sin abrir puertos. El
 Dockerfile ya copia los scripts y sus dependencias.
 
+**En esa Terminal elige `/bin/sh`** (la imagen es Alpine y no trae
+Bash) y **entra primero a `/app`**: la Terminal abre en `/` y desde ahí
+`node scripts/migrar.mjs` responde «Cannot find module». Todos los
+comandos de esta guía que dicen «en la Terminal del contenedor» van
+así:
+
+```
+cd /app && node scripts/migrar.mjs
+```
+
 ### Si la base está VACÍA (un Postgres recién creado)
 
 Un solo archivo: **`db/manual/base-completa.sql`**. Crea todo el esquema
@@ -253,11 +263,17 @@ a la app. Por eso corre **cada hora** y no una vez al día: así ese
 alumno recibe lo que pagó en menos de una hora, no al día siguiente. Lo
 demás que hace es idempotente y liviano; correrlo seguido no cuesta.
 
-Dokploy → **Schedules** → tarea `0 * * * *` (cada hora, en punto) con:
+Dokploy → tu aplicación → **Schedules** → tarea `0 * * * *` (cada hora,
+en punto), que corre dentro del contenedor de la app, con:
 
 ```
-curl -fsS -X POST -H "Authorization: Bearer EL_TAREAS_SECRETO" https://TU-DOMINIO/api/tareas/limpiar
+node -e "fetch('http://127.0.0.1:3000/api/tareas/limpiar',{method:'POST',headers:{Authorization:'Bearer '+process.env.TAREAS_SECRETO}}).then(r=>{console.log('limpieza',r.status);process.exit(r.ok?0:1)})"
 ```
+
+Con `node` y no con `curl`: la imagen es Alpine y no trae `curl`. Y el
+secreto lo lee del entorno del contenedor, así que no queda escrito en
+la tarea. Debe imprimir `limpieza 200`; un 401 es que `TAREAS_SECRETO`
+no está puesta.
 
 La ruta acepta POST y GET, y rechaza con 401 cualquier llamada sin el
 secreto.

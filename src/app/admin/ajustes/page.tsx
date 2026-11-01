@@ -26,12 +26,6 @@ export default async function PaginaAjustes() {
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-bold">Ajustes</h1>
       <FormAjustes inicial={a} cambiados={cambiados} />
-      {a.dolarCop === 4000 && (
-        <p className="text-xs text-texto-suave">
-          El costo se calcula con el dólar a $4.000; la TRM del 31 de octubre de 2026 es $3.183, así que el panel muestra un costo de IA más
-          alto que el real.
-        </p>
-      )}
     </div>
   );
 }

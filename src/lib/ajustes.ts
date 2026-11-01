@@ -25,8 +25,10 @@ export interface Ajustes {
 }
 
 const AJUSTES_POR_DEFECTO: Ajustes = {
-  // La TRM oficial del 31 de octubre de 2026 (datos.gov.co, conjunto 32sa-8pi3); antes 4.000, un 26 % más alto.
-  dolarCop: 3183,
+  // 4.000 a propósito, por encima de la TRM (3.183 el 31 de octubre de
+  // 2026, datos.gov.co): el dólar sube y baja, y así el costo de IA del
+  // panel trae un colchón si sube. Decisión del dueño, 1 de noviembre de 2026.
+  dolarCop: 4000,
   diasDescansoRacha: 2,
   alertaInactivoDias: 7,
   alertaSaldoColegioPct: 10,

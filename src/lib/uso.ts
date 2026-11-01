@@ -21,7 +21,7 @@ import { sql } from "./db";
 export const TARIFAS = {
   entrada: 0.1,
   salida: 0.4,
-  usdACop: 3183,
+  usdACop: 4000,
 } as const;
 
 export function costoCop(entrada: number, salida: number, usdACop: number = TARIFAS.usdACop): number {

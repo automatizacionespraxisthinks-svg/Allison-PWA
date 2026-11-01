@@ -8,7 +8,7 @@ import { pedir } from "@/lib/pedir";
 type Numerico = Exclude<keyof Ajustes, "recordatorioCorreo" | "recordatorioCelular" | "fechaVersionNueva">;
 
 const CAMPOS: { clave: Numerico; titulo: string; unidad: string; nota?: string; min: number; max: number }[] = [
-  { clave: "dolarCop", titulo: "Valor del dólar para calcular costos", unidad: "pesos", nota: "La TRM del día está en datos.gov.co (TRM). Antes fijo en $4.000.", min: 1000, max: 20000 },
+  { clave: "dolarCop", titulo: "Valor del dólar para calcular costos", unidad: "pesos", nota: "En $4.000 a propósito, por encima de la TRM (datos.gov.co): un colchón por si el dólar sube. La TRM del 31 de octubre de 2026 era $3.183.", min: 1000, max: 20000 },
   { clave: "diasDescansoRacha", titulo: "Días de descanso de la racha", unidad: "días", nota: "Saltarse estos días no la reinicia.", min: 0, max: 7 },
   { clave: "alertaInactivoDias", titulo: "Alerta de alumno inactivo", unidad: "días sin actividad", min: 1, max: 90 },
   { clave: "alertaSaldoColegioPct", titulo: "Alerta de saldo bajo de un colegio o curso", unidad: "% del último saldo asignado", min: 1, max: 100 },

@@ -98,6 +98,13 @@ export const pesos = (n: number) => `$${n.toLocaleString("es-CO")}`;
  * PRESENTACIÓN. Un turno real —el alumno habla, Allison responde— ronda
  * el minuto. Se redondea hacia abajo y se dice "más de X horas" para
  * prometer siempre menos de lo que se entrega.
+ *
+ * Medido en producción el 1 de noviembre de 2026 (uso_diario.turnos y
+ * progreso_diario.segundos_practica, 30 días, sin administradores):
+ * unos 18 segundos de práctica por intervención, contando lo que no usa
+ * IA, y 9 hablando. Eran solo 4 alumnos y 72 intervenciones, casi todo
+ * pruebas: el dueño decidió mantener el minuto. Volver a medir después
+ * del piloto con alumnos reales.
  */
 export function tiempoEquivalente(intervenciones: number): string {
   if (intervenciones < 60) {
