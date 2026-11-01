@@ -140,6 +140,23 @@ export function reproducirGrabacion(url: string): void {
 }
 
 /**
+ * Como reproducirGrabacion, pero espera a que termine: true si sonó
+ * entera, false si se cortó (detenerVoz la pausa). Tu turno con varias
+ * preguntas la intercala con el diálogo en "Oír el diálogo completo".
+ */
+export function reproducirGrabacionEntera(url: string): Promise<boolean> {
+  detenerVoz();
+  const audio = new Audio(url);
+  grabacionPropia = audio;
+  return new Promise((listo) => {
+    audio.onended = () => listo(true);
+    audio.onpause = () => listo(audio.ended);
+    audio.onerror = () => listo(false);
+    audio.play().catch(() => listo(false));
+  });
+}
+
+/**
  * Corta lo que esté sonando, venga de la API o del navegador, y lo que
  * todavía se estaba pidiendo: subir el turno invalida la frase que
  * esperaba respuesta de /api/voz (antes sonaba igual cuando llegaba,

@@ -232,10 +232,11 @@ export type Entrada = { audio: Blob; duracion: number; url: string } | { texto: 
  * sigue mostrando después (en Dilo, ¿Qué es esto?, Tu turno o la frase
  * repetida de Narra, la hoja del resultado reemplaza al Grabador y trae
  * "Oír mi voz"). Por eso se guardan vivas las últimas pocas de toda la
- * sesión, y al crear una nueva se libera la más vieja: ninguna pantalla
- * muestra más de una o dos a la vez.
+ * sesión, y al crear una nueva se libera la más vieja. Tu turno con tres
+ * preguntas muestra tres a la vez, más las que vuelva a grabar: con 4, la
+ * del primer turno dejaba de sonar (1 de noviembre de 2026).
  */
-const GRABACIONES_VIVAS = 4;
+const GRABACIONES_VIVAS = 6;
 const grabacionesVivas: string[] = [];
 
 export function urlDeGrabacion(audio: Blob): string {

@@ -108,11 +108,10 @@ export const PARADA_06: Parada = {
           siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
           dialogo: [{ quien: "Sarah", dice: "Can you ride a bike?" }],
           plantilla: "Yes, I can. / No, I can't.",
-          modelo: "Yes, I can. No, I can't.",
+          modelo: "Yes, I can.",
+          // "Luego Sarah: Can you cook?": la segunda pregunta, después de su línea.
+          siguientes: [{ dialogo: [{ quien: "Sarah", dice: "Can you cook?" }], plantilla: "Yes, I can. / No, I can't.", modelo: "No, I can't." }],
           aceptadas: ["Yes, I can ride a bike.", "I can cook a little."],
-          porRevisar: [
-            'dialogo: la segunda pregunta de Sarah ("Can you cook?") no cabe en el tipo, que tiene una sola línea del alumno; queda solo en queAparece',
-          ],
         },
         {
           paso: 3,

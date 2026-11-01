@@ -136,7 +136,8 @@ function revisarVoz(a, donde) {
   if (a.tipo === "escucha-elige" && a.quienHabla !== "Allison" && !/anuncio/i.test(a.quienHabla ?? ""))
     fallo(donde, `en Escucha y elige habla "${a.quienHabla}": la única voz es Allison (cuéntalo o cítalo)`);
   if (a.tipo === "tu-turno")
-    for (const l of a.dialogo ?? []) if (PAPEL_DE_HOMBRE.test(l.quien)) fallo(donde, `"${l.quien}" habla con la voz de Allison: el papel tiene que ser de mujer`);
+    for (const l of [a, ...(a.siguientes ?? [])].flatMap((t) => t.dialogo ?? []))
+      if (PAPEL_DE_HOMBRE.test(l.quien)) fallo(donde, `"${l.quien}" habla con la voz de Allison: el papel tiene que ser de mujer`);
   // En Adivina, Allison es la tarjeta de cada ronda ("Who was I?"): tampoco puede ser un hombre.
   if (a.tipo === "adivina")
     for (const r of a.rondas ?? []) {
@@ -261,9 +262,14 @@ function revisarActividad(a, donde, imagenes) {
         fallo(donde, `la palabra difícil "${a.palabraDificil}" no está en la frase`);
       break;
     case "tu-turno":
-      if (!a.dialogo?.length) fallo(donde, "sin diálogo");
-      if (!a.plantilla?.includes("___") && !a.plantilla?.trim()) fallo(donde, "sin plantilla");
-      if (!a.modelo?.trim()) fallo(donde, "sin modelo");
+      // El primer turno y los que siguen ("una pregunta a la vez"), cada uno con lo suyo.
+      for (const [k, t] of [a, ...(a.siguientes ?? [])].entries()) {
+        const de = k ? `${donde} turno ${k + 1}` : donde;
+        if (!t.dialogo?.length) fallo(de, "sin diálogo");
+        if (!t.plantilla?.trim()) fallo(de, "sin plantilla");
+        if (!t.modelo?.trim()) fallo(de, "sin modelo");
+        if (t.fecha && !t.plantilla?.includes("___")) fallo(de, "el selector de fecha necesita ___ en la plantilla");
+      }
       if (a.mapa) {
         // Lo que el mapa muestra tiene que verse: la meta y los lugares dichos, cada uno en su lugar.
         const t = trazarMapa(mapaDe(a.mapa.indicaciones ?? [], a.mapa.meta), a.mapa);

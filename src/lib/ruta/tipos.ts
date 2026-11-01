@@ -219,6 +219,26 @@ export interface TuTurno extends ActividadBase {
   palabras?: string[];
   /** Un mapa sencillo de la app con los lugares ya dichos (src/lib/ruta/indicaciones.ts). */
   mapa?: MapaDeLaApp;
+  /** El abecedario en botones: cada letra dice su nombre ("si no sabe una letra, toca la letra y la oye"). */
+  deletrear?: boolean;
+  /** El selector de mes y día, que arma la fecha en la plantilla ("con un selector de mes y día"). */
+  fecha?: boolean;
+  /**
+   * Los turnos que siguen, "una pregunta a la vez": lo que se oye y la
+   * línea del alumno, cada una con su ejemplo. Antes las preguntas iban
+   * seguidas y el alumno respondía todo en una línea (1 de noviembre de 2026).
+   */
+  siguientes?: TurnoDeTuTurno[];
+}
+
+/** Un turno más de Tu turno: las líneas que se oyen y la del alumno. */
+export interface TurnoDeTuTurno {
+  dialogo: { quien: string; dice: string }[];
+  plantilla: string;
+  modelo: string;
+  palabras?: string[];
+  deletrear?: boolean;
+  fecha?: boolean;
 }
 
 /** Ve una frase en español y la dice en inglés. Evaluación corta. */

@@ -116,11 +116,16 @@ export const PARADA_07: Parada = {
           siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
           dialogo: [{ quien: "La mesera", dice: "Hi! What would you like to drink?" }],
           plantilla: "I'd like ___, please.",
-          modelo: "I'd like some water, please. Yes, please.",
+          modelo: "I'd like some water, please.",
           aceptadas: ["I'd like a soda. No, thank you."],
           palabras: ["some water", "a juice", "a soda"],
-          porRevisar: [
-            'dialogo: después de la línea del alumno la mesera pregunta "Would you like some ice?" y el alumno responde "Yes, please." / "No, thank you."; el tipo solo guarda las líneas antes de la del alumno',
+          // "Luego: Would you like some ice?": la segunda pregunta, después de su línea.
+          siguientes: [
+            {
+              dialogo: [{ quien: "La mesera", dice: "Would you like some ice?" }],
+              plantilla: "Yes, please. / No, thank you.",
+              modelo: "Yes, please.",
+            },
           ],
         },
         {

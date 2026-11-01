@@ -109,17 +109,17 @@ export const PARADA_03: Parada = {
           queAparece:
             'Sarah: "Hi! What\'s your name?" → el alumno dice su nombre. Sarah: "How do you spell it?" En pantalla: el nombre del alumno con un espacio por letra.',
           siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez. Si no sabe una letra, toca la letra y la oye.",
-          dialogo: [
-            { quien: "Sarah", dice: "Hi! What's your name?" },
-            { quien: "Sarah", dice: "How do you spell it?" },
+          dialogo: [{ quien: "Sarah", dice: "Hi! What's your name?" }],
+          plantilla: "My name is ___.",
+          modelo: "My name is Diego.",
+          // Una pregunta a la vez: el nombre y después el deletreo, con el abecedario.
+          siguientes: [
+            { dialogo: [{ quien: "Sarah", dice: "How do you spell it?" }], plantilla: "___-___-___…", modelo: "D-I-E-G-O.", deletrear: true },
           ],
-          plantilla: "My name is ___. ___",
-          modelo: "My name is Diego. D-I-E-G-O.",
           aceptadas: [],
           tambienSeAcepta: "Solo el nombre. Cualquier nombre deletreado.",
           porRevisar: [
-            "plantilla: el documento no la escribe; dice que en pantalla va el nombre del alumno con un espacio por letra",
-            "dialogo: en el documento el alumno dice su nombre entre las dos líneas de Sarah; aquí quedan seguidas y el modelo responde las dos",
+            'plantilla: el documento no la escribe; dice que en pantalla va el nombre del alumno con un espacio por letra (va "___-___-___…" y el abecedario)',
           ],
         },
         {

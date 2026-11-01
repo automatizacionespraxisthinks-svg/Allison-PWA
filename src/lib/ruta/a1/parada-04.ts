@@ -119,6 +119,8 @@ export const PARADA_04: Parada = {
           dialogo: [{ quien: "Sarah", dice: "When is your birthday?" }],
           plantilla: "My birthday is on ___.",
           modelo: "My birthday is on March 3rd.",
+          // "Con un selector de mes y día": arma la fecha de la línea.
+          fecha: true,
           aceptadas: ["It's in March.", "March 3rd."],
           tambienSeAcepta: "It's in March. March 3rd. Cualquier fecha.",
         },

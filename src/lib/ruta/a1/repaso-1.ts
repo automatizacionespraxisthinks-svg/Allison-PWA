@@ -118,19 +118,19 @@ export const REPASO_1: Repaso = {
           queAparece:
             'Mia: "Hi! What\'s your name? How do you spell it? When is your birthday?" Una pregunta a la vez.',
           siRespondeMal: "No se califica. Puede oír el modelo y grabar otra vez.",
-          dialogo: [
-            { quien: "Mia", dice: "Hi! What's your name?" },
-            { quien: "Mia", dice: "How do you spell it?" },
-            { quien: "Mia", dice: "When is your birthday?" },
+          // "Una pregunta a la vez": el nombre, el deletreo y el cumpleaños.
+          dialogo: [{ quien: "Mia", dice: "Hi! What's your name?" }],
+          plantilla: "My name is ___.",
+          modelo: "My name is Diego.",
+          siguientes: [
+            { dialogo: [{ quien: "Mia", dice: "How do you spell it?" }], plantilla: "___-___-___…", modelo: "D-I-E-G-O.", deletrear: true },
+            { dialogo: [{ quien: "Mia", dice: "When is your birthday?" }], plantilla: "My birthday is on ___.", modelo: "My birthday is on March 3rd.", fecha: true },
           ],
-          plantilla: "My name is ___. ___. My birthday is on ___.",
-          modelo: "My name is Diego. D-I-E-G-O. My birthday is on March 3rd.",
           aceptadas: [],
           tambienSeAcepta: "Respuestas cortas",
           porRevisar: [
             'plantilla: el documento no la escribe; dice "Su nombre, deletreado, y su cumpleaños con on"',
             "modelo: el documento no lo escribe; sale de las paradas 3 y 4",
-            "dialogo: Mia hace una pregunta a la vez; aquí quedan seguidas y el modelo responde las tres",
           ],
         },
       ],
