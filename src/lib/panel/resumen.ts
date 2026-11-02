@@ -253,7 +253,7 @@ async function alertas(a: Ajustes, alumnos: Fragmento): Promise<Alerta[]> {
       cuantos: colegios.length,
       texto: `Colegios o cursos con menos del ${a.alertaSaldoColegioPct} % del saldo asignado`,
       detalle: colegios.slice(0, 3).map((c) => `${c.colegio}${c.curso ? ` · ${c.curso}` : ""} (${c.pct} %)`).join(", ") || undefined,
-      href: "/admin/colegios",
+      href: "/admin/colegios?vista=asignar",
     },
     { clave: "sin-saldo", cuantos: n(sinSaldo.n), texto: "Alumnos activos que se quedaron sin saldo", href: "/admin/uso?estado=sin-saldo" },
     {

@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import { sql } from "./db";
 import { vaEn } from "./panel/etiquetas";
 import type { Nivel } from "./tipos";
@@ -18,15 +19,29 @@ import type { Nivel } from "./tipos";
 /**
  * El costo del hash de un PIN de alumno.
  *
- * Más bajo que el de las contraseñas (12) a propósito. Un PIN de 4
- * dígitos no lo protege el costo: sus 10.000 combinaciones se prueban
- * sin conexión en minutos con cualquier costo. Lo protegen los límites
- * de intentos al entrar (src/lib/intentos.ts). Y el costo sí se paga:
- * cada hash es CPU del mismo servidor que atiende las conversaciones, y
- * una carga de mil alumnos a costo 12 lo ocupaba más de cuatro minutos.
- * A costo 10, cuatro veces menos.
+ * Más bajo que el de las contraseñas (12) a propósito. Un PIN corto no
+ * lo protege el costo: su millón de combinaciones se prueba sin conexión
+ * con cualquier costo. Lo protegen los límites de intentos al entrar
+ * (src/lib/intentos.ts). Y el costo sí se paga: cada hash es CPU del
+ * mismo servidor que atiende las conversaciones, y una carga de mil
+ * alumnos a costo 12 lo ocupaba más de cuatro minutos. A costo 10,
+ * cuatro veces menos.
  */
 export const COSTO_HASH_PIN = 10;
+
+/**
+ * Los PIN nuevos son de 6 dígitos (auditoría de seguridad, 2 de noviembre
+ * de 2026). Con 4, un compañero que probaba PIN contra todo el salón,
+ * dentro del tope diario de intentos, acertaba alguna cuenta cada día en
+ * un colegio grande; con 6 son cien veces más combinaciones. Los PIN de 4
+ * que ya se entregaron siguen sirviendo hasta que se reinicien.
+ */
+export const DIGITOS_PIN = 6;
+
+/** Un PIN nuevo, al azar criptográfico. */
+export function pinNuevo(): string {
+  return String(randomInt(0, 10 ** DIGITOS_PIN)).padStart(DIGITOS_PIN, "0");
+}
 
 export interface AlumnoDelColegio {
   id: string;

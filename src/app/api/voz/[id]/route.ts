@@ -7,6 +7,51 @@ import { ErrorTts, sintetizar, vozPedida } from "@/lib/tts";
 const Id = z.string().uuid();
 
 /**
+ * Voces en curso por alumno. La app suena una a la vez (tocar otra corta
+ * la anterior); 2 dejan margen a ese cambio. Sin tope, un alumno ocupaba
+ * los dos turnos de la API para todos con textos largos y los demás caían
+ * a la voz del dispositivo (auditoría de seguridad, 2 de noviembre de 2026).
+ */
+const MAX_POR_ALUMNO = 2;
+const enCurso = new Map<string, number>();
+
+function soltar(alumnoId: string) {
+  const n = (enCurso.get(alumnoId) ?? 1) - 1;
+  if (n <= 0) enCurso.delete(alumnoId);
+  else enCurso.set(alumnoId, n);
+}
+
+/** El audio tal cual, pero avisa una sola vez cuando termina, falla o se corta. */
+function alTerminar(cuerpo: ReadableStream<Uint8Array>, fin: () => void): ReadableStream<Uint8Array> {
+  let avisado = false;
+  const una = () => {
+    if (!avisado) {
+      avisado = true;
+      fin();
+    }
+  };
+  const lector = cuerpo.getReader();
+  return new ReadableStream<Uint8Array>({
+    async pull(control) {
+      try {
+        const { done, value } = await lector.read();
+        if (done) {
+          una();
+          control.close();
+        } else control.enqueue(value);
+      } catch (e) {
+        una();
+        control.error(e);
+      }
+    },
+    cancel(motivo) {
+      una();
+      return lector.cancel(motivo);
+    },
+  });
+}
+
+/**
  * Segundo paso: el audio, tal como lo va generando la API de voz.
  *
  * El navegador abre esta dirección en un <audio> y empieza a sonar en
@@ -38,6 +83,11 @@ export async function GET(
     return NextResponse.json({ error: "Esa voz ya no está disponible" }, { status: 404 });
   }
 
+  if ((enCurso.get(alumno.id) ?? 0) >= MAX_POR_ALUMNO) {
+    return NextResponse.json({ error: "Espera a que termine la voz anterior" }, { status: 429 });
+  }
+  enCurso.set(alumno.id, (enCurso.get(alumno.id) ?? 0) + 1);
+
   try {
     // Si el alumno toca otro audio, el navegador corta esta descarga y
     // request.signal avisa: lo que esperaba turno lo suelta para el nuevo.
@@ -47,7 +97,7 @@ export async function GET(
       velocidad: pedido.velocidad,
       cancelar: peticion.signal,
     });
-    return new Response(audio.cuerpo, {
+    return new Response(alTerminar(audio.cuerpo, () => soltar(alumno.id)), {
       headers: {
         "Content-Type": audio.tipo,
         "Cache-Control": "no-store",
@@ -60,6 +110,7 @@ export async function GET(
       },
     });
   } catch (e) {
+    soltar(alumno.id);
     // Nadie va a leer la respuesta: no es un fallo de la voz.
     if (e instanceof ErrorTts && e.codigo === "cancelado") {
       return new Response(null, { status: e.estado, headers: { "Cache-Control": "no-store" } });

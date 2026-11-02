@@ -354,19 +354,19 @@ export function CargaAlumnos({
 
           <ul className="mt-3 flex flex-col gap-1.5 text-[15px]">
             <li>
-              <strong className="text-exito">{resumen.aCrear}</strong> cuentas nuevas
+              <strong className="text-exito">{resumen.aCrear}</strong> {resumen.aCrear === 1 ? "cuenta nueva" : "cuentas nuevas"}
               {admin && saldo > 0 && resumen.aCrear > 0 ? `, con ${saldo} intervenciones cada una` : ""}
             </li>
             {resumen.yaExisten > 0 && (
               <li className="text-texto-suave">
-                <strong>{resumen.yaExisten}</strong> ya existían
-                {resumen.cambianDeCurso > 0 ? ` (${resumen.cambianDeCurso} cambian de curso)` : ""}: no se crea otra cuenta
+                <strong>{resumen.yaExisten}</strong> {resumen.yaExisten === 1 ? "ya existía" : "ya existían"}
+                {resumen.cambianDeCurso > 0 ? ` (${resumen.cambianDeCurso} ${resumen.cambianDeCurso === 1 ? "cambia" : "cambian"} de curso)` : ""}: no se crea otra cuenta
                 {admin && saldo > 0 ? " y su saldo no cambia (para sumarles, usa Asignar saldo)" : ""}
               </li>
             )}
             {resumen.rechazadas.length > 0 && (
               <li className="text-acento">
-                <strong>{resumen.rechazadas.length}</strong> líneas no se pueden usar
+                <strong>{resumen.rechazadas.length}</strong> {resumen.rechazadas.length === 1 ? "fila no se puede usar" : "filas no se pueden usar"}
               </li>
             )}
             {resumen.cupoLibre !== null && (
@@ -412,7 +412,7 @@ export function CargaAlumnos({
 
           {resumen.rechazadas.length > 0 && (
             <details className="mt-4">
-              <summary className="cursor-pointer text-sm font-medium text-acento">Ver las {resumen.rechazadas.length} líneas con problema</summary>
+              <summary className="cursor-pointer text-sm font-medium text-acento">{resumen.rechazadas.length === 1 ? "Ver la fila con problema" : `Ver las ${resumen.rechazadas.length} filas con problema`}</summary>
               <ul className="mt-2 flex flex-col gap-1 text-sm text-texto-suave">
                 {resumen.rechazadas.slice(0, 30).map((r) => (
                   <li key={r.linea}>

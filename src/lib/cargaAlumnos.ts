@@ -1,6 +1,5 @@
 import bcrypt from "bcryptjs";
-import { randomInt } from "node:crypto";
-import { COSTO_HASH_PIN } from "./colegio";
+import { COSTO_HASH_PIN, pinNuevo } from "./colegio";
 import { sql } from "./db";
 import { leerCsv, limpiarCurso, mismoNombre, type FilaRechazada } from "./importar";
 import { MENSAJES_PRUEBA } from "./prueba";
@@ -34,6 +33,12 @@ export interface PedidoCarga {
   exigirCurso?: boolean;
   /** Quién carga (queda en el historial del saldo). */
   quien: string;
+  /**
+   * El coordinador solo carga si el colegio tiene cupo: sin cupo podía
+   * crear cuentas sin fin, cada una con su prueba gratis (auditoría de
+   * seguridad, 2 de noviembre de 2026). El administrador no lo necesita.
+   */
+  exigirCupo?: boolean;
 }
 
 export interface FilaRevisada {
@@ -85,15 +90,31 @@ export async function cargarAlumnos(p: PedidoCarga): Promise<ResultadoCarga> {
   const existentes = new Map(
     (
       await sql`
-        select lower(username) as username, id, curso, nombre from users
+        select lower(username) as username, id, curso, nombre, rol from users
          where institucion_id = ${p.institucionId} and username is not null
       `
-    ).map((f) => [f.username as string, { id: f.id as string, curso: f.curso as string | null, nombre: (f.nombre as string | null) ?? "" }])
+    ).map((f) => [
+      f.username as string,
+      { id: f.id as string, curso: f.curso as string | null, nombre: (f.nombre as string | null) ?? "", rol: f.rol as string },
+    ])
   );
 
   const revisadas: (FilaRevisada & { id?: string; cambiaCurso?: boolean })[] = filas.map((f) => {
     const ya = existentes.get(f.username);
     if (!ya) return { nombre: f.nombre, username: f.username, curso: f.curso, nivel: f.nivel, revision: "Nuevo", nuevo: true };
+    // El usuario es del coordinador (u otro que no es alumno): no se crea
+    // otra cuenta ni se le toca el curso (auditoría de seguridad, 2 de
+    // noviembre de 2026).
+    if (ya.rol !== "estudiante") {
+      return {
+        nombre: f.nombre,
+        username: f.username,
+        curso: f.curso,
+        nivel: f.nivel,
+        revision: "Ese usuario es de un coordinador: cámbialo en el archivo",
+        nuevo: false,
+      };
+    }
     const cambia = !!f.curso && f.curso !== ya.curso;
     // Dos alumnos con el mismo nombre forman el mismo usuario: si el que ya
     // existe se llama distinto, puede ser otra persona y se avisa antes de
@@ -124,6 +145,18 @@ export async function cargarAlumnos(p: PedidoCarga): Promise<ResultadoCarga> {
     return { ...base, status: 404, error: "El colegio no existe", aCrear: 0, yaExisten: 0, cambianDeCurso: 0, cupoLibre: null, filas: [] };
   }
   const cupoLibre = colegio.cupo_alumnos === null ? null : colegio.cupo_alumnos - colegio.actuales;
+  if (p.exigirCupo && cupoLibre === null) {
+    return {
+      ...base,
+      status: 409,
+      error: "El colegio todavía no tiene un cupo de alumnos. Pídele al administrador de Allison que lo fije en el convenio.",
+      aCrear: 0,
+      yaExisten: 0,
+      cambianDeCurso: 0,
+      cupoLibre: null,
+      filas: [],
+    };
+  }
 
   const resumen = {
     ...base,
@@ -143,7 +176,7 @@ export async function cargarAlumnos(p: PedidoCarga): Promise<ResultadoCarga> {
   // retenía una conexión durante toda la carga.
   const preparados: { fila: (typeof nuevos)[number]; pin: string; hash: string }[] = [];
   for (const fila of nuevos) {
-    const pin = String(randomInt(0, 10_000)).padStart(4, "0");
+    const pin = pinNuevo();
     preparados.push({ fila, pin, hash: await bcrypt.hash(pin, COSTO_HASH_PIN) });
   }
   const saldoInicial = Math.max(0, Math.floor(p.saldoInicial ?? 0));

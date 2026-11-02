@@ -6,10 +6,11 @@ import { CargaAlumnos } from "@/components/CargaAlumnos";
 import { colegios, paginaDeAdmin } from "@/lib/admin";
 import { asignacionesAnteriores, colegiosConCursos } from "@/lib/panel/colegios";
 
+// La lista de colegios va primero: es lo que se busca al entrar.
 const VISTAS = [
+  { clave: "convenios", texto: "Lista y convenios" },
   { clave: "asignar", texto: "Asignar saldo" },
   { clave: "carga", texto: "Carga masiva de alumnos" },
-  { clave: "convenios", texto: "Convenios" },
 ] as const;
 
 /**
@@ -20,7 +21,7 @@ const VISTAS = [
 export default async function PaginaColegiosAdmin({ searchParams }: { searchParams: Promise<{ vista?: string; colegio?: string }> }) {
   await paginaDeAdmin();
   const p = await searchParams;
-  const vista = VISTAS.find((v) => v.clave === p.vista)?.clave ?? "asignar";
+  const vista = VISTAS.find((v) => v.clave === p.vista)?.clave ?? "convenios";
   const conCursos = await colegiosConCursos();
 
   return (
@@ -59,25 +60,25 @@ async function Asignar({ colegios }: { colegios: Awaited<ReturnType<typeof coleg
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-borde text-left text-xs text-texto-suave">
-                <th className="py-2 font-medium">Fecha</th>
-                <th className="py-2 font-medium">Colegio</th>
-                <th className="py-2 font-medium">Curso</th>
-                <th className="py-2 text-right font-medium">Por alumno</th>
-                <th className="py-2 text-right font-medium">Alumnos</th>
-                <th className="py-2 font-medium">Motivo</th>
-                <th className="py-2 font-medium">Hecha por</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Fecha</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Colegio</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Curso</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 text-right font-medium">Por alumno</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 text-right font-medium">Alumnos</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Motivo</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Hecha por</th>
               </tr>
             </thead>
             <tbody className="tabular-nums">
               {anteriores.map((x, i) => (
                 <tr key={i} className="border-b border-borde/60 last:border-0">
-                  <td className="py-2 whitespace-nowrap">{fecha(x.fecha)}</td>
-                  <td className="py-2">{x.colegio}</td>
-                  <td className="py-2">{x.cursos ?? "Todos"}</td>
-                  <td className="py-2 text-right">{x.porAlumno.toLocaleString("es-CO")}</td>
-                  <td className="py-2 text-right">{x.alumnos}</td>
-                  <td className="py-2">{x.motivo}</td>
-                  <td className="py-2">{x.hechaPor}</td>
+                  <td className="px-3 first:pl-0 last:pr-0 py-2 whitespace-nowrap">{fecha(x.fecha)}</td>
+                  <td className="px-3 first:pl-0 last:pr-0 py-2">{x.colegio}</td>
+                  <td className="px-3 first:pl-0 last:pr-0 py-2">{x.cursos ?? "Todos"}</td>
+                  <td className="px-3 first:pl-0 last:pr-0 py-2 text-right">{x.porAlumno.toLocaleString("es-CO")}</td>
+                  <td className="px-3 first:pl-0 last:pr-0 py-2 text-right">{x.alumnos}</td>
+                  <td className="px-3 first:pl-0 last:pr-0 py-2">{x.motivo}</td>
+                  <td className="px-3 first:pl-0 last:pr-0 py-2">{x.hechaPor}</td>
                 </tr>
               ))}
             </tbody>
@@ -92,11 +93,11 @@ async function Asignar({ colegios }: { colegios: Awaited<ReturnType<typeof coleg
 
 function Carga({ colegios, elegido }: { colegios: Awaited<ReturnType<typeof colegiosConCursos>>; elegido?: string }) {
   const colegio = colegios.find((c) => c.id === elegido) ?? colegios[0];
-  if (!colegio) return <p className="text-sm text-texto-suave">Todavía no hay colegios. Créalos en Convenios.</p>;
+  if (!colegio) return <p className="text-sm text-texto-suave">Todavía no hay colegios. Créalos en «Lista y convenios» con el botón «Nuevo colegio».</p>;
   return (
     <>
       <Filtros
-        campos={[{ nombre: "colegio", etiqueta: "Colegio", opciones: colegios.map((c) => ({ valor: c.id, texto: `${c.nombre} · ${c.alumnos} alumnos` })) }]}
+        campos={[{ nombre: "colegio", etiqueta: "Colegio", opciones: colegios.map((c) => ({ valor: c.id, texto: `${c.nombre} · ${c.alumnos} alumnos${c.suspendido ? " (suspendido)" : ""}` })) }]}
       />
       <CargaAlumnos key={colegio.id} codigoColegio={colegio.codigo} admin={{ institucionId: colegio.id, nombreColegio: colegio.nombre }} />
       <p className="text-xs text-texto-suave">

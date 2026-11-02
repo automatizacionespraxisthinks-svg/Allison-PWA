@@ -62,6 +62,14 @@ probar(
     "https://allison.ejemplo.co"
 );
 
+// En producción sin AUTH_URL, una cabecera falsificada no llega al enlace.
+process.env.NODE_ENV = "production";
+probar(
+  "en producción sin AUTH_URL no usa las cabeceras (no se puede envenenar el enlace)",
+  !origenPublico(comoEnElContenedor({ "x-forwarded-host": "malo.ejemplo.co", host: "malo.ejemplo.co" })).includes("malo")
+);
+delete process.env.NODE_ENV;
+
 // Y la comprobación que da sentido a todo: que NUNCA salga 0.0.0.0
 // cuando la configuración está puesta, que es como estará en producción.
 process.env.AUTH_URL = "https://allison.ejemplo.co";

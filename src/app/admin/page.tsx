@@ -81,7 +81,7 @@ export default async function PaginaAdmin({ searchParams }: { searchParams: Prom
         )}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <section className="rounded-2xl border border-borde bg-superficie p-5">
           <h2 className="font-bold">Retención</h2>
           <p className="mb-3 text-xs text-texto-suave">Porcentaje de alumnos nuevos que vuelven a practicar justo ese día</p>
@@ -89,20 +89,20 @@ export default async function PaginaAdmin({ searchParams }: { searchParams: Prom
             <table className="w-full min-w-[360px] text-sm">
               <thead>
                 <tr className="border-b border-borde text-left text-xs text-texto-suave">
-                  <th className="py-2 font-medium">Cohorte</th>
-                  <th className="py-2 text-right font-medium">Alumnos</th>
-                  <th className="py-2 text-right font-medium">Día 1</th>
-                  <th className="py-2 text-right font-medium">Día 7</th>
-                  <th className="py-2 text-right font-medium">Día 14</th>
+                  <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Cohorte</th>
+                  <th className="px-3 first:pl-0 last:pr-0 py-2 text-right font-medium">Alumnos</th>
+                  <th className="px-3 first:pl-0 last:pr-0 py-2 text-right font-medium">Día 1</th>
+                  <th className="px-3 first:pl-0 last:pr-0 py-2 text-right font-medium">Día 7</th>
+                  <th className="px-3 first:pl-0 last:pr-0 py-2 text-right font-medium">Día 14</th>
                 </tr>
               </thead>
               <tbody>
                 {r.retencion.map((c) => (
                   <tr key={c.cohorte} className="border-b border-borde last:border-0">
-                    <td className="py-2">{c.cohorte}</td>
-                    <td className="py-2 text-right tabular-nums">{c.alumnos}</td>
+                    <td className="px-3 first:pl-0 last:pr-0 py-2">{c.cohorte}</td>
+                    <td className="px-3 first:pl-0 last:pr-0 py-2 text-right tabular-nums">{c.alumnos}</td>
                     {[c.d1, c.d7, c.d14].map((v, i) => (
-                      <td key={i} className="py-2 text-right font-semibold tabular-nums">
+                      <td key={i} className="px-3 first:pl-0 last:pr-0 py-2 text-right font-semibold tabular-nums">
                         {v === null ? "—" : `${v} %`}
                       </td>
                     ))}

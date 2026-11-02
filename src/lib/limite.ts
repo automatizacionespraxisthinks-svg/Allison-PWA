@@ -18,10 +18,17 @@ interface Ventana {
 }
 
 const contadores = new Map<string, Ventana>();
+let ultimoBarrido = 0;
 
-/** Evita que el mapa crezca sin fin en un proceso de larga vida. */
+/**
+ * Evita que el mapa crezca sin fin en un proceso de larga vida. Con el
+ * mapa lleno se barre a lo sumo una vez por minuto: barrerlo en CADA
+ * petición dejaba que una avalancha de cuentas inventadas volviera lenta
+ * cada consulta (auditoría de seguridad, 2 de noviembre de 2026).
+ */
 function limpiar(ahora: number) {
-  if (contadores.size < 5000) return;
+  if (contadores.size < 5000 || ahora - ultimoBarrido < 60_000) return;
+  ultimoBarrido = ahora;
   for (const [clave, v] of contadores) {
     if (v.reinicia <= ahora) contadores.delete(clave);
   }
@@ -91,6 +98,12 @@ export function olvidarFallos(clave: string): void {
   contadores.delete(clave);
 }
 
+/** Devuelve un intento que se anotó por adelantado y resultó bueno. */
+export function restarFallo(clave: string): void {
+  const actual = contadores.get(clave);
+  if (actual && actual.cuenta > 0) actual.cuenta--;
+}
+
 /**
  * De dónde viene la petición.
  *
@@ -115,8 +128,11 @@ export function origenDe(peticion: Request): string {
   }
 
   if (proxy === "cloudflare" || proxy === "reverso") {
+    // La ÚLTIMA dirección es la que agregó el proxy; las de antes las pudo
+    // escribir el cliente si el proxy confía en las cabeceras que llegan.
     const reenviada = peticion.headers.get("x-forwarded-for");
-    if (reenviada) return reenviada.split(",")[0].trim();
+    const ultima = reenviada?.split(",").pop()?.trim();
+    if (ultima) return ultima;
   }
 
   return "sin-proxy";

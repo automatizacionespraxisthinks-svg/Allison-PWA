@@ -2,6 +2,9 @@ import { auth } from "@/auth";
 import { sql } from "./db";
 import type { Nivel } from "./tipos";
 
+/** Cuánto dura la sesión de una cuenta de colegio (ver alumnoActual). */
+export const HORAS_SESION_COLEGIO = 12;
+
 export interface Alumno {
   id: string;
   nombre: string;
@@ -75,6 +78,14 @@ export async function alumnoActual(): Promise<Alumno | null> {
     return null;
   }
 
+  // Cuenta de colegio: la sesión dura 12 horas desde que entró, no 30
+  // días. Los computadores del colegio son compartidos, y el alumno que no
+  // cerraba sesión le dejaba su cuenta (y su saldo) al de la clase
+  // siguiente (auditoría de seguridad, 2 de noviembre de 2026).
+  if (fila.institucion_id && fila.rol !== "admin" && Date.now() / 1000 - sesion.user.emitidaEn > HORAS_SESION_COLEGIO * 3600) {
+    return null;
+  }
+
   // Si su mes de plan ya terminó, se pone al día ANTES de mostrar el
   // saldo: sin esto, quien tiene plan anual vería cero al empezar su mes
   // hasta que corriera la tarea de cada hora. Solo cuesta una consulta
@@ -95,7 +106,10 @@ export async function alumnoActual(): Promise<Alumno | null> {
   // Cambiar la contraseña cierra las sesiones abiertas. Sin esto, a
   // quien te robó la cuenta no lo echa cambiar la clave: su sesión
   // sigue viva semanas, hasta que caduque sola.
-  if (sesion.user.emitidaEn && Number(fila.validas_desde) > sesion.user.emitidaEn) {
+  // Una sesión sin fecha de emisión (de antes de agosto de 2026) cuenta
+  // como emitida en 0 (auth.ts): antes se la saltaba, y ningún cambio de
+  // contraseña la cerraba.
+  if (Number(fila.validas_desde) > sesion.user.emitidaEn) {
     // Queda en el log: es la explicación de por qué a alguien "lo sacó"
     // la app, que vista desde afuera parece un fallo cualquiera.
     console.info(

@@ -23,6 +23,15 @@ export function origenPublico(peticion: Request): string {
   const configurado = process.env.AUTH_URL?.trim();
   if (configurado) return configurado.replace(/\/+$/, "");
 
+  // En producción las cabeceras NO se usan: quien las falsificara pondría
+  // su dominio en el enlace de recuperación que le llega por correo a otra
+  // persona. Un enlace muerto avisa del error; uno envenenado entrega la
+  // cuenta (auditoría de seguridad, 2 de noviembre de 2026).
+  if (process.env.NODE_ENV === "production") {
+    console.error("Falta AUTH_URL: los enlaces de los correos salen sin dominio.");
+    return new URL(peticion.url).origin;
+  }
+
   // Respaldo: lo que dice el proxy. Solo se llega aquí si nadie
   // configuró AUTH_URL, cosa que la guía de despliegue marca como
   // obligatoria.

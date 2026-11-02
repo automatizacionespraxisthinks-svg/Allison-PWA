@@ -5,14 +5,17 @@ import bcrypt from "bcryptjs";
 import { sql } from "@/lib/db";
 import { entrarConGoogle } from "@/lib/entrada-google";
 import { interpretar } from "@/lib/identificador";
-import {
-  anotarFallo,
-  cuentaDeColegio,
-  cuentaDeCorreo,
-  entradaBloqueada,
-  liberarCuenta,
-} from "@/lib/intentos";
+import { cuentaDeColegio, cuentaDeCorreo, entradaBuena, reservarIntento } from "@/lib/intentos";
 import type { Nivel } from "@/lib/tipos";
+
+/**
+ * Hashes de una clave al azar que nadie conoce, con el mismo costo que
+ * las claves (12) y los PIN (10). Se comparan cuando la cuenta no existe
+ * para que tarde lo mismo que una que sí (auditoría de seguridad, 2 de
+ * noviembre de 2026).
+ */
+const RELLENO_CLAVE = "$2b$12$F5uKqM5Pi8Xh7mb9u64GNOGDyeJmDIctSnrFDP7Eetb9/u1xK4Qcq";
+const RELLENO_PIN = "$2b$10$XJI0RYmOBeYqtP3/Kt.4/.YR9l11cM1oSSZ/rAX1NNS6QsX6m36mO";
 
 /**
  * Autenticación con tres puertas de entrada:
@@ -137,7 +140,9 @@ export const { handlers, auth } = NextAuth({
         if (!password || id.error || !id.valor) return null;
 
         const cuenta = cuentaDeCorreo(String(datos.identificador ?? ""))!;
-        if (entradaBloqueada(cuenta, peticion)) throw new DemasiadosIntentos();
+        // El intento se aparta antes de esperar a la base y a bcrypt (ver
+        // reservarIntento): si no, una ráfaga pasa entera el candado.
+        if (!reservarIntento(cuenta, peticion)) throw new DemasiadosIntentos();
 
         // Se busca por la columna que corresponda al tipo detectado.
         const columna =
@@ -151,16 +156,13 @@ export const { handlers, auth } = NextAuth({
              and institucion_id is null
            limit 1
         `;
-        if (
-          !u ||
-          !u.activo ||
-          !u.password_hash ||
-          !(await bcrypt.compare(password, u.password_hash))
-        ) {
-          anotarFallo(cuenta, peticion);
-          return null;
+        // Sin cuenta se compara igual, contra un hash de relleno: si no, la
+        // respuesta rápida delataba qué correos y celulares no existen.
+        const coincide = await bcrypt.compare(password, u?.password_hash || RELLENO_CLAVE);
+        if (!u || !u.activo || !u.password_hash || !coincide) {
+          return null; // el fallo ya quedó anotado al apartar el intento
         }
-        liberarCuenta(cuenta);
+        entradaBuena(cuenta, peticion);
 
         return {
           id: u.id,
@@ -184,7 +186,7 @@ export const { handlers, auth } = NextAuth({
         if (!codigo || !username || !pin) return null;
 
         const cuenta = cuentaDeColegio(codigo, username);
-        if (entradaBloqueada(cuenta, peticion)) throw new DemasiadosIntentos();
+        if (!reservarIntento(cuenta, peticion)) throw new DemasiadosIntentos();
 
         const [u] = await sql`
           select u.id, u.nombre, u.nivel, u.rol, u.institucion_id, u.pin_hash, u.activo
@@ -196,11 +198,11 @@ export const { handlers, auth } = NextAuth({
              and u.tipo_acceso = 'institucional'
            limit 1
         `;
-        if (!u || !u.activo || !u.pin_hash || !(await bcrypt.compare(pin, u.pin_hash))) {
-          anotarFallo(cuenta, peticion);
-          return null;
+        const coincide = await bcrypt.compare(pin, u?.pin_hash || RELLENO_PIN);
+        if (!u || !u.activo || !u.pin_hash || !coincide) {
+          return null; // el fallo ya quedó anotado al apartar el intento
         }
-        liberarCuenta(cuenta);
+        entradaBuena(cuenta, peticion);
 
         return {
           id: u.id,

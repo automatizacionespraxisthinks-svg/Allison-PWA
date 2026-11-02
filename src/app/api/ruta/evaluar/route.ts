@@ -11,17 +11,19 @@ import {
 import { hablaEspanol } from "@/lib/ruta/escena";
 import { CUERPO_MUY_GRANDE, cuerpoExcede, limitar } from "@/lib/limite";
 import { contenidoDe, pasoDe } from "@/lib/ruta/estado";
+import { estadoRutaDe } from "@/lib/ruta/avance";
 import { ejemploDeCorreccion } from "@/lib/ruta/explicaciones";
 import { mejoraDeEscena } from "@/lib/ruta/conversacion";
 import { itemDeRepaso, preguntaDe } from "@/lib/ruta/repaso";
 import { seguimientoDeNarra, traeLaParte } from "@/lib/ruta/seguimiento";
 import { alumnoActual } from "@/lib/sesion";
 import { AUDIO_MAX_SEGUNDOS, type Nivel } from "@/lib/tipos";
+import { AUDIO_MAX_BYTES, audioPasaDelTope, tipoDeAudio } from "@/lib/audioSeguro";
 
 // Cuéntame pasa por dos llamadas (transcribir y comentar): hasta 60 s.
 export const maxDuration = 60;
 
-const MAX_BYTES = 4 * 1024 * 1024;
+const MAX_BYTES = AUDIO_MAX_BYTES;
 
 /**
  * La evaluación corta de una actividad de la ruta: ¿Qué es esto?,
@@ -109,6 +111,17 @@ export async function POST(peticion: Request) {
       { error: "No existe esa actividad" },
       { status: 404 },
     );
+  // Una lección de otro nivel o bloqueada no se califica llamando a la API
+  // a mano: la misma regla que su página (auditoría de seguridad, 2 de
+  // noviembre de 2026). El repaso y la mejora de una escena salen de lo
+  // que el alumno ya hizo.
+  if (!repasoId && !escenaId) {
+    const estado = await estadoRutaDe(alumno.id, alumno.nivel);
+    const lm = estado?.paradas.find((p) => p.clave === parada)?.lecciones.find((l) => l.numero === leccion);
+    if (!lm || lm.estado === "bloqueada") {
+      return NextResponse.json({ error: "bloqueada", mensaje: "Esa lección todavía no está abierta." }, { status: 409 });
+    }
+  }
 
   if (actividad.tipo === "cuentame" || actividad.tipo === "narra") {
     const escrito = textoLargo;
@@ -121,7 +134,9 @@ export async function POST(peticion: Request) {
           { status: 413 },
         );
       }
+      if (!tipoDeAudio(audio)) return NextResponse.json({ error: "Solo se acepta audio" }, { status: 415 });
     }
+    const audioRelato = escrito ? null : Buffer.from(await (audio as Blob).arrayBuffer()).toString("base64");
     const [{ consumir_mensaje: bolsaRelato }] =
       await sql`select consumir_mensaje(${alumno.id}, null)`;
     if (!bolsaRelato) {
@@ -136,12 +151,8 @@ export async function POST(peticion: Request) {
     let comentario: Awaited<ReturnType<typeof comentarRelato>> | null = null;
     let narracion: Awaited<ReturnType<typeof comentarNarracion>> | null = null;
     try {
-      if (!escrito) {
-        const tr = await transcribirACiegas(
-          Buffer.from(await (audio as Blob).arrayBuffer()).toString("base64"),
-          (audio as Blob).type || "audio/webm",
-          true,
-        );
+      if (audioRelato) {
+        const tr = await transcribirACiegas(audioRelato, tipoDeAudio(audio as Blob)!, true);
         transcripcion = tr.transcripcion;
         tokensEntrada += tr.tokensEntrada;
         tokensSalida += tr.tokensSalida;
@@ -184,7 +195,10 @@ export async function POST(peticion: Request) {
         tokensSalida += comentario.tokensSalida;
       }
     } catch (e) {
-      await sql`select devolver_mensaje(${alumno.id}, ${bolsaRelato}::bolsa_credito)`.catch(() => {});
+      // Un audio más largo de lo que graba la app no se devuelve (ver audioSeguro).
+      if (!(audioRelato && (await audioPasaDelTope(audioRelato, tipoDeAudio(audio as Blob)!)))) {
+        await sql`select devolver_mensaje(${alumno.id}, ${bolsaRelato}::bolsa_credito)`.catch(() => {});
+      }
       console.error("Fallo al evaluar el relato:", e instanceof Error ? e.message : e);
       return NextResponse.json(
         {
@@ -343,7 +357,9 @@ export async function POST(peticion: Request) {
         { status: 413 },
       );
     }
+    if (!tipoDeAudio(audio)) return NextResponse.json({ error: "Solo se acepta audio" }, { status: 415 });
   }
+  const audioCorto = texto ? null : Buffer.from(await (audio as Blob).arrayBuffer()).toString("base64");
 
   // Todo lo que usa la IA cuesta, porque sus tokens se pagan (decisión del
   // usuario, 29 de octubre de 2026). Lo hablado se transcribe: siempre
@@ -368,6 +384,8 @@ export async function POST(peticion: Request) {
   const alComienzo = !texto;
   if (alComienzo && !(await cobrar())) return sinSaldo();
   const devolver = async () => {
+    // Un audio más largo de lo que graba la app no se devuelve (ver audioSeguro).
+    if (audioCorto && (await audioPasaDelTope(audioCorto, tipoDeAudio(audio as Blob)!))) return;
     if (bolsa)
       await sql`select devolver_mensaje(${alumno.id}, ${bolsa}::bolsa_credito)`;
   };
@@ -380,10 +398,8 @@ export async function POST(peticion: Request) {
       ...(texto
         ? { texto, ...(alComienzo ? {} : { antesDelModelo: cobrar }) }
         : {
-            audioBase64: Buffer.from(
-              await (audio as Blob).arrayBuffer(),
-            ).toString("base64"),
-            mimeType: (audio as Blob).type || "audio/webm",
+            audioBase64: audioCorto!,
+            mimeType: tipoDeAudio(audio as Blob)!,
           }),
     });
   } catch (e) {

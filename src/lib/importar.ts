@@ -82,6 +82,13 @@ function aUsuarioConApellidos(nombres: string, apellidos: string): string {
  */
 const PARECE_FECHA = /^(\d{1,2}[-/][a-z]{3,}\.?([-/]\d{2,4})?|[a-z]{3,}\.?[-/]\d{1,4}|\d{1,2}\/\d{1,2}\/\d{2,4}|\d{4}-\d{2}-\d{2}.*|\d{5})$/i;
 
+/** El número de fecha de Excel (46328) se muestra como fecha (2/11/2026) para que el colegio lo reconozca. */
+function fechaLegible(texto: string): string {
+  if (!/^\d{5}$/.test(texto)) return texto;
+  const d = new Date(Date.UTC(1899, 11, 30) + Number(texto) * 86_400_000);
+  return `${d.getUTCDate()}/${d.getUTCMonth() + 1}/${d.getUTCFullYear()}`;
+}
+
 /**
  * Limpia un usuario que ya viene del colegio.
  *
@@ -203,7 +210,7 @@ export function leerCsv(texto: string, nivelPorDefecto: Nivel = "A1"): Lectura {
         rechazadas.push({
           linea: numero,
           contenido: linea,
-          motivo: `Excel convirtió el curso en una fecha («${cursoTexto}»). Usa la plantilla de Excel o escribe el curso con un apóstrofo delante ('11-2)`,
+          motivo: `Excel convirtió el curso en una fecha («${fechaLegible(cursoTexto)}»). Usa la plantilla de Excel o escribe el curso con un apóstrofo delante ('11-2)`,
         });
         return;
       }

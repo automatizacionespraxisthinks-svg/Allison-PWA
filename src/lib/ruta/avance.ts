@@ -122,8 +122,11 @@ export interface FinDeActividad {
   primera?: boolean;
 }
 
+/** Lo mínimo entre dos actividades de una lección (ver terminarActividad). */
+const SEGUNDOS_ENTRE_ACTIVIDADES = 6;
+
 export type ResultadoActividad =
-  | { ok: false; error: "no_existe" | "bloqueada" }
+  | { ok: false; error: "no_existe" | "bloqueada" | "muy_rapido" }
   | {
       ok: true;
       leccionCompleta: boolean;
@@ -155,6 +158,22 @@ export async function terminarActividad(
   const estado = await estadoRutaDe(userId, nivel);
   const enMapa = estado?.paradas.find((p) => p.clave === fin.parada)?.lecciones.find((l) => l.numero === fin.leccion);
   if (!enMapa || enMapa.estado === "bloqueada") return { ok: false, error: "bloqueada" };
+
+  // Entre una actividad y la siguiente de la misma lección pasan, de
+  // verdad, más de unos segundos (se mide con el reloj de la base, no con
+  // el que manda el navegador). Un script terminaba lecciones enteras en un
+  // instante para sumar estrellas y encabezar la competencia del salón; las
+  // estrellas se calculan en el navegador, así que esto no lo impide del
+  // todo, pero lo vuelve lento (auditoría de seguridad, 2 de noviembre de
+  // 2026). La pantalla deja reintentar.
+  if (fin.paso > 1) {
+    const [previa] = await sql`
+      select actualizado_en > now() - make_interval(secs => ${SEGUNDOS_ENTRE_ACTIVIDADES}) as pronto
+        from ruta_lecciones
+       where user_id = ${userId} and parada = ${fin.parada} and leccion = ${fin.leccion}
+    `;
+    if (previa?.pronto) return { ok: false, error: "muy_rapido" };
+  }
 
   const calificadas = Math.max(0, Math.min(20, Math.round(fin.calificadas)));
   const aciertos = Math.max(0, Math.min(calificadas, Math.round(fin.aciertos)));

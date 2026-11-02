@@ -7,6 +7,21 @@
 import bcrypt from "bcryptjs";
 import postgres from "postgres";
 
+// Crea un coordinador con PIN 9999: jamás en la base real. Solo corre
+// contra una base local, o si se pide a propósito (auditoría de
+// seguridad, 2 de noviembre de 2026).
+const host = (() => {
+  try {
+    return new URL(process.env.DATABASE_URL ?? "").hostname;
+  } catch {
+    return "";
+  }
+})();
+if (!["localhost", "127.0.0.1", "::1"].includes(host) && process.env.SEMBRAR_PRUEBA !== "si") {
+  console.error("Este script crea cuentas con PIN conocidos: solo corre contra una base local (o con SEMBRAR_PRUEBA=si).");
+  process.exit(1);
+}
+
 const sql = postgres(process.env.DATABASE_URL, {
   ssl: "require",
   max: 1,

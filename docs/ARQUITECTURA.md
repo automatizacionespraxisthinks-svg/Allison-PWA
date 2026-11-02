@@ -179,7 +179,7 @@ debe ser cuestión de minutos, sin tocar código.
 
 | | Usuario general | Alumno de colegio |
 |---|---|---|
-| Ingresa con | **Correo, celular o usuario** + contraseña, o Google | **Código del colegio + usuario + PIN de 4 dígitos** |
+| Ingresa con | **Correo, celular o usuario** + contraseña, o Google | **Código del colegio + usuario + PIN de 6 dígitos** (los de 4 ya entregados siguen sirviendo) |
 | Se crea | Él mismo | Por **carga masiva** de lista (CSV) que hace el colegio o nosotros |
 | Recupera acceso | Por correo | El **coordinador** restablece el PIN |
 

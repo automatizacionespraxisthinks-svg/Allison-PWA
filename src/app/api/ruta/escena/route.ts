@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { CUERPO_MUY_GRANDE, cuerpoExcede, limitar } from "@/lib/limite";
 import { iniciarEscena, pedirAyuda, prepararTurno, terminarEscenario, turnoDeEscena } from "@/lib/ruta/conversacion";
-import { alumnoActual } from "@/lib/sesion";
+import { alumnoActual, type Alumno } from "@/lib/sesion";
 import { AUDIO_MAX_SEGUNDOS } from "@/lib/tipos";
+import { AUDIO_MAX_BYTES, audioPasaDelTope, tipoDeAudio } from "@/lib/audioSeguro";
 
 export const maxDuration = 60;
 
-const MAX_BYTES = 8 * 1024 * 1024;
+const MAX_BYTES = AUDIO_MAX_BYTES;
 
 const ESTADOS: Record<string, number> = { no_existe: 404, bloqueada: 409, salto_hoy: 409, terminada: 409, ocupada: 409, desactualizada: 409 };
 
@@ -102,8 +103,27 @@ export async function POST(peticion: Request) {
     if (audio.size > MAX_BYTES || crudo > AUDIO_MAX_SEGUNDOS + 5) {
       return NextResponse.json({ error: "El audio es demasiado largo" }, { status: 413 });
     }
+    if (!tipoDeAudio(audio)) return NextResponse.json({ error: "Solo se acepta audio" }, { status: 415 });
   }
 
+  // Un turno a la vez por escena, ANTES de cobrar. Varios turnos en
+  // paralelo llamaban todos a la IA y los que chocaban al guardar se
+  // devolvían: la IA trabajaba gratis (auditoría de seguridad, 2 de
+  // noviembre de 2026).
+  const llave = `${alumno.id}:${conversacion}`;
+  if (turnosEnCurso.has(llave)) return error("ocupada");
+  turnosEnCurso.add(llave);
+  try {
+    return await turnoCobrado(alumno, conversacion, texto, audio, duracion);
+  } finally {
+    turnosEnCurso.delete(llave);
+  }
+}
+
+/** Los turnos de escena que se están respondiendo (alumno:conversación). */
+const turnosEnCurso = new Set<string>();
+
+async function turnoCobrado(alumno: Alumno, conversacion: string, texto: string, audio: FormDataEntryValue | null, duracion: number) {
   // La escena se revisa ANTES de cobrar (que exista, sea suya, siga
   // abierta y no haya llegado al tope): una petición que no sirve no
   // escribe un consumo y un reverso en el libro (auditoría, 30 de octubre
@@ -127,18 +147,18 @@ export async function POST(peticion: Request) {
   if (!bolsa) {
     return NextResponse.json({ error: "sin_mensajes", mensaje: "Te quedaste sin intervenciones." }, { status: 402 });
   }
-  const devolver = () => sql`select devolver_mensaje(${alumno.id}, ${bolsa}::bolsa_credito)`;
+  const audioTurno = texto ? null : Buffer.from(await (audio as Blob).arrayBuffer()).toString("base64");
+  const devolver = async () => {
+    // Un audio más largo de lo que graba la app no se devuelve (ver audioSeguro).
+    if (audioTurno && (await audioPasaDelTope(audioTurno, tipoDeAudio(audio as Blob)!))) return;
+    await sql`select devolver_mensaje(${alumno.id}, ${bolsa}::bolsa_credito)`;
+  };
 
   // Hasta que Allison responde, cualquier falla devuelve la intervención.
   let r: Awaited<ReturnType<typeof turnoDeEscena>>;
   try {
     r = await turnoDeEscena(alumno.nombre, lista.escena, {
-      ...(texto
-        ? { texto }
-        : {
-            audioBase64: Buffer.from(await (audio as Blob).arrayBuffer()).toString("base64"),
-            mimeType: (audio as Blob).type || "audio/webm",
-          }),
+      ...(audioTurno ? { audioBase64: audioTurno, mimeType: tipoDeAudio(audio as Blob)! } : { texto }),
     });
   } catch (e) {
     await devolver().catch(() => {});

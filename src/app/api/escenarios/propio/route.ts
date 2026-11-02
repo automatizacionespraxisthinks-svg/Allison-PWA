@@ -120,17 +120,32 @@ Always US English (soccer, apartment, check, "I have").`,
     // ni oraciones en español (la leería la voz en inglés).
     apertura: soloIngles(texto(d.apertura, 200).replace(/\([^)]*\)/g, "")),
   };
-  const completa = d.sirve === true && tareas.length >= 5 && Object.values(escena).every(Boolean);
-  if (!completa) {
-    await devolver();
+  // La IA revisó el pedido y dijo que no se puede practicar: respondió
+  // bien, así que se cobra, como todo lo que usa la IA (decisión del
+  // usuario, 29 de octubre de 2026). Antes se devolvía, y pedir temas
+  // prohibidos en bucle salía gratis (auditoría de seguridad, 2 de
+  // noviembre de 2026). Si la IA dijo que sí pero no armó la escena
+  // completa, es falla suya y se devuelve.
+  if (d.sirve === false) {
+    try {
+      await sql`select registrar_uso(${alumno.id}, 'conversar', ${tokens.entrada}, ${tokens.salida}, 0, true, false)`;
+    } catch (e) {
+      console.error("No se pudo anotar el escenario rechazado:", e instanceof Error ? e.message : e);
+    }
     return NextResponse.json(
       {
         error: "no_sirve",
         mensaje:
-          d.sirve === false
-            ? "Ese no lo podemos practicar aquí. Prueba con un lugar de la vida diaria: una tienda, el cine, un restaurante…"
-            : "No pudimos armar ese escenario. Escríbelo de otra forma: el lugar y qué quieres hacer.",
+          "Ese no lo podemos practicar aquí. Prueba con un lugar de la vida diaria: una tienda, el cine, un restaurante… Revisarlo usó una intervención.",
       },
+      { status: 422 }
+    );
+  }
+  const completa = d.sirve === true && tareas.length >= 5 && Object.values(escena).every(Boolean);
+  if (!completa) {
+    await devolver();
+    return NextResponse.json(
+      { error: "no_sirve", mensaje: "No pudimos armar ese escenario. Escríbelo de otra forma: el lugar y qué quieres hacer." },
       { status: 422 }
     );
   }

@@ -21,7 +21,9 @@ const {
   cuentaDeColegio,
   cuentaDeCorreo,
   entradaBloqueada,
+  entradaBuena,
   liberarCuenta,
+  reservarIntento,
 } = await import("../src/lib/intentos.ts");
 
 let fallos = 0;
@@ -92,7 +94,7 @@ probar("un identificador inválido no es una cuenta", cuentaDeCorreo("") === nul
     if (ahora - Date.parse("2026-09-14T08:16:00Z") > 23 * 60 * 60 * 1000) break;
   }
   probar(
-    `un script paciente y repartido en IPs solo logra ${intentos} intentos en un día (tope 50)`,
+    `un script paciente y repartido en IPs solo logra ${intentos} intentos en un día (tope ${LIMITES_ENTRADA.cuentaDia.maximo})`,
     intentos === LIMITES_ENTRADA.cuentaDia.maximo,
     String(intentos)
   );
@@ -129,6 +131,32 @@ probar("un identificador inválido no es una cuenta", cuentaDeCorreo("") === nul
   probar(
     "40 alumnos entrando desde la misma IP del colegio, con algunos errores: nadie queda bloqueado",
     !entradaBloqueada(cuentaDeColegio("COLEGIO2026", "alumno41"), colegio)
+  );
+}
+
+// --- Una ráfaga de peticiones a la vez -----------------------------------
+{
+  // Mil intentos que llegan juntos: cada uno aparta su intento antes de
+  // esperar a la base y a bcrypt, así que solo pasan los 10 del candado.
+  const cuenta = cuentaDeColegio("COLEGIO2026", "rafaga");
+  let pasan = 0;
+  for (let i = 0; i < 1000; i++) if (reservarIntento(cuenta, desde(`172.16.${i % 250}.${i % 7}`))) pasan++;
+  probar(`1000 intentos simultáneos contra un PIN: solo pasan ${pasan}`, pasan === LIMITES_ENTRADA.cuenta.maximo, String(pasan));
+  avanzar(16);
+}
+
+// --- El salón entrando bien, con intentos apartados -----------------------
+{
+  const colegio = desde("186.40.40.40");
+  // 80 alumnos entran bien desde la misma IP: el intento apartado se devuelve.
+  for (let i = 0; i < 80; i++) {
+    const cuenta = cuentaDeColegio("COLEGIO2026", `salon${i}`);
+    reservarIntento(cuenta, colegio);
+    entradaBuena(cuenta, colegio);
+  }
+  probar(
+    "80 entradas buenas desde la IP del colegio no cuentan como fallos",
+    !entradaBloqueada(cuentaDeColegio("COLEGIO2026", "salon81"), colegio)
   );
 }
 

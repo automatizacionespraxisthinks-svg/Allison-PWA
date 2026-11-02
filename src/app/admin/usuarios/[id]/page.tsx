@@ -85,9 +85,9 @@ export default async function PaginaFicha({ params }: { params: Promise<{ id: st
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-superficie">
                 <tr className="border-b border-borde text-left text-xs text-texto-suave">
-                  <th className="py-2 font-medium">Fecha</th>
-                  <th className="py-2 font-medium">Movimiento</th>
-                  <th className="py-2 text-right font-medium">Cantidad</th>
+                  <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Fecha</th>
+                  <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Movimiento</th>
+                  <th className="px-3 first:pl-0 last:pr-0 py-2 text-right font-medium">Cantidad</th>
                 </tr>
               </thead>
               <tbody>
@@ -95,7 +95,7 @@ export default async function PaginaFicha({ params }: { params: Promise<{ id: st
                   <tr key={i} className="border-b border-borde/60 align-top last:border-0">
                     <td className="py-2 pr-2 whitespace-nowrap text-texto-suave">{fecha(m.fecha)}</td>
                     <td className="py-2 pr-2">{m.texto}</td>
-                    <td className={`py-2 text-right font-semibold tabular-nums ${m.cantidad >= 0 ? "text-exito" : ""}`}>
+                    <td className={`px-3 first:pl-0 last:pr-0 py-2 text-right font-semibold tabular-nums ${m.cantidad >= 0 ? "text-exito" : ""}`}>
                       {m.cantidad > 0 ? "+" : m.cantidad < 0 ? "−" : ""}
                       {Math.abs(m.cantidad).toLocaleString("es-CO")}
                     </td>
@@ -103,7 +103,7 @@ export default async function PaginaFicha({ params }: { params: Promise<{ id: st
                 ))}
                 {!f.historial.length && (
                   <tr>
-                    <td colSpan={3} className="py-4 text-center text-texto-suave">
+                    <td colSpan={3} className="px-3 first:pl-0 last:pr-0 py-4 text-center text-texto-suave">
                       Sin movimientos.
                     </td>
                   </tr>
@@ -111,10 +111,10 @@ export default async function PaginaFicha({ params }: { params: Promise<{ id: st
               </tbody>
               <tfoot>
                 <tr className="border-t border-borde">
-                  <td colSpan={2} className="py-2 font-semibold">
+                  <td colSpan={2} className="px-3 first:pl-0 last:pr-0 py-2 font-semibold">
                     Saldo actual
                   </td>
-                  <td className="py-2 text-right font-bold tabular-nums">{f.saldo.toLocaleString("es-CO")}</td>
+                  <td className="px-3 first:pl-0 last:pr-0 py-2 text-right font-bold tabular-nums">{f.saldo.toLocaleString("es-CO")}</td>
                 </tr>
               </tfoot>
             </table>
@@ -131,12 +131,12 @@ export default async function PaginaFicha({ params }: { params: Promise<{ id: st
                     <td className="py-2 pr-2 font-semibold whitespace-nowrap">
                       {l.nivel} · {l.pais}
                     </td>
-                    <td className={`py-2 ${l.texto.startsWith("No ha") ? "text-texto-suave" : ""}`}>{l.texto}</td>
+                    <td className={`px-3 first:pl-0 last:pr-0 py-2 ${l.texto.startsWith("No ha") ? "text-texto-suave" : ""}`}>{l.texto}</td>
                   </tr>
                 ))}
                 <tr>
                   <td className="py-2 pr-2 font-semibold">Reportó correcciones</td>
-                  <td className="py-2">
+                  <td className="px-3 first:pl-0 last:pr-0 py-2">
                     {f.reportes.total ? (
                       <Link href="/admin/reportes" className="underline">
                         {f.reportes.total} en total · {f.reportes.abiertos} {f.reportes.abiertos === 1 ? "abierta" : "abiertas"}
@@ -156,24 +156,24 @@ export default async function PaginaFicha({ params }: { params: Promise<{ id: st
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-borde text-left text-xs text-texto-suave">
-                    <th className="py-2 font-medium">Parada</th>
-                    <th className="py-2 text-right font-medium">Gastó</th>
-                    <th className="py-2 text-right font-medium">Por errores</th>
+                    <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Parada</th>
+                    <th className="px-3 first:pl-0 last:pr-0 py-2 text-right font-medium">Gastó</th>
+                    <th className="px-3 first:pl-0 last:pr-0 py-2 text-right font-medium">Por errores</th>
                   </tr>
                 </thead>
                 <tbody className="tabular-nums">
                   {f.paradas.map((p) => (
                     <tr key={p.clave} className="border-b border-borde/60 last:border-0">
-                      <td className="py-2">
+                      <td className="px-3 first:pl-0 last:pr-0 py-2">
                         {p.nombre}
                         <span className="block text-[11px] text-texto-suave">
                           {p.sello ? `${p.estrellas} ${p.estrellas === 1 ? "estrella" : "estrellas"} · estampilla` : p.saltada ? "Saltada" : "En curso"}
                         </span>
                       </td>
-                      <td className={`py-2 text-right font-semibold ${p.intervenciones > a.alertaParadaIntervenciones ? "text-acento" : ""}`}>
+                      <td className={`px-3 first:pl-0 last:pr-0 py-2 text-right font-semibold ${p.intervenciones > a.alertaParadaIntervenciones ? "text-acento" : ""}`}>
                         {p.intervenciones}
                       </td>
-                      <td className="py-2 text-right">{p.porErrores}</td>
+                      <td className="px-3 first:pl-0 last:pr-0 py-2 text-right">{p.porErrores}</td>
                     </tr>
                   ))}
                 </tbody>

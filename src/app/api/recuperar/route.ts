@@ -21,8 +21,13 @@ export async function POST(peticion: Request) {
     identificador?: unknown;
   };
 
+  // Sin esperar: buscar la cuenta, guardar el enlace y mandar el correo
+  // tardaba más cuando la cuenta existía, y el tiempo de respuesta lo
+  // delataba (auditoría de seguridad, 2 de noviembre de 2026).
   if (typeof identificador === "string" && identificador.trim()) {
-    await pedirRecuperacion(identificador, origenPublico(peticion));
+    void pedirRecuperacion(identificador, origenPublico(peticion)).catch((e) =>
+      console.error("No se pudo preparar la recuperación:", e instanceof Error ? e.message : e)
+    );
   }
 
   // Siempre lo mismo, exista la cuenta o no: si dijéramos "esa cuenta

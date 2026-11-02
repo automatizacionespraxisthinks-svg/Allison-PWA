@@ -28,12 +28,47 @@ function yaVencio(iso: string): boolean {
   return iso < local;
 }
 
-export function PanelColegios({ colegios }: { colegios: ColegioAdmin[] }) {
+/** Para buscar sin importar tildes ni mayúsculas. */
+const plano = (t: string | null | undefined) =>
+  (t ?? "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+
+/** "12 nov 2026", en hora de Colombia. */
+const fechaCreado = (iso: string) =>
+  new Date(iso).toLocaleDateString("es-CO", { timeZone: "America/Bogota", day: "numeric", month: "short", year: "numeric" });
+
+export function PanelColegios({ colegios: todos }: { colegios: ColegioAdmin[] }) {
   const router = useRouter();
   const [creando, setCreando] = useState(false);
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [abierto, setAbierto] = useState<string | null>(null);
+  /** El colegio que se va a suspender, esperando la confirmación. */
+  const [suspendiendo, setSuspendiendo] = useState<string | null>(null);
+
+  // La búsqueda filtra la lista mientras se escribe (los colegios son pocos:
+  // vienen todos y se filtran aquí, sin ir al servidor).
+  const [busca, setBusca] = useState("");
+  const [estado, setEstado] = useState<"todos" | "activa" | "suspendida">("todos");
+  const [orden, setOrden] = useState<"recientes" | "nombre" | "alumnos">("recientes");
+  const texto = plano(busca.trim());
+  const colegios = todos
+    .filter((c) => estado === "todos" || c.estado === estado)
+    .filter(
+      (c) =>
+        !texto ||
+        [c.nombre, c.nit, c.codigoAcceso, c.contactoEmail, c.contactoTelefono].some((x) => plano(x).includes(texto))
+    )
+    .sort((a, b) =>
+      orden === "nombre"
+        ? a.nombre.localeCompare(b.nombre, "es")
+        : orden === "alumnos"
+          ? b.alumnos - a.alumnos
+          : b.creadoEn.localeCompare(a.creadoEn)
+    );
+  const filtrado = !!texto || estado !== "todos";
 
   async function crear(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -74,8 +109,9 @@ export function PanelColegios({ colegios }: { colegios: ColegioAdmin[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Colegios</h1>
+      {/* El título "Colegios" ya está arriba, con las pestañas: aquí iba repetido. */}
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-bold">Convenios con colegios</h2>
         <button
           type="button"
           onClick={() => setCreando(!creando)}
@@ -147,9 +183,58 @@ export function PanelColegios({ colegios }: { colegios: ColegioAdmin[] }) {
         </form>
       )}
 
-      {colegios.length === 0 && !creando && (
+      {todos.length > 0 && (
+        <div className="flex flex-wrap items-end gap-2 rounded-2xl border border-borde bg-superficie p-4">
+          <label className="flex basis-full flex-col gap-1 text-xs text-texto-suave">
+            Buscar
+            <input
+              type="search"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Nombre, NIT, código, correo o teléfono"
+              className="h-10 rounded-xl border border-borde bg-superficie px-3 text-sm text-texto"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-texto-suave">
+            Estado
+            <select
+              value={estado}
+              onChange={(e) => setEstado(e.target.value as typeof estado)}
+              className="h-10 min-w-36 rounded-xl border border-borde bg-superficie px-3 text-sm text-texto"
+            >
+              <option value="todos">Todos</option>
+              <option value="activa">Activos</option>
+              <option value="suspendida">Suspendidos</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-texto-suave">
+            Orden
+            <select
+              value={orden}
+              onChange={(e) => setOrden(e.target.value as typeof orden)}
+              className="h-10 min-w-36 rounded-xl border border-borde bg-superficie px-3 text-sm text-texto"
+            >
+              <option value="recientes">Últimos creados</option>
+              <option value="nombre">Nombre (A-Z)</option>
+              <option value="alumnos">Más alumnos</option>
+            </select>
+          </label>
+        </div>
+      )}
+
+      {todos.length > 0 && (
+        <p className="text-sm text-texto-suave">
+          {filtrado
+            ? colegios.length === 0
+              ? "Ningún colegio coincide con la búsqueda."
+              : `${colegios.length} de ${todos.length} ${todos.length === 1 ? "colegio" : "colegios"}.`
+            : `${todos.length} ${todos.length === 1 ? "colegio" : "colegios"}${orden === "recientes" ? ", del más reciente al más antiguo" : ""}.`}
+        </p>
+      )}
+
+      {todos.length === 0 && !creando && (
         <p className="rounded-2xl border border-borde bg-superficie p-8 text-center text-texto-suave">
-          Todavía no hay colegios.
+          Todavía no hay colegios. Crea el primero con «Nuevo colegio».
         </p>
       )}
 
@@ -164,9 +249,15 @@ export function PanelColegios({ colegios }: { colegios: ColegioAdmin[] }) {
                 <div className="min-w-0">
                   <h2 className="font-semibold">{c.nombre}</h2>
                   <p className="mt-0.5 text-sm text-texto-suave">
-                    <span className="font-mono tracking-wider">{c.codigoAcceso}</span>
+                    Código <span className="font-mono tracking-wider text-texto">{c.codigoAcceso}</span>
                     {c.nit && <> · NIT {c.nit}</>}
                   </p>
+                  {(c.contactoEmail || c.contactoTelefono) && (
+                    <p className="mt-0.5 text-sm text-texto-suave">
+                      Contacto: {[c.contactoEmail, c.contactoTelefono].filter(Boolean).join(" · ")}
+                    </p>
+                  )}
+                  <p className="mt-0.5 text-xs text-texto-suave">Creado el {fechaCreado(c.creadoEn)}</p>
                   <p className="mt-1.5 text-sm">
                     <strong>{c.alumnos}</strong>
                     {c.cupoAlumnos !== null && <> de {c.cupoAlumnos}</>} alumnos ·{" "}
@@ -278,15 +369,43 @@ export function PanelColegios({ colegios }: { colegios: ColegioAdmin[] }) {
                       type="button"
                       disabled={ocupado}
                       onClick={() =>
-                        actualizar(c.id, {
-                          estado: c.estado === "activa" ? "suspendida" : "activa",
-                        })
+                        c.estado === "activa" ? setSuspendiendo(c.id) : void actualizar(c.id, { estado: "activa" })
                       }
                       className="rounded-xl border border-borde px-4 py-2.5 text-sm font-medium disabled:opacity-50"
                     >
                       {c.estado === "activa" ? "Suspender" : "Reactivar"}
                     </button>
                   </div>
+                  {/* Suspender deja a todos sus alumnos sin poder entrar: se confirma antes. */}
+                  {suspendiendo === c.id && (
+                    <div role="alert" className="flex flex-col gap-2 rounded-xl border border-error/40 bg-error/5 p-3 text-sm sm:col-span-2">
+                      <p>
+                        ¿Suspender <strong>{c.nombre}</strong>?{" "}
+                        {c.alumnos === 0
+                          ? "Nadie del colegio podrá entrar"
+                          : c.alumnos === 1
+                            ? "Su alumno no podrá entrar"
+                            : `Sus ${c.alumnos} alumnos no podrán entrar`}{" "}
+                        hasta que lo reactives.
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          disabled={ocupado}
+                          onClick={() => {
+                            setSuspendiendo(null);
+                            void actualizar(c.id, { estado: "suspendida" });
+                          }}
+                          className="rounded-xl bg-error px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                        >
+                          Sí, suspender
+                        </button>
+                        <button type="button" onClick={() => setSuspendiendo(null)} className="rounded-xl border border-borde px-4 py-2 text-sm font-medium">
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </form>
               )}
             </li>

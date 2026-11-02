@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { randomInt } from "node:crypto";
-import { alumnoPertenece, COSTO_HASH_PIN } from "@/lib/colegio";
+import { alumnoPertenece, COSTO_HASH_PIN, pinNuevo } from "@/lib/colegio";
 import { sql } from "@/lib/db";
 import { cuentaDeColegio, liberarCuenta } from "@/lib/intentos";
 import { limitar } from "@/lib/limite";
@@ -49,7 +48,7 @@ export async function POST(peticion: Request) {
     return NextResponse.json({ error: "Ese alumno no es de tu colegio" }, { status: 404 });
   }
 
-  const pin = String(randomInt(0, 10_000)).padStart(4, "0");
+  const pin = pinNuevo();
 
   // El PIN nuevo cierra las sesiones abiertas, como cambiar la contraseña:
   // si un compañero entró con el PIN viejo, sale (auditoría, 30 de
@@ -59,8 +58,12 @@ export async function POST(peticion: Request) {
                        sesiones_validas_desde = ${new Date()}, actualizado_en = now()
       from instituciones i
      where u.id = ${alumnoId} and i.id = u.institucion_id
+       -- Otra vez aquí, no solo en alumnoPertenece: el cambio mismo nunca
+       -- alcanza a otro colegio ni a quien no sea alumno.
+       and u.institucion_id = ${usuario.institucionId} and u.rol = 'estudiante'
     returning u.username, i.codigo_acceso
   `;
+  if (!alumno) return NextResponse.json({ error: "Ese alumno no es de tu colegio" }, { status: 404 });
 
   // Un PIN nuevo también destraba la entrada: si un compañero la bloqueó
   // a punta de intentos fallidos, el alumno no tiene que esperar el día.

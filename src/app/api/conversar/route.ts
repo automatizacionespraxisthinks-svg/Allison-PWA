@@ -9,6 +9,7 @@ import { rutaDe } from "@/lib/ruta";
 import { alumnoActual } from "@/lib/sesion";
 import { senalesDeEspanol } from "@/lib/habla";
 import { AUDIO_MAX_SEGUNDOS } from "@/lib/tipos";
+import { AUDIO_MAX_BYTES, audioPasaDelTope, tipoDeAudio } from "@/lib/audioSeguro";
 
 /**
  * Tope de ejecución de la ruta.
@@ -21,9 +22,9 @@ import { AUDIO_MAX_SEGUNDOS } from "@/lib/tipos";
  */
 export const maxDuration = 60;
 
-// 60 s de opus caben de sobra en 8 MB. En el contenedor no hay tope
-// de cuerpo impuesto por la plataforma: este es el único límite.
-const MAX_BYTES = 8 * 1024 * 1024;
+// En el contenedor no hay tope de cuerpo impuesto por la plataforma:
+// este es el único límite (antes 8 MB; ver audioSeguro).
+const MAX_BYTES = AUDIO_MAX_BYTES;
 
 /**
  * Turnos por minuto y por alumno. Una conversación real ronda uno cada
@@ -90,6 +91,9 @@ export async function POST(peticion: Request) {
     if (duracionCruda > AUDIO_MAX_SEGUNDOS + 5) {
       return NextResponse.json({ error: "El audio excede el máximo" }, { status: 413 });
     }
+    if (!tipoDeAudio(audio)) {
+      return NextResponse.json({ error: "Solo se acepta audio" }, { status: 415 });
+    }
   }
 
   // Cobrar ANTES de llamar a Gemini. Es atómico: si dos pestañas
@@ -112,6 +116,9 @@ export async function POST(peticion: Request) {
   const devolver = async () => {
     if (devuelto) return;
     devuelto = true;
+    // Un audio más largo de lo que graba la app hace fallar a la IA a
+    // propósito: ese no se devuelve (ver audioSeguro).
+    if (buffer && audio instanceof Blob && (await audioPasaDelTope(buffer.toString("base64"), tipoDeAudio(audio)!))) return;
     await sql`select devolver_mensaje(${alumno.id}, ${bolsaUsada}::bolsa_credito)`;
   };
 

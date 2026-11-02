@@ -100,12 +100,15 @@ export async function asignacionesAnteriores(limite = 20): Promise<AsignacionHec
   }));
 }
 
-/** Cada colegio con sus cursos y alumnos activos (para elegir a quién asignar). */
+/**
+ * Cada colegio con sus cursos y alumnos activos (para elegir a quién
+ * asignar). Los activos van primero: el primero es el que sale elegido.
+ */
 export async function colegiosConCursos(): Promise<
-  { id: string; nombre: string; codigo: string; cursos: { curso: string; alumnos: number }[]; alumnos: number }[]
+  { id: string; nombre: string; codigo: string; suspendido: boolean; cursos: { curso: string; alumnos: number }[]; alumnos: number }[]
 > {
   const [colegios, cursos] = await Promise.all([
-    sql`select id, nombre, codigo_acceso from instituciones order by nombre`,
+    sql`select id, nombre, codigo_acceso, estado from instituciones order by estado = 'suspendida', nombre`,
     sql`
       select institucion_id, coalesce(curso, '(sin curso)') as curso, count(*)::int as alumnos
         from users
@@ -115,6 +118,13 @@ export async function colegiosConCursos(): Promise<
   ]);
   return colegios.map((c) => {
     const suyos = cursos.filter((x) => x.institucion_id === c.id).map((x) => ({ curso: x.curso as string, alumnos: x.alumnos as number }));
-    return { id: c.id, nombre: c.nombre, codigo: c.codigo_acceso, cursos: suyos, alumnos: suyos.reduce((s, x) => s + x.alumnos, 0) };
+    return {
+      id: c.id,
+      nombre: c.nombre,
+      codigo: c.codigo_acceso,
+      suspendido: c.estado === "suspendida",
+      cursos: suyos,
+      alumnos: suyos.reduce((s, x) => s + x.alumnos, 0),
+    };
   });
 }

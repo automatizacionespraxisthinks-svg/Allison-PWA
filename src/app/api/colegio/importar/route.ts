@@ -51,6 +51,7 @@ export async function POST(peticion: Request) {
     confirmar: !!confirmar,
     cursoParaTodos: typeof curso === "string" ? curso : null,
     quien: usuario.nombre,
+    exigirCupo: usuario.rol !== "admin",
   });
   return NextResponse.json(r, { status });
 }

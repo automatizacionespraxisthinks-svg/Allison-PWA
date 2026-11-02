@@ -65,32 +65,32 @@ export default async function PaginaRecargas() {
           <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-borde text-left text-xs text-texto-suave">
-                <th className="py-2 font-medium">Fecha</th>
-                <th className="py-2 font-medium">Alumno</th>
-                <th className="py-2 text-right font-medium">Intervenciones</th>
-                <th className="py-2 text-right font-medium">Valor</th>
-                <th className="py-2 font-medium">Medio</th>
-                <th className="py-2 font-medium">Recibo</th>
-                <th className="py-2 font-medium">Hecha por</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Fecha</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Alumno</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 text-right font-medium">Intervenciones</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 text-right font-medium">Valor</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Medio</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Recibo</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Hecha por</th>
               </tr>
             </thead>
             <tbody className="tabular-nums">
               {recientes.map((r, i) => (
                 <tr key={i} className="border-b border-borde/60 last:border-0">
-                  <td className="py-2 whitespace-nowrap">{fecha(r.fecha)}</td>
-                  <td className="py-2">
+                  <td className="px-3 first:pl-0 last:pr-0 py-2 whitespace-nowrap">{fecha(r.fecha)}</td>
+                  <td className="px-3 first:pl-0 last:pr-0 py-2">
                     {r.alumno}
                     <span className="block text-[11px] text-texto-suave">{[r.colegio ?? "Particular", r.curso].filter(Boolean).join(" · ")}</span>
                   </td>
-                  <td className="py-2 text-right">{r.tipo === "plan" ? `${r.intervenciones.toLocaleString("es-CO")} al mes` : r.intervenciones.toLocaleString("es-CO")}</td>
-                  <td className="py-2 text-right">
+                  <td className="px-3 first:pl-0 last:pr-0 py-2 text-right">{r.tipo === "plan" ? `${r.intervenciones.toLocaleString("es-CO")} al mes` : r.intervenciones.toLocaleString("es-CO")}</td>
+                  <td className="px-3 first:pl-0 last:pr-0 py-2 text-right">
                     {pesos(r.montoCop)}
                     {r.tipo === "plan" && <span className="block text-[11px] text-texto-suave">plan mensual</span>}
                     {r.valorRecibido !== r.montoCop && <span className="block text-[11px] text-acento">recibido {pesos(r.valorRecibido)}</span>}
                   </td>
-                  <td className="py-2 capitalize">{r.medio}</td>
-                  <td className="py-2">{r.recibo || "—"}</td>
-                  <td className="py-2">{r.hechaPor}</td>
+                  <td className="px-3 first:pl-0 last:pr-0 py-2 capitalize">{r.medio}</td>
+                  <td className="px-3 first:pl-0 last:pr-0 py-2">{r.recibo || "—"}</td>
+                  <td className="px-3 first:pl-0 last:pr-0 py-2">{r.hechaPor}</td>
                 </tr>
               ))}
             </tbody>

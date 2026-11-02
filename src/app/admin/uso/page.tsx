@@ -65,7 +65,7 @@ export default async function PaginaUso({ searchParams }: { searchParams: Promis
     </div>
   );
   const cabecera = (texto: string, o: Orden, derecha = true) => (
-    <th className={`py-2 font-medium ${derecha ? "text-right" : ""}`}>
+    <th className={`px-3 py-2.5 font-medium whitespace-nowrap ${derecha ? "text-right" : ""}`}>
       <Link href={`/admin/uso?${consulta({ orden: o }, ["pagina"])}`} className={orden === o ? "text-texto underline" : "hover:underline"}>
         {texto}
       </Link>
@@ -186,21 +186,24 @@ export default async function PaginaUso({ searchParams }: { searchParams: Promis
         )}
       </div>
 
+      {/* La columna del alumno queda fija al desplazar la tabla de lado (en
+          celular no cabe entera), y cada celda tiene su margen: antes los
+          números y los títulos se pegaban ("IntervencionesPor tipo"). */}
       <section className="overflow-x-auto rounded-2xl border border-borde bg-superficie">
-        <table className="w-full min-w-[880px] text-sm">
+        <table className="w-full min-w-[920px] text-sm">
           <thead>
             <tr className="border-b border-borde text-left text-xs text-texto-suave">
-              <th className="px-4 py-2 font-medium">
+              <th className="sticky left-0 z-10 bg-superficie px-4 py-2.5 font-medium">
                 <Link href={`/admin/uso?${consulta({ orden: "nombre" }, ["pagina"])}`} className={orden === "nombre" ? "text-texto underline" : "hover:underline"}>
                   Alumno
                 </Link>
               </th>
               {cabecera("Intervenciones", "intervenciones")}
-              <th className="py-2 font-medium">Por tipo</th>
-              <th className="py-2 text-right font-medium">Tokens</th>
+              <th className="px-3 py-2.5 font-medium whitespace-nowrap">Por tipo</th>
+              <th className="px-3 py-2.5 text-right font-medium whitespace-nowrap">Tokens</th>
               {cabecera("Costo IA", "costo")}
               {cabecera("Saldo", "saldo")}
-              <th className="px-4 py-2 font-medium">
+              <th className="px-4 py-2.5 font-medium whitespace-nowrap">
                 <Link
                   href={`/admin/uso?${consulta({ orden: "inactivos" }, ["pagina"])}`}
                   className={orden === "inactivos" ? "text-texto underline" : "hover:underline"}
@@ -213,7 +216,7 @@ export default async function PaginaUso({ searchParams }: { searchParams: Promis
           <tbody className="tabular-nums">
             {c.filas.map((f) => (
               <tr key={f.id} className="border-b border-borde/60 align-top last:border-0">
-                <td className="px-4 py-2">
+                <td className="sticky left-0 z-10 max-w-60 bg-superficie px-4 py-2.5">
                   <Link href={`/admin/usuarios/${f.id}`} className="font-medium hover:underline">
                     {f.nombre}
                   </Link>
@@ -221,11 +224,11 @@ export default async function PaginaUso({ searchParams }: { searchParams: Promis
                     {[f.colegio ?? "Particular", f.curso, f.vaEn].filter(Boolean).join(" · ")}
                   </span>
                 </td>
-                <td className="py-2 text-right">{miles(f.intervenciones)}</td>
-                <td className="py-2">
+                <td className="px-3 py-2.5 text-right">{miles(f.intervenciones)}</td>
+                <td className="px-3 py-2.5">
                   {f.intervenciones > 0 && (
                     <span
-                      className="flex h-2 w-28 overflow-hidden rounded-full bg-superficie-2"
+                      className="mt-1.5 flex h-2 w-28 overflow-hidden rounded-full bg-superficie-2"
                       title={PARTES.map((x) => `${x.nombre}: ${f.porParte[x.clave] ?? 0}`).join(" · ")}
                     >
                       {PARTES.map((x) =>
@@ -236,11 +239,11 @@ export default async function PaginaUso({ searchParams }: { searchParams: Promis
                     </span>
                   )}
                 </td>
-                <td className="py-2 text-right">{miles(f.tokensEntrada + f.tokensSalida)}</td>
-                <td className="py-2 text-right">{pesos(f.costoCop)}</td>
-                <td className={`py-2 text-right ${f.saldo === 0 ? "font-semibold text-acento" : ""}`}>{miles(f.saldo)}</td>
-                <td className="px-4 py-2 text-xs">
-                  <span className="flex flex-wrap gap-1">
+                <td className="px-3 py-2.5 text-right">{miles(f.tokensEntrada + f.tokensSalida)}</td>
+                <td className="px-3 py-2.5 text-right">{pesos(f.costoCop)}</td>
+                <td className={`px-3 py-2.5 text-right ${f.saldo === 0 ? "font-semibold text-acento" : ""}`}>{miles(f.saldo)}</td>
+                <td className="min-w-44 px-4 py-2.5 text-xs">
+                  <span className="flex flex-wrap gap-1 whitespace-nowrap">
                     {f.saldo === 0 && <span className="rounded-full bg-acento/10 px-2 py-0.5 text-acento">Sin saldo</span>}
                     {f.enPrueba && <span className="rounded-full bg-primario-suave px-2 py-0.5 text-primario">Prueba gratis</span>}
                     {f.diasSinActividad === null ? (

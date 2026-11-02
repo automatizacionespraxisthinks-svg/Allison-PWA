@@ -44,5 +44,8 @@ docs
 .vscode
 .idea
 
+# El expediente del registro de derecho de autor: datos personales, nunca a la imagen
+registro-dnda
+
 # Las ilustraciones originales (unos 50 MB): la app solo usa las de public/ilustraciones
 ilustraciones-*

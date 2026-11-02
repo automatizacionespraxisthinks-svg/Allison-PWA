@@ -34,7 +34,7 @@ export async function POST(peticion: Request) {
 
   const r = await terminarActividad(alumno.id, alumno.nivel, datos.data);
   if (!r.ok) {
-    return NextResponse.json({ error: r.error }, { status: r.error === "no_existe" ? 404 : 409 });
+    return NextResponse.json({ error: r.error }, { status: r.error === "no_existe" ? 404 : r.error === "muy_rapido" ? 429 : 409 });
   }
   return NextResponse.json(r);
 }

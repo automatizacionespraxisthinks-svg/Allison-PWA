@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { correo, correoDeRecuperacion } from "./correo";
 import { sql } from "./db";
 import { interpretar } from "./identificador";
+import { limitar } from "./limite";
 
 /**
  * Recuperación de contraseña.
@@ -46,6 +47,12 @@ export async function pedirRecuperacion(
   // Sin cuenta o sin correo no hay a dónde mandar nada, y aun así se
   // sale en silencio.
   if (!u?.email) return;
+
+  // Tope por cuenta, además del de la IP: desde varias IP se podía
+  // llenarle el correo a alguien y, como cada pedido anula el enlace
+  // anterior, dejarle siempre muerto el suyo (auditoría de seguridad, 2 de
+  // noviembre de 2026). Pasado el tope, su último enlace sigue sirviendo.
+  if (!limitar(`recuperar-cuenta:${u.id}`, 3, 3600).permitido) return;
 
   // Un solo enlace válido a la vez
   await sql`

@@ -8,6 +8,7 @@ interface Colegio {
   id: string;
   nombre: string;
   alumnos: number;
+  suspendido?: boolean;
   cursos: { curso: string; alumnos: number }[];
 }
 
@@ -96,7 +97,7 @@ export function AsignarSaldo({ colegios }: { colegios: Colegio[] }) {
   }
 
   if (!colegios.length) {
-    return <p className="rounded-2xl border border-borde bg-superficie p-5 text-sm text-texto-suave">Todavía no hay colegios. Créalos en Convenios.</p>;
+    return <p className="rounded-2xl border border-borde bg-superficie p-5 text-sm text-texto-suave">Todavía no hay colegios. Créalos en «Lista y convenios» con el botón «Nuevo colegio».</p>;
   }
 
   const destino = cursos === null ? "a todo el colegio" : cursos.length === 1 ? `al curso ${cursos[0]}` : `a los cursos ${cursos.join(", ")}`;
@@ -104,8 +105,8 @@ export function AsignarSaldo({ colegios }: { colegios: Colegio[] }) {
   return (
     <section className="flex flex-col gap-4 rounded-2xl border border-borde bg-superficie p-5">
       <h2 className="font-bold">Asignar saldo a un colegio o a un curso</h2>
-      <div className="grid gap-3 sm:grid-cols-[1fr_160px]">
-        <label className="flex flex-col gap-1 text-sm">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_160px]">
+        <label className="flex min-w-0 flex-col gap-1 text-sm">
           <span className="font-medium">Colegio</span>
           <select
             value={colegioId}
@@ -117,7 +118,7 @@ export function AsignarSaldo({ colegios }: { colegios: Colegio[] }) {
           >
             {colegios.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.nombre} · {c.alumnos} alumnos
+                {c.nombre} · {c.alumnos} alumnos{c.suspendido ? " (suspendido)" : ""}
               </option>
             ))}
           </select>

@@ -11,6 +11,10 @@ export interface CampoFiltro {
   tipo?: "texto" | "fecha";
   /** Al cambiarlo se borran estos otros (el curso, al cambiar de colegio). */
   borra?: string[];
+  /** El texto de ayuda del buscador. */
+  placeholder?: string;
+  /** El ancho del campo (clases), si no es el de siempre. */
+  ancho?: string;
 }
 
 /**
@@ -51,7 +55,7 @@ export function Filtros({ campos }: { campos: CampoFiltro[] }) {
   return (
     <div className={`flex flex-wrap items-end gap-2 ${cargando ? "opacity-60" : ""}`}>
       {campos.map((c) => (
-        <label key={c.nombre} className="flex flex-col gap-1 text-xs text-texto-suave">
+        <label key={c.nombre} className={`flex max-w-full min-w-0 flex-col gap-1 text-xs text-texto-suave ${c.ancho ?? ""}`}>
           {c.etiqueta}
           {c.opciones ? (
             <select
@@ -77,8 +81,8 @@ export function Filtros({ campos }: { campos: CampoFiltro[] }) {
               type="search"
               value={texto[c.nombre] ?? ""}
               onChange={(e) => setTexto((t) => ({ ...t, [c.nombre]: e.target.value }))}
-              placeholder="Buscar alumno…"
-              className="h-10 w-56 rounded-xl border border-borde bg-superficie px-3 text-sm text-texto"
+              placeholder={c.placeholder ?? "Buscar alumno…"}
+              className={`h-10 rounded-xl border border-borde bg-superficie px-3 text-sm text-texto ${c.ancho ? "w-full" : "w-56"}`}
             />
           )}
         </label>

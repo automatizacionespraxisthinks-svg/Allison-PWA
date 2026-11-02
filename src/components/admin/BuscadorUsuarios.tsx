@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { UsuarioAdmin } from "@/lib/admin";
+import { Filtros } from "./Filtros";
 import { calcularRecarga, pesos, type ConfigPrecios } from "@/lib/precios";
 import { pedir } from "@/lib/pedir";
 
@@ -20,6 +21,12 @@ function cuando(iso: string | null): string {
   return `hace ${dias} días`;
 }
 
+/** "12 nov 2026 (hace 3 días)": cuándo se registró, en hora de Colombia. */
+function registro(iso: string): string {
+  const fecha = new Date(iso).toLocaleDateString("es-CO", { timeZone: "America/Bogota", day: "numeric", month: "short", year: "numeric" });
+  return `${fecha} (${cuando(iso)})`;
+}
+
 /** Sin respuesta, o un 5xx del proxy: no se sabe si el servidor lo hizo. */
 const incierto = (r: Response | null) => !r || r.status >= 500;
 
@@ -28,17 +35,28 @@ const NO_SABEMOS = "No sabemos si quedó: revisa el historial antes de repetir."
 export function BuscadorUsuarios({
   consulta,
   usuarios,
+  total,
+  filtrado,
+  orden,
+  colegios,
+  niveles,
   cfg,
   planVence,
 }: {
   consulta: string;
   usuarios: UsuarioAdmin[];
+  /** Cuántos hay con estos filtros (se muestran hasta 40). */
+  total: number;
+  /** Si hay búsqueda o algún filtro; sin nada, son los últimos registrados. */
+  filtrado: boolean;
+  orden: string;
+  colegios: { id: string; nombre: string }[];
+  niveles: string[];
   cfg: ConfigPrecios;
   /** El fin del mes del plan activo de cada alumno (DD/MM/AAAA); sin plan, no está. */
   planVence: Record<string, string>;
 }) {
   const router = useRouter();
-  const [q, setQ] = useState(consulta);
   const [abierto, setAbierto] = useState<string | null>(null);
   const [efectivoDe, setEfectivoDe] = useState<string | null>(null);
   const [montoEfectivo, setMontoEfectivo] = useState("");
@@ -145,26 +163,56 @@ export function BuscadorUsuarios({
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-bold">Alumnos</h1>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          router.push(`/admin/usuarios?q=${encodeURIComponent(q)}`);
-        }}
-        className="flex gap-2"
-      >
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Nombre, correo, celular o usuario"
-          className={`${campo} flex-1`}
+      {/* El buscador filtra mientras se escribe y los filtros viven en la
+          dirección (Filtros): se puede volver atrás o compartir el enlace. */}
+      <div className="rounded-2xl border border-borde bg-superficie p-4">
+        <Filtros
+          campos={[
+            {
+              nombre: "q",
+              etiqueta: "Buscar",
+              tipo: "texto",
+              placeholder: "Nombre, correo, celular o usuario",
+              // Una línea entera para el buscador; los filtros van debajo.
+              ancho: "basis-full",
+            },
+            {
+              nombre: "colegio",
+              etiqueta: "De dónde",
+              opciones: [
+                { valor: "", texto: "Todos" },
+                { valor: "particulares", texto: "Particulares" },
+                ...colegios.map((c) => ({ valor: c.id, texto: c.nombre })),
+              ],
+            },
+            { nombre: "nivel", etiqueta: "Nivel", opciones: [{ valor: "", texto: "Todos" }, ...niveles.map((n) => ({ valor: n, texto: n }))] },
+            {
+              nombre: "orden",
+              etiqueta: "Orden",
+              opciones: [
+                { valor: "recientes", texto: "Últimos registrados" },
+                { valor: "practica", texto: "Práctica más reciente" },
+                { valor: "nombre", texto: "Nombre (A-Z)" },
+              ],
+            },
+          ]}
         />
-        <button
-          type="submit"
-          className="rounded-xl bg-primario px-5 py-2.5 text-sm font-semibold text-white"
-        >
-          Buscar
-        </button>
-      </form>
+      </div>
+
+      {/* Sin resultados no va: abajo ya lo dice el aviso de la lista vacía. */}
+      {usuarios.length > 0 && (
+        <p className="text-sm text-texto-suave">
+          {filtrado
+            ? `${total.toLocaleString("es-CO")} ${total === 1 ? "alumno coincide" : "alumnos coinciden"}${total > usuarios.length ? `; se ven los primeros ${usuarios.length}` : ""}.`
+            : total > usuarios.length
+              ? orden === "recientes"
+                ? `Los últimos ${usuarios.length} registrados, de ${total.toLocaleString("es-CO")} en total.`
+                : `${usuarios.length} de ${total.toLocaleString("es-CO")} alumnos.`
+              : total === 1
+                ? "El único alumno registrado."
+                : `Los ${total} alumnos${orden === "recientes" ? ", del más reciente al más antiguo" : ""}.`}
+        </p>
+      )}
 
       {aviso && (
         <p className="rounded-lg bg-exito/10 p-3 text-sm text-exito">{aviso}</p>
@@ -175,9 +223,9 @@ export function BuscadorUsuarios({
         </p>
       )}
 
-      {consulta && usuarios.length === 0 && (
+      {usuarios.length === 0 && (
         <p className="rounded-2xl border border-borde bg-superficie p-8 text-center text-texto-suave">
-          Nadie coincide con «{consulta}».
+          {consulta.trim() ? `Nadie coincide con «${consulta.trim()}».` : filtrado ? "Ningún alumno con estos filtros." : "Todavía no hay alumnos registrados."}
         </p>
       )}
 
@@ -203,11 +251,12 @@ export function BuscadorUsuarios({
                 </h2>
                 <p className="mt-0.5 text-sm text-texto-suave">
                   {[u.email, u.telefono, u.username].filter(Boolean).join(" · ")}
-                  {u.colegio && ` · ${u.colegio}`}
+                  {u.colegio && ` · ${u.colegio}${u.curso ? ` · ${u.curso}` : ""}`}
                 </p>
+                <p className="mt-0.5 text-xs text-texto-suave">Se registró el {registro(u.creadoEn)}</p>
                 <p className="mt-1.5 text-sm">
                   <NivelAdmin userId={u.id} nivel={u.nivel} onCambio={() => router.refresh()} /> ·{" "}
-                  <strong>{u.saldo}</strong> mensajes de saldo ·{" "}
+                  <strong>{u.saldo}</strong> intervenciones de saldo ·{" "}
                   {u.mensajes} hablados · practicó {cuando(u.ultimaPractica)}
                 </p>
                 {u.pagado > 0 && (

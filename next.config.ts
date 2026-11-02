@@ -50,6 +50,13 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "microphone=(self), camera=(), geolocation=(), payment=()",
           },
+          // Una CSP mínima que no toca los scripts de Next: sin plugins, sin
+          // <base> ajeno que desvíe los enlaces, y nadie la mete en un
+          // iframe (auditoría de seguridad, 2 de noviembre de 2026).
+          {
+            key: "Content-Security-Policy",
+            value: "object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+          },
         ],
       },
     ];

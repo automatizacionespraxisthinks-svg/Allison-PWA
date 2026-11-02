@@ -209,7 +209,7 @@ export function FormularioEntrar({
             <label className="flex flex-col gap-1.5">
               <span className="text-sm font-medium">Código del colegio</span>
               <input value={codigo} onChange={(e) => setCodigo(e.target.value.toUpperCase())}
-                     required placeholder="COLEGIO2026"
+                     required placeholder="Te lo da tu colegio"
                      className={`${campo} font-mono tracking-wider`} />
             </label>
             <label className="flex flex-col gap-1.5">
@@ -221,11 +221,12 @@ export function FormularioEntrar({
               <span className="text-sm font-medium">Tu PIN</span>
               <input
                 value={pin}
-                onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                // 6 dígitos los nuevos; los de 4 ya entregados siguen sirviendo.
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 required
                 inputMode="numeric"
                 autoComplete="off"
-                placeholder="0000"
+                placeholder="000000"
                 className={`${campo} text-center font-mono text-2xl tracking-[0.5em]`}
               />
               <span className="text-xs text-texto-suave">

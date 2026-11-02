@@ -92,9 +92,9 @@ export default async function PaginaRutaAdmin({
           <table className="w-full min-w-[380px] text-sm">
             <thead>
               <tr className="border-b border-borde text-left text-xs text-texto-suave">
-                <th className="py-2 font-medium">Actividad</th>
-                <th className="py-2 text-right font-medium">Se van aquí</th>
-                <th className="py-2 text-right font-medium">Aciertan al 1.º intento</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Actividad</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 text-right font-medium">Se van aquí</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 text-right font-medium">Aciertan al 1.º intento</th>
               </tr>
             </thead>
             <tbody className="tabular-nums">
@@ -103,12 +103,12 @@ export default async function PaginaRutaAdmin({
                   key={`${x.leccion}-${x.paso}`}
                   className={`border-b border-borde/60 last:border-0 ${peorActividad?.seVan && x === peorActividad ? "bg-acento/5" : ""}`}
                 >
-                  <td className="py-1.5">
+                  <td className="px-3 first:pl-0 last:pr-0 py-1.5">
                     <span className="text-texto-suave">L{x.leccion} · </span>
                     {x.nombre}
                   </td>
-                  <td className={`py-1.5 text-right ${x.seVan ? "font-semibold" : "text-texto-suave"}`}>{x.seVan}</td>
-                  <td className="py-1.5 text-right">{x.primerIntento === null ? <span className="text-texto-suave">—</span> : `${x.primerIntento} %`}</td>
+                  <td className={`px-3 first:pl-0 last:pr-0 py-1.5 text-right ${x.seVan ? "font-semibold" : "text-texto-suave"}`}>{x.seVan}</td>
+                  <td className="px-3 first:pl-0 last:pr-0 py-1.5 text-right">{x.primerIntento === null ? <span className="text-texto-suave">—</span> : `${x.primerIntento} %`}</td>
                 </tr>
               ))}
             </tbody>
@@ -126,17 +126,17 @@ export default async function PaginaRutaAdmin({
           <table className="w-full min-w-[480px] text-sm">
             <thead>
               <tr className="border-b border-borde text-left text-xs text-texto-suave">
-                <th className="py-2 font-medium">Conversación</th>
-                <th className="py-2 text-right font-medium">Empezaron</th>
-                <th className="py-2 text-right font-medium">Se fueron antes</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 font-medium">Conversación</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 text-right font-medium">Empezaron</th>
+                <th className="px-3 first:pl-0 last:pr-0 py-2 text-right font-medium">Se fueron antes</th>
               </tr>
             </thead>
             <tbody className="tabular-nums">
               {e.conversaciones.map((c) => (
                 <tr key={c.etiqueta} className="border-b border-borde/60 last:border-0">
-                  <td className="py-1.5">{c.etiqueta}</td>
-                  <td className="py-1.5 text-right">{c.empezaron}</td>
-                  <td className={`py-1.5 text-right ${c.pct >= 20 ? "font-semibold text-acento" : ""}`}>
+                  <td className="px-3 first:pl-0 last:pr-0 py-1.5">{c.etiqueta}</td>
+                  <td className="px-3 first:pl-0 last:pr-0 py-1.5 text-right">{c.empezaron}</td>
+                  <td className={`px-3 first:pl-0 last:pr-0 py-1.5 text-right ${c.pct >= 20 ? "font-semibold text-acento" : ""}`}>
                     {c.antes} ({c.pct} %)
                   </td>
                 </tr>

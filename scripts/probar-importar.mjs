@@ -50,6 +50,7 @@ revisar("apellidos aparte · usuario", fila(apellidos, 0).username === "juan.gom
 // Excel convierte "11-2" en fecha si la celda no es texto: se avisa, no se carga un curso raro.
 const fechas = leerCsv("Nombre;Curso\nAna Gómez;2-nov\nLuis Pérez;02/11/2026\nPedro Gil;46328\nEva Ruiz;11-2\nRaúl Mora;TRANSICION");
 revisar("curso fecha · se rechazan", fechas.rechazadas.length === 3 && fechas.rechazadas.every((r) => /fecha/.test(r.motivo)), JSON.stringify(fechas.rechazadas));
+revisar("curso fecha · el número de Excel se muestra como fecha", fechas.rechazadas.some((r) => r.motivo.includes("«2/11/2026»")) && !fechas.rechazadas.some((r) => r.motivo.includes("46328")), JSON.stringify(fechas.rechazadas));
 revisar("curso fecha · 11-2 sigue siendo curso", fechas.filas.find((f) => f.nombre === "Eva Ruiz")?.curso === "11-2", JSON.stringify(fechas.filas));
 
 // El mismo usuario con otro nombre: puede ser otro alumno.
