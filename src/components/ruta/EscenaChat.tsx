@@ -572,12 +572,18 @@ function Resumen({
       {fin.mejora && (
         <div className="flex flex-col gap-1.5 rounded-3xl bg-oro-suave px-4 py-3.5 text-oro">
           <b className="text-[15px] font-black">Para la próxima</b>
-          <span className="text-sm font-semibold">Dijiste: &ldquo;{fin.mejora.dijo}&rdquo;</span>
-          <span className="text-sm font-extrabold text-texto">Mejor: &ldquo;{fin.mejora.mejor}&rdquo;</span>
-          <span className="flex flex-wrap items-center gap-2">
-            <BotonOir onClick={() => void decir(fin.mejora!.mejor)} texto="Oír" />
-          </span>
-          {conversacion && <Practicarla conversacion={conversacion} frase={fin.mejora.mejor} nivel={ctx.nivel} nombre={ctx.nombre} />}
+          {/* Todos los errores de la escena (hasta 3), no solo el primero: el
+              alumno pidió que lo corrijan siempre (2 de noviembre de 2026). */}
+          {(fin.mejoras?.length ? fin.mejoras : [fin.mejora]).map((m, i) => (
+            <div key={i} className={`flex flex-col gap-1.5 ${i ? "border-t border-oro/20 pt-2" : ""}`}>
+              <span className="text-sm font-semibold">Dijiste: &ldquo;{m.dijo}&rdquo;</span>
+              <span className="text-sm font-extrabold text-texto">Mejor: &ldquo;{m.mejor}&rdquo;</span>
+              <span className="flex flex-wrap items-center gap-2">
+                <BotonOir onClick={() => void decir(m.mejor)} texto="Oír" />
+              </span>
+              {i === 0 && conversacion && <Practicarla conversacion={conversacion} frase={m.mejor} nivel={ctx.nivel} nombre={ctx.nombre} />}
+            </div>
+          ))}
         </div>
       )}
 

@@ -150,7 +150,8 @@ probar("el español tiene un solo trabajo: que algo se entienda", a1.includes("O
 probar("dos partes, dos idiomas: el español solo en su campo y la respuesta solo en inglés", a1.includes("TWO PARTS, TWO LANGUAGES") && plano(a1).includes('"espanol": ONLY Spanish') && plano(a1).includes('"respuesta": ONLY English. Not one Spanish word.'));
 probar("el modelo nunca escribe marcadores: los pone la app", plano(a1).includes("Never write language codes like [es] or [en-US]"));
 probar("lleva la regla del nivel A1: el español de los casos 2 a 10", plano(a1).includes('At A1, "espanol" is REQUIRED in cases 2 to 10'));
-probar("en los casos 1 y 11 no hay español", plano(a1).includes('In cases 1 and 11 it is ""'));
+// En A1 y A2 no hay caso 1 (todo error es 2); en B1 sigue.
+probar("en el caso 11 no hay español (y en B1, tampoco en el 1)", plano(a1).includes('In case 11 it is ""') && plano(construirInstruccion({ nombre: "X", nivel: "B1" })).includes('In cases 1 and 11 it is ""'));
 probar("el español y el inglés nunca se repiten ni se traducen", plano(a1).includes("Never translate one into the other"));
 probar("manda decir cada cosa una sola vez", plano(a1).includes("Say each thing once: never the same sentence twice, never your question twice"));
 probar("desde 3 veces, lleva las cifras del hábito y el consejo", plano(a1).includes("They used or asked for Spanish in 3 of their last 4 turns") && a1.includes("slow speed"));
@@ -178,7 +179,13 @@ probar("dice que es una profesora con IA si se lo preguntan", plano(a1).includes
 probar("lleva los casos, decididos en orden", a1.includes("THE CASES") && a1.includes("Decide it FIRST") && a1.includes("11 They said it right"));
 probar("los ejemplos aprobados de los casos están", a1.includes("Como fue ayer, se dice 'played'") && a1.includes("Say it: I tidied my desk.") && a1.includes("Played. P, L, A, Y, E, D."));
 probar("tabla de falsos amigos con su significado real", a1.includes("sensible = sensato") && a1.includes("embarrassed = avergonzado"));
-probar("A1: el caso 2 es solo el verbo en el tiempo equivocado", plano(a1).includes("The verb is in the wrong time"));
+// Decisión del usuario, 2 de noviembre de 2026: en A1 y A2 todo error se corrige, uno por turno.
+probar("A1: el caso 2 es CUALQUIER error, también uno pequeño", plano(a1).includes("ANY mistake in their English, even a small one") && plano(a1).includes("the people is"));
+probar(
+  "A1: el caso 1 no aparece en ninguna parte (todo error es 2)",
+  !a1.includes("\n  1  ") && !a1.includes("\n1  Do not correct") && plano(a1).includes("Before choosing 2 or 11") && plano(a1).includes("In cases 2, 4 and 11") && !plano(a1).includes("cases 1 and 11")
+);
+probar("B1: el desliz pequeño sigue siendo caso 1", construirInstruccion({ nombre: "X", nivel: "B1" }).includes("\n1  Do not correct it out loud"));
 probar("nunca repite en inglés la forma equivocada del alumno", plano(a1).includes('In "respuesta", never repeat their wrong form'));
 probar("A1: UNA corrección en los casos 2 a 4, ninguna en los demás", plano(a1).includes('in cases 2, 3 and 4, ONE item in "correcciones"'));
 probar("B1: sin el límite de una corrección", !construirInstruccion({ nombre: "X", nivel: "B1" }).includes("ONE item in"));
@@ -201,7 +208,7 @@ probar("código: A2 también deja una", limitarCorrecciones(tres, "A2").length =
 probar("código: B1 deja todas", limitarCorrecciones(tres, "B1").length === 3);
 probar("código: sin correcciones queda vacío", limitarCorrecciones([], "A1").length === 0);
 probar("código: en los casos 6 y 9 no hay correcciones", correccionesDelCaso(tres, "6", "B2").length === 0 && correccionesDelCaso(tres, "9", "A1").length === 0);
-probar("código: en A1 el caso 1 no corrige; el 2 sí", correccionesDelCaso(tres, "1", "A1").length === 0 && correccionesDelCaso(tres, "2", "A1").length === 3);
+probar("código: en A1 el caso 1 también corrige (si el modelo lo marca), el 11 no", correccionesDelCaso(tres, "1", "A1").length === 3 && correccionesDelCaso(tres, "11", "A1").length === 0);
 probar("código: en B1 el caso 1 sí reporta", correccionesDelCaso(tres, "1", "B1").length === 3);
 probar("caso 9: reconoce que pide ayuda", esPedidoDeAyuda("I not understand what is the structure") && esPedidoDeAyuda("no entiendo") && esPedidoDeAyuda("Can you repeat please") && esPedidoDeAyuda("I don't understand"));
 probar("caso 9: una frase normal no es pedido de ayuda", !esPedidoDeAyuda("I understand the movie") && !esPedidoDeAyuda("Yesterday I played soccer"));

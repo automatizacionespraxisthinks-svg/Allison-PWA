@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { COLA_GRABACION_MS, avisarMicrofonoListo } from "@/components/AnilloMicrofono";
+import { COLA_GRABACION_MS, SIN_TIC_MS, avisarMicrofonoListo, esperarListo } from "@/components/AnilloMicrofono";
 import { fijarVolumen } from "@/lib/volumen";
 import { desbloquearVoz, detenerVoz } from "@/lib/voz";
 import type { Cuentame as Datos } from "@/lib/ruta/tipos";
@@ -252,6 +252,17 @@ export function Cuentame({
       ultimoSonido.current = Date.now();
       const inicio = Date.now();
       mr.start(250);
+      // Graba desde ya, pero el "habla ya" llega un momento después (ESPERA_LISTO_MS).
+      await esperarListo();
+      if (!vivo.current) return;
+      // Eligió escribir durante la espera: la grabación se descarta.
+      if (eligioEscribir.current) {
+        mr.onstop = null;
+        if (mr.state !== "inactive") mr.stop();
+        soltar();
+        grabadora.current = null;
+        return;
+      }
       setMs(0);
       setFase("grabando");
       setPreparando(false);
@@ -267,7 +278,7 @@ export function Cuentame({
         fijarVolumen(Math.min(1, nivel * 6));
         const ahora = Date.now();
         // El "tic" del principio no cuenta como voz.
-        if (ahora - inicio > 250) pico.current = Math.max(pico.current, nivel);
+        if (ahora - inicio > SIN_TIC_MS) pico.current = Math.max(pico.current, nivel);
         if (nivel > UMBRAL_SILENCIO) ultimoSonido.current = ahora;
         const t = transcurrido();
         setMs(t);

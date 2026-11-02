@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { COLA_GRABACION_MS, avisarMicrofonoListo } from "@/components/AnilloMicrofono";
+import { COLA_GRABACION_MS, SIN_TIC_MS, avisarMicrofonoListo, esperarListo } from "@/components/AnilloMicrofono";
 import { fijarVolumen } from "@/lib/volumen";
 import { desbloquearVoz, detenerVoz } from "@/lib/voz";
 import { srcIlustracion } from "@/lib/ruta/ilustracion";
@@ -278,6 +278,17 @@ export function Narra({
       desde.current = Date.now();
       const inicio = Date.now();
       mr.start(250);
+      // Graba desde ya, pero el "habla ya" llega un momento después (ESPERA_LISTO_MS).
+      await esperarListo();
+      if (!vivo.current) return;
+      // Eligió escribir durante la espera: la grabación se descarta.
+      if (eligioEscribir.current) {
+        mr.onstop = null;
+        if (mr.state !== "inactive") mr.stop();
+        soltar();
+        grabadora.current = null;
+        return;
+      }
       setMs(0);
       setFase("grabando");
       setPreparando(false);
@@ -292,7 +303,7 @@ export function Narra({
         const nivel = Math.sqrt(suma / muestras.length) / 128;
         fijarVolumen(Math.min(1, nivel * 6));
         // El "tic" del principio no cuenta como voz.
-        if (Date.now() - inicio > 250) pico.current = Math.max(pico.current, nivel);
+        if (Date.now() - inicio > SIN_TIC_MS) pico.current = Math.max(pico.current, nivel);
         const t = transcurrido();
         setMs(t);
         if (t >= limite) terminarGrabacion();

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { AnilloMicrofono, COLA_GRABACION_MS, avisarMicrofonoListo } from "@/components/AnilloMicrofono";
+import { AnilloMicrofono, COLA_GRABACION_MS, SIN_TIC_MS, avisarMicrofonoListo, esperarListo } from "@/components/AnilloMicrofono";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { sonar } from "@/lib/sonidos";
 import { fijarVolumen, useVolumenGrabacion } from "@/lib/volumen";
@@ -405,6 +405,9 @@ export function Grabador({
       inicio.current = Date.now();
       fin.current = 0;
       mr.start();
+      // Graba desde ya, pero el "habla ya" llega un momento después (ESPERA_LISTO_MS).
+      await esperarListo();
+      if (!vivo.current) return;
       setGrabando(true);
       setPreparando(false);
       avisarMicrofonoListo();
@@ -417,7 +420,7 @@ export function Grabador({
         for (const v of muestras) suma += (v - 128) ** 2;
         const nivel = Math.sqrt(suma / muestras.length) / 128;
         // El "tic" del principio no cuenta como voz.
-        if (Date.now() - inicio.current > 250) pico.current = Math.max(pico.current, nivel);
+        if (Date.now() - inicio.current > SIN_TIC_MS) pico.current = Math.max(pico.current, nivel);
         const v = Math.min(1, nivel * 6);
         avisar.current?.(v);
         fijarVolumen(v);

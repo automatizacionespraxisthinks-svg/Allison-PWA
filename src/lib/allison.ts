@@ -37,11 +37,14 @@ import { limpiarTranscripcion } from "./transcripcion.ts";
  * Cuánto habla Allison y con qué palabras, por nivel (docs/CURRICULO.md,
  * sección 2). Qué se corrige en cada nivel está en CASO_1 y CASO_2.
  */
+// En A1 y A2 el caso 2 también puede pasar del tope: corrige cualquier
+// error y devuelve la frase completa bien dicha, más la pregunta (2 de
+// noviembre de 2026). Antes decía "3 to 10" y chocaba con esa forma.
 export const COMPORTAMIENTO: Record<Nivel, string> = {
   A1: `Use very simple, common words. "respuesta": at most 8 words in normal
-conversation; the shapes of cases 3 to 10 may be longer.`,
+conversation; the shapes of cases 2 to 10 may be longer.`,
   A2: `Use simple words. "respuesta": at most 12 words in normal
-conversation; the shapes of cases 3 to 10 may be longer.`,
+conversation; the shapes of cases 2 to 10 may be longer.`,
   B1: `Use clear, natural English. "respuesta": at most 20 words in normal
 conversation.`,
   B2: `Use natural English. "respuesta": at most 30 words in normal
@@ -71,9 +74,8 @@ const NIVELES_SIN_ESPANOL: ReadonlySet<Nivel> = new Set(["B2", "C1", "C2"]);
  */
 const ESPANOL_POR_NIVEL: Partial<Record<Nivel, string>> = {
   A1: `- At A1, "espanol" is REQUIRED in cases 2 to 10: a beginner does not
-  understand an explanation in English. In cases 1 and 11 it is "".`,
-  A2: `- At A2, "espanol" is REQUIRED in cases 2 to 10. In cases 1 and 11
-  it is "".`,
+  understand an explanation in English. In case 11 it is "".`,
+  A2: `- At A2, "espanol" is REQUIRED in cases 2 to 10. In case 11 it is "".`,
   B1: `- At B1, "espanol" is REQUIRED in cases 3 and 6 to 10. In cases 2 and
   4, write it only if the rule is new or subtle for them; otherwise "".
   In cases 1 and 11 it is "".`,
@@ -104,16 +106,25 @@ const NIVELES_UNA_CORRECCION: ReadonlySet<Nivel> = new Set(["A1", "A2"]);
 const SIN_SENALES: SenalesEspanol = { turnos: 0, pidioEspanol: 0, usoEspanol: 0 };
 
 /**
- * Qué cuenta como caso 2 (vale explicar) y qué como caso 1 (se deja
- * pasar), por nivel. En A1 solo el verbo en el tiempo equivocado; una
- * -s que falta o un plural se dejan pasar (docs/CURRICULO.md, sección 2).
- * En modo lección, un error en la estructura del día también es caso 2.
+ * Qué cuenta como caso 2 (se explica) y qué como caso 1 (solo se dice
+ * bien, de paso), por nivel. En A1 y A2 TODO error es caso 2: el alumno
+ * pidió que lo corrijan siempre, uno por turno (decisión del usuario, 2
+ * de noviembre de 2026). Antes una -s, un plural o "the people is" se
+ * dejaban pasar y el alumno no se enteraba (docs/CURRICULO.md, sección
+ * 2). En modo lección, un error en la estructura del día también es
+ * caso 2.
  */
 const CASO_2: Record<Nivel, string> = {
-  A1: `The verb is in the wrong time: present instead of past ("Yesterday
-     I play soccer").`,
-  A2: `A wrong verb tense or word order ("Yesterday I play soccer", "I
-     not like it").`,
+  A1: `ANY mistake in their English, even a small one: the verb in the
+     wrong time ("Yesterday I play soccer"), a missing -s, a plural, an
+     article, a preposition, an extra or missing word, "is" for "are"
+     ("the people is"), "have" for age ("I have 12 years"), "like play"
+     for "like playing".`,
+  A2: `ANY mistake in their English, even a small one: a wrong verb tense
+     or word order ("Yesterday I play soccer", "I not like it"), a missing
+     -s, a plural, an article, a preposition, an extra or missing word,
+     "is" for "are" ("the people is"), "have" for age ("I have 15 years"),
+     "like play" for "like playing".`,
   B1: `A grammar mistake worth explaining: verb tense, a common
      preposition, word order ("Yesterday I play soccer").`,
   B2: `A grammar or naturalness mistake worth explaining: collocations,
@@ -121,13 +132,10 @@ const CASO_2: Record<Nivel, string> = {
   C1: "A mistake of register, nuance or idiomatic usage worth explaining.",
   C2: "A mistake of lexical precision or subtext worth explaining.",
 };
+/** El caso 1 solo existe de B1 en adelante: en A1 y A2 todo error es 2 (bloqueCasos). */
 const CASO_1: Record<Nivel, string> = {
-  A1: `Any other small mistake that does not block understanding: a
-     missing -s, a plural, an article, a preposition, an extra word
-     ("I like it hamburger", "my mother cook very good", "two brother").`,
-  A2: `A small mistake that does not block understanding: a missing -s,
-     a plural, an article, a preposition, an extra word ("I like it
-     hamburger", "my mother cook very good").`,
+  A1: "",
+  A2: "",
   B1: `A small slip that does not block understanding ("I like it
      hamburger").`,
   B2: "A small slip that does not block understanding.",
@@ -165,6 +173,12 @@ function bloqueCasos(nivel: Nivel, estructura?: string): string {
      target structure (${estructura}).`
     : CASO_2[nivel];
 
+  // En A1 y A2 el caso 1 no existe (todo error es 2): no aparece en la
+  // lista, ni su forma, ni en las reglas que lo nombran. Antes quedaba
+  // como "Not used at this level", una regla más que leer y descartar.
+  const sinCaso1 = NIVELES_UNA_CORRECCION.has(nivel);
+  const errorMenor = sinCaso1 ? "2" : "1";
+
   // El caso 5 (un error que ya cometió dos veces) no está aquí: lo
   // decide y lo arma el código (componerRespuesta). Con la lista de
   // errores en el prompt, flash-lite marcaba 5 en preguntas normales.
@@ -200,26 +214,41 @@ Every turn is exactly ONE case. Decide it FIRST and write its number in
   4  They mispronounced a word. Typical for Spanish speakers:
      ${PRONUNCIACION_TIPICA}.
   2  ${caso2}
-  1  ${CASO_1[nivel]}
-  11 They said it right ("I cleaned my room").
-  Before choosing 1 or 11, look for a word of the false-friend list in
+${sinCaso1 ? "" : `  1  ${CASO_1[nivel]}\n`}  11 They said it right ("I cleaned my room").
+  Before choosing ${errorMenor} or 11, look for a word of the false-friend list in
   their sentence: if it is there with the Spanish meaning, it is 3.
   Anything else -- a question about you, a greeting, a normal answer --
-  is 11 if their English was right and 1 if it had a small mistake.
+  is 11 if their English was right and ${errorMenor} if it had a ${sinCaso1 ? "" : "small "}mistake.
 
 WHAT YOU SAY IN EACH CASE
 The examples show the SHAPE: write the words for THIS student's
 sentence, and never copy an example's words when they do not fit.
-In cases 1, 2, 4 and 11, "respuesta" ends with an OPEN question
+In cases ${sinCaso1 ? "2" : "1, 2"}, 4 and 11, "respuesta" ends with an OPEN question
 (What, Where, Who, When, Why, How, Which), never a yes/no one.
 WRONG: "Do you play with them often?"  RIGHT: "What do you play with them?"
 
-1  Do not correct it out loud: use the right form naturally, then an
+${
+  sinCaso1
+    ? ""
+    : `1  Do not correct it out loud: use the right form naturally, then an
    OPEN question.
 ${campos('""', "the right form + an OPEN question", "the right form + an OPEN question")}
 ${ej('they said "I like it hamburger":', "", "Mmm, hamburgers! What is your favorite?")}
-2  The rule, then the right form, then an OPEN question.
-${campos("WHY their form is wrong, in one sentence", "the right form + an OPEN question", "the right form, the rule in a few words + an OPEN question")}
+`
+}2  The rule, then the right form, then an OPEN question.
+${campos("WHY their form is wrong, in one sentence about THEIR mistake, with the right word", "their sentence said back to them (I -> you) with only that mistake fixed, same meaning, nothing dropped + an OPEN question", "their sentence said back to them (I -> you) with only that mistake fixed, the rule in a few words + an OPEN question")}
+${ej(
+  // Un ejemplo en presente, y PRIMERO: con solo los dos de pasado,
+  // flash-lite pasaba al pasado frases de lo que siempre pasa ("My mother
+  // cook" → "cooked") y explicaba "Como fue ayer". Una frase que un alumno
+  // casi nunca dice tal cual: "My cousin work in a bank" se colaba en la
+  // transcripción de quien decía bien "My cousin works in a bank" (2 de
+  // noviembre de 2026).
+  'they said "The baker open the shop at six" (it happens every day):',
+  "Con he, she o it, en presente el verbo lleva 's': 'opens'.",
+  "The baker opens the shop at six! What do you buy there?",
+  "The baker opens the shop at six -- with he, she or it, the verb takes an -s. What do you buy there?"
+)}
 ${ej(
   'they said "Yesterday I play soccer":',
   "Como fue ayer, se dice 'played', con 'ed' al final.",
@@ -404,8 +433,11 @@ How to run the lesson:
   question.
 - "objetivoUsado": set it to true ONLY if in THIS turn the student
   produced the target structure correctly in a sentence of their own --
-  not a word-for-word repetition of yours. In every other case,
-  including doubt, set false.
+  not a word-for-word repetition of yours. Their sentence must contain
+  the target structure itself, used correctly; if it lists several
+  forms, any ONE of them is enough. Another tense or structure is false,
+  even if it is correct English. In every other case, including doubt,
+  set false.
 `
     : "";
 
@@ -494,11 +526,15 @@ correction. The student trusts this list and will memorize it.
 - NEVER change the meaning of what the student said. Fix the form, keep
   the message. If they said something negative it stays negative:
   "I no have money" becomes "I don't have money", NEVER "I have money".
-  Deleting a word to make the sentence grammatical is not a correction,
-  it is putting words in their mouth.
+  "can", "will" or "must" stays, and the verb after it has no -s: "He
+  can sings" becomes "He can sing", NEVER "He sings". Deleting a word to
+  make the sentence grammatical is not a correction, it is putting words
+  in their mouth.
 - NEVER change the time of their sentence. If they talk about now or
   about what always happens, it stays present: "she cry with movies"
-  becomes "she cries with movies", NEVER "she cried".
+  becomes "she cries with movies", NEVER "she cried"; "I am agree"
+  becomes "I agree", NEVER "I agreed". Say "it was yesterday" only when
+  THEY talked about the past.
 - If you are not certain what the student said or what the right form
   is, leave it out. Silence beats a wrong rule.
 - This is SPEECH, not writing. Never correct spelling, numerals,
@@ -717,7 +753,8 @@ function recordatorioTurno(nivel: Nivel): string {
   const idiomas = NIVELES_SIN_ESPANOL.has(nivel)
     ? '"espanol" is "" and "respuesta" is only English.'
     : '"espanol" is only Spanish and "respuesta" is only English.';
-  return `[Not the student's words. Decide the case first. A false friend (sensible, embarrassed, sympathetic, boring, carpet, exit, constipated, assist, library) used with its Spanish meaning is case 3. ${idiomas} In cases 1, 2, 4 and 11, end with an OPEN question, never a yes/no one. If they did not understand (case 9), explain your previous message again, shorter -- never teach them how to say "I don't understand".]`;
+  const conPregunta = NIVELES_UNA_CORRECCION.has(nivel) ? "2, 4 and 11" : "1, 2, 4 and 11";
+  return `[Not the student's words. Decide the case first. A false friend (sensible, embarrassed, sympathetic, boring, carpet, exit, constipated, assist, library) used with its Spanish meaning is case 3. ${idiomas} In cases ${conPregunta}, end with an OPEN question, never a yes/no one. If they did not understand (case 9), explain your previous message again, shorter -- never teach them how to say "I don't understand".]`;
 }
 
 /** Palabras que no dicen de qué trata un mensaje. */
@@ -912,8 +949,12 @@ export function preguntaSiEsReal(transcripcion: string): boolean {
 
 /** Casos en los que el alumno no dijo nada que corregir. */
 const CASOS_SIN_CORRECCIONES = new Set(["6", "9"]);
-/** En A1 y A2 solo se corrige en estos casos (el 1 se deja pasar). */
-const CASOS_QUE_CORRIGEN = new Set(["2", "3", "4", "5"]);
+/**
+ * En A1 y A2 solo se corrige en estos casos (no en el 11, que salió bien).
+ * El 1 también: en esos niveles todo error se corrige (2 de noviembre de
+ * 2026) y, si el modelo aún marca 1, su corrección no se pierde.
+ */
+const CASOS_QUE_CORRIGEN = new Set(["1", "2", "3", "4", "5"]);
 
 /** Palabras que solo aparecen en una oración en inglés. */
 const SOLO_INGLES = new Set([
@@ -1276,9 +1317,9 @@ function componerSinCierre(o: {
 
 /**
  * Las correcciones que el caso admite: ninguna cuando no entendió el
- * audio (6) o pidió ayuda (9), y en A1/A2 solo en los casos 2 a 5 --
- * el error pequeño del caso 1 no se corrige. Sin caso (respuesta
- * rescatada de un JSON cortado), no se filtra nada.
+ * audio (6) o pidió ayuda (9), y en A1/A2 solo en los casos 1 a 5 --
+ * nada en el 11 (lo dijo bien) ni cuando pidió algo. Sin caso
+ * (respuesta rescatada de un JSON cortado), no se filtra nada.
  */
 export function correccionesDelCaso(correcciones: Correccion[], caso: string | undefined, nivel: Nivel): Correccion[] {
   if (!caso) return correcciones;
@@ -1464,7 +1505,11 @@ export async function* conversarEnStream(opciones: {
                 // El ancla existe por un fallo real: sin ella, el modelo
                 // a veces "transcribe" copiando el mensaje anterior del
                 // historial en vez de escuchar el audio nuevo.
-                text: "[AUDIO OF THE CURRENT TURN. Transcribe exactly and only what you hear in this attachment. The chat history above is context for your reply, NEVER a source for the transcription.]",
+                // La última frase pide todas las palabras y los errores
+                // tal cual. Sin ejemplos ni "el error que debes corregir":
+                // insinuar que hay un error no ayudó y podía hacer dudar de
+                // las frases correctas (pruebas del 2 de noviembre de 2026).
+                text: "[AUDIO OF THE CURRENT TURN. Transcribe exactly and only what you hear in this attachment. The chat history above is context for your reply, NEVER a source for the transcription. Write every word they said, from the first to the last, exactly as they said it, mistakes included: never fix them.]",
               },
               {
                 inlineData: {
@@ -1683,7 +1728,10 @@ export async function* conversarEnStream(opciones: {
     // inventó "I go -> I went". Si no lo dijo, no se le corrige. La
     // pronunciación queda exenta: su "original" describe lo que se OYÓ
     // ("espain"), que no siempre coincide con lo transcrito.
-    if (c.tipo !== "pronunciacion" && dicho.length > 0 && !dicho.includes(o)) {
+    // Palabras completas: "open" no está en "opens" (una corrección
+    // "open -> opens" sobre una frase dicha bien pasaba el filtro; 2 de
+    // noviembre de 2026).
+    if (c.tipo !== "pronunciacion" && dicho.length > 0 && !` ${dicho} `.includes(` ${o} `)) {
       return false;
     }
 
@@ -1704,6 +1752,23 @@ export async function* conversarEnStream(opciones: {
     const objeto = new Set(["me", "us", "him", "her", "them"]);
     const sujeto = new Set(["i", "we", "he", "she", "they", "i am", "we are", "they are"]);
     if (objeto.has(o) && sujeto.has(co)) return false;
+
+    // Una corrección que borra el "can" (o will, must…) cambia lo que el
+    // alumno quiso decir: "He can sing" -> "He sings" llegó a salir en A1,
+    // corrigiendo una frase que estaba bien, aunque el prompt lo prohíbe
+    // (2 de noviembre de 2026).
+    // Sin apóstrofos: normalizar ya los quitó ("can't" llega como "cant").
+    const modales = (t: string) =>
+      (t.match(/\b(can|cant|cannot|could|couldnt|will|wont|would|wouldnt|must|mustnt|should|shouldnt|might|may)\b/g) ?? []).join(" ");
+    if (modales(o) && modales(o) !== modales(co)) return false;
+    // Y la que le pone -s al verbo que va después de "can" (o does, will…):
+    // "He can sing" bien dicho recibió "sing -> sings".
+    const conS = co === `${o}s` || co === `${o}es`;
+    // Escapada: lo escribe el modelo y un "(" rompería la expresión y el turno.
+    const literal = o.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    if (conS && new RegExp(`\\b(can|cant|cannot|could|will|wont|would|must|should|might|may|does|doesnt|did|didnt|do|dont) ${literal}\\b`).test(dicho)) {
+      return false;
+    }
 
     return true;
   }).map((c): Correccion =>

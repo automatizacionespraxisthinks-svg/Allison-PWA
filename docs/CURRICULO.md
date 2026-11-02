@@ -19,12 +19,15 @@ Marco Común Europeo de Referencia (MCER) · A1 → C2 · v2 · cotejado contra 
 *Esta tabla es la base del prompt del sistema. Cambia según el nivel que el alumno tenga seleccionado.*
 
 *Allison detecta y reporta **todos** los errores. Estas columnas indican qué
-prioriza al **hablar**, no qué omite del panel de correcciones.*
+prioriza al **hablar**, no qué omite del panel de correcciones. En A1 y A2, desde el
+2 de noviembre de 2026, ningún error se deja pasar: «the people is», «I like play» o
+«I have 15 years» se corrigen como un tiempo verbal, uno por turno (decisión del
+usuario: «que me corrija cuando no lo digo bien»).*
 
 | Nivel | Velocidad | Largo de su respuesta | Español | Prioriza al hablar | Deja para el panel |
 |---|---|---|---|---|---|
-| **A1** | Muy lenta, pausada | 5–8 palabras | Solo al corregir: una frase en español tras la corrección en inglés, para el error más importante | Solo lo que impide entender | Artículos, preposiciones, plurales |
-| **A2** | Lenta | 8–12 palabras | Solo al corregir: una frase en español tras la corrección en inglés, para el error más importante | Tiempos verbales básicos, orden de palabras | Matices, colocaciones |
+| **A1** | Muy lenta, pausada | 5–8 palabras | Solo al corregir: una frase en español tras la corrección en inglés, para el error más importante | Todo error, también los pequeños: uno por turno, el más importante, con la regla en español | — |
+| **A2** | Lenta | 8–12 palabras | Solo al corregir: una frase en español tras la corrección en inglés, para el error más importante | Todo error, también los pequeños: uno por turno, el más importante, con la regla en español | — |
 | **B1** | Natural pero pausada | 12–20 palabras | Solo al corregir, y solo si la regla es nueva o sutil; una frase | Tiempos verbales, preposiciones frecuentes, sonidos problemáticos | Idiomatismos, registro |
 | **B2** | Natural | 20–30 palabras | No, ni al corregir | Naturalidad, colocaciones, phrasal verbs | Sutilezas de registro |
 | **C1** | Natural completa | 30–45 palabras | No, ni al corregir | Registro, matiz, idiomatismos | Casi nada |

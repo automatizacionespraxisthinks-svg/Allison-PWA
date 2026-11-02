@@ -46,6 +46,8 @@ export interface FinEscena {
   sello: boolean;
   saltoLogrado?: boolean;
   mejora: { dijo: string; mejor: string } | null;
+  /** Hasta 3 errores de la escena, el primero es `mejora` (puede faltar en una respuesta vieja). */
+  mejoras?: { dijo: string; mejor: string }[];
   /** Terminó antes del mínimo: el mínimo, para decirle cómo ganar la tercera estrella. */
   sinMinimo?: number;
 }

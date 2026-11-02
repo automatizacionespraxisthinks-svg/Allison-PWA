@@ -784,8 +784,15 @@ export interface FinDeEscena {
   sello: boolean;
   /** Salto: si pasó. */
   saltoLogrado?: boolean;
-  /** Lo que se le muestra para mejorar (máximo un punto). */
+  /** El primer error, el que se puede practicar ("Practicarla"). */
   mejora: { dijo: string; mejor: string } | null;
+  /**
+   * Los errores de la escena para mostrar al final, hasta 3. Antes solo
+   * se mostraba uno y los demás nunca se corregían; el alumno pidió que
+   * lo corrijan siempre (2 de noviembre de 2026). Durante la escena
+   * Allison sigue sin corregir, para no romper el papel.
+   */
+  mejoras: { dijo: string; mejor: string }[];
   /** Terminó antes del mínimo de intervenciones: el mínimo, para avisarle. */
   sinMinimo?: number;
 }
@@ -809,6 +816,7 @@ export async function terminarEscenario(
   const llegoAlMinimo = estado.intervenciones >= u.minimo;
   const estrellas = estrellasDeEscenario(estado.cumplidas.length, total, estado.ayudas, llegoAlMinimo);
   const mejora = estado.errores?.[0] ?? null;
+  const mejoras = (estado.errores ?? []).slice(0, 3);
 
   let sello = false;
   let saltoLogrado: boolean | undefined;
@@ -887,5 +895,5 @@ export async function terminarEscenario(
 
   // Solo se avisa cuando el mínimo fue lo que le quitó la tercera estrella.
   const sinMinimo = !llegoAlMinimo && estado.cumplidas.length >= total && estado.ayudas === 0 ? u.minimo : undefined;
-  return { ok: true, fin: { estrellas, cumplidas: estado.cumplidas, total, sello, saltoLogrado, mejora, sinMinimo } };
+  return { ok: true, fin: { estrellas, cumplidas: estado.cumplidas, total, sello, saltoLogrado, mejora, mejoras, sinMinimo } };
 }

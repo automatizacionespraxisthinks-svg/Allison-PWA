@@ -9,9 +9,24 @@ import { sonar } from "@/lib/sonidos";
  * you", y "Do you have a pet?", "do you know?". Con 0,7 s más salieron
  * completas las seis frases de prueba; con 0,3 s todavía se perdían
  * palabras (28 de octubre de 2026). De paso guarda la última palabra de
- * quien toca antes de terminar de decirla.
+ * quien toca antes de terminar de decirla. Subió a 0,9 s porque en las
+ * pruebas del 2 de noviembre de 2026 todavía se perdía el final; en un
+ * celular más lento el audio tarda más en salir.
  */
-export const COLA_GRABACION_MS = 700;
+export const COLA_GRABACION_MS = 900;
+
+/**
+ * Lo que espera el aviso de "habla ya" (el tic y el anillo verde) después
+ * de que la grabación arranca. El micrófono recién abierto tarda un
+ * momento en estabilizar su cancelación de eco, y quien hablaba justo con
+ * el tic perdía la primera palabra (2 de noviembre de 2026: "no transcribe
+ * el comienzo"). La grabación ya corre durante la espera: si habla antes,
+ * igual queda grabado.
+ */
+export const ESPERA_LISTO_MS = 250;
+/** Desde el arranque, lo que no cuenta como voz al medir el volumen: la espera y el tic. */
+export const SIN_TIC_MS = ESPERA_LISTO_MS + 300;
+export const esperarListo = () => new Promise<void>((r) => setTimeout(r, ESPERA_LISTO_MS));
 
 /**
  * El anillo alrededor del micrófono (opción A, elegida el 28 de octubre

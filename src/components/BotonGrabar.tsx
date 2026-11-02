@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AnilloMicrofono, COLA_GRABACION_MS, avisarMicrofonoListo } from "@/components/AnilloMicrofono";
+import { AnilloMicrofono, COLA_GRABACION_MS, SIN_TIC_MS, avisarMicrofonoListo, esperarListo } from "@/components/AnilloMicrofono";
 import { AUDIO_MAX_SEGUNDOS, type EstadoConversacion } from "@/lib/tipos";
 
 /**
@@ -173,6 +173,9 @@ export function BotonGrabar({
       inicio.current = Date.now();
       fin.current = 0;
       mr.start();
+      // Graba desde ya, pero el "habla ya" llega un momento después (ESPERA_LISTO_MS).
+      await esperarListo();
+      if (!vivo.current) return;
       onIniciar();
       setPreparando(false);
       avisarMicrofonoListo();
@@ -186,7 +189,7 @@ export function BotonGrabar({
         for (const v of muestras) suma += (v - 128) ** 2;
         const nivel = Math.sqrt(suma / muestras.length) / 128;
         // El "tic" del principio no cuenta como voz.
-        if (Date.now() - inicio.current > 250) volumenMaximo.current = Math.max(volumenMaximo.current, nivel);
+        if (Date.now() - inicio.current > SIN_TIC_MS) volumenMaximo.current = Math.max(volumenMaximo.current, nivel);
         onVolumen?.(Math.min(1, nivel * 6));
 
         const transcurridos = Math.round((Date.now() - inicio.current) / 1000);
