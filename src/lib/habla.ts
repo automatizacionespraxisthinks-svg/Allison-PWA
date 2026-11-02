@@ -122,6 +122,41 @@ export function sinEspanol(texto: string): string {
   return limitarEspanol(texto, 0);
 }
 
+/**
+ * El español con sus signos de apertura: "Lo notas?" → "¿Lo notas?",
+ * "Muy bien!" → "¡Muy bien!". El modelo a veces los omite, y la pantalla
+ * y la voz los necesitan: la puntuación correcta es la que marca la
+ * entonación (pedido del usuario, 2 de noviembre de 2026). El signo de una
+ * cita en inglés no cuenta: en "Se dice 'How are you?'" el "?" es de la
+ * cita, no de la oración en español.
+ */
+export function conSignosDeApertura(texto: string): string {
+  return texto.replace(/(\s*)([^.!?…]+?)([!?]+)(?=\s|$)/g, (todo, espacio: string, cuerpo: string, signos: string) => {
+    // La oración ya trae su apertura, o el signo es de una cita sin cerrar.
+    if (/[¿¡]/.test(cuerpo) || citaAbierta(cuerpo)) return todo;
+    const abre = (signos.includes("?") ? "¿" : "") + (signos.includes("!") ? "¡" : "");
+    return `${espacio}${abre}${cuerpo}${signos}`;
+  });
+}
+
+/**
+ * ¿Termina dentro de una cita? Una comilla abre si va tras un espacio (o al
+ * empezar) y antes de algo; cierra si va tras algo y antes de un espacio,
+ * un signo o el final. Entre dos letras es un apóstrofo ("I'm"), no cuenta.
+ */
+function citaAbierta(t: string): boolean {
+  let abiertas = 0;
+  for (let i = 0; i < t.length; i++) {
+    if (!/["'“”‘’«»]/.test(t[i])) continue;
+    const antes = t[i - 1] ?? "", despues = t[i + 1] ?? "";
+    if (/\p{L}/u.test(antes) && /\p{L}/u.test(despues)) continue;
+    const abre = (!antes || /[\s(¿¡]/.test(antes)) && !!despues && !/\s/.test(despues);
+    if (abre) abiertas++;
+    else if (abiertas > 0) abiertas--;
+  }
+  return abiertas > 0;
+}
+
 /** Termina en un signo (con su comilla o paréntesis de cierre, si lo lleva). */
 const TERMINA_CON_SIGNO = /[.!?…:;,]["'”’»)]?$/;
 
@@ -235,6 +270,7 @@ export function tramosDeVoz(texto: string, base: IdiomaVoz): SegmentoVoz[] {
     }
   }
   for (const s of salida.slice(0, -1)) s.texto = conPunto(s.texto);
+  for (const s of salida) if (s.idioma === "es") s.texto = conSignosDeApertura(s.texto);
   return salida;
 }
 

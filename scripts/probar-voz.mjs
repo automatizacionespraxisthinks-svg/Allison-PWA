@@ -26,6 +26,7 @@ const { ErrorTts, registrarVoz, sintetizar, ttsConfigurado, turnosEnCurso, valid
   await import("../src/lib/tts.ts");
 const {
   conPunto,
+  conSignosDeApertura,
   deletreoParaVoz,
   estimarSegundos,
   idiomaDe,
@@ -441,6 +442,30 @@ console.log("\nLo pedido y no reproducido:");
   probar(
     "guarda la velocidad pedida (1 si no se pide)",
     vozPedida(lento, "ana", ahora + 1000)?.velocidad === 0.8 && vozPedida(normal, "ana", ahora + 1000)?.velocidad === 1
+  );
+}
+
+// Signos de apertura del español (2 de noviembre de 2026): la voz y la
+// pantalla necesitan la puntuación correcta. El signo de una cita en
+// inglés no cuenta, y un apóstrofo ("I'm") no es una comilla.
+{
+  const casos = [
+    ["Lo notas?", "¿Lo notas?"],
+    ["Muy bien! 'People' es plural.", "¡Muy bien! 'People' es plural."],
+    ["¡Muy bien! Ya está.", "¡Muy bien! Ya está."],
+    ["Para la edad se usa 'to be'. Ves la diferencia?", "Para la edad se usa 'to be'. ¿Ves la diferencia?"],
+    ["Se pregunta 'How are you?'", "Se pregunta 'How are you?'"],
+    ["Sabes qué significa 'boring'?", "¿Sabes qué significa 'boring'?"],
+    ['Dijiste "I\'m fine", perfecto!', '¡Dijiste "I\'m fine", perfecto!'],
+    ["Como fue ayer, se dice 'played', con 'ed' al final.", "Como fue ayer, se dice 'played', con 'ed' al final."],
+  ];
+  const mal = casos.filter(([a, b]) => conSignosDeApertura(a) !== b);
+  probar("el español lleva ¿ y ¡ de apertura (sin tocar citas en inglés ni apóstrofos)", mal.length === 0, mal.map(([a]) => conSignosDeApertura(a)).join(" | "));
+  const tramos = tramosDeVoz(prepararParaVoz("[es] Muy bien! Ves la diferencia? [en-US] You are fifteen! How old is your sister?"), "en");
+  probar(
+    "los tramos en español salen con ¿ y ¡; los de inglés no se tocan",
+    tramos[0].texto === "¡Muy bien! ¿Ves la diferencia?" && tramos[1].texto === "You are fifteen! How old is your sister?",
+    JSON.stringify(tramos)
   );
 }
 

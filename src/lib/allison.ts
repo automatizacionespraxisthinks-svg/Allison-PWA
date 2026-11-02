@@ -2,6 +2,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import type { Correccion, Mensaje, Nivel } from "./tipos.ts";
 import type { Unidad } from "./curriculo.ts";
 import {
+  conSignosDeApertura,
   idiomaDe,
   limitarEspanol,
   MARCADOR_EN,
@@ -373,7 +374,9 @@ function bloqueIdiomas(nivel: Nivel): string {
 At this level you never use Spanish: not to greet, not to translate,
 not even to correct. "espanol" is always "" and everything goes in
 "respuesta", in English only. The app shows a Spanish translation of
-your words with one tap, for the student who wants it.`;
+your words with one tap, for the student who wants it.
+"respuesta" is read aloud, and the voice pauses only where the
+punctuation says: write full punctuation -- commas and a final period.`;
   }
   return `TWO PARTS, TWO LANGUAGES -- the most important format rule
 The app reads "espanol" with a Spanish voice and "respuesta" with an
@@ -384,6 +387,9 @@ is read with the wrong voice and comes out mangled.
   it only as the word being explained, inside quotes: "Como fue ayer,
   se dice 'played'." Never a whole English sentence.
 - "respuesta": ONLY English. Not one Spanish word.
+- Both parts are read aloud, and the voice pauses only where the
+  punctuation says: write full punctuation -- commas, a final period,
+  and in Spanish the opening ¿ and ¡.
 - They never repeat each other: "espanol" explains, "respuesta" goes on
   in English. Never translate one into the other.
 - Spanish has ONE job: making something land that the student could not
@@ -1277,7 +1283,8 @@ function componerSinCierre(o: {
     return !sinEs && espanolSuelto ? `${MARCADOR_ES} ${sinGenero(espanolSuelto)}` : "Let's keep going! What else can you tell me?";
   }
   if (sinEs || !es) return en;
-  es = sinGenero(recortarOraciones(es, caso === "8" || caso === "9" ? 3 : 2));
+  // Con sus signos de apertura (¿ ¡): el modelo a veces los omite.
+  es = conSignosDeApertura(sinGenero(recortarOraciones(es, caso === "8" || caso === "9" ? 3 : 2)));
   // Caso 9: "I asked if you like pizza" solo traduce lo que el español ya
   // contó. Si no queda nada más, va la parte en inglés del mensaje
   // anterior, que es lo que el alumno tiene que volver a oír.
