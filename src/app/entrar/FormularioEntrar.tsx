@@ -33,8 +33,10 @@ export function FormularioEntrar({
   const router = useRouter();
   // La página se pinta en cada petición (force-dynamic): leer la búsqueda
   // aquí no necesita Suspense.
-  const nota = NOTAS[useSearchParams().get("aviso") ?? ""] ?? null;
-  const [modo, setModo] = useState<Modo>("correo");
+  const busqueda = useSearchParams();
+  const nota = NOTAS[busqueda.get("aviso") ?? ""] ?? null;
+  // "Soy estudiante de un colegio", desde la portada, abre con el código del colegio.
+  const [modo, setModo] = useState<Modo>(busqueda.get("modo") === "colegio" ? "colegio" : "correo");
   const [error, setError] = useState<string | null>(aviso ?? null);
   const [enviando, setEnviando] = useState(false);
   const [abriendoGoogle, setAbriendoGoogle] = useState(false);

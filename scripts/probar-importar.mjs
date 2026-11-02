@@ -5,7 +5,7 @@
  *
  *   node scripts/probar-importar.mjs
  */
-const { leerCsv, limpiarCurso } = await import("../src/lib/importar.ts");
+const { leerCsv, limpiarCurso, mismoNombre } = await import("../src/lib/importar.ts");
 
 let fallos = 0;
 let total = 0;
@@ -40,6 +40,58 @@ revisar("formato viejo · usuario", fila(viejo, 0).username === "pgil" && fila(v
 revisar("formato viejo · repetido se numera", fila(viejo, 1).username === "pedro.gil", fila(viejo, 1).username);
 
 revisar("limpiarCurso", limpiarCurso(" 9 a ") === "9A" && limpiarCurso("") === null, `${limpiarCurso(" 9 a ")} ${limpiarCurso("")}`);
+
+// Nombres y apellidos en columnas aparte (las listas del SIMAT): el usuario
+// es el primer nombre y el primer apellido.
+const apellidos = leerCsv("Apellidos;Nombres;Curso\nGómez Ruiz;Juan Pablo;9A");
+revisar("apellidos aparte · nombre completo", fila(apellidos, 0).nombre === "Juan Pablo Gómez Ruiz", fila(apellidos, 0).nombre);
+revisar("apellidos aparte · usuario", fila(apellidos, 0).username === "juan.gomez", fila(apellidos, 0).username);
+
+// Excel convierte "11-2" en fecha si la celda no es texto: se avisa, no se carga un curso raro.
+const fechas = leerCsv("Nombre;Curso\nAna Gómez;2-nov\nLuis Pérez;02/11/2026\nPedro Gil;46328\nEva Ruiz;11-2\nRaúl Mora;TRANSICION");
+revisar("curso fecha · se rechazan", fechas.rechazadas.length === 3 && fechas.rechazadas.every((r) => /fecha/.test(r.motivo)), JSON.stringify(fechas.rechazadas));
+revisar("curso fecha · 11-2 sigue siendo curso", fechas.filas.find((f) => f.nombre === "Eva Ruiz")?.curso === "11-2", JSON.stringify(fechas.filas));
+
+// El mismo usuario con otro nombre: puede ser otro alumno.
+revisar("mismoNombre · con y sin tildes", mismoNombre("Ana María Gómez", "ana maria gomez"));
+revisar("mismoNombre · nombre más largo", mismoNombre("Ana Gómez", "Ana María Gómez Ruiz"));
+revisar("mismoNombre · otra persona", !mismoNombre("Ana Gómez Ruiz", "Ana Gómez Pérez"));
+
+// ---------------------------------------------------------------- Excel
+const { leerExcel, crearExcel, aCsv, textoDeArchivo, esExcel } = await import("../src/lib/excel.ts");
+const { readFileSync } = await import("node:fs");
+const desde = (nombre) => readFileSync(new URL(`./fixtures/${nombre}`, import.meta.url));
+
+// Un Excel como lo guarda Excel: textos compartidos, números, comprimido.
+const excel = await leerExcel(desde("lista-excel.xlsx"));
+revisar("excel · encabezado", excel[0]?.[0] === "Nombre completo" && excel[0]?.[2] === "Curso", JSON.stringify(excel[0]));
+revisar("excel · documento como número sin decimales", excel[1]?.[1] === "1023456789", JSON.stringify(excel[1]));
+revisar("excel · tildes", excel[1]?.[0] === "Sofía Rojas Díaz", excel[1]?.[0]);
+revisar("excel · fila vacía en medio se conserva (números de fila)", excel[3]?.every((x) => !x) && excel[4]?.[0] === "Ana & María <Gómez>", JSON.stringify(excel.slice(3, 5)));
+const deExcel = leerCsv(aCsv(excel));
+revisar("excel → carga · 3 alumnos y la fecha rechazada", deExcel.filas.length === 3 && deExcel.rechazadas.length === 1 && deExcel.rechazadas[0].linea === 6, JSON.stringify(deExcel));
+revisar("excel → carga · usuario del documento", deExcel.filas[0]?.username === "1023456789" && deExcel.filas[0]?.curso === "11-2" && deExcel.filas[0]?.nivel === "A2", JSON.stringify(deExcel.filas[0]));
+revisar("excel → carga · caracteres especiales", deExcel.filas[2]?.nombre === "Ana & María <Gómez>", deExcel.filas[2]?.nombre);
+
+// La hoja de alumnos aunque no sea la primera, con las columnas del SIMAT.
+const simat = leerCsv(aCsv(await leerExcel(desde("lista-simat.xlsx"))));
+revisar("simat · nombre completo", fila(simat, 0).nombre === "Juan Pablo Gómez Ruiz", fila(simat, 0).nombre);
+revisar("simat · documento y grado", fila(simat, 0).username === "1001" && fila(simat, 0).curso === "9A", JSON.stringify(fila(simat, 0)));
+revisar("simat · sin segundo nombre", fila(simat, 1).nombre === "Valentina Díaz", fila(simat, 1).nombre);
+
+// La plantilla y las claves que escribe la app se vuelven a leer igual, con el PIN de cuatro cifras.
+const libro = crearExcel([
+  { nombre: "Alumnos", filas: [["Nombre completo", "Usuario o documento (opcional)", "Curso", "Nivel (opcional)"], ["Mateo Silva", "0457", "11-2", ""]], encabezado: true, comoTexto: true },
+  { nombre: "Instrucciones", filas: [["Cómo llenar"]] },
+]);
+revisar("plantilla · es un xlsx", esExcel(libro), "");
+const vuelta = await leerExcel(libro);
+revisar("plantilla · se lee la hoja Alumnos", vuelta[0]?.[0] === "Nombre completo" && vuelta[1]?.[1] === "0457" && vuelta[1]?.[2] === "11-2", JSON.stringify(vuelta));
+
+// Un CSV guardado por Excel en Windows (Windows-1252, no UTF-8).
+const ansi = Uint8Array.from([...Buffer.from("Nombre;Curso\nSof"), 0xed, ...Buffer.from("a Rojas;9C")]);
+revisar("csv de Excel en Windows · tildes", textoDeArchivo(ansi).includes("Sofía Rojas"), textoDeArchivo(ansi));
+revisar("csv en UTF-8 · tildes", textoDeArchivo(Buffer.from("Sofía")) === "Sofía", textoDeArchivo(Buffer.from("Sofía")));
 
 console.log(`${total - fallos}/${total} comprobaciones de la carga de alumnos bien.`);
 process.exit(fallos ? 1 : 0);

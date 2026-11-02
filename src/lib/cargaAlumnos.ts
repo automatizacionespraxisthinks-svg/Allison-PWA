@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { randomInt } from "node:crypto";
 import { COSTO_HASH_PIN } from "./colegio";
 import { sql } from "./db";
-import { leerCsv, limpiarCurso, type FilaRechazada } from "./importar";
+import { leerCsv, limpiarCurso, mismoNombre, type FilaRechazada } from "./importar";
 import { MENSAJES_PRUEBA } from "./prueba";
 import type { Nivel } from "./tipos";
 
@@ -20,6 +20,7 @@ import type { Nivel } from "./tipos";
  */
 
 const MAX_ALUMNOS = 1000;
+
 
 export interface PedidoCarga {
   institucionId: string;
@@ -80,32 +81,37 @@ export async function cargarAlumnos(p: PedidoCarga): Promise<ResultadoCarga> {
     return { ...base, status: 400, error: `Máximo ${MAX_ALUMNOS} alumnos por archivo`, aCrear: 0, yaExisten: 0, cambianDeCurso: 0, cupoLibre: null, filas: [] };
   }
 
-  // Los que ya existen en ESTE colegio, con su curso.
+  // Los que ya existen en ESTE colegio, con su curso y su nombre.
   const existentes = new Map(
     (
       await sql`
-        select lower(username) as username, id, curso from users
+        select lower(username) as username, id, curso, nombre from users
          where institucion_id = ${p.institucionId} and username is not null
       `
-    ).map((f) => [f.username as string, { id: f.id as string, curso: f.curso as string | null }])
+    ).map((f) => [f.username as string, { id: f.id as string, curso: f.curso as string | null, nombre: (f.nombre as string | null) ?? "" }])
   );
 
-  const revisadas: (FilaRevisada & { id?: string })[] = filas.map((f) => {
+  const revisadas: (FilaRevisada & { id?: string; cambiaCurso?: boolean })[] = filas.map((f) => {
     const ya = existentes.get(f.username);
     if (!ya) return { nombre: f.nombre, username: f.username, curso: f.curso, nivel: f.nivel, revision: "Nuevo", nuevo: true };
     const cambia = !!f.curso && f.curso !== ya.curso;
+    // Dos alumnos con el mismo nombre forman el mismo usuario: si el que ya
+    // existe se llama distinto, puede ser otra persona y se avisa antes de
+    // moverle el curso.
+    const otro = !mismoNombre(f.nombre, ya.nombre) ? ` · ¿es el mismo alumno? En la app se llama «${ya.nombre}»` : "";
     return {
       id: ya.id,
+      cambiaCurso: cambia,
       nombre: f.nombre,
       username: f.username,
       curso: f.curso,
       nivel: f.nivel,
-      revision: cambia ? (ya.curso ? `Ya existe · pasa de ${ya.curso} a ${f.curso}` : `Ya existe · queda en ${f.curso}`) : "Ya existe",
+      revision: (cambia ? (ya.curso ? `Ya existe · pasa de ${ya.curso} a ${f.curso}` : `Ya existe · queda en ${f.curso}`) : "Ya existe") + otro,
       nuevo: false,
     };
   });
   const nuevos = revisadas.filter((r) => r.nuevo);
-  const cambian = revisadas.filter((r) => !r.nuevo && r.revision !== "Ya existe");
+  const cambian = revisadas.filter((r) => !r.nuevo && r.cambiaCurso);
 
   // Cupo contratado por el colegio
   const [colegio] = await sql`

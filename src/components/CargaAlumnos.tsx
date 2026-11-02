@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { aCsv, descargarExcel, esExcel, leerExcel, textoDeArchivo } from "@/lib/excel";
 import { pedir as pedirHttp } from "@/lib/pedir";
 
 interface Fila {
@@ -33,16 +34,41 @@ interface Credencial {
   curso: string | null;
 }
 
-/** La plantilla que se descarga: las columnas que lee la carga. */
-const PLANTILLA = "nombre;usuario o documento;curso;nivel\r\nMateo Silva;msilva;9C;A1\r\nSofía Rojas;;9C;\r\n";
+/**
+ * Las columnas que lee la carga. La plantilla va sin filas de ejemplo: si
+ * se quedaban, se creaban como alumnos (los ejemplos están en la hoja
+ * Instrucciones).
+ */
+const COLUMNAS = ["Nombre completo", "Usuario o documento (opcional)", "Curso", "Nivel (opcional)"];
+const PLANTILLA_CSV = "nombre;usuario o documento;curso;nivel\r\n";
+const INSTRUCCIONES = [
+  ["Cómo llenar la hoja Alumnos"],
+  [""],
+  ["Columna", "Qué va", "Ejemplo"],
+  ["Nombre completo", "Nombres y apellidos del alumno. Obligatorio.", "Mateo Silva Rojas"],
+  ["Usuario o documento", "Opcional. Si va vacío, se forma con el nombre (mateo.rojas). Con el documento no se confunden dos alumnos con el mismo nombre.", "1023456789"],
+  ["Curso", "El curso del alumno. Si todo el archivo es de un curso, puedes dejarlo vacío y escribirlo en la página.", "11-2"],
+  ["Nivel", "Opcional: A1, A2, B1, B2, C1 o C2. Si va vacío, empieza en A1.", "A1"],
+  [""],
+  ["Las columnas ya están en formato texto: escribe 11-2 o 0457 tal cual y Excel no los cambia."],
+  ["También sirven Nombres y Apellidos en columnas aparte, como en la lista del SIMAT."],
+  ["Guarda el archivo como Excel (.xlsx) y súbelo. También sirve un CSV."],
+];
 
-function descargar(nombre: string, texto: string) {
+function descargarTexto(nombre: string, texto: string) {
   const url = URL.createObjectURL(new Blob(["﻿" + texto], { type: "text/csv;charset=utf-8" }));
   const a = document.createElement("a");
   a.href = url;
   a.download = nombre;
   a.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function descargarPlantilla() {
+  descargarExcel("plantilla-alumnos.xlsx", [
+    { nombre: "Alumnos", filas: [COLUMNAS], anchos: [34, 30, 10, 16], encabezado: true, comoTexto: true },
+    { nombre: "Instrucciones", filas: INSTRUCCIONES, anchos: [26, 70, 22] },
+  ]);
 }
 
 /**
@@ -76,7 +102,17 @@ export function CargaAlumnos({
     setResumen(null);
     setCredenciales(null);
     setArchivo(f.name);
-    setCsv(await f.text());
+    setCsv("");
+    if (/\.xls$/i.test(f.name)) {
+      setError("Ese es un Excel antiguo (.xls). Ábrelo en Excel y guárdalo como «Libro de Excel (.xlsx)».");
+      return;
+    }
+    const datos = await f.arrayBuffer();
+    try {
+      setCsv(esExcel(datos) ? aCsv(await leerExcel(datos)) : textoDeArchivo(datos));
+    } catch {
+      setError("No pudimos leer ese archivo. Usa la plantilla de Excel o guárdalo como CSV.");
+    }
   }
 
   async function pedir(confirmar: boolean) {
@@ -125,13 +161,21 @@ export function CargaAlumnos({
     }
   }
 
-  /** Un archivo que la secretaría pueda imprimir y repartir. */
+  /**
+   * Un archivo que la secretaría pueda imprimir y repartir. En Excel y con
+   * todo como texto: en el CSV, Excel mostraba el PIN 0457 como 457.
+   */
   function descargarCredenciales() {
     if (!credenciales) return;
-    descargar(
-      `claves-${codigoColegio}.csv`,
-      ["nombre;usuario;pin;curso;codigo_colegio", ...credenciales.map((c) => `${c.nombre};${c.username};${c.pin};${c.curso ?? ""};${codigoColegio}`)].join("\r\n")
-    );
+    descargarExcel(`claves-${codigoColegio}.xlsx`, [
+      {
+        nombre: "Claves",
+        filas: [["Alumno", "Usuario", "PIN", "Curso", "Código del colegio"], ...credenciales.map((c) => [c.nombre, c.username, c.pin, c.curso ?? "", codigoColegio])],
+        anchos: [34, 24, 8, 8, 18],
+        encabezado: true,
+        comoTexto: true,
+      },
+    ]);
   }
 
   const cambiar = () => {
@@ -155,7 +199,7 @@ export function CargaAlumnos({
                 pierden hay que reiniciar los PINes uno por uno.
               </p>
               <button type="button" onClick={descargarCredenciales} className="mt-4 w-full rounded-xl bg-exito px-6 py-3.5 font-semibold text-white">
-                Descargar las claves
+                Descargar las claves (Excel)
               </button>
             </>
           )}
@@ -203,23 +247,34 @@ export function CargaAlumnos({
       <div className="rounded-2xl border border-borde bg-superficie p-5">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <h2 className="font-semibold">1. Sube la lista{admin ? ` · ${admin.nombreColegio}` : ""}</h2>
-          <button
-            type="button"
-            onClick={() => descargar("plantilla-alumnos.csv", PLANTILLA)}
-            className="rounded-lg border border-borde px-3 py-1.5 text-xs font-semibold hover:bg-superficie-2"
-          >
-            Descargar plantilla CSV
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={descargarPlantilla}
+              className="rounded-lg bg-primario px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90"
+            >
+              Descargar plantilla de Excel
+            </button>
+            <button
+              type="button"
+              onClick={() => descargarTexto("plantilla-alumnos.csv", PLANTILLA_CSV)}
+              className="rounded-lg border border-borde px-3 py-1.5 text-xs font-semibold hover:bg-superficie-2"
+            >
+              o en CSV
+            </button>
+          </div>
         </div>
-        <p className="mt-1 text-sm text-texto-suave">
-          Columnas: <span className="font-mono">nombre · usuario o documento · curso · nivel</span>. El usuario y el nivel son opcionales (si no
-          vienen, se forma el usuario con el nombre y quedan en A1). Sirve el CSV que exporta Excel.
+        <p className="mt-2 text-sm text-texto-suave">
+          Una fila por alumno con estas columnas: <strong className="text-texto">nombre completo</strong>,{" "}
+          <strong className="text-texto">usuario o documento</strong> (opcional), <strong className="text-texto">curso</strong> y{" "}
+          <strong className="text-texto">nivel</strong> (opcional, si no va empieza en A1). Sube el archivo de Excel (.xlsx) tal como lo
+          guardaste, o un CSV.
         </p>
 
         <label className="mt-4 flex cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-borde px-4 py-6 text-center transition hover:bg-superficie-2">
           <input
             type="file"
-            accept=".csv,.txt,text/csv,text/plain"
+            accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain"
             className="sr-only"
             onChange={(e) => {
               const f = e.target.files?.[0];
@@ -234,7 +289,11 @@ export function CargaAlumnos({
                 <span className="text-texto-suave">Toca para cambiarlo</span>
               </>
             ) : (
-              "Elegir archivo"
+              <>
+                <strong>Elegir archivo</strong>
+                <br />
+                <span className="text-texto-suave">Excel (.xlsx) o CSV</span>
+              </>
             )}
           </span>
         </label>
@@ -317,6 +376,11 @@ export function CargaAlumnos({
             )}
           </ul>
 
+          {resumen.filas.length > 0 && resumen.filas.length < resumen.aCrear + resumen.yaExisten && (
+            <p className="mt-3 text-xs text-texto-suave">
+              Abajo se ven los primeros {resumen.filas.length} de {resumen.aCrear + resumen.yaExisten}; se cargan todos.
+            </p>
+          )}
           {resumen.filas.length > 0 && (
             <div className="mt-4 max-h-80 overflow-auto rounded-xl border border-borde">
               <table className="w-full min-w-[520px] text-sm">
@@ -352,10 +416,13 @@ export function CargaAlumnos({
               <ul className="mt-2 flex flex-col gap-1 text-sm text-texto-suave">
                 {resumen.rechazadas.slice(0, 30).map((r) => (
                   <li key={r.linea}>
-                    Línea {r.linea}: {r.motivo}
+                    Fila {r.linea}: {r.motivo}
                   </li>
                 ))}
               </ul>
+              {resumen.rechazadas.length > 30 && (
+                <p className="mt-1 text-xs text-texto-suave">Y {resumen.rechazadas.length - 30} más. Corrige el archivo y vuelve a subirlo.</p>
+              )}
             </details>
           )}
 

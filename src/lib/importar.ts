@@ -49,7 +49,14 @@ export interface Lectura {
  * sin apellido y chocando con cualquier otra Ana María.
  */
 function aUsuario(nombre: string): string {
-  const palabras = nombre
+  const palabras = palabrasDe(nombre);
+  if (palabras.length === 0) return "";
+  if (palabras.length === 1) return palabras[0];
+  return `${palabras[0]}.${palabras[palabras.length - 1]}`;
+}
+
+const palabrasDe = (t: string) =>
+  t
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
@@ -58,10 +65,22 @@ function aUsuario(nombre: string): string {
     .split(/\s+/)
     .filter(Boolean);
 
-  if (palabras.length === 0) return "";
-  if (palabras.length === 1) return palabras[0];
-  return `${palabras[0]}.${palabras[palabras.length - 1]}`;
+/**
+ * Con los nombres y los apellidos en columnas aparte (así salen las listas
+ * del SIMAT), el usuario es el primer nombre y el PRIMER apellido, el
+ * principal en Colombia: "Juan Pablo" + "Gómez Ruiz" → juan.gomez.
+ */
+function aUsuarioConApellidos(nombres: string, apellidos: string): string {
+  const n = palabrasDe(nombres)[0];
+  const a = palabrasDe(apellidos)[0];
+  return n && a ? `${n}.${a}` : n || a || "";
 }
+
+/**
+ * Excel cambia "11-2" por una fecha si la celda no está en formato texto,
+ * y al guardar llega "2-nov", "02/11/2026" o el número de la fecha (46328).
+ */
+const PARECE_FECHA = /^(\d{1,2}[-/][a-z]{3,}\.?([-/]\d{2,4})?|[a-z]{3,}\.?[-/]\d{1,4}|\d{1,2}\/\d{1,2}\/\d{2,4}|\d{4}-\d{2}-\d{2}.*|\d{5})$/i;
 
 /**
  * Limpia un usuario que ya viene del colegio.
@@ -134,9 +153,14 @@ export function leerCsv(texto: string, nivelPorDefecto: Nivel = "A1"): Lectura {
   // ¿La primera línea es un encabezado? Entonces dice qué es cada columna.
   const cabecera = partir(lineas[0] ?? "", sep).map(sinTildes);
   const conCabecera =
-    /nombre|alumno|estudiante|name/.test(cabecera[0] ?? "") || cabecera.some((c) => /^(curso|nivel|usuario|documento)$/.test(c));
+    /nombre|apellido|alumno|estudiante|name/.test(cabecera[0] ?? "") || cabecera.some((c) => /^(curso|nivel|usuario|documento)$/.test(c));
   const columna = (re: RegExp) => (conCabecera ? cabecera.findIndex((c) => re.test(c)) : -1);
-  const iNombre = conCabecera ? Math.max(0, columna(/nombre|alumno|estudiante|name/)) : 0;
+  // Las columnas del nombre: "Nombre", o "Nombres" y "Apellidos" aparte, o
+  // las cuatro del SIMAT (primer y segundo nombre, primer y segundo apellido).
+  const esNombre = (c: string) => /nombre|alumno|estudiante|name/.test(c) && !/usuario|user/.test(c);
+  const iApellidos = conCabecera ? cabecera.flatMap((c, i) => (/apellido/.test(c) ? [i] : [])) : [];
+  const iNombres = conCabecera ? cabecera.flatMap((c, i) => (esNombre(c) ? [i] : [])) : [];
+  const iNombre = conCabecera ? (iNombres[0] ?? (iApellidos.length ? -1 : 0)) : 0;
   const iUsuario = columna(/usuario|documento|user|identificaci|codigo/);
   const iCurso = columna(/curso|grado|grupo|salon/);
   const iNivel = columna(/nivel|level/);
@@ -147,7 +171,14 @@ export function leerCsv(texto: string, nivelPorDefecto: Nivel = "A1"): Lectura {
     if (i === 0 && conCabecera) return;
 
     const campos = partir(linea, sep);
-    const nombre = (campos[iNombre] ?? "").trim();
+    const juntar = (indices: number[]) =>
+      indices
+        .map((j) => (campos[j] ?? "").trim())
+        .filter(Boolean)
+        .join(" ");
+    const nombres = iApellidos.length ? juntar(iNombres) : (campos[iNombre] ?? "").trim();
+    const apellidos = juntar(iApellidos);
+    const nombre = [nombres, apellidos].filter(Boolean).join(" ").replace(/\s+/g, " ");
     if (nombre.length < 3) {
       rechazadas.push({ linea: numero, contenido: linea, motivo: "Nombre vacío o muy corto" });
       return;
@@ -168,6 +199,14 @@ export function leerCsv(texto: string, nivelPorDefecto: Nivel = "A1"): Lectura {
       }
       usuarioPropio = iUsuario >= 0 ? campos[iUsuario]?.trim() || undefined : undefined;
       cursoTexto = iCurso >= 0 ? campos[iCurso]?.trim() || undefined : undefined;
+      if (cursoTexto && PARECE_FECHA.test(cursoTexto)) {
+        rechazadas.push({
+          linea: numero,
+          contenido: linea,
+          motivo: `Excel convirtió el curso en una fecha («${cursoTexto}»). Usa la plantilla de Excel o escribe el curso con un apóstrofo delante ('11-2)`,
+        });
+        return;
+      }
     } else {
       const resto = campos
         .slice(1)
@@ -179,7 +218,7 @@ export function leerCsv(texto: string, nivelPorDefecto: Nivel = "A1"): Lectura {
       usuarioPropio = resto.find((c) => !esNivel(c) && c !== cursoTexto);
     }
 
-    let username = usuarioPropio ? limpiarUsuario(usuarioPropio) : aUsuario(nombre);
+    let username = usuarioPropio ? limpiarUsuario(usuarioPropio) : apellidos && nombres ? aUsuarioConApellidos(nombres, apellidos) : aUsuario(nombre);
     if (!username) {
       rechazadas.push({
         linea: numero,
@@ -204,6 +243,22 @@ export function leerCsv(texto: string, nivelPorDefecto: Nivel = "A1"): Lectura {
   });
 
   return { filas, rechazadas, separador: sep };
+}
+
+/** "Ana María Gómez" y "ana maria gomez" son el mismo nombre; "Ana Gómez Ruiz" también (las palabras de uno están en el otro). */
+export function mismoNombre(a: string, b: string): boolean {
+  const palabras = (t: string) =>
+    t
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter(Boolean);
+  const x = palabras(a);
+  const y = new Set(palabras(b));
+  if (!x.length || !y.size) return true;
+  const comunes = x.filter((w) => y.has(w)).length;
+  return comunes === Math.min(x.length, y.size);
 }
 
 function sinTildes(t: string): string {
