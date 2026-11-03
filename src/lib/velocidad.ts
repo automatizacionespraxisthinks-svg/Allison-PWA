@@ -6,7 +6,7 @@ import { useSyncExternalStore } from "react";
  * Velocidad de la voz de Allison, elegida por el alumno.
  *
  * Se multiplica sobre la velocidad base del nivel: un A1 en "rápida"
- * oye 0,8 × 1,25 = 1,0 — más ágil que su base, pero nunca la velocidad
+ * oye 0,7 × 1,25 ≈ 0,88 — más ágil que su base, pero nunca la velocidad
  * de un C1, que no entendería.
  *
  * Vive en localStorage porque es una preferencia del dispositivo, como

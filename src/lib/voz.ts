@@ -34,9 +34,13 @@ import {
  *     mejor que no oírla.
  */
 
-/** La base por nivel: un A1 oye más lento que un C1. */
+/**
+ * La base por nivel: un A1 oye más lento que un C1. A1 0,7 · A2 0,8 · B1
+ * y B2 0,9 · C1 y C2 1, como las fijó el usuario (2 de noviembre de 2026:
+ * "el inglés lo dice muy rápido"); estaban en 0,8 · 0,9 · 1.
+ */
 function velocidadBase(nivel: Nivel): number {
-  return nivel === "A1" ? 0.8 : nivel === "A2" ? 0.9 : 1;
+  return nivel === "A1" ? 0.7 : nivel === "A2" ? 0.8 : nivel === "B1" || nivel === "B2" ? 0.9 : 1;
 }
 
 /**

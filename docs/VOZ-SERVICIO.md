@@ -85,7 +85,7 @@ Elegidos de oído (variante A2):
 
 - Toda la respuesta mixta con la voz de Allison, `af_heart` (también el
   español; con `ef_dora` para el español se distinguían menos).
-- Velocidad: el inglés, la del nivel (A1 0,8 · A2 0,9 · B1+ 1; «lento»
+- Velocidad: el inglés, la del nivel (A1 0,7 · A2 0,8 · B1 y B2 0,9 · C1 y C2 1; «lento»
   A1 0,6 · desde A2 0,7). El español, un poco más ágil: la del nivel +
   0,15, hasta 1.
 
@@ -98,12 +98,12 @@ Ejemplo de petición:
   "stream": true,
   "pausas": "signos",
   "segments": [
-    { "text": "Como fue ayer, se dice", "lang": "es", "speed": 0.95 },
-    { "text": "'played',", "lang": "en-US", "speed": 0.8 },
-    { "text": "con", "lang": "es", "speed": 0.95 },
-    { "text": "'ed'", "lang": "en-US", "speed": 0.8 },
-    { "text": "al final.", "lang": "es", "speed": 0.95 },
-    { "text": "You played soccer! Who did you play with?", "lang": "en-US", "speed": 0.8 }
+    { "text": "Como fue ayer, se dice", "lang": "es", "speed": 0.85 },
+    { "text": "'played',", "lang": "en-US", "speed": 0.7 },
+    { "text": "con", "lang": "es", "speed": 0.85 },
+    { "text": "'ed'", "lang": "en-US", "speed": 0.7 },
+    { "text": "al final.", "lang": "es", "speed": 0.85 },
+    { "text": "You played soccer! Who did you play with?", "lang": "en-US", "speed": 0.7 }
   ]
 }
 ```
