@@ -141,7 +141,7 @@ export async function POST(peticion: Request) {
     if (!transaccion) return { repetida: true as const };
 
     const [{ acreditar_transaccion: ok }] = await tx`select acreditar_transaccion(${transaccion.id})`;
-    if (ok && tipo === "plan" && planId) await abrirSuscripcion(tx, userId, planId);
+    if (ok && tipo === "plan" && planId) await abrirSuscripcion(tx, userId, planId, mensajes);
     return { acreditado: Boolean(ok) };
   });
 

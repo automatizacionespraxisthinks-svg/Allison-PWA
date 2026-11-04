@@ -94,7 +94,7 @@ export async function registrarResultado(resultado: {
    */
   return (await sql.begin(async (tx) => {
     const [orden] = await tx`
-      select estado, tipo, plan_id, user_id, payload->>'alerta' as alerta
+      select estado, tipo, plan_id, user_id, mensajes_otorgados, payload->>'alerta' as alerta
         from transacciones where id = ${t.id}
          for update
     `;
@@ -111,7 +111,9 @@ export async function registrarResultado(resultado: {
       await tx`select acreditar_transaccion(${t.id})`;
     if (!acreditado) return "ya_acreditado";
 
-    if (orden.tipo === "plan" && orden.plan_id) await abrirSuscripcion(tx, orden.user_id, orden.plan_id);
+    if (orden.tipo === "plan" && orden.plan_id) {
+      await abrirSuscripcion(tx, orden.user_id, orden.plan_id, Number(orden.mensajes_otorgados));
+    }
 
     return "acreditado";
   })) as Desenlace;
@@ -129,14 +131,29 @@ export async function registrarResultado(resultado: {
  * llega aquí —dos órdenes abiertas a la vez y pagadas las dos—, el dinero
  * entró y se entrega el plan nuevo.
  */
-export async function abrirSuscripcion(tx: postgres.TransactionSql, userId: string, planId: string): Promise<void> {
+export async function abrirSuscripcion(
+  tx: postgres.TransactionSql,
+  userId: string,
+  planId: string,
+  /**
+   * Lo que la orden prometió por mes (transacciones.mensajes_otorgados).
+   * Una orden abierta antes de bajar el plan y pagada después entrega lo
+   * que se le mostró al comprar, todos los meses (auditoría, 4 de
+   * noviembre de 2026). Sin él, lo que el plan entrega hoy.
+   */
+  mensajesPorMes?: number
+): Promise<void> {
   const [plan] = await tx`
     select mensajes_por_mes, duracion_meses from planes where id = ${planId}
   `;
+  const porMes = mensajesPorMes && mensajesPorMes > 0 ? mensajesPorMes : plan.mensajes_por_mes;
   await tx`
     update suscripciones set estado = 'vencida'
      where user_id = ${userId} and estado = 'activa'
   `;
+  // Lo que se compró por mes lo guarda la base al insertar
+  // (suscripciones.mensajes_por_mes, db/029), y cada mes nuevo entrega
+  // eso aunque el plan cambie después.
   await tx`
     insert into suscripciones
       (user_id, plan_id, estado, inicio_en, fin_en,
@@ -144,7 +161,7 @@ export async function abrirSuscripcion(tx: postgres.TransactionSql, userId: stri
     values
       (${userId}, ${planId}, 'activa', now(),
        now() + (${plan.duracion_meses} || ' months')::interval,
-       now(), now() + interval '1 month', ${plan.mensajes_por_mes})
+       now(), now() + interval '1 month', ${porMes})
   `;
 }
 

@@ -1,6 +1,6 @@
 import { sql } from "../db";
 import type { Nivel } from "../tipos";
-import { costoCop, type Rango } from "../uso";
+import { costoCop, usdSql, type Rango } from "../uso";
 import { vaEn } from "./etiquetas";
 
 /**
@@ -82,14 +82,16 @@ export async function consumoPorAlumno(f: FiltroConsumo, dolar: number, todas = 
            )) as en_prueba,
            coalesce(d.turnos, 0) as turnos,
            coalesce(d.entrada, 0) as entrada,
-           coalesce(d.salida, 0) as salida
+           coalesce(d.salida, 0) as salida,
+           coalesce(d.usd, 0) as usd
       from users u
       left join instituciones i on i.id = u.institucion_id
       left join saldos s on s.user_id = u.id
       left join (
         select user_id, sum(turnos)::int as turnos,
                sum(tokens_entrada + tokens_ayuda_entrada)::bigint as entrada,
-               sum(tokens_salida + tokens_ayuda_salida)::bigint as salida
+               sum(tokens_salida + tokens_ayuda_salida)::bigint as salida,
+               sum(${usdSql()})::float8 as usd
           from uso_diario where fecha between ${desde} and ${hasta}
          group by user_id
       ) d on d.user_id = u.id
@@ -105,7 +107,7 @@ export async function consumoPorAlumno(f: FiltroConsumo, dolar: number, todas = 
     f.orden === "nombre"
       ? sql`order by nombre`
       : f.orden === "costo"
-        ? sql`order by (entrada * 0.1 + salida * 0.4) desc, nombre`
+        ? sql`order by usd desc, nombre`
         : f.orden === "saldo"
           ? sql`order by saldo asc, nombre`
           : f.orden === "inactivos"
@@ -126,7 +128,8 @@ export async function consumoPorAlumno(f: FiltroConsumo, dolar: number, todas = 
              coalesce(sum(turnos) filter (where ${estado === "sin-saldo" ? sql`saldo = 0` : estado === "prueba" ? sql`en_prueba` : sql`true`}), 0)::int as turnos,
              count(*) filter (where turnos > 0 and ${estado === "sin-saldo" ? sql`saldo = 0` : estado === "prueba" ? sql`en_prueba` : sql`true`})::int as con_uso,
              coalesce(sum(entrada) filter (where ${estado === "sin-saldo" ? sql`saldo = 0` : estado === "prueba" ? sql`en_prueba` : sql`true`}), 0)::bigint as entrada,
-             coalesce(sum(salida) filter (where ${estado === "sin-saldo" ? sql`saldo = 0` : estado === "prueba" ? sql`en_prueba` : sql`true`}), 0)::bigint as salida
+             coalesce(sum(salida) filter (where ${estado === "sin-saldo" ? sql`saldo = 0` : estado === "prueba" ? sql`en_prueba` : sql`true`}), 0)::bigint as salida,
+             coalesce(sum(usd) filter (where ${estado === "sin-saldo" ? sql`saldo = 0` : estado === "prueba" ? sql`en_prueba` : sql`true`}), 0)::float8 as usd
         from b
     `,
   ]);
@@ -181,7 +184,7 @@ export async function consumoPorAlumno(f: FiltroConsumo, dolar: number, todas = 
         porParte: partesDe.get(x.id) ?? {},
         tokensEntrada: n(x.entrada),
         tokensSalida: n(x.salida),
-        costoCop: costoCop(n(x.entrada), n(x.salida), dolar),
+        costoCop: costoCop(n(x.usd), dolar),
         saldo: n(x.saldo),
         enPrueba: !!x.en_prueba,
         diasSinActividad: ultima ? Math.floor((ahora - ultima.getTime()) / 86_400_000) : null,
@@ -194,7 +197,7 @@ export async function consumoPorAlumno(f: FiltroConsumo, dolar: number, todas = 
       alumnos: n(tot.con_uso),
       tokensEntrada: n(tot.entrada),
       tokensSalida: n(tot.salida),
-      costoCop: costoCop(n(tot.entrada), n(tot.salida), dolar),
+      costoCop: costoCop(n(tot.usd), dolar),
     },
     porParte: Object.fromEntries(partesTotales.map((p) => [p.parte as string, n(p.turnos)])),
     cuentas: { todos: n(tot.todos), sinSaldo: n(tot.sin_saldo), prueba: n(tot.prueba) },

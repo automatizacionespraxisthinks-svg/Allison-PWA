@@ -57,7 +57,8 @@ const planes = Object.fromEntries(
   (await sql`select id, codigo, mensajes_por_mes, duracion_meses from planes`).map((p) => [p.codigo, p])
 );
 /** Lo que entrega cada mes el plan, leído de la base: pasó de 700 a
- *  1.280 (db/028) y una prueba con el número escrito se quedaría vieja. */
+ *  1.280 (db/028) y a 920 (db/029), y una prueba con el número escrito
+ *  se quedaría vieja. */
 const MES_ANUAL = planes.anual.mensajes_por_mes;
 const MES_SEMESTRAL = planes.semestral.mensajes_por_mes;
 
@@ -66,7 +67,7 @@ const MES_SEMESTRAL = planes.semestral.mensajes_por_mes;
  * Postgres), parado en su mes número `mes`, con saldo asentado en el
  * libro para que la auditoría cuadre desde el principio.
  */
-async function alumnoConPlan({ codigo, hace, mes = 1, plan = 0, recarga = 0, inicio = null }) {
+async function alumnoConPlan({ codigo, hace, mes = 1, plan = 0, recarga = 0, inicio = null, compro = null }) {
   const p = planes[codigo];
   const [u] = await sql`
     insert into users (tipo_acceso, email, nombre, nivel)
@@ -92,12 +93,12 @@ async function alumnoConPlan({ codigo, hace, mes = 1, plan = 0, recarga = 0, ini
       select coalesce(${inicio}::timestamptz, now() - ${hace}::interval) as inicio
     )
     insert into suscripciones
-      (user_id, plan_id, estado, inicio_en, fin_en, periodo_inicio, periodo_fin, mensajes_asignados)
+      (user_id, plan_id, estado, inicio_en, fin_en, periodo_inicio, periodo_fin, mensajes_asignados, mensajes_por_mes)
     select ${u.id}, ${p.id}, 'activa', inicio,
            inicio + make_interval(months => ${p.duracion_meses}),
            inicio + make_interval(months => ${mes - 1}),
            inicio + make_interval(months => ${mes}),
-           ${p.mensajes_por_mes}
+           ${compro ?? p.mensajes_por_mes}, ${compro}
       from base
   `;
   return u.id;
@@ -209,6 +210,20 @@ try {
     `un plan del día 31 no se corre al 28 (empezó ${anclado.inicio}, el mes vigente cierra ${anclado.fin})`,
     anclado.bien === true
   );
+
+  // 7b. Quien compró con otra cantidad la conserva (db/029): un anual
+  // pagado con 1.280 al mes sigue recibiendo 1.280 aunque el plan baje.
+  const comprado = MES_ANUAL + 740;
+  const viejo = await alumnoConPlan({ codigo: "anual", hace: "1 month 1 hour", plan: 20, compro: comprado });
+  await renovar(viejo);
+  e = await estado(viejo);
+  probar(
+    `una suscripción comprada con ${comprado} al mes renueva con ${comprado}, no con los ${MES_ANUAL} del plan de hoy`,
+    e.plan === comprado && e.movimientos.at(-1) === `plan_asignacion:${comprado}` && e.cuadra,
+    JSON.stringify(e)
+  );
+  const [{ asignados }] = await sql`select mensajes_asignados as asignados from suscripciones where user_id = ${viejo} and estado = 'activa'`;
+  probar("y su mes nuevo queda con esa cantidad asignada", asignados === comprado, String(asignados));
 
   // 8. Dos renovaciones a la vez
   const j = await alumnoConPlan({ codigo: "anual", hace: "1 month 1 hour", plan: 9 });

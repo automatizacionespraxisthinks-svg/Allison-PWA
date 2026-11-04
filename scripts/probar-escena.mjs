@@ -8,10 +8,33 @@
  *   node --env-file=.env scripts/probar-escena.mjs [repeticiones]
  *   VER=1 ...   muestra cada respuesta
  */
-const { turnoDeEscenario, clasificarEntrevista, respuestaDeEntrevista, preguntaDeLaTarea, llevaPregunta, clasificarAdivina, clasificarEnsenale, EN_INGLES } = await import(
-  "../src/lib/ruta/escena.ts"
-);
-const { comentarRelato, comentarNarracion, estaEnLoDicho } = await import("../src/lib/evaluacion.ts");
+const escena = await import("../src/lib/ruta/escena.ts");
+const evaluacion = await import("../src/lib/evaluacion.ts");
+/**
+ * Un corte de red no es una falla de Allison: se reintenta hasta dos
+ * veces. Sin esto, una conexión inestable tumbaba la prueba entera a
+ * mitad de camino (3 de noviembre de 2026). Cualquier otro error sigue
+ * reventando como siempre.
+ */
+const conReintento = (f) => async (...a) => {
+  for (let i = 0; ; i++) {
+    try {
+      return await f(...a);
+    } catch (e) {
+      const texto = `${e?.name ?? ""} ${e?.message ?? e} ${e?.cause?.code ?? ""}`;
+      if (i >= 2 || !/fetch failed|ECONNRESET|ETIMEDOUT|AbortError|aborted|socket hang up/i.test(texto)) throw e;
+      console.log(`  (corte de red, reintento ${i + 1})`);
+    }
+  }
+};
+const { respuestaDeEntrevista, preguntaDeLaTarea, llevaPregunta, EN_INGLES } = escena;
+const turnoDeEscenario = conReintento(escena.turnoDeEscenario);
+const clasificarEntrevista = conReintento(escena.clasificarEntrevista);
+const clasificarAdivina = conReintento(escena.clasificarAdivina);
+const clasificarEnsenale = conReintento(escena.clasificarEnsenale);
+const { estaEnLoDicho } = evaluacion;
+const comentarRelato = conReintento(evaluacion.comentarRelato);
+const comentarNarracion = conReintento(evaluacion.comentarNarracion);
 const { PARADA_01: A2_P01 } = await import("../src/lib/ruta/a2/parada-01.ts");
 const { PARADA_01: B1_P01 } = await import("../src/lib/ruta/b1/parada-01.ts");
 const { PARADA_10: B1_P10 } = await import("../src/lib/ruta/b1/parada-10.ts");

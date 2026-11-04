@@ -1,8 +1,9 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { esEspanolClaro, esInglesClaro, separarIdiomas } from "../allison.ts";
+import { esEspanolClaro, esInglesClaro, separarIdiomas, sinGenero } from "../allison.ts";
 import { estaEnLoDicho } from "../evaluacion.ts";
 import { conPunto, deletreoParaVoz, MARCADOR_EN, MARCADOR_ES, quitarMarcadores } from "../habla.ts";
 import type { Nivel } from "../tipos.ts";
+import { modeloIA, tokensDeSalida } from "../modelo.ts";
 import { preguntaDeAdivinar, type LecturaAdivina } from "./adivina.ts";
 import type { Adivina, Ensenale, Entrevista, Escenario } from "./tipos.ts";
 
@@ -22,8 +23,8 @@ import type { Adivina, Ensenale, Entrevista, Escenario } from "./tipos.ts";
  * (memoria "evaluación a ciegas": si lo sabe, lo "oye" aunque no esté).
  */
 
-/** Palabras como máximo por respuesta, igual que en la conversación (allison.ts). */
-const PALABRAS: Record<Nivel, number> = { A1: 8, A2: 12, B1: 20, B2: 30, C1: 45, C2: 45 };
+/** Palabras como máximo por respuesta, igual que en la conversación (allison.ts). También la primera línea de un escenario propio. */
+export const PALABRAS: Record<Nivel, number> = { A1: 8, A2: 12, B1: 20, B2: 30, C1: 45, C2: 45 };
 
 /** La frase con la que Allison sale un momento del papel cuando el alumno habla en español. */
 export const EN_INGLES = "En inglés se dice así:";
@@ -38,7 +39,7 @@ function cliente() {
   return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 }
 
-const modelo = () => process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite";
+const modelo = modeloIA;
 
 // ---------------------------------------------------------------------
 //  El escenario
@@ -219,8 +220,10 @@ THE JSON
 - "transcripcion": exactly what the student said, in the language they
   used, with their mistakes. Never complete it or correct it. "" if you
   hear no voice.
-- "espanol": true if the student's last message is in Spanish, or
-  mixes Spanish words into English ("Okay, somos catorce" -> true).
+- "espanol": true if the student's last message is in Spanish, even with
+  a few English words ("Okay, somos catorce" -> true). One Spanish word
+  inside an English sentence is still English ("I want a hamburguesa"
+  -> false).
 - "aMedias": the PENDING tasks with two parts where the student has said
   one part but not the other, each with what is still missing, in a few
   English words. Task "Cuenta qué te duele y desde cuándo" and the
@@ -253,14 +256,18 @@ THE JSON
   of the next pending task, both parts if it has two (only what is
   missing if it is HALF DONE).
   "" if you said goodbye.
-- "ideaEs": the idea in natural Colombian Spanish.
+- "ideaEs": the idea in natural Colombian Spanish, with no word that
+  changes with the student's gender ("Soy de Colombia", never "Soy
+  colombiano"; never "listo" or "cansado").
 - "ideaTarea": the number of the pending task that the idea does
   completely (all of it), or 0.
 - "errorDijo" and "errorMejor": the most important grammar or word
   mistake in the student's last English message: their exact words and
   the same sentence said correctly, with the same meaning (a statement
-  stays a statement), at most 12 words each (only the part with the
-  mistake). A wrong ANSWER is not a mistake. A correct sentence you would
+  stays a statement) and the same tense, unless their words or your
+  question ask for another ("Yesterday I go" -> "Yesterday I went"), at most 12 words each
+  (only the part with the mistake). Contractions ("I'm", "don't") are
+  never mistakes. A wrong ANSWER is not a mistake. A correct sentence you would
   say another way is not a mistake either: never move a phrase that is in
   a correct place and never change what they meant ("with" is not "and").
   "" and "" if there is no mistake or they spoke Spanish.`;
@@ -298,7 +305,7 @@ function recordatorioEscenario(t: {
   // Preguntar puede ser su tarea: sin decirlo, el modelo contestaba y no la
   // contaba ("And you? Where are you from?", pruebas del 28 de octubre).
   const preguntaPrimero = suPregunta
-    ? ` The student asked you: "${suPregunta}" If a pending task is to ask about that, its number goes in "tareas", whatever its place in the list. Answer it FIRST, in your role and in a few words; then go on.`
+    ? ` The student asked you: "${suPregunta}" If a pending task is to ask about that, its number goes in "tareas", whatever its place in the list (if that task asks two things and they asked only one, it goes in "aMedias"). Answer it FIRST, in your role and in a few words; then go on.`
     : " If they asked you something, answer it first, in a few words.";
   if (t.cumplidas.length >= t.escenario.tareas.length) {
     return `[${cuenta} All tasks are done: keep chatting in your role, short and friendly.${preguntaPrimero}${
@@ -1323,7 +1330,7 @@ are three."). Only their words in English: never an answer to them.`,
     return {
       en: String(r.candidates?.[0]?.finishReason ?? "STOP") === "STOP" ? soloIngles(d.ingles ?? "") : "",
       tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
-      tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+      tokensSalida: tokensDeSalida(r.usageMetadata),
     };
   } catch {
     return { en: "", tokensEntrada: 0, tokensSalida: 0 };
@@ -1377,7 +1384,7 @@ export async function turnoDeEscenario(t: TurnoEscenario): Promise<ResultadoEsce
     error: null,
     sinRespuesta: true,
     tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
-    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+    tokensSalida: tokensDeSalida(r.usageMetadata),
   };
   // Un JSON cortado o vacío (límite de salida, bloqueo) es falla de la IA:
   // se devuelve la intervención. Sin esto, un turno hablado quedaba sin
@@ -1544,7 +1551,7 @@ export async function turnoDeEscenario(t: TurnoEscenario): Promise<ResultadoEsce
   // Diego. Try it!"): la idea es esa frase, y lo que dijo es su traducción.
   // La traducción de la idea se queda salvo que sea inglés claro ("Dos
   // boletas." es español aunque sea corta).
-  const ideaEs = (d.ideaEs ?? "").trim();
+  const ideaEs = sinGenero((d.ideaEs ?? "").trim());
   const idea = t.ultimo
     ? null
     : espanol && traduccion
@@ -1751,7 +1758,7 @@ Classify the student's message:
   });
   const tokens = {
     tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
-    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+    tokensSalida: tokensDeSalida(r.usageMetadata),
   };
   const d = clasificacionDelModelo<{ tipo?: string; dato?: number; otroDato?: number; responde?: boolean; espanol?: boolean }>(r);
   if (!d) return { tipo: "otro", dato: 0, espanol: false, sinRespuesta: true, ...tokens };
@@ -1975,8 +1982,8 @@ Classify the student's message:
 - "tipo":
   "adivina" if it names one of the options as a guess (any form: a full
   question, "${a.opciones[1]?.nombre ?? a.opciones[0].nombre}?", one of its "also" names, or with mistakes), also when it
-  asks something else in the same message ("Do you travel a lot? Are you a
-  ${a.opciones[0].nombre.toLowerCase()}?"): the guess wins.
+  asks something else in the same message ("${a.preguntas[0]?.pregunta ?? "Do you travel a lot?"} ${preguntaDeAdivinar(a, a.opciones[0].nombre)}"):
+  the guess wins.
   "pregunta" if it asks the same thing as one of the questions or one of
   its "also" forms, even with other words, mistakes, very short
   ("Uniform?") or with other verb forms ("Will you…?", "Do you want to…?",
@@ -2013,7 +2020,7 @@ Classify the student's message:
   });
   const tokens = {
     tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
-    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+    tokensSalida: tokensDeSalida(r.usageMetadata),
   };
   const d = clasificacionDelModelo<{ tipo?: string; pregunta?: string; opcion?: string; espanol?: boolean }>(r);
   if (!d) return { tipo: "otro", fila: 0, opcion: 0, espanol: false, sinRespuesta: true, ...tokens };
@@ -2124,8 +2131,8 @@ Classify the student's message:
   ("Where do you live?" answered with "I've been to Bogotá"), "${NINGUNA}".
 ${lista || "  (none)"}
 - "responde": true if the message also answers Allison's question.
-- "espanol": true if the message is in Spanish. Even in Spanish, still say
-  what it does.`;
+- "espanol": true if the message is in Spanish, even a short answer
+  ("Fuimos a la playa." → true). Even in Spanish, still say what it does.`;
 
   const r = await cliente().models.generateContent({
     model: modelo(),
@@ -2141,7 +2148,7 @@ ${lista || "  (none)"}
   });
   const tokens = {
     tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
-    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+    tokensSalida: tokensDeSalida(r.usageMetadata),
   };
   const d = clasificacionDelModelo<{ tipo?: string; pregunta?: string; responde?: boolean; espanol?: boolean }>(r);
   if (!d) return { tipo: "otro", pregunta: 0, espanol: false, sinRespuesta: true, ...tokens };

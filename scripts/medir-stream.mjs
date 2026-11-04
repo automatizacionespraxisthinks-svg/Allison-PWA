@@ -8,6 +8,7 @@
  */
 import { readFileSync } from "node:fs";
 import { GoogleGenAI, Type } from "@google/genai";
+import { modeloIA } from "../src/lib/modelo.ts";
 
 const ruta = process.argv[2];
 if (!ruta) {
@@ -17,7 +18,7 @@ if (!ruta) {
 
 const audio = readFileSync(ruta).toString("base64");
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-const modelo = process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite";
+const modelo = modeloIA();
 
 const parteAudio = { inlineData: { mimeType: "audio/wav", data: audio } };
 

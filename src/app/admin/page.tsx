@@ -3,8 +3,10 @@ import { Filtros } from "@/components/admin/Filtros";
 import { leerAjustes } from "@/lib/ajustes";
 import { colegiosParaFiltro } from "@/lib/panel/consumo";
 import { resumenDelPanel } from "@/lib/panel/resumen";
-import { pesos } from "@/lib/precios";
+import { configPrecios, COP_POR_MENSAJE_REGLA, pesos } from "@/lib/precios";
 import { paginaDeAdmin } from "@/lib/admin";
+import { modeloIA } from "@/lib/modelo";
+import { CAMBIO_DE_MODELO, TARIFAS } from "@/lib/uso";
 
 /**
  * Resumen (plan, sección 21; boceto 1): lo primero que ve el
@@ -17,6 +19,15 @@ export default async function PaginaAdmin({ searchParams }: { searchParams: Prom
   const dias = Number(p.dias) || 30;
   const [a, colegios] = await Promise.all([leerAjustes(), colegiosParaFiltro()]);
   const r = await resumenDelPanel({ dias, colegio: p.colegio ?? "todos" }, a);
+
+  const modelo = modeloIA();
+  const recarga = configPrecios().copPorMensaje;
+  const fechaDelCambio = new Date(CAMBIO_DE_MODELO + "T12:00:00Z").toLocaleDateString("es-CO", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 
   const pct = r.cobrado > 0 ? (100 * r.costoIa) / r.cobrado : null;
   const delta = r.activosHoy - r.activosAyer;
@@ -173,8 +184,22 @@ export default async function PaginaAdmin({ searchParams }: { searchParams: Prom
       </section>
 
       <p className="text-xs text-texto-suave">
-        El costo de IA usa los tokens reales y las tarifas de <span className="font-mono">gemini-2.5-flash-lite</span>, con el dólar a{" "}
-        {pesos(a.dolarCop)} (se cambia en Ajustes). No incluye el servidor ni la voz, ni las comisiones de la pasarela.
+        Modelo en uso: <span className="font-mono">{modelo}</span>. El costo de IA usa los tokens reales y la tarifa de cada día (
+        <span className="font-mono">{TARIFAS.antes.modelo}</span> antes del {fechaDelCambio},{" "}
+        <span className="font-mono">{TARIFAS.desdeElCambio.modelo}</span> desde ese día), con el dólar a {pesos(a.dolarCop)} (se cambia
+        en Ajustes). No incluye el servidor ni la voz, ni las comisiones de la pasarela.
+        {modelo !== TARIFAS.desdeElCambio.modelo && (
+          <b className="mt-1 block text-error">
+            El modelo en uso no es el de la tarifa: revisa GEMINI_MODEL en el servidor, o el costo no cuadra.
+          </b>
+        )}
+        {" "}La recarga se vende a {pesos(recarga)} por intervención.
+        {recarga < COP_POR_MENSAJE_REGLA && (
+          <b className="mt-1 block text-error">
+            Está por debajo de {pesos(COP_POR_MENSAJE_REGLA)}, lo que pide el costo de {TARIFAS.desdeElCambio.modelo}: con eso la
+            recarga casi no deja ganancia. Cambia COP_POR_MENSAJE en el servidor.
+          </b>
+        )}
       </p>
     </div>
   );

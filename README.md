@@ -6,7 +6,7 @@ correcciones dentro de la conversación y avanza por una ruta de viaje
 (A1 por Estados Unidos, A2 por el Reino Unido, B1 por Canadá).
 
 Next.js 16 (App Router) · Postgres · Auth.js · Gemini
-(`gemini-2.5-flash-lite`) · la API de voz de Praxis · Bold para los pagos.
+(`gemini-3.5-flash-lite`) · la API de voz de Praxis · Bold para los pagos.
 
 ## Documentación
 

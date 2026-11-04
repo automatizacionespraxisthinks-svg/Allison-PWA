@@ -60,12 +60,12 @@ errores intactos, y el CPX22 pasa de ~5 a ~30 estudiantes simultáneos.
   pruebas quedan intactos; solo cambia el texto: "Hasta 500 intervenciones al mes — más de
   8 horas de conversación" (1 intervención ≈ 1 minuto, redondeado hacia abajo para prometer
   menos de lo que se entrega). Los términos aclaran que la equivalencia es informativa
-- **Tasa:** $37 COP = 1 mensaje en recarga (`COP_POR_MENSAJE`; $60 hasta el 31-oct-2026, y antes $100)
+- **Tasa:** $50 COP = 1 mensaje en recarga (`COP_POR_MENSAJE`; $37 hasta el 4-nov-2026, $60 hasta el 31-oct-2026, y antes $100)
 - **Recarga:** mínimo $8.000 (sep-2026; antes $4.000), de ahí en adelante monto libre. **No caducan**
 - **Bono por volumen:** +10% desde $20.000 · +15% desde $50.000
-- **Planes** (precios en `db/018_precios_planes.sql`): mensual $35.000 / semestral $189.000 / anual $352.800 — 1.280 mensajes por mes (`db/028`; eran 700 hasta el 31-oct-2026). Los precios llevan el IVA incluido
+- **Planes** (precios en `db/018_precios_planes.sql`): mensual $35.000 / semestral $189.000 / anual $352.800 — 920 mensajes por mes (`db/029`, desde el 4-nov-2026 por el costo de gemini-3.5-flash-lite; 1.280 desde el 31-oct-2026 y 700 antes). Quien compró un plan conserva lo que compró hasta que venza (`suscripciones.mensajes_por_mes`). Los precios llevan el IVA incluido
 - **Los mensajes del plan caducan** al terminar el mes. Al agotarse se le **pregunta** al alumno si quiere renovar (no hay débito automático forzado)
-- **Planes de varios meses:** entregan los mensajes **cada mes**, contados desde el día de compra (un plan del 31 no se corre al 28). Lo pone al día `renovar_suscripcion` (db/020): al cargar el saldo del alumno y en la tarea de cada hora. Los meses en que nadie la pone al día no se entregan de golpe: habrían vencido igual
+- **Planes de varios meses:** entregan los mensajes **cada mes**, contados desde el día de compra (un plan del 31 no se corre al 28). Lo pone al día `renovar_suscripcion` (db/020; desde db/029 entrega lo que se compró, guardado en `suscripciones.mensajes_por_mes`): al cargar el saldo del alumno y en la tarea de cada hora. Los meses en que nadie la pone al día no se entregan de golpe: habrían vencido igual
 - **Orden de consumo:** primero los del plan, después los de recarga
 - **Prueba gratis: 5 intervenciones, entregadas completas al crear la cuenta** (`MENSAJES_PRUEBA`). Eran 20 hasta oct-2026; el plan de mejoras la bajó a 5 porque lo que no usa IA ya es gratis
   - Antes venían partidos (5 al registrarse y 15 al confirmar el correo) para no pagarle a Google 20 mensajes por cada correo inventado. Se quitó en sep-2026: el aviso de "+15 al confirmar" estorbaba y el correo era un paso más donde se perdía gente. El freno contra el abuso es el tope global de cuentas nuevas por hora
@@ -93,10 +93,11 @@ dólar (a la TRM real, ~3.216, es un 20 % menos). Script: `scratchpad/costo/medi
 | Hablar, un turno con 10 mensajes de historial | ~5.250 / 100 | ~2,5 a 3 |
 | Voz (API de Praxis, en su propia CPU) | — | 0 por uso. Capacidad: 2 síntesis a la vez para todos sus clientes |
 
-Lo que paga el alumno por intervención: $37 en recarga (`COP_POR_MENSAJE`; $33,7 y $32,2
-con el bono del 10 % y del 15 %) y, con los precios de `db/018` y las 1.280 de `db/028`, $27,3
-en el plan mensual ($35.000 / 1.280), $24,6 en el semestral y $23 en el anual. Bold se queda con
-~3,4 %. El costo de la IA es entre el 0,3 % y el 15 % de lo que paga el alumno.
+Hasta el 4 de noviembre de 2026 (con 2.5-flash-lite), lo que pagaba el alumno por intervención
+era $37 en recarga (`COP_POR_MENSAJE`; $33,7 y $32,2 con el bono del 10 % y del 15 %) y, con los
+precios de `db/018` y las 1.280 de `db/028`, $27,3 en el plan mensual ($35.000 / 1.280), $24,6 en
+el semestral y $23 en el anual. Bold se queda con ~3,4 %. El costo de la IA era entre el 0,3 % y el
+15 % de lo que pagaba el alumno. Lo de ahora, más abajo.
 
 **Cómo se fijaron (31-oct-2026, decisión del dueño).** Del precio, que lleva el IVA, se quitan
 el IVA (19 %), la pasarela ($1.000 + 3 % por pago), los costos fijos (20 % del precio sin IVA) y
@@ -104,6 +105,55 @@ la IA con colchón: $6,8 por intervención, el doble de lo más caro medido (Nar
 el alumno gasta todo en lo más caro, la ganancia mínima, sobre el precio sin IVA y antes de
 renta e ICA, es del 43 % en el mensual y el semestral y del 41 % en el anual. En la recarga va del 40 %
 ($8.000) al 50 % ($100.000): los $1.000 fijos de la pasarela pesan más en los pagos chicos.
+
+**Desde el 4 de noviembre de 2026, con gemini-3.5-flash-lite** (sección 8; se decidió el 3 y
+producción cambió al cambiar `GEMINI_MODEL` el 4). La tarifa sube a
+US$0,30 por millón de tokens de entrada (texto y audio por igual) y US$2,50 de salida, con el
+razonamiento contado como salida (en 3.5-flash-lite no razona si no se le pide). Medido el 4 de
+noviembre de 2026 con llamadas reales al modelo nuevo (mismo método que la tabla):
+
+| Intervención | Tokens (entrada / salida) | COP |
+|---|---|---|
+| Repite, ¿Qué es esto?, Dilo hablados | ~156 / 25 | ~0,4 |
+| Escrito con el juez | ~180 / 6 | ~0,3 |
+| Responde rápido hablado (10 s) | ~494 / 59 | ~1,2 |
+| Ayuda (traducción + idea) | ~159 / 78 | ~1 |
+| Turno de escena o viaje | ~2.230-2.440 / 155-170 | ~4,2 a 4,7 |
+| Cuéntame A2 (30 s) · Cuéntame y Narra B1 (60 s) | ~1.550 / 234 · ~2.350-2.570 / ~205 | ~4,2 · ~4,9 a 5,3 |
+| Hablar, un turno con 12 mensajes de historial (lo que manda la app) | ~5.680-5.890 / 60-85 | ~7,4 a 7,9 |
+| Hablar con el audio al tope de 60 s | ~7.140 / 84 | ~9,4 |
+
+**Cómo se refijaron (4-nov-2026, decisión del dueño): la misma regla, con la IA en lo más caro
+medido.** La IA se cuenta a $9,4 por intervención (Hablar con el audio al tope de 60 s; lo típico
+de ese turno es 7,9), y el colchón es el dólar a 4.000, unos 800 pesos por encima de la TRM real.
+Los precios no cambian; cambia lo que entregan:
+- los planes, de 1.280 a **920 al mes**: 43,6 % mensual, 43,1 % semestral y 41,1 % anual de
+  ganancia mínima aun si todo fuera lo más caro (48,3 / 48,3 / 46,7 % con el turno típico);
+- la recarga, de $37 a **$50** por intervención: del 39,2 % (a $8.000) al 49,5 % (a $100.000) en
+  ese peor caso, y del 42,8 % al 53,6 % con el turno típico. El 40 % justo era $52; el dueño
+  prefirió el número redondo.
+
+Se miraron también 540 al mes y $90 (colchón de $16, el doble de lo típico) y 1.150 y $42 (IA a
+$7,5, sin colchón: el anual bajaba al 32 % si todo fuera lo más caro).
+
+Medido otra vez con el prompt final (auditoría del 4 de noviembre, después de la revisión de los
+prompts, que lo alargó un poco): Hablar cuesta ~7,7 a 8,1 y ~9,6 con el audio al tope; Narra de B1
+llegó a ~7,1. Con 9,6 en el peor caso, los planes quedan en 43,0 / 42,4 / 40,3 % y la recarga
+entre 38,7 % ($8.000) y 49,0 % ($100.000). Con el turno típico (8,1), 47,7 / 47,6 / 45,9 % y
+42,3-53,1 %.
+
+Lo que paga el alumno por intervención desde entonces: $50 en recarga ($45,5 y $43,5 con el bono
+del 10 % y del 15 %) y $38 en el plan mensual ($35.000 / 920), $34,2 en el semestral y $32 en el
+anual. El costo de la IA es entre ~1 % (una lección) y ~29 % (Hablar al tope, en el plan anual) de
+lo que paga el alumno. Quien ya había pagado un plan conserva lo que compró hasta que venza
+(db/029), y una orden abierta antes de bajar el plan y pagada después entrega lo que se le mostró.
+
+Para los colegios no hay fórmula en el código (el panel asigna a mano): al negociar, cada
+intervención cuesta hasta ~$9,4 de IA.
+
+El panel cobra **cada día con la tarifa de su fecha** (`TARIFAS` y `CAMBIO_DE_MODELO` en
+`src/lib/uso.ts`): los meses de antes del cambio siguen con la tarifa vieja y no se inflan.
+Si se vuelve a cambiar de modelo, se agrega un periodo ahí, no se pisa el anterior.
 
 ### Comisiones de pasarela — decisión (sep-2026)
 
@@ -389,20 +439,58 @@ datos con control de duplicados. n8n se entera después, solo para notificar.
 
 ## 8. Modelo de Gemini
 
-| Entorno | Modelo | Costo por mensaje | Por qué |
+**En uso: `gemini-3.5-flash-lite`, desde el 3 de noviembre de 2026** (decisión del dueño:
+con 2.5-flash-lite se cometían demasiados errores). Es el modelo por defecto en
+`src/lib/modelo.ts`; la variable `GEMINI_MODEL` lo cambia sin tocar código, y el Resumen del
+panel muestra el modelo en uso y avisa si no es el de la tarifa.
+
+Comparación del 3 de noviembre de 2026, con el mismo código y las mismas pruebas (temperatura
+de producción, audios de las voces de Windows):
+
+| Medida | 2.5-flash-lite | 3.1-flash-lite | **3.5-flash-lite** |
 |---|---|---|---|
-| **Desarrollo / pruebas** | `gemini-2.5-flash-lite` | ~2 COP | Un tercio del costo; suficiente para validar el flujo |
-| **Producción (a evaluar)** | `gemini-2.5-flash` | ~6 COP | Mejor calidad pedagógica; soporte de audio confirmado |
+| Correcciones difíciles bien | 38/40 | 48/48 | **51/51** |
+| Acento: palabras oídas / errores conservados | 85 % / 4 de 14 | 76 % / 6 de 14 | **88 % / 12 de 16** |
+| Voz clara: palabras oídas / errores conservados | 96 % / 15 de 18 | 96 % / 14 de 15 | **99 % / 15 de 15** |
+| Lecciones (evaluación corta) | 51/51 | 52/52 | **52/52** |
+| Mediana de respuesta (conversación / lección) | 2,1 s / 1,7 s | 2,0 s / 1,7 s | **1,8 s / 1,4 s** |
+| Costo de un turno de Hablar (medición de la comparación) | 2,6 COP | 6,6 COP | 8,4 COP |
 
-Se cambia con la variable `GEMINI_MODEL` en el `.env`. **No requiere tocar código.**
+Descartados: `gemini-2.5-flash` deja de existir el 1 de diciembre de 2026 (Google lo pasa a
+3.5-flash-lite); `gemini-3.8-flash` cuesta US$0,75 / 3,75 y dobla la tarifa en enero de 2027.
 
-Los Flash de generación 3.x (`gemini-3.5-flash`, `gemini-3.7-flash`) quedan descartados por
-ahora: cuestan de 3 a 5 veces más y la documentación de Google no confirma que acepten audio de
-entrada — sin eso, la corrección de pronunciación no funciona.
+Ajustes del prompt al pasar a 3.5 (3 de noviembre de 2026, medidos en vivo):
+- El ejemplo «Para la edad se usa 'to be', no 'to have'» se copiaba tal cual ante un «How old are
+  you?» bien dicho (3 de cada 10 en A1). Se quitó: 0 en las 113 corridas siguientes.
+- «My brother have twenty years» se corregía a «has twenty years» (el calco sigue). Ya pasaba con
+  el prompt anterior: 73 % bien. Con la regla en la lista de errores de A1 y A2 sube al 93 %, y el
+  resto lo arregla el código (`conLaEdadBien` y `correccionDeEdad` en `allison.ts`): la voz, el
+  español y la lista quedan con «is twenty years old» y la regla de «to be».
+- En Enséñale, «Comí pescado frito.» no siempre contaba como español (3 de 8): se afinó la línea
+  del prompt (60 de 60).
 
-**Pendiente de verificar con la clave de API:** consultar el endpoint de listado de modelos para
-confirmar cuáles aceptan audio de verdad. Las dos páginas de documentación consultadas no
-coinciden entre sí.
+Revisión de todos los prompts para 3.5 (4 de noviembre de 2026), con dos decisiones del dueño:
+- **Elogio solo con mérito**: en una frase bien dicha, Allison responde como en una charla real;
+  elogia solo lo que le cuesta al alumno (la estructura de la lección, un tema que falla, un error
+  que antes cometía). Medido: 0 elogios en 63 frases comunes; 11 de 12 en A1-A2 y 6 de 6 de B1 a C1
+  en lo difícil. El ejemplo es «You used the past perfectly!»: con «Yes, 'I cleaned', perfect!» llegó
+  a decir «Yes, I visited my grandmother too!», como si ella lo hubiera hecho.
+- **La pregunta sigue el tema del alumno**, no salta a otro.
+- Contradicciones quitadas: con dos errores en una frase, la respuesta la dice entera bien y explica
+  el más importante (antes «solo ese error arreglado» chocaba con «nunca repitas su forma
+  equivocada»); «my» pasa a «your» al devolverle la frase (el código lo asegura: `suFraseDeVuelta`);
+  una pregunta a Allison en español es caso 7 (se le da en inglés); las respuestas sobre ella pueden
+  pasar del límite de palabras (los ejemplos aprobados de la ficha lo pasan).
+- Los demás prompts: el español de la ayuda y de la idea de las escenas no dependía del género (ahora
+  lo dice el prompt y lo asegura `sinGenero`, que además convertía «¿Estás lista para…?» en «¿ya
+  puedes para…?» y «te damos la bienvenida» en «te damos la te damos la bienvenida»); «I want a
+  hamburguesa» cuenta la tarea de pedir; el ejemplo de Adivina armaba «Are you a mr. green?»; la
+  apertura de un escenario propio respeta el límite de palabras del nivel; y varias líneas de la
+  evaluación corta y de Narra que se contradecían.
+
+Los modelos 3.x razonan con `thinkingLevel` (no `thinkingBudget`, que es de 2.5); Allison no se
+lo pide. Si algún día razona, esos tokens se cobran como salida y ya se cuentan
+(`tokensDeSalida` en `src/lib/modelo.ts`).
 
 ## 9. Retención de datos
 

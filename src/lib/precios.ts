@@ -13,6 +13,17 @@ export interface ConfigPrecios {
 }
 
 /**
+ * 50 pesos por intervención en recarga, contra 38,04 en el plan mensual
+ * (35.000 por 920, db/029): pagar sobre la marcha cuesta un poco más que
+ * suscribirse, que es justo lo que empuja hacia el plan. Decisión del
+ * dueño, 4 de noviembre de 2026, por el costo de 3.5-flash-lite: era 37,
+ * y antes 60. Con la IA en lo más caro medido (9,4 pesos) deja de 39,2 %
+ * (8.000) a 49,5 % (100.000) de ganancia (docs/ARQUITECTURA.md). Por
+ * debajo, el Resumen del panel lo avisa.
+ */
+export const COP_POR_MENSAJE_REGLA = 50;
+
+/**
  * Se lee del entorno en el servidor y se le pasa al navegador como
  * props. Las variables sin NEXT_PUBLIC_ no existen en el cliente, y
  * dejar que caiga a un valor por defecto haría que la pantalla muestre
@@ -20,11 +31,7 @@ export interface ConfigPrecios {
  */
 export function configPrecios(): ConfigPrecios {
   return {
-    // 37 pesos por intervención en recarga, contra 27,34 en el plan
-    // mensual (35.000 por 1.280, db/028): pagar sobre la marcha cuesta
-    // un poco más que suscribirse, que es justo lo que empuja hacia el
-    // plan. Era 60 hasta el 31 de octubre de 2026.
-    copPorMensaje: Number(process.env.COP_POR_MENSAJE ?? 37),
+    copPorMensaje: Number(process.env.COP_POR_MENSAJE ?? COP_POR_MENSAJE_REGLA),
     minima: Number(process.env.RECARGA_MINIMA_COP ?? 8000),
     maxima: 500_000,
   };

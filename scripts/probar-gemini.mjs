@@ -9,6 +9,7 @@
  */
 import { readFileSync } from "node:fs";
 import { conversar } from "../src/lib/allison.ts";
+import { modeloIA } from "../src/lib/modelo.ts";
 
 const ruta = process.argv[2];
 const modelo = process.argv[3];
@@ -22,7 +23,7 @@ if (!ruta) {
 const audio = readFileSync(ruta);
 const mimeType = ruta.endsWith(".wav") ? "audio/wav" : "audio/webm";
 
-console.log(`Modelo:  ${process.env.GEMINI_MODEL}`);
+console.log(`Modelo:  ${modeloIA()}`);
 console.log(`Audio:   ${ruta} (${(audio.length / 1024).toFixed(1)} KB)\n`);
 
 const inicio = Date.now();
@@ -54,7 +55,7 @@ try {
     "gemini-2.5-flash": { entrada: 1.0, salida: 2.5 },
     "gemini-3.5-flash-lite": { entrada: 0.3, salida: 2.5 },
   };
-  const t = TARIFAS[process.env.GEMINI_MODEL];
+  const t = TARIFAS[modeloIA()];
 
   console.log(
     `\nTiempo: ${seg}s · Tokens: ${r.tokensEntrada} entrada / ${r.tokensSalida} salida`

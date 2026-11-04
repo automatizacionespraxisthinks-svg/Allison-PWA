@@ -5,7 +5,7 @@ import { estadoRutaDe } from "../ruta/avance";
 import { rutaDe } from "../ruta/index";
 import { rutaProvisionalDe } from "../ruta/provisional";
 import { NIVELES, type Nivel } from "../tipos";
-import { costoCop } from "../uso";
+import { costoCop, usdSql } from "../uso";
 import { nombreDeParada } from "./etiquetas";
 import { sinMarca } from "./operaciones";
 
@@ -78,14 +78,12 @@ export async function fichaDe(userId: string, dolar: number): Promise<FichaAlumn
   const [[mes], [total], movimientos, consumo, [rep], paradasConsumo] = await Promise.all([
     sql`
       select coalesce(sum(turnos), 0)::int as turnos,
-             coalesce(sum(tokens_entrada + tokens_ayuda_entrada), 0)::bigint as entrada,
-             coalesce(sum(tokens_salida + tokens_ayuda_salida), 0)::bigint as salida
+             coalesce(sum(${usdSql()}), 0)::float8 as usd
         from uso_diario where user_id = ${userId} and fecha >= date_trunc('month', current_date)
     `,
     sql`
       select coalesce(sum(turnos), 0)::int as turnos,
-             coalesce(sum(tokens_entrada + tokens_ayuda_entrada), 0)::bigint as entrada,
-             coalesce(sum(tokens_salida + tokens_ayuda_salida), 0)::bigint as salida
+             coalesce(sum(${usdSql()}), 0)::float8 as usd
         from uso_diario where user_id = ${userId}
     `,
     // Todo lo que no es consumo, uno por uno; el consumo, sumado por día.
@@ -189,8 +187,8 @@ export async function fichaDe(userId: string, dolar: number): Promise<FichaAlumn
     rachaMaxima: Math.max(n(u.racha_maxima), n(u.racha)),
     saldo: n(u.saldo),
     planVence: (await finDelMesDelPlan([u.id]))[u.id] ?? null,
-    mes: { intervenciones: n(mes.turnos), costoCop: costoCop(n(mes.entrada), n(mes.salida), dolar) },
-    total: { intervenciones: n(total.turnos), costoCop: costoCop(n(total.entrada), n(total.salida), dolar) },
+    mes: { intervenciones: n(mes.turnos), costoCop: costoCop(n(mes.usd), dolar) },
+    total: { intervenciones: n(total.turnos), costoCop: costoCop(n(total.usd), dolar) },
     historial: historial.slice(0, 40).map(({ fecha, texto, cantidad }) => ({ fecha, texto, cantidad })),
     niveles,
     reportes: { abiertos: n(rep.abiertos), total: n(rep.total) },

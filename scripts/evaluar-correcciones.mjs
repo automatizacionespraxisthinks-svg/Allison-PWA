@@ -22,6 +22,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { conversar } from "../src/lib/allison.ts";
 import { unidad } from "../src/lib/curriculo.ts";
+import { modeloIA } from "../src/lib/modelo.ts";
 
 const modelo = process.argv[2];
 if (modelo) process.env.GEMINI_MODEL = modelo;
@@ -110,7 +111,7 @@ $s.SetOutputToNull(); $s.Dispose()`;
   execFileSync("powershell", ["-NoProfile", "-Command", ps], { stdio: "ignore" });
 }
 
-console.log(`Modelo: ${process.env.GEMINI_MODEL}  ·  temperatura 0\n`);
+console.log(`Modelo: ${modeloIA()}  ·  temperatura 0\n`);
 
 let fallos = 0;
 const ruta = join(tmpdir(), "allison-eval.wav");

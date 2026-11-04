@@ -63,6 +63,12 @@ function revisar(esperado, dice, r) {
   // adelante, una -s o un plural sí se corrigen (caso 2), y un falso
   // amigo explicado como 2 también vale.
   esperado = [...esperado];
+  // En A1 y A2 el caso 1 no existe: todo error se corrige, también el
+  // pequeño, como caso 2 (2 de noviembre de 2026). Una frase bien dicha
+  // es solo 11.
+  if (unaCorr && esperado.includes("1")) {
+    esperado = esperado.includes("11") ? esperado.filter((x) => x !== "1") : esperado.map((x) => (x === "1" ? "2" : x));
+  }
   if (esperado.includes("1")) esperado.push("11");
   if (!unaCorr && (esperado.includes("1") || esperado.includes("3"))) esperado.push("2");
   const voz = r.respuestaVoz;

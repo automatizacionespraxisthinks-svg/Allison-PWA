@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { AUDIO_MAX_SEGUNDOS } from "./tipos.ts";
+import { modeloIA } from "./modelo.ts";
 
 /**
  * Lo que se le acepta al navegador antes de mandarle un audio a la IA
@@ -33,14 +34,19 @@ export function tipoDeAudio(audio: Blob): string | null {
  * así el turno normal no espera nada. Un audio así no lo graba la app,
  * solo un script: se cobra. Si la cuenta misma falla, se devuelve (la
  * duda favorece al alumno).
+ *
+ * La cuenta sube el audio entero: 2 minutos en WAV tardaron 11 s desde
+ * una conexión lenta (3 de noviembre de 2026), y con 8 s de espera se
+ * cortaba y el audio largo salía gratis. 15 s caben en el minuto de la
+ * ruta aun después de los 30 s de la IA.
  */
 export async function audioPasaDelTope(base64: string, mimeType: string): Promise<boolean> {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const r = await ai.models.countTokens({
-      model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
+      model: modeloIA(),
       contents: [{ role: "user", parts: [{ inlineData: { mimeType, data: base64 } }] }],
-      config: { abortSignal: AbortSignal.timeout(8000) },
+      config: { abortSignal: AbortSignal.timeout(15_000) },
     });
     return (r.totalTokens ?? 0) > (AUDIO_MAX_SEGUNDOS + 10) * 32;
   } catch {

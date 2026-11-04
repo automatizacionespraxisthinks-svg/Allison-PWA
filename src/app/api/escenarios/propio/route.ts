@@ -3,7 +3,8 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { limitar } from "@/lib/limite";
-import { soloIngles } from "@/lib/ruta/escena";
+import { modeloIA, tokensDeSalida } from "@/lib/modelo";
+import { PALABRAS, soloIngles } from "@/lib/ruta/escena";
 import { alumnoActual } from "@/lib/sesion";
 
 export const maxDuration = 30;
@@ -51,7 +52,7 @@ export async function POST(peticion: Request) {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const r = await ai.models.generateContent({
-      model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
+      model: modeloIA(),
       contents: [{ role: "user", parts: [{ text: pedido }] }],
       config: {
         systemInstruction: `A Colombian teenager (12-17) learning English at level ${NIVEL_EN[alumno.nivel] ?? alumno.nivel}
@@ -67,15 +68,18 @@ they want to do. Build a short role-play scene from it.
 - "lugar": in Spanish, the place in 1-3 words ("Taquilla del estadio").
 - "papel": in Spanish, Allison's role, feminine, with article, max 6 words
   ("La vendedora de boletas").
-- "contexto": in Spanish, one short sentence that sets the scene for the
-  student ("Llegas a la taquilla y quieres dos boletas.").
+- "contexto": one short sentence that sets the scene for the student,
+  only in Spanish, with no English words or quotes ("Llegas a la
+  taquilla y quieres dos boletas.").
 - "tareas": exactly 6 tasks for the student, in Spanish, in the order they
   happen: small steps, each one something the student SAYS, short and
   starting with a verb ("Saluda y pide dos boletas.", "Di para qué día
   las quieres.", "Pregunta cuánto cuestan."). The last one usually
-  closes the scene (pay, say thanks, say goodbye).
+  closes the scene (pay, say thanks, say goodbye). When "contexto" or a
+  task names Allison's role, it is feminine, like "papel" ("Pregúntale a
+  la vendedora...").
 - "apertura": Allison's first line IN CHARACTER, in natural US English
-  only (no Spanish), at the student's level, max 15 words, ending with a
+  only (no Spanish), at the student's level, max ${Math.min(15, PALABRAS[alumno.nivel as keyof typeof PALABRAS] ?? 15)} words, ending with a
   question that invites the first task. No stage directions.
 
 Always US English (soccer, apartment, check, "I have").`,
@@ -98,7 +102,7 @@ Always US English (soccer, apartment, check, "I have").`,
         abortSignal: AbortSignal.timeout(20_000),
       },
     });
-    tokens = { entrada: r.usageMetadata?.promptTokenCount ?? 0, salida: r.usageMetadata?.candidatesTokenCount ?? 0 };
+    tokens = { entrada: r.usageMetadata?.promptTokenCount ?? 0, salida: tokensDeSalida(r.usageMetadata) };
     d = JSON.parse(r.text ?? "{}");
   } catch (e) {
     await devolver();

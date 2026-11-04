@@ -14,19 +14,40 @@ import { sql } from "./db";
  */
 
 /**
- * Tarifas de gemini-2.5-flash-lite, en dólares por millón de tokens. El
- * dólar de aquí es el de siempre; el que vale es el de Ajustes del panel
+ * Tarifas en dólares por millón de tokens, por periodo. Producción pasó a
+ * 3.5-flash-lite el 4 de noviembre de 2026, cuando se cambió GEMINI_MODEL
+ * en el servidor (src/lib/modelo.ts; se decidió el 3): cada día de
+ * uso_diario se cobra con la tarifa de su fecha, así los días anteriores
+ * no se inflan con la tarifa nueva (el triple en la entrada, más de seis
+ * veces en la salida).
+ * El dólar de aquí es el de siempre; el que vale es el de Ajustes del panel
  * (src/lib/ajustes.ts), que se pasa a costoCop.
  */
+export const CAMBIO_DE_MODELO = "2026-11-04";
 export const TARIFAS = {
-  entrada: 0.1,
-  salida: 0.4,
+  antes: { modelo: "gemini-2.5-flash-lite", entrada: 0.1, salida: 0.4 },
+  desdeElCambio: { modelo: "gemini-3.5-flash-lite", entrada: 0.3, salida: 2.5 },
   usdACop: 4000,
 } as const;
 
-export function costoCop(entrada: number, salida: number, usdACop: number = TARIFAS.usdACop): number {
-  const usd =
-    (entrada / 1e6) * TARIFAS.entrada + (salida / 1e6) * TARIFAS.salida;
+/**
+ * Lo que costó en dólares una fila de uso_diario, con la tarifa de su
+ * fecha (para sumar en SQL). `t` es el alias de la tabla ("d." o nada): un
+ * texto fijo del código, nunca del usuario, por eso va sin parámetros.
+ */
+export function usdSql(t = "") {
+  const { antes: a, desdeElCambio: b } = TARIFAS;
+  const entrada = `(${t}tokens_entrada + ${t}tokens_ayuda_entrada)`;
+  const salida = `(${t}tokens_salida + ${t}tokens_ayuda_salida)`;
+  return sql.unsafe(
+    `(case when ${t}fecha >= date '${CAMBIO_DE_MODELO}'` +
+      ` then ${entrada} * ${b.entrada} + ${salida} * ${b.salida}` +
+      ` else ${entrada} * ${a.entrada} + ${salida} * ${a.salida} end) / 1e6`
+  );
+}
+
+/** Dólares a pesos, con el dólar de Ajustes. */
+export function costoCop(usd: number, usdACop: number = TARIFAS.usdACop): number {
   return Math.round(usd * usdACop);
 }
 
@@ -178,7 +199,8 @@ export async function informeDeUso(rango: Rango, usdACop: number = TARIFAS.usdAC
                  coalesce(sum(turnos), 0)::int         as turnos,
                  coalesce(sum(conversaciones), 0)::int as conversaciones,
                  coalesce(sum(tokens_entrada + tokens_ayuda_entrada), 0)::bigint as entrada,
-                 coalesce(sum(tokens_salida + tokens_ayuda_salida), 0)::bigint   as salida
+                 coalesce(sum(tokens_salida + tokens_ayuda_salida), 0)::bigint   as salida,
+                 coalesce(sum(${usdSql()}), 0)::float8 as usd
             from uso_diario
            where fecha between ${desde} and ${hasta}
            group by 1 order by 1
@@ -188,7 +210,8 @@ export async function informeDeUso(rango: Rango, usdACop: number = TARIFAS.usdAC
                  coalesce(sum(turnos), 0)::int         as turnos,
                  coalesce(sum(conversaciones), 0)::int as conversaciones,
                  coalesce(sum(tokens_entrada + tokens_ayuda_entrada), 0)::bigint as entrada,
-                 coalesce(sum(tokens_salida + tokens_ayuda_salida), 0)::bigint   as salida
+                 coalesce(sum(tokens_salida + tokens_ayuda_salida), 0)::bigint   as salida,
+                 coalesce(sum(${usdSql()}), 0)::float8 as usd
             from uso_diario
            where fecha between ${desde} and ${hasta}
            group by 1 order by 1
@@ -199,7 +222,8 @@ export async function informeDeUso(rango: Rango, usdACop: number = TARIFAS.usdAC
              coalesce(u.email, u.telefono, u.username, '—') as identificador,
              coalesce(sum(d.turnos), 0)::int as turnos,
              coalesce(sum(d.tokens_entrada + d.tokens_ayuda_entrada), 0)::bigint as entrada,
-             coalesce(sum(d.tokens_salida + d.tokens_ayuda_salida), 0)::bigint   as salida
+             coalesce(sum(d.tokens_salida + d.tokens_ayuda_salida), 0)::bigint   as salida,
+             coalesce(sum(${usdSql("d.")}), 0)::float8 as usd
         from uso_diario d
         join users u on u.id = d.user_id
        where d.fecha between ${desde} and ${hasta}
@@ -230,14 +254,14 @@ export async function informeDeUso(rango: Rango, usdACop: number = TARIFAS.usdAC
       conversaciones: n(f.conversaciones),
       tokensEntrada: n(f.entrada),
       tokensSalida: n(f.salida),
-      costoCop: costoCop(n(f.entrada), n(f.salida), usdACop),
+      costoCop: costoCop(n(f.usd), usdACop),
     })),
     usuarios: usuarios.map((u) => ({
       nombre: u.nombre as string,
       identificador: u.identificador as string,
       turnos: n(u.turnos),
       tokens: n(u.entrada) + n(u.salida),
-      costoCop: costoCop(n(u.entrada), n(u.salida), usdACop),
+      costoCop: costoCop(n(u.usd), usdACop),
     })),
   };
 }

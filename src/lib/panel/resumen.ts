@@ -1,7 +1,7 @@
 import type { PendingQuery, Row } from "postgres";
 import { sql } from "../db";
 import type { Ajustes } from "../ajustes";
-import { costoCop } from "../uso";
+import { costoCop, usdSql } from "../uso";
 import { cuantosPagosPorRevisar } from "./recargas";
 
 /**
@@ -121,10 +121,8 @@ export async function resumenDelPanel(f: FiltroResumen, a: Ajustes): Promise<Res
     `,
     sql`
       with a as (${alumnos})
-      select coalesce((select sum(tokens_entrada + tokens_ayuda_entrada) from uso_diario
-                        where user_id in (select id from a) and fecha > current_date - ${dias}::int), 0)::bigint as entrada,
-             coalesce((select sum(tokens_salida + tokens_ayuda_salida) from uso_diario
-                        where user_id in (select id from a) and fecha > current_date - ${dias}::int), 0)::bigint as salida,
+      select coalesce((select sum(${usdSql()}) from uso_diario
+                        where user_id in (select id from a) and fecha > current_date - ${dias}::int), 0)::float8 as usd,
              coalesce((select sum(${ingreso}) from transacciones
                         where estado = 'aprobada' and user_id in (select id from a)
                           and confirmado_en > now() - make_interval(days => ${dias})), 0)::bigint as cobrado
@@ -144,7 +142,7 @@ export async function resumenDelPanel(f: FiltroResumen, a: Ajustes): Promise<Res
     vuelvenD7Antes: n(d7.cohorte_antes) ? Math.round((100 * n(d7.volvieron_antes)) / n(d7.cohorte_antes)) : null,
     conRacha7: n(racha.racha7),
     activosPeriodo: n(hoy.periodo),
-    costoIa: costoCop(n(dinero.entrada), n(dinero.salida), a.dolarCop),
+    costoIa: costoCop(n(dinero.usd), a.dolarCop),
     cobrado: n(dinero.cobrado),
     retencion: await retencion(alumnos, activos, a.fechaVersionNueva),
     alertas: await alertas(a, alumnos),
@@ -218,10 +216,10 @@ async function alertas(a: Ajustes, alumnos: Fragmento): Promise<Alerta[]> {
     sql`
       with a as (${alumnos})
       select count(*)::int as n,
-             coalesce(sum(d.entrada), 0)::bigint as entrada, coalesce(sum(d.salida), 0)::bigint as salida
+             coalesce(sum(d.usd), 0)::float8 as usd
         from a
         left join (
-          select user_id, sum(tokens_entrada + tokens_ayuda_entrada) as entrada, sum(tokens_salida + tokens_ayuda_salida) as salida
+          select user_id, sum(${usdSql()}) as usd
             from uso_diario where fecha >= date_trunc('month', current_date) group by user_id
         ) d on d.user_id = a.id
        where a.institucion_id is null
@@ -272,7 +270,7 @@ async function alertas(a: Ajustes, alumnos: Fragmento): Promise<Alerta[]> {
       clave: "prueba",
       cuantos: n(prueba.n),
       texto: "Alumnos en prueba gratis",
-      detalle: `$${costoCop(n(prueba.entrada), n(prueba.salida), a.dolarCop).toLocaleString("es-CO")} de IA este mes`,
+      detalle: `$${costoCop(n(prueba.usd), a.dolarCop).toLocaleString("es-CO")} de IA este mes`,
       href: "/admin/uso?estado=prueba",
     },
   ];

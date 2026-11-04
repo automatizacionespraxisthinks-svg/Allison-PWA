@@ -199,13 +199,30 @@ try {
   probar("un plan aprobado acredita", (await resultado(e, { montoCop: 35000 })) === "acreditado");
   probar("a la bolsa del plan", (await saldo()).mensajes_plan === planAntes + plan.mensajes_por_mes);
   const [suscripcion] = await sql`
-    select estado, mensajes_asignados from suscripciones
+    select estado, mensajes_asignados, mensajes_por_mes from suscripciones
      where user_id = ${alumno.id} and estado = 'activa'
   `;
   probar(
     "y abre la suscripción activa",
     suscripcion?.mensajes_asignados === plan.mensajes_por_mes,
     JSON.stringify(suscripcion)
+  );
+  // Lo que compró queda en la suscripción: si el plan cambia, sus meses no (db/029).
+  probar("y guarda lo que compró por mes", suscripcion?.mensajes_por_mes === plan.mensajes_por_mes, JSON.stringify(suscripcion));
+
+  // 8b. Una orden abierta cuando el plan entregaba más (antes de la 029) y
+  // pagada después: todos sus meses entregan lo que se le mostró al comprar.
+  const prometido = plan.mensajes_por_mes + 360;
+  const vieja = await nuevaOrden({ tipo: "plan", monto: 35000, mensajes: prometido, planId: plan.id });
+  probar("un plan pagado con una orden de antes acredita", (await resultado(vieja, { montoCop: 35000 })) === "acreditado");
+  const [deAntes] = await sql`
+    select mensajes_asignados, mensajes_por_mes from suscripciones
+     where user_id = ${alumno.id} and estado = 'activa'
+  `;
+  probar(
+    `y su suscripción entrega lo prometido (${prometido}) cada mes, no lo del plan de hoy`,
+    deAntes?.mensajes_asignados === prometido && deAntes?.mensajes_por_mes === prometido,
+    JSON.stringify(deAntes)
   );
 
   // 9. Aviso y consulta al mismo tiempo

@@ -19,7 +19,10 @@ export default async function PaginaPlanes() {
   // Las fechas se arman en hora de Colombia en la base: calculadas en
   // UTC, un plan que vence de noche en Colombia mostraría el día siguiente.
   const [suscripcion] = await sql`
-    select p.nombre, p.mensajes_por_mes,
+    select p.nombre,
+           -- Lo de este mes es lo que vuelve a llegar: quien compró antes
+           -- de bajar el plan sigue con lo que compró (db/029).
+           s.mensajes_asignados as mensajes_por_mes,
            to_char(s.fin_en at time zone 'America/Bogota', 'DD/MM/YYYY') as hasta,
            to_char(s.periodo_fin at time zone 'America/Bogota', 'DD/MM/YYYY') as fin_del_mes,
            s.periodo_fin < s.fin_en as quedan_meses

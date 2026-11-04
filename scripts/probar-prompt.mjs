@@ -22,6 +22,10 @@ const {
   contieneErrorRepetido,
   marcarEspanolSuelto,
   componerRespuesta,
+  edadConToBe,
+  conLaEdadBien,
+  correccionDeEdad,
+  suFraseDeVuelta,
   hablaEspanolClaro,
   casoEfectivo,
   correccionesDelCaso,
@@ -390,6 +394,15 @@ probar(
 );
 probar("\"¿Listo?\" y \"Bienvenido\" no dependen del género", sinGenero("¿Listo? Bienvenido.") === "¿Vamos? Te damos la bienvenida.");
 probar(
+  "\"¿Estás lista para…?\" pasa a \"¿Tienes todo listo para…?\" (no a \"¿ya puedes para…?\")",
+  sinGenero("¡Bienvenida al aeropuerto! ¿Estás lista para el viaje?") === "¡Te damos la bienvenida al aeropuerto! ¿Tienes todo listo para el viaje?" &&
+    sinGenero("Sí, estoy listo.") === "Sí, tengo todo listo." &&
+    sinGenero("Cuando estás lista, hablamos.") === "Cuando tienes todo listo, hablamos." &&
+    // La que ya es neutra no se toca.
+    sinGenero("¡Te damos la bienvenida al aeropuerto!") === "¡Te damos la bienvenida al aeropuerto!",
+  sinGenero("¡Bienvenida al aeropuerto! ¿Estás lista para el viaje?")
+);
+probar(
   "caso 9: si el mensaje anterior era una pregunta, lo citado no es el tema",
   !casoNueveFallido("No te preocupes. Te pregunté qué comiste hoy. What did you eat today?", "Yes, 'I cleaned', perfect! What did you eat today?")
 );
@@ -417,6 +430,72 @@ probar("marcas: el español sin [es] se marca solo", suelto.startsWith("[es] Tra
 probar("marcas: el inglés solo queda igual", marcarEspanolSuelto("You played soccer! Who did you play with?") === "You played soccer! Who did you play with?");
 probar("marcas: si el modelo puso marcas, se respetan", marcarEspanolSuelto("Sorry. [es] No te oí. [en-US] Can you repeat?") === "Sorry. [es] No te oí. [en-US] Can you repeat?");
 probar("marcas: un nombre con tilde no vuelve español una frase", !marcarEspanolSuelto("Have you been to Bogotá? It is a big city.").includes("[es]"));
+
+// La edad va con "to be" (3 de noviembre de 2026): "has ten years" era un
+// calco que el modelo dejaba al arreglar solo la concordancia.
+probar("edad: «Your sister has ten years!» → «is ten years old»", edadConToBe("Your sister has ten years! What is her name?") === "Your sister is ten years old! What is her name?");
+probar("edad: con «old» de más y con I / you / plural", edadConToBe("My brother has twenty years old!") === "My brother is twenty years old!" && edadConToBe("I have 15 years") === "I am 15 years old" && edadConToBe("You have fifteen years") === "You are fifteen years old" && edadConToBe("My parents have forty years") === "My parents are forty years old");
+probar("edad: un nombre que termina en s sigue en singular", edadConToBe("Carlos have twenty-one years") === "Carlos is twenty-one years old");
+probar("edad: lo que no es edad no se toca", edadConToBe("She has two years of English") === "She has two years of English" && edadConToBe("I have lived here for two years") === "I have lived here for two years" && edadConToBe("He is ten years old") === "He is ten years old");
+{
+  const r = conLaEdadBien("My sister have ten years", "Con he, she o it se usa 'has'.", "Your sister has ten years! What is her name?");
+  probar("edad: la respuesta y el español quedan con la regla de verdad", r.respuesta === "Your sister is ten years old! What is her name?" && r.espanol === "Para la edad se usa el verbo to be: 'is ten years old'.");
+  const bien = conLaEdadBien("My sister have ten years", "Para la edad se usa to be.", "Your sister is ten years old! What is her name?");
+  probar("edad: si el modelo ya lo dijo bien, no se toca nada", bien.respuesta === "Your sister is ten years old! What is her name?" && bien.espanol === "Para la edad se usa to be.");
+  const otra = conLaEdadBien("I like soccer", "", "Luna has three years! What do you play?");
+  probar("edad: sin el error del alumno, no se toca", otra.respuesta === "Luna has three years! What do you play?");
+  const voz = componerRespuesta({ caso: "2", ...conLaEdadBien("My brother have twenty years", "Con he se usa 'has'.", "Your brother has twenty years! Where does he live?"), nivel: "A2", nombre: "Diego" });
+  probar("edad: la voz final de A2", voz === "[es] Para la edad se usa el verbo to be: 'is twenty years old'. [en-US] Your brother is twenty years old! Where does he live?", voz);
+  const mezcla = conLaEdadBien("My brother have twenty years", "La edad va con to be, y con he se usa has.", "Your brother is twenty years old! Where does he live?");
+  probar("edad: un español que mezcla «to be» y «has» pasa a la regla", mezcla.espanol === "Para la edad se usa el verbo to be: 'is twenty years old'.", mezcla.espanol);
+  const verbo = correccionDeEdad("My brother have twenty years", { tipo: "gramatica", original: "have", correccion: "has", explicacion: "With he, use has.", explicacionEs: "Con he se usa has.", prioridad: "alta" });
+  probar(
+    "edad: «have -> has» en la lista pasa a la frase del alumno con «to be»",
+    verbo.original === "brother have twenty years" && verbo.correccion === "brother is twenty years old" && verbo.explicacionEs === "Para la edad se usa el verbo to be: 'is twenty years old'.",
+    JSON.stringify(verbo)
+  );
+  const yo = correccionDeEdad("I have fifteen years", { tipo: "gramatica", original: "I have fifteen years", correccion: "I am fifteen years old", explicacion: "Use to be.", explicacionEs: "Se usa to be.", prioridad: "alta" });
+  probar("edad: una corrección ya bien queda bien, con la regla de siempre", yo.correccion === "I am fifteen years old" && yo.explicacion === "Age uses the verb to be: 'am fifteen years old'.");
+  const sujeto = correccionDeEdad("My brother have twenty years", { tipo: "gramatica", original: "My brother have", correccion: "My brother has", explicacion: "x", explicacionEs: "y", prioridad: "alta" });
+  probar("edad: «My brother have -> My brother has» pasa a «My brother is twenty years old»", sujeto.original === "My brother have twenty years" && sujeto.correccion === "My brother is twenty years old", JSON.stringify(sujeto));
+  const aIs = { tipo: "gramatica", original: "have", correccion: "is", explicacion: "Age uses to be.", explicacionEs: "La edad va con to be.", prioridad: "alta" };
+  probar("edad: «have -> is» ya está bien y no se toca", correccionDeEdad("My brother have twenty years", aIs) === aIs);
+  const otra2 = { tipo: "gramatica", original: "She don't", correccion: "She doesn't", explicacion: "x", explicacionEs: "y", prioridad: "alta" };
+  probar("edad: otra corrección del mismo turno no se toca", correccionDeEdad("She don't know I have ten years", otra2) === otra2);
+}
+
+// "my" pasa a "your" cuando Allison le devuelve su frase (4 de noviembre de 2026).
+probar("frase de vuelta: «My mother cooks…» → «Your mother cooks…»", suFraseDeVuelta("My mother cook very good", "My mother cooks very well! What does she make?", "2") === "Your mother cooks very well! What does she make?");
+probar("frase de vuelta: en medio de la frase también", suFraseDeVuelta("Yesterday my sister go to the mall", "Yesterday my sister went to the mall! What did she buy?", "2") === "Yesterday your sister went to the mall! What did she buy?");
+probar("frase de vuelta: solo la primera oración (lo de Allison después no se toca)", suFraseDeVuelta("My mother cook very good", "Your mother cooks very well! My mother cooks too. What does she make?", "2") === "Your mother cooks very well! My mother cooks too. What does she make?");
+probar("frase de vuelta: una palabra que el alumno no dijo no se toca", suFraseDeVuelta("I like play soccer", "My favorite is soccer too! What team do you like?", "2") === "My favorite is soccer too! What team do you like?");
+probar("frase de vuelta: en el caso 11 no se toca", suFraseDeVuelta("My sister is very funny", "My sister is funny too! What does she do?", "11") === "My sister is funny too! What does she do?");
+
+// Auditoría final (4 de noviembre de 2026): lo que los arreglos de edad,
+// género y "my → your" no deben tocar.
+probar("edad: un año es «one year old», nunca «one years old»", edadConToBe("Your baby brother has one year!") === "Your baby brother is one year old!" && edadConToBe("He has 1 year") === "He is 1 year old");
+probar(
+  "edad: cuánto lleva («tengo dos años en este colegio») no es edad",
+  edadConToBe("You have two years in this school!") === "You have two years in this school!" &&
+    edadConToBe("You have two years studying English!") === "You have two years studying English!" &&
+    conLaEdadBien("I have two years in this school", "Se dice 'I have been here for two years'.", "You have been here for two years! What do you like?").respuesta === "You have been here for two years! What do you like?"
+);
+probar("edad: «Do you have ten years?» no pasa a «Do you are…»", edadConToBe("Do you have ten years?") === "Do you have ten years?");
+probar("edad: «my parents has forty years» va con «are»", edadConToBe("My parents has forty years") === "My parents are forty years old");
+probar("edad: con «and» después sigue siendo edad", edadConToBe("My sister has ten years and she likes music") === "My sister is ten years old and she likes music");
+{
+  const perro = conLaEdadBien("My sister have a dog and I have 12 years", "Con she se usa 'has'.", "Your sister has a dog! What is its name?");
+  probar("edad: un «has» que explica otro error no se cambia por la regla de la edad", perro.espanol === "Con she se usa 'has'.", perro.espanol);
+  const verbo = conLaEdadBien("I have 12 years", "¡Lo has dicho casi bien! Se dice 'I am 12 years old'.", "You are 12 years old! What do you like?");
+  probar("edad: «has» como verbo en español («Lo has dicho») no cambia nada", verbo.espanol === "¡Lo has dicho casi bien! Se dice 'I am 12 years old'.", verbo.espanol);
+  const otra = { tipo: "gramatica", original: "My sister have", correccion: "My sister has", explicacion: "x", explicacionEs: "y", prioridad: "alta" };
+  probar("edad: «My sister have → has» (de «a dog») no pasa a la edad de otra frase", correccionDeEdad("My sister have a dog and I have 12 years", otra) === otra);
+}
+probar("frase de vuelta: en el caso 1, lo de Allison («my favorite… too») no se toca", suFraseDeVuelta("My favorite subject is math", "Math is my favorite subject too! Why do you like it?", "1") === "Math is my favorite subject too! Why do you like it?");
+probar("frase de vuelta: lo que va entre comillas no se toca", suFraseDeVuelta("My mother cook very good", "Say 'my mother cooks very well' -- with she, add -s. What does she make?", "2") === "Say 'my mother cooks very well' -- with she, add -s. What does she make?");
+probar("frase de vuelta: el apóstrofo de «doesn't» no es una comilla", suFraseDeVuelta("My mother don't cook", "Your mother doesn't cook! My mother doesn't either. Who cooks?", "2") === "Your mother doesn't cook! My mother doesn't either. Who cooks?" && suFraseDeVuelta("My mother don't cook", "My mother doesn't cook! Who cooks?", "2") === "Your mother doesn't cook! Who cooks?");
+probar("género: «una habitación tranquila» no se toca (solo la interjección)", sinGenero("Quisiera una habitación tranquila, por favor.") === "Quisiera una habitación tranquila, por favor." && sinGenero("Es un barrio tranquilo y bonito.") === "Es un barrio tranquilo y bonito.");
+probar("género: «una cálida bienvenida» no se toca", sinGenero("Te damos una cálida bienvenida.") === "Te damos una cálida bienvenida.");
 
 if (fallos > 0) {
   console.error(`\n${fallos} fallo(s).`);

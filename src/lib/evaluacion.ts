@@ -6,6 +6,7 @@ import { hablaEspanol, mezclaEspanol } from "./ruta/escena.ts";
 import { esInglesClaro } from "./allison.ts";
 import { conPunto } from "./habla.ts";
 import { comoSeOye, normalizar, palabraNormalizada } from "./normalizar.ts";
+import { modeloIA, tokensDeSalida } from "./modelo.ts";
 
 /**
  * La "evaluación corta" del plan de mejoras (sección 6): comprobar UNA
@@ -159,16 +160,16 @@ const juzgarRespuesta = (p: PedidoEvaluacion) =>
   small mistakes. false if it does not, is in Spanish, or is empty.`
     : `
 - "correcto": the student (CEFR ${p.nivel}) was asked "${p.esperado}"${p.reloj ? ` while looking at a clock that shows ${p.reloj}` : ""}. true if
-  what they said is a short, sensible answer to that question, in
-  English, even with small mistakes.${p.reloj ? " The time has to be the one on the clock." : ""} false if it does not answer the
+  what they said is a sensible answer to that question (a short one is
+  enough), in English, even with small mistakes.${p.reloj ? " The time has to be the one on the clock." : ""} false if it does not answer the
   question, is in Spanish, or is empty.${
     p.completa
       ? `
 - "completa": "" unless "correcto" is true and they did not say a complete
   sentence (one word or a few words, like "Soccer." or "At six."). Then
   their same answer as one short, complete sentence in simple American
-  English (CEFR ${p.nivel}), with contractions as people speak (I'm, I've,
-  can't), that repeats the words of the question ("Which is faster, a car
+  English (CEFR ${p.nivel}), with contractions as people speak (I'm, don't,
+  can't; but "I have", never "I've got"), that repeats the words of the question ("Which is faster, a car
   or a bike?" → "A car is faster than a bike."). Keep their meaning.
   An invitation ("Would you like…?", "How about…?", "Let's…!"): a yes is
   a happy yes ("Yes, I'd love to!"); a no is "Sorry, I can't." plus a
@@ -338,7 +339,7 @@ export async function transcribirACiegas(
 ): Promise<{ transcripcion: string; tokensEntrada: number; tokensSalida: number }> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const r = await ai.models.generateContent({
-    model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
+    model: modeloIA(),
     contents: [{ role: "user", parts: [{ inlineData: { mimeType, data: audioBase64 } }] }],
     config: {
       systemInstruction: escena
@@ -357,7 +358,7 @@ export async function transcribirACiegas(
   return {
     transcripcion: datos.hayVoz === false ? "" : limpiarTranscripcion(datos.transcripcion ?? ""),
     tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
-    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+    tokensSalida: tokensDeSalida(r.usageMetadata),
   };
 }
 
@@ -378,7 +379,7 @@ async function juzgar(
   const properties: Record<string, unknown> = { correcto: { type: Type.BOOLEAN } };
   if (conCompleta) properties.completa = { type: Type.STRING };
   const r = await ai.models.generateContent({
-    model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
+    model: modeloIA(),
     contents: [{ role: "user", parts: [{ text: `The student said: ${dicho}` }] }],
     config: {
       systemInstruction: `You check one short answer of a Spanish-speaking student learning English. Judge only what is written, as it is.${criterio}`,
@@ -400,7 +401,7 @@ async function juzgar(
     correcto: j.correcto === true,
     completa: typeof j.completa === "string" ? j.completa.trim() : "",
     tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
-    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+    tokensSalida: tokensDeSalida(r.usageMetadata),
   };
 }
 
@@ -443,7 +444,7 @@ export async function corregirFrase(
 ): Promise<{ mejor: string | null; tokensEntrada: number; tokensSalida: number }> {
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const r = await ai.models.generateContent({
-    model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
+    model: modeloIA(),
     contents: [{ role: "user", parts: [{ text: `The student said: ${dicho}` }] }],
     config: {
       systemInstruction: `A Spanish-speaking student (English level ${nivel}) is describing a picture.
@@ -453,7 +454,8 @@ The teacher asked: "${consigna}". Judge only what is written, as it is.
   + -ing" for what people were doing, "is/are + -ing" for what people are
   doing). Short and simple sentences are fine, and so is another correct
   way to say it ("Would you like to…?", "Do you want to…?", "Let's…").
-  ${NO_ES_ERROR} false only if it has a real grammar mistake.
+  ${NO_ES_ERROR} false if it has a real grammar mistake or a verb form
+  that does not fit the request.
 - "mejor": if "correcto" is false, the same sentence with only the
   mistakes fixed, in simple US English, keeping their words; "" if it is
   correct. Never reword a correct sentence.`,
@@ -477,7 +479,7 @@ The teacher asked: "${consigna}". Judge only what is written, as it is.
   return {
     mejor: d.correcto === false && distinta && !agregaContenido(palabrasDelRelato(dicho), palabrasDelRelato(mejor)) ? mejor : null,
     tokensEntrada: r.usageMetadata?.promptTokenCount ?? 0,
-    tokensSalida: r.usageMetadata?.candidatesTokenCount ?? 0,
+    tokensSalida: tokensDeSalida(r.usageMetadata),
   };
 }
 
@@ -658,8 +660,9 @@ const PEDIDO_FRASES = `- "frases": each understandable sentence in English they 
  * "hasn't" → "has not", el modelo mismo de Allison).
  */
 const NO_ES_ERROR = `These are correct, never mistakes: contractions (I'm, hasn't, don't),
-  sequence words (first, then, after that, now, so, finally), a time
-  said with just the number ("at six"), punctuation and capital letters.`;
+  sequence words at the start of a sentence (First, Then, After that,
+  Now, So, Finally), a time said with just the number ("at six"),
+  punctuation and capital letters.`;
 
 /** Cómo se pide el comentario (mejora y bien), en el idioma del nivel. */
 function pedidoComentario(nivel: Nivel): string {
@@ -976,15 +979,15 @@ ${pedidoComentario(p.nivel)}${
       ? `
 - "deLaLeccion": true only if this rule explains exactly what was wrong
   in "mejorDijo": "${p.regla!.en}". false if the mistake is something else
-  (a verb ending, is or are, an irregular verb like "swimmed" or "goed",
-  a wrong word), even in a sentence that also uses this grammar, or if
-  there is no mistake.`
+  this rule does not talk about (a verb ending, is or are, an irregular
+  verb like "swimmed" or "goed", a wrong word), even in a sentence that
+  also uses this grammar, or if there is no mistake.`
       : ""
   }
 Never invent sentences they did not say. A wrong fact is not a mistake.`;
 
   const r = await ai.models.generateContent({
-    model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
+    model: modeloIA(),
     contents: [{ role: "user", parts: [{ text: `Message: ${p.transcripcion}` }] }],
     config: {
       systemInstruction: instruccion,
@@ -1011,7 +1014,7 @@ Never invent sentences they did not say. A wrong fact is not a mistake.`;
     ...(delDocumento && c.mejora ? { mejora: { ...c.mejora, porque: delDocumento } } : {}),
     ...(deLaRegla && c.mejora ? { mejora: { ...c.mejora, ...deLaRegla } } : {}),
     tokensEntrada: (r.usageMetadata?.promptTokenCount ?? 0) + c.tokensEntrada,
-    tokensSalida: (r.usageMetadata?.candidatesTokenCount ?? 0) + c.tokensSalida,
+    tokensSalida: tokensDeSalida(r.usageMetadata) + c.tokensSalida,
   };
 }
 
@@ -1138,8 +1141,8 @@ Return:
 ${PEDIDO_FRASES}
 - "espanol": true if most of it is in Spanish.
 ${pedidoComentario(p.nivel)}
-In "mejorFrase" fix only the grammar: the same people do the same things
-as in the pictures.${
+In "mejorFrase" fix only that mistake: the same people do the same
+things as in their sentence, even if it does not match the pictures.${
     p.correcciones?.length
       ? `
 The teacher's corrections for mistakes students often make here:
@@ -1150,7 +1153,7 @@ If they make one of these mistakes, fix it the same way.`
 Never invent sentences they did not say.`;
 
   const r = await ai.models.generateContent({
-    model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
+    model: modeloIA(),
     contents: [{ role: "user", parts: [{ text: `Message: ${p.transcripcion}` }] }],
     config: {
       systemInstruction: instruccion,
@@ -1182,6 +1185,6 @@ Never invent sentences they did not say.`;
     enOrden: dibujosEnOrden(dibujos),
     faltante,
     tokensEntrada: (r.usageMetadata?.promptTokenCount ?? 0) + c.tokensEntrada,
-    tokensSalida: (r.usageMetadata?.candidatesTokenCount ?? 0) + c.tokensSalida,
+    tokensSalida: tokensDeSalida(r.usageMetadata) + c.tokensSalida,
   };
 }

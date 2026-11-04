@@ -17,6 +17,7 @@ import {
 import { CLAVES_TEMA } from "./temas.ts";
 import { bloquePersonaje, FRASE_IA_ES } from "./personaje.ts";
 import { limpiarTranscripcion } from "./transcripcion.ts";
+import { modeloIA, tokensDeSalida } from "./modelo.ts";
 
 /**
  * El cerebro de Allison.
@@ -43,9 +44,11 @@ import { limpiarTranscripcion } from "./transcripcion.ts";
 // noviembre de 2026). Antes decía "3 to 10" y chocaba con esa forma.
 export const COMPORTAMIENTO: Record<Nivel, string> = {
   A1: `Use very simple, common words. "respuesta": at most 8 words in normal
-conversation; the shapes of cases 2 to 10 may be longer.`,
+conversation; the shapes of cases 2 to 10 and answers about yourself
+may be longer.`,
   A2: `Use simple words. "respuesta": at most 12 words in normal
-conversation; the shapes of cases 2 to 10 may be longer.`,
+conversation; the shapes of cases 2 to 10 and answers about yourself
+may be longer.`,
   B1: `Use clear, natural English. "respuesta": at most 20 words in normal
 conversation.`,
   B2: `Use natural English. "respuesta": at most 30 words in normal
@@ -119,13 +122,15 @@ const CASO_2: Record<Nivel, string> = {
   A1: `ANY mistake in their English, even a small one: the verb in the
      wrong time ("Yesterday I play soccer"), a missing -s, a plural, an
      article, a preposition, an extra or missing word, "is" for "are"
-     ("the people is"), "have" for age ("I have 12 years"), "like play"
-     for "like playing".`,
+     ("the people is"), "have" for age ("I have 12 years": age goes
+     with TO BE, "is 12 years old" with he or she too, never "has"),
+     "like play" for "like playing".`,
   A2: `ANY mistake in their English, even a small one: a wrong verb tense
      or word order ("Yesterday I play soccer", "I not like it"), a missing
      -s, a plural, an article, a preposition, an extra or missing word,
-     "is" for "are" ("the people is"), "have" for age ("I have 15 years"),
-     "like play" for "like playing".`,
+     "is" for "are" ("the people is"), "have" for age ("I have 15 years":
+     age goes with TO BE, "is 15 years old" with he or she too, never
+     "has"), "like play" for "like playing".`,
   B1: `A grammar mistake worth explaining: verb tense, a common
      preposition, word order ("Yesterday I play soccer").`,
   B2: `A grammar or naturalness mistake worth explaining: collocations,
@@ -237,7 +242,16 @@ ${campos('""', "the right form + an OPEN question", "the right form + an OPEN qu
 ${ej('they said "I like it hamburger":', "", "Mmm, hamburgers! What is your favorite?")}
 `
 }2  The rule, then the right form, then an OPEN question.
-${campos("WHY their form is wrong, in one sentence about THEIR mistake, with the right word", "their sentence said back to them (I -> you) with only that mistake fixed, same meaning, nothing dropped + an OPEN question", "their sentence said back to them (I -> you) with only that mistake fixed, the rule in a few words + an OPEN question")}
+${campos(
+  // Toda la frase bien dicha y una sola regla explicada. Antes decía "con
+  // solo ese error arreglado", y con dos errores ("My mother cook very
+  // good") chocaba con "nunca repitas su forma equivocada". Y "my" pasa a
+  // "your": con solo "I -> you", 3.5 respondía "My mother cooks…" (3 de
+  // noviembre de 2026).
+  "WHY their form is wrong, in one sentence about THEIR most important mistake, with the right word",
+  "their sentence said back to them all correct (I -> you, my -> your), same meaning, nothing added or dropped + an OPEN question",
+  "their sentence said back to them all correct (I -> you, my -> your), same meaning, nothing added or dropped, the rule of their most important mistake in a few words + an OPEN question"
+)}
 ${ej(
   // Un ejemplo en presente, y PRIMERO: con solo los dos de pasado,
   // flash-lite pasaba al pasado frases de lo que siempre pasa ("My mother
@@ -357,10 +371,22 @@ ${ej(
   "House. H, O, U, S, E. Try saying: my house.",
   "House. H, O, U, S, E. It sounds like 'haus'. Try saying: my house."
 )}
-11 A SHORT praise that names what they did well, then a new OPEN
-   question about THEIR life. Never a three-sentence compliment.
+11 Reply to what they said, like a real conversation, then an OPEN
+   question that follows THEIR topic. If they got right something hard
+   for them -- today's target, a topic they still get wrong, a mistake
+   they used to make -- start with ONE short praise that names it (it may
+   go over the word limit). Never praise an ordinary sentence: give it a
+   real reply.
    A question about you: answer as HOW YOU TALK ABOUT YOURSELF says.
-${ej('they said "I cleaned my room":', "", "Yes, 'I cleaned', perfect! What did you eat today?")}`;
+${ej('they said "I cleaned my room":', "", "Nice! Who helped you?")}
+${ej(
+  // Elogio que no se confunde con algo que Allison hizo: con "Yes, 'I
+  // cleaned', perfect!", 3.5 llegó a decir "Yes, I visited my
+  // grandmother too!" (4 de noviembre de 2026).
+  'they said "I cleaned my room" and the past is hard for them:',
+  "",
+  "You used the past perfectly! Who helped you?"
+)}`;
 }
 
 /**
@@ -471,7 +497,8 @@ They are a Spanish speaker from Colombia at CEFR level ${nivel}.${
   alumno.temasAbiertos?.length
     ? `
 Still getting wrong: ${alumno.temasAbiertos.join(", ")}. Steer the
-conversation so these come up naturally, without announcing it.`
+conversation so these come up naturally, without announcing it. When
+they get one of these right, praise it in a few words (case 11).`
     : ""
 }${
   alumno.temasDominados?.length
@@ -497,7 +524,7 @@ HOW YOU TEACH
 - The conversation never stops for a grammar lesson. You correct in
   passing and keep talking.
 - In "respuesta", never repeat their wrong form: say only the right
-  one. Wrong: "You TAKE your desk." Right: "You tidied your desk!"${
+  one. Wrong: "You play soccer yesterday!" Right: "You played soccer!"${
     sinEs
       ? `
   (Case 3 may name their word only to explain what it means.)`
@@ -510,11 +537,11 @@ HOW YOU TEACH
 ${
   NIVELES_UNA_CORRECCION.has(nivel)
     ? `- At this level: in cases 2, 3 and 4, ONE item in "correcciones" (the
-  mistake of that case), unless you are not sure of the right form. In
-  every other case "correcciones" is [].`
+  most important mistake of that case), unless you are not sure of the
+  right form. In every other case "correcciones" is [].`
     : `- Report every real mistake in "correcciones" (grammar,
-  pronunciation, vocabulary, naturalness), but in "respuesta" recast
-  only the most important one. In cases 6 and 9 "correcciones" is [].`
+  pronunciation, vocabulary, naturalness), but explain only the most
+  important one out loud. In cases 6 and 9 "correcciones" is [].`
 }
 
 ${bloqueCasos(nivel, leccion?.estructuraEn)}
@@ -526,9 +553,10 @@ correction. The student trusts this list and will memorize it.
   spoke correctly.
 - Every "correccion" must be genuinely correct English, and every
   "explicacion" must state the real rule. Age uses TO BE: "I am 25
-  years old" — never "I have".
-- Your corrections must AGREE with "respuesta". If you say "You are
-  twenty-five", you cannot tell them to use "to have".
+  years old", "my brother is 20 years old" — never "have" or "has",
+  not even with he or she.
+- Your corrections must AGREE with "respuesta": the form you say there
+  is the form in "correccion".
 - NEVER change the meaning of what the student said. Fix the form, keep
   the message. If they said something negative it stays negative:
   "I no have money" becomes "I don't have money", NEVER "I have money".
@@ -557,7 +585,10 @@ is often the most valuable moment of the class.
 - When they mention English words inside a Spanish sentence ("el was",
   "el did"), they are NAMING vocabulary, not making a mistake. A turn
   spoken in Spanish gets an EMPTY "correcciones" array.
-- If they asked a question, ANSWER IT for real (cases 7, 8 and 10).${bloqueHabito}
+- If they asked for help -- how to say something, a grammar question,
+  how a word is spelled -- give it for real (cases 7, 8 and 10). A
+  question for YOU in Spanish is case 7: give it to them in English so
+  they can ask it.${bloqueHabito}
 
 ${bloqueIdiomas(nivel)}
 
@@ -579,8 +610,7 @@ ${
 - "respuesta": the English part. Only English.
 - "correcciones": the mistakes you heard, following the rules above.
   Each one carries the rule twice: "explicacion" in simple English and
-  "explicacionEs", the same rule in Spanish ("Use 'to be' for age" /
-  "Para la edad se usa 'to be', no 'to have'").`;
+  "explicacionEs", the same rule in Spanish.`;
 }
 
 const ESQUEMA_RESPUESTA = {
@@ -1150,12 +1180,26 @@ export function sinRepetirElEspanol(en: string, es: string, caso = ""): string {
  */
 export function sinGenero(es: string): string {
   return es
-    .replace(/\btranquil[oa]\b/gi, (m) => (m[0] === "T" ? "No te preocupes" : "no te preocupes"))
+    // Solo como interjección ("Tranquilo, vamos…", "¡Tranquila!"): "una
+    // habitación tranquila" en una traducción quedaba "una habitación no
+    // te preocupes" (auditoría, 4 de noviembre de 2026).
+    .replace(/(^|[¡.!?]\s*)(tranquil[oa])(?=\s*(?:[,.!]|$))/gi, (_, antes: string, t: string) =>
+      antes + (t[0] === "T" ? "No te preocupes" : "no te preocupes")
+    )
     .replace(/\bti mism[oa]\b/gi, "ti")
     .replace(/\b(?:te sientes|estás) aburrid[oa]\b/gi, "te aburres")
     .replace(/¿\s*list[oa]s?\s*\?/gi, "¿Vamos?")
-    .replace(/\best[aá]s list[oa]\b/gi, "ya puedes")
-    .replace(/\bbienvenid[oa]s?\b/gi, (m) => (m[0] === "B" ? "Te damos la bienvenida" : "te damos la bienvenida"));
+    // "Tienes todo listo": "listo" va con "todo". Antes pasaba a "ya
+    // puedes", y "¿Estás lista para el viaje?" quedaba "¿ya puedes para el
+    // viaje?" (4 de noviembre de 2026).
+    .replace(/\b(e)st[aá]s list[oa]\b/gi, (_, e: string) => (e === "E" ? "Tienes todo listo" : "tienes todo listo"))
+    .replace(/\b(e)stoy list[oa]\b/gi, (_, e: string) => (e === "E" ? "Tengo todo listo" : "tengo todo listo"))
+    // Solo al empezar la frase ("¡Bienvenida al aeropuerto!"): "te damos
+    // la bienvenida" o "una cálida bienvenida" ya son neutras y quedaban
+    // "te damos la te damos la bienvenida" (4 de noviembre de 2026).
+    .replace(/(^|[¡.!?]\s*)(bienvenid[oa]s?)\b/gi, (_, antes: string, b: string) =>
+      antes + (b[0] === "B" ? "Te damos la bienvenida" : "te damos la bienvenida")
+    );
 }
 
 const comparable = (s: string) => s.toLowerCase().replace(/[^a-záéíóúñ ]/g, "").trim();
@@ -1188,6 +1232,135 @@ export function componerRespuesta(o: Parameters<typeof componerSinCierre>[0]): s
   // corrección queda antes de la última oración, y la invitación tiene
   // que seguir a la pregunta, no al español.
   return abrirPregunta(componerSinCierre(o), casoEfectivo(o.caso, o.respuesta ?? "", o.repetido ?? false));
+}
+
+/**
+ * Después de "… years (old)" la edad termina: fin de frase, coma, "and" o
+ * "but". "I have two years in this school" o "…studying English" (cuánto
+ * lleva, el otro calco de "tengo dos años") no es edad, y sin esto quedaba
+ * "You are two years old in this school" (auditoría, 4 de noviembre de 2026).
+ */
+const FIN_DE_EDAD = String.raw`(?=\s*(?:[.,!?;:]|$|and\b|but\b))`;
+/** El alumno usó "have" para la edad ("My sister have ten years", "I has 15 years old"), con quién lo dijo. */
+const EDAD_CON_HAVE = new RegExp(String.raw`\b(?:[A-Za-z]+\s+)?(?:have|has)\s+[\w-]+\s+years?(?:\s+old)?` + FIN_DE_EDAD, "i");
+/** La forma bien dicha: "is ten years old", "is one year old". */
+const FORMA_DE_EDAD = /\b(?:am|is|are) [\w-]+ years? old\b/;
+/** La regla, igual en la voz y en la lista. */
+const reglaDeEdad = (forma: string) => ({
+  en: `Age uses the verb to be: '${forma}'.`,
+  es: `Para la edad se usa el verbo to be: '${forma}'.`,
+});
+
+/**
+ * La edad va con "to be". Cuando el alumno dice "My sister have ten
+ * years", el modelo a veces arregla solo la concordancia y responde "Your
+ * sister has ten years!", con el calco del español intacto, y el alumno
+ * se lo aprende. Pasó 1 de cada 4 veces con el prompt de 2.5 y 1 de cada
+ * 14 con el de 3.5 (3 de noviembre de 2026): el código lo deja bien.
+ * Devuelve el texto con "is/am/are … years old", o el mismo si no había
+ * nada que arreglar.
+ */
+export function edadConToBe(texto: string): string {
+  return texto.replace(
+    // Sin "Do/Does/Did" antes: "Do you have ten years?" no pasa a "Do you are…".
+    new RegExp(String.raw`(?<!\b(?:do|does|did|don't|doesn't|didn't)\s+)\b([A-Za-z]+)\s+(?:has|have)\s+([\w-]+)\s+years?(?:\s+old)?` + FIN_DE_EDAD, "gi"),
+    (_, quien: string, cuanto: string) => {
+      const q = quien.toLowerCase();
+      // "my parents" (sustantivo en plural, en minúscula) va con "are";
+      // un nombre como "Carlos" no.
+      const ser = q === "i" ? "am" : ["you", "we", "they"].includes(q) || (/[^s]s$/.test(q) && quien === q) ? "are" : "is";
+      // "one year old", nunca "one years old".
+      const anos = /^(one|1|a|an)$/i.test(cuanto) ? "year" : "years";
+      return `${quien} ${ser} ${cuanto} ${anos} old`;
+    }
+  );
+}
+
+/**
+ * Lo que Allison dice cuando el alumno usó "have" para la edad: si la
+ * respuesta repitió el calco, se arregla, y si la respuesta o el español
+ * hablan de "has", el español pasa a la regla de verdad (el modelo
+ * explicaba "se usa 'has'", o "to be, y con he se usa has").
+ */
+export function conLaEdadBien(transcripcion: string, espanol: string | undefined, respuesta: string | undefined) {
+  const dicho = transcripcion.match(EDAD_CON_HAVE)?.[0];
+  if (!respuesta || !dicho) return { espanol, respuesta };
+  const arreglada = edadConToBe(respuesta);
+  const forma = (arreglada.match(FORMA_DE_EDAD) ?? edadConToBe(dicho).match(FORMA_DE_EDAD))?.[0];
+  // El español se cambia si la respuesta tenía el calco, o si explica la
+  // edad con "has". No por un "has" cualquiera: "¡Lo has dicho casi bien!"
+  // o la regla de otro error ("Con she se usa 'has'") están bien.
+  const e = espanol ?? "";
+  const espanolMal = arreglada !== respuesta || (/\b(has|have)\b/i.test(e) && /\b(edad|años)\b/i.test(e));
+  return { espanol: espanolMal && forma ? reglaDeEdad(forma).es : espanol, respuesta: arreglada };
+}
+
+/**
+ * En los casos 1 y 2 Allison le devuelve al alumno su frase bien dicha:
+ * "my" pasa a "your". El prompt lo pide ("my -> your") y 3.5 igual
+ * respondía "My mother cooks very well!" a "My mother cook very good",
+ * 10 de 16 veces, como si hablara de su propia mamá (4 de noviembre de
+ * 2026). Solo en la primera oración, que es la que repite su frase, y
+ * solo con las palabras que el alumno dijo ("my mother").
+ */
+export function suFraseDeVuelta(transcripcion: string, respuesta: string | undefined, caso: string | undefined): string | undefined {
+  // Solo el caso 2, que siempre empieza con su frase bien dicha. En el 1
+  // (de B1 en adelante) Allison habla con naturalidad y "Math is my
+  // favorite subject too!" es suyo (auditoría, 4 de noviembre de 2026).
+  if (!respuesta || caso !== "2") return respuesta;
+  const dichas = new Set([...transcripcion.toLowerCase().matchAll(/\bmy\s+([a-z'-]+)/g)].map((m) => m[1]));
+  if (!dichas.size) return respuesta;
+  const fin = respuesta.search(/[.!?](\s|$)/);
+  const primera = fin < 0 ? respuesta : respuesta.slice(0, fin + 1);
+  // Lo que va entre comillas es lo que el alumno debe decir ("Say 'my
+  // mother cooks very well'"): ahí "my" se queda.
+  const arreglada = primera
+    // Una comilla que abre va al principio o después de un espacio: el
+    // apóstrofo de "doesn't" no abre nada.
+    .split(/((?:^|(?<=\s))['"‘“][^"’”]*?['"’”](?=\s|[.,!?]|$))/)
+    .map((trozo) =>
+      /^['"‘“]/.test(trozo)
+        ? trozo
+        : trozo.replace(/\b(my|My|MY)\s+([A-Za-z'-]+)/g, (todo, my: string, palabra: string) =>
+            dichas.has(palabra.toLowerCase()) ? `${my === "my" ? "your" : "Your"} ${palabra}` : todo
+          )
+    )
+    .join("");
+  return arreglada + respuesta.slice(primera.length);
+}
+
+/**
+ * La misma regla en la lista de correcciones, que es la que el alumno
+ * estudia: la forma con "to be" y la explicación sin "has". Si el modelo
+ * solo anotó el verbo ("have -> has"), se anota la frase que dijo el
+ * alumno ("brother have twenty years -> brother is twenty years old").
+ */
+export function correccionDeEdad(transcripcion: string, c: Correccion): Correccion {
+  const dicho = transcripcion.match(EDAD_CON_HAVE)?.[0];
+  if (!dicho || !c?.correccion || !c?.original) return c;
+  const conRegla = (original: string, correccion: string): Correccion | null => {
+    const forma = correccion.match(FORMA_DE_EDAD)?.[0];
+    if (!forma) return null;
+    const regla = reglaDeEdad(forma);
+    return { ...c, original, correccion, explicacion: regla.en, explicacionEs: regla.es };
+  };
+  // La frase entera: "… has twenty years" -> "… is twenty years old".
+  const entera = conRegla(c.original, edadConToBe(c.correccion));
+  if (entera) return entera;
+  // Solo hasta el verbo ("have -> has", "My brother have -> My brother
+  // has"): se anota lo que dijo el alumno, desde ahí hasta "years".
+  if (/\b(have|has)$/i.test(c.original.trim()) && /\b(have|has)$/i.test(c.correccion.trim())) {
+    const literal = c.original.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const conResto = transcripcion.match(new RegExp(`${literal}\\s+[\\w-]+\\s+years?(?:\\s+old)?` + FIN_DE_EDAD, "i"))?.[0];
+    // Lo de la edad solo si es la misma frase que anotó el modelo: "My
+    // sister have -> has" (sobre "a dog") no pasa a la edad de otra frase.
+    const mismaFrase = dicho.toLowerCase().includes(c.original.trim().toLowerCase());
+    for (const frase of [conResto, mismaFrase ? dicho : undefined]) {
+      const r = frase ? conRegla(frase, edadConToBe(frase)) : null;
+      if (r) return r;
+    }
+  }
+  return c;
 }
 
 function componerSinCierre(o: {
@@ -1478,11 +1651,12 @@ export async function* conversarEnStream(opciones: {
       ["1", "2", "3", "4", "5"].includes(caso ?? "") &&
       contieneErrorRepetido(d.transcripcion ?? "", alumno.erroresRepetidos ?? []);
     casoAplicado = casoEfectivo(caso, d.respuesta ?? "", repetido) || undefined;
+    const edad = conLaEdadBien(d.transcripcion ?? "", d.espanol, suFraseDeVuelta(d.transcripcion ?? "", d.respuesta, caso));
     return pulirRespuesta(
       componerRespuesta({
         caso,
-        espanol: d.espanol,
-        respuesta: d.respuesta,
+        espanol: edad.espanol,
+        respuesta: edad.respuesta,
         nivel: alumno.nivel,
         nombre: alumno.nombre.split(" ")[0],
         repetido,
@@ -1495,7 +1669,7 @@ export async function* conversarEnStream(opciones: {
   };
 
   const stream = await ai.models.generateContentStream({
-    model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
+    model: modeloIA(),
     contents: [
       ...contexto,
       {
@@ -1551,7 +1725,7 @@ export async function* conversarEnStream(opciones: {
   const entregada = { transcripcion: false, respuesta: false };
   /** Lo que ya sonó: la versión final debe ser exactamente ésta. */
   let vozEntregada: string | null = null;
-  let uso: { promptTokenCount?: number; candidatesTokenCount?: number } | undefined;
+  let uso: { promptTokenCount?: number; candidatesTokenCount?: number; thoughtsTokenCount?: number } | undefined;
 
   /**
    * Saca un campo del JSON a medio escribir, solo si YA está cerrado.
@@ -1723,7 +1897,9 @@ export async function* conversarEnStream(opciones: {
   const transcripcionLimpia = escrito ?? quitarMarcadores(sinArtefactos(datos.transcripcion ?? ""));
   const dicho = normalizar(transcripcionLimpia);
 
-  const correcciones = ((datos.correcciones ?? []) as Correccion[]).filter((c) => {
+  // "have" para la edad: la forma y la regla con "to be" (correccionDeEdad).
+  const edadMal = EDAD_CON_HAVE.test(transcripcionLimpia);
+  const correcciones =((datos.correcciones ?? []) as Correccion[]).map((c) => correccionDeEdad(transcripcionLimpia, c)).filter((c) => {
     if (!c?.original?.trim() || !c?.correccion?.trim()) return false;
     const o = normalizar(c.original);
     const co = normalizar(c.correccion);
@@ -1777,6 +1953,16 @@ export async function* conversarEnStream(opciones: {
       return false;
     }
 
+    // La edad va con "to be": "My brother have twenty years" corregido a
+    // "has twenty years" arregla la concordancia y deja el calco del
+    // español, y el alumno se lo aprende. El prompt lo dice; con
+    // 3.5-flash-lite se escapaba 1 de cada 15 (3 de noviembre de 2026).
+    // Llega entera ("... has twenty years") o solo el verbo ("have -> has").
+    // Solo cuando el alumno habló de su edad: "I have two years to finish
+    // school" corregido es una corrección real (auditoría, 4 de noviembre).
+    if (edadMal && new RegExp(String.raw`\b(has|have|had) \S+ years?(?: old)?` + FIN_DE_EDAD).test(co)) return false;
+    if (edadMal && /^(have|has)$/.test(o) && /^(have|has)$/.test(co)) return false;
+
     return true;
   }).map((c): Correccion =>
     // Las dos explicaciones con el idioma cambiado: la pantalla mostraría
@@ -1819,7 +2005,7 @@ export async function* conversarEnStream(opciones: {
       caso: casoAplicado,
       objetivoUsado,
       tokensEntrada: uso?.promptTokenCount ?? 0,
-      tokensSalida: uso?.candidatesTokenCount ?? 0,
+      tokensSalida: tokensDeSalida(uso),
       ...(fallaIA ? { fallaIA } : {}),
     },
   };

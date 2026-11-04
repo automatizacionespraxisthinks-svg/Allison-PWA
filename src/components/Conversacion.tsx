@@ -544,7 +544,7 @@ export function Conversacion({
               <p className="mt-2 text-texto-suave">
                 {leccion
                   ? `Toca el botón y salúdame: empezamos "${leccion.titulo}". Si te equivocas, te corrijo y seguimos.`
-                  : "Toca el botón y háblame en inglés. Habla tranquilo: si te equivocas, te corrijo y seguimos."}
+                  : "Toca el botón y háblame en inglés. Habla con calma: si te equivocas, te corrijo y seguimos."}
               </p>
             </div>
           </div>

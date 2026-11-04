@@ -114,7 +114,7 @@ consulta, no al importar el módulo.
 | `AUTH_SECRET` | generado, listo |
 | `AUTH_URL` | **falta — OBLIGATORIA**: tu dominio con https, sin barra final. De aquí salen los enlaces de los correos y el regreso desde el pago; sin ella apuntan a una dirección muerta |
 | `GEMINI_API_KEY` | **falta**: la llave nueva |
-| `GEMINI_MODEL` | listo |
+| `GEMINI_MODEL` | **`gemini-3.5-flash-lite`** (cambiada el 4 de noviembre de 2026), o borrarla: sin ella se usa ese mismo. Si queda en `gemini-2.5-flash-lite`, el Resumen del panel lo avisa en rojo |
 | `TTS_API_KEY` (opcionales `TTS_URL`, `TTS_VOZ`, `TTS_VOZ_ES`, `TTS_SIMULTANEAS`, `TTS_ESPERA_TURNO_MS`) | **falta**: la clave propia de la API de voz (pídesela al responsable del servicio). Sin ella Allison habla con la voz del navegador y el log lo dice |
 | `CORREO`, `GMAIL_USUARIO`, `GMAIL_APP_PASSWORD`, `GMAIL_PUERTO` | `GMAIL_PUERTO=587` (punto 1: Hetzner bloquea el 465) |
 | `PASARELA` | `bold` (candado: `simulada` revienta en producción) |
@@ -124,7 +124,7 @@ consulta, no al importar el módulo.
 | `TAREAS_SECRETO` | generado, listo |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | **faltan** — las llaves de los avisos en el celular (recordatorio de la racha). Se generan una sola vez con `npx web-push generate-vapid-keys` y no se cambian: si cambian, cada celular tiene que volver a activar los avisos. Sin ellas los avisos se esconden y el recordatorio sigue por correo |
 | `PROXY_CONFIABLE` | **`reverso` — no la dejes vacía**: Traefik reescribe `x-forwarded-for`. Vacía, todas las personas comparten un mismo límite: 5 registros por hora para todo el país, 5 recuperaciones de contraseña por hora, y la entrada pierde el freno por dirección |
-| `COP_POR_MENSAJE`, `RECARGA_MINIMA_COP`, `MENSAJES_PRUEBA`, `REGISTROS_GLOBALES_POR_HORA` | **ajustar**: `COP_POR_MENSAJE=37` (desde el 31 de octubre de 2026; era 60), `RECARGA_MINIMA_COP=8000` y `MENSAJES_PRUEBA=5`; borra `MENSAJES_PRUEBA_INICIAL` y `MENSAJES_PRUEBA_VERIFICAR` si siguen ahí |
+| `COP_POR_MENSAJE`, `RECARGA_MINIMA_COP`, `MENSAJES_PRUEBA`, `REGISTROS_GLOBALES_POR_HORA` | **ajustar**: `COP_POR_MENSAJE=50` (desde el 4 de noviembre de 2026, por el costo de gemini-3.5-flash-lite; era 37, y antes 60), `RECARGA_MINIMA_COP=8000` y `MENSAJES_PRUEBA=5`; borra `MENSAJES_PRUEBA_INICIAL` y `MENSAJES_PRUEBA_VERIFICAR` si siguen ahí |
 | `RUTA_A2`, `RUTA_B1` | **`1`** desde el 31 de octubre de 2026 (decisión del dueño: se encienden ya y la docente revisa después, con el nativo para los Repasos finales). Con `1`, los alumnos de ese nivel ven la ruta del Reino Unido y la de Canadá; vacías, la ruta provisional |
 | `BOLD_PRUEBAS` | **vacía**: con ella Bold cobra con las llaves de prueba, y en producción la app se niega |
 | `CRON_SECRET` | opcional — un segundo secreto para la limpieza (otra máquina, o cambiar `TAREAS_SECRETO` sin cortarla) |
@@ -214,6 +214,15 @@ Dokploy, despliega y, apenas arranque, corre `node scripts/migrar.mjs`
 en la Terminal del contenedor. El código no la necesita para arrancar:
 en ese minuto los planes siguen mostrando 700. Quien ya tiene un plan
 recibe las 1.280 desde su próximo mes.
+
+**La 029 (920 intervenciones al mes en los planes, 4 de noviembre de
+2026)** va junto con `COP_POR_MENSAJE=50`. El orden da igual: el código
+no usa la columna nueva (la llena un disparador de la base), así que
+puede salir antes o después de la migración. Lo seguro: cambia la
+variable en Dokploy, despliega y corre `node scripts/migrar.mjs` en la
+Terminal del contenedor. Hasta que corra, los planes nuevos siguen
+entregando 1.280. Quien ya pagó un plan conserva lo que compró (1.280)
+hasta que venza; solo las compras nuevas reciben 920.
 
 **Cuando una migración nueva tenga que ir ANTES del código nuevo**
 (porque el código la usa al arrancar, como pasó con `dias_descanso()`,
@@ -389,7 +398,7 @@ secreto.
   no cuadró; ya no cuenta como ingreso. Descuenta a mano desde la ficha del
   alumno (el ajuste exige una nota) y marca el pago con «Ya lo revisé».
 - **Planes: sin aviso antes de que termine el mes.** La renovación
-  mensual ya funciona (el anual entrega 1.280 cada mes y lo que sobra
+  mensual ya funciona (el anual entrega cada mes lo que se compró y lo que sobra
   vence, como dicen los términos), pero la app no le avisa al alumno
   que sus mensajes del plan están por vencer. Un aviso unos días antes
   evitaría la sorpresa.

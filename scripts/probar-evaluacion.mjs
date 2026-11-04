@@ -103,10 +103,10 @@ for (let rep = 0; rep < reps; rep++) {
   }
 }
 
-// Precios de gemini-2.5-flash-lite por millón de tokens (ai.google.dev,
-// oct-2026): audio de entrada 0.30, texto 0.10, salida 0.40. Se cuenta
-// toda la entrada como audio: es la cota alta.
-const usd = (tokEntrada / 1e6) * 0.3 + (tokSalida / 1e6) * 0.4;
+// Precios de gemini-3.5-flash-lite por millón de tokens (ai.google.dev,
+// nov-2026): entrada 0.30 (texto y audio por igual), salida 2.50, con el
+// razonamiento incluido en la salida (src/lib/uso.ts).
+const usd = (tokEntrada / 1e6) * 0.3 + (tokSalida / 1e6) * 2.5;
 const porEval = usd / Math.max(total, 1);
 tiempos.sort((a, b) => a - b);
 console.log(`\n${total - malas}/${total} bien.`);

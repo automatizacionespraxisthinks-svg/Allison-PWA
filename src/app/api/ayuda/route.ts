@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { GoogleGenAI, Type } from "@google/genai";
 import { z } from "zod";
+import { sinGenero } from "@/lib/allison";
 import { sql } from "@/lib/db";
 import { limitar } from "@/lib/limite";
+import { modeloIA, tokensDeSalida } from "@/lib/modelo";
 import { alumnoActual } from "@/lib/sesion";
 
 /** Tope de la ruta: una traducción tarda 2-5 s; 30 da margen. */
@@ -67,9 +69,10 @@ this from their English teacher and needs help. Return:
 
 - "traduccion": what it means, in natural Colombian Spanish. Not word by
   word: what a person would actually say.
-- "sugerencia": ONE thing they could reply, in English, at level ${nivel}.
-  Short, true to a real conversation, and easy enough that they can say
-  it out loud right now. Never a question back unless it fits naturally.${
+- "sugerencia": ONE thing they could reply, in natural US English, at
+  level ${nivel}. Short, true to a real conversation, and easy enough that
+  they can say it out loud right now. Never a question back unless it
+  fits naturally.${
     tarea
       ? `
   IMPORTANT: their task right now is "${tarea}" (in Spanish). The
@@ -77,16 +80,26 @@ this from their English teacher and needs help. Return:
   about something else: it may start with a two-word reaction, then do
   the task. If the task is to ask about something, the suggestion IS that
   question. Example: task "Pide un café" → "Nice! Can I have a coffee,
-  please?". Always natural US English.`
+  please?".`
       : ""
   }
 - "sugerenciaEs": what that suggestion means in Spanish, so they know
-  what they are saying before they say it.`;
+  what they are saying before they say it.
+
+The student can be a boy or a girl, and the app does not know which: in
+"traduccion" and "sugerenciaEs", never a word that changes with their
+gender, even if the English has one. Say it another way:
+  "Welcome!" → "¡Te damos la bienvenida!" (never "Bienvenido/a")
+  "Are you ready?" → "¿Tienes todo listo?" (never "¿Estás listo/a?")
+  "Are you tired?" → "¿Te cansaste?" (never "¿Estás cansado/a?")
+  "I'm excited" → "Me emociona mucho" (never "Estoy emocionado/a")
+  "I'm nervous" → "Me dan nervios" (never "Estoy nervioso/a")
+  "I'm Colombian" → "Soy de Colombia" (never "Soy colombiano/a")`;
 
   let r: Awaited<ReturnType<typeof ai.models.generateContent>>;
   try {
     r = await ai.models.generateContent({
-      model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash-lite",
+      model: modeloIA(),
       contents: [{ role: "user", parts: [{ text: texto }] }],
       config: {
         systemInstruction: instruccion,
@@ -127,17 +140,19 @@ this from their English teacher and needs help. Return:
     select registrar_uso(
       ${alumno.id}, 'ayuda',
       ${r.usageMetadata?.promptTokenCount ?? 0},
-      ${r.usageMetadata?.candidatesTokenCount ?? 0},
+      ${tokensDeSalida(r.usageMetadata)},
       0, true, false
     )
   `.catch(() => {});
 
   // El contador de la pantalla baja con lo que se cobró.
   const [saldo] = await sql`select mensajes_plan, mensajes_recarga from saldos where user_id = ${alumno.id}`.catch(() => []);
+  // Lo que el código sabe arreglar de género, por si el modelo se olvida
+  // de la regla (revisión de los prompts, 4 de noviembre de 2026).
   return NextResponse.json({
-    traduccion: d.traduccion ?? "",
+    traduccion: sinGenero(d.traduccion ?? ""),
     sugerencia: d.sugerencia ?? "",
-    sugerenciaEs: d.sugerenciaEs ?? "",
+    sugerenciaEs: sinGenero(d.sugerenciaEs ?? ""),
     ...(saldo ? { restantes: saldo.mensajes_plan + saldo.mensajes_recarga } : {}),
   });
 }
