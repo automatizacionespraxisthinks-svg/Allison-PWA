@@ -29,6 +29,25 @@ En español, entre oraciones, casi no hay pausa: tras «¡Muy bien!» quedaron
 60 ms. En inglés el servicio sí respeta los signos (unos 300 ms en
 `.`/`!`/`?` y 130 ms en comas).
 
+Medido otra vez el 17 de noviembre de 2026 (voz `af_jessica`, velocidad 0,8,
+WAV), con la misma frase y solo el signo cambiado:
+
+| Dentro del español | Silencio |
+|---|---|
+| `,` «No te preocupes, vamos…» | ninguno (igual que sin coma) |
+| `!` `?` «¡Muy bien! Se dice así.» | ninguno |
+| `.` entre dos oraciones cortas «Muy bien. Se dice así.» | ninguno |
+| `.` entre dos oraciones largas «…paso a paso. Escúchalo otra vez.» | 250 ms |
+| `;` `:` `…` `—` | 0-65 ms |
+
+En inglés sí: comas 85-120 ms, puntos y preguntas 285-610 ms.
+
+**La app no lo puede arreglar sola:** mandar cada oración o cada tramo
+entre comas como su propio segmento `es` da exactamente el mismo audio (el
+servicio une los segmentos seguidos del mismo idioma antes de generarlos), y
+cambiar el signo («¡Muy bien!.», «,.») tampoco deja pausa. Hace falta el
+cambio 2 de abajo.
+
 El silencio de más sale de cada segmento: el servicio genera cada uno por
 separado, con silencio al principio y al final, y los pega tal cual. Cuanto
 más corto el segmento («con», «'ed'»), más se nota.
@@ -83,7 +102,7 @@ en orden. La primera parte no debe tardar más que hoy.
 
 Elegidos de oído (variante A2):
 
-- Toda la respuesta mixta con la voz de Allison, `af_heart` (también el
+- Toda la respuesta mixta con la voz de Allison (hoy `af_jessica`; la prueba fue con `af_heart`) (también el
   español; con `ef_dora` para el español se distinguían menos).
 - Velocidad: el inglés, la del nivel (A1 0,7 · A2 0,8 · B1 y B2 0,9 · C1 y C2 1; «lento»
   A1 0,6 · desde A2 0,7). El español, un poco más ágil: la del nivel +

@@ -17,7 +17,7 @@
  */
 process.env.TTS_API_KEY = "clave-de-prueba";
 process.env.TTS_URL = "https://tts.ejemplo.org/";
-process.env.TTS_VOZ = "af_heart";
+process.env.TTS_VOZ = "af_jessica";
 process.env.TTS_VOZ_ES = "ef_dora";
 process.env.TTS_SIMULTANEAS = "2";
 process.env.TTS_ESPERA_TURNO_MS = "300";
@@ -121,7 +121,7 @@ console.log("\nLa petición a la API:");
   probar("POST al endpoint nativo /v1/tts, sin barra doble", url === "https://tts.ejemplo.org/v1/tts" && opciones.method === "POST", url);
   probar("clave Bearer", cabeceras.get("authorization") === "Bearer clave-de-prueba");
   probar("mp3 en STREAMING, velocidad 1 si no se pide otra", cuerpo.format === "mp3" && cuerpo.stream === true && cuerpo.speed === 1, opciones.body);
-  probar("texto en inglés: voz inglesa y lang en-US", cuerpo.voice === "af_heart" && cuerpo.lang === "en-US");
+  probar("texto en inglés: voz inglesa y lang en-US", cuerpo.voice === "af_jessica" && cuerpo.lang === "en-US");
   probar("solo text, nunca text y segments a la vez", "text" in cuerpo && !("segments" in cuerpo));
   const id = cabeceras.get("x-request-id") ?? "";
   probar("X-Request-ID propio: allison-…, válido para la API (≤64, [A-Za-z0-9_.:-])", /^allison-[A-Za-z0-9_.:-]+$/.test(id) && id.length <= 64, id);
@@ -157,7 +157,7 @@ console.log("\nLa petición a la API:");
   const cuerpo = JSON.parse(ultima().opciones.body);
   probar(
     "una respuesta mixta va por partes, cada una con su idioma, y con la voz inglesa",
-    cuerpo.voice === "af_heart" &&
+    cuerpo.voice === "af_jessica" &&
       !("text" in cuerpo) &&
       JSON.stringify(cuerpo.segments) ===
         JSON.stringify([
@@ -231,6 +231,69 @@ probar(
     partes("¡Hola! Soy Allison, tu profesora de inglés. Vamos a aprender inglés conversando, de forma natural y sin miedo a equivocarnos.") ===
       "¡Hola! Soy Allison, tu profesora de inglés. Vamos a aprender inglés conversando, de forma natural y sin miedo a equivocarnos."
 );
+probar(
+  "lo citado va en inglés aunque no esté en el contenido; el significado y la pronunciación, en español",
+  partes("Se dice 'nice' o 'friendly'.") === "Se dice ['nice'] o ['friendly'.]" &&
+    partes("'Sensible' significa 'sensato'.") === "['Sensible'] significa 'sensato'." &&
+    partes("Se pronuncia 'birzdei'.") === "Se pronuncia 'birzdei'." &&
+    partes("La palabra correcta es 'sensitive'.") === "La palabra correcta es ['sensitive'.]",
+  [partes("Se dice 'nice' o 'friendly'."), partes("'Sensible' significa 'sensato'."), partes("La palabra correcta es 'sensitive'.")].join(" | ")
+);
+probar(
+  "una frase citada la decide la mayoría: 'me gusta la pizza' es español, 'I like this café' inglés",
+  partes("Para decir 'me gusta la pizza', se usa I like.") === "Para decir 'me gusta la pizza', se usa [I like.]" &&
+    partes("Se dice 'I like this café'.") === "Se dice ['I like this café'.]",
+  [partes("Para decir 'me gusta la pizza', se usa I like."), partes("Se dice 'I like this café'.")].join(" | ")
+);
+probar(
+  "español que también sale en el contenido en inglés (solar, caja) y la cita en español antes de 'en inglés es'",
+  partes("Para el protector solar se dice 'sunscreen'.") === "Para el protector solar se dice ['sunscreen'.]" &&
+    partes("Ojo, 'embarazada' en inglés es 'pregnant'.") === "Ojo, 'embarazada' en inglés es ['pregnant'.]" &&
+    partes("'Sensible' en inglés significa sensato.") === "['Sensible'] en inglés significa sensato.",
+  [partes("Para el protector solar se dice 'sunscreen'."), partes("Ojo, 'embarazada' en inglés es 'pregnant'."), partes("'Sensible' en inglés significa sensato.")].join(" | ")
+);
+probar(
+  "una palabra que se escribe como el inglés va en inglés; un préstamo al final de la frase inglesa también",
+  partes("Di she: but she sings in English.") === "Di [she: but she sings in English.]" &&
+    partes("La coordinadora dice: Do you want pizza?") === "¿La coordinadora dice: [Do you want pizza?]",
+  [partes("Di she: but she sings in English."), partes("La coordinadora dice: Do you want pizza?")].join(" | ")
+);
+probar(
+  "el alumno mezcló idiomas: su palabra en español citada va en español y la inglesa en inglés (auditoría, 17 de noviembre de 2026)",
+  partes("[es] 'Parque' en inglés es 'park' y 'hermana' es 'sister'. [en-US] You went to the park with your sister!", "auto") ===
+    "'Parque' en inglés es ['park'] y 'hermana' es ['sister'. You went to the park with your sister!]" &&
+    partes("[es] En inglés decimos 'dog' en lugar de 'perro'. [en-US] You have a dog!", "auto") ===
+      "En inglés decimos ['dog'] en lugar de 'perro'. [You have a dog!]" &&
+    partes("[es] Para profesiones u ocupaciones se usa 'a'. [en-US] Your mom is a teacher!", "auto") ===
+      "Para profesiones u ocupaciones se usa ['a'. Your mom is a teacher!]" &&
+    partes("[es] 'En bus' en inglés se dice 'by bus'. [en-US] You go by bus!", "auto") ===
+      "'En bus' en inglés se dice ['by bus'. You go by bus!]",
+  [
+    partes("[es] 'Parque' en inglés es 'park' y 'hermana' es 'sister'. [en-US] You went to the park with your sister!", "auto"),
+    partes("[es] En inglés decimos 'dog' en lugar de 'perro'. [en-US] You have a dog!", "auto"),
+    partes("[es] Para profesiones u ocupaciones se usa 'a'. [en-US] Your mom is a teacher!", "auto"),
+    partes("[es] 'En bus' en inglés se dice 'by bus'. [en-US] You go by bus!", "auto"),
+  ].join(" | ")
+);
+probar(
+  "español que se le escapa al modelo en la parte inglesa va en español; nombres, comidas y café siguen en inglés",
+  partes("You ate arepas con huevo! What else did you eat?", "auto") === "[You ate arepas] con huevo! [What else did you eat?]" &&
+    partes("My mom says te quiero mucho every day.", "auto") === "[My mom says] te quiero mucho [every day.]" &&
+    partes("I live in Bogotá. I love arepas!", "auto") === "[I live in Bogotá. I love arepas!]" &&
+    partes("I was in that café, next to the window.", "auto") === "[I was in that café, next to the window.]",
+  [
+    partes("You ate arepas con huevo! What else did you eat?", "auto"),
+    partes("My mom says te quiero mucho every day.", "auto"),
+    partes("I live in Bogotá. I love arepas!", "auto"),
+    partes("I was in that café, next to the window.", "auto"),
+  ].join(" | ")
+);
+probar(
+  "el inglés del mismo mensaje se reconoce en la explicación (producción, noviembre de 2026)",
+  partes("[es] Para un bebé se usa pregnant. [en-US] Say it: My sister is pregnant.", "auto") ===
+    "Para un bebé se usa [pregnant. Say it: My sister is pregnant.]",
+  partes("[es] Para un bebé se usa pregnant. [en-US] Say it: My sister is pregnant.", "auto")
+);
 probar("un número al final de la frase en inglés va con ella", partes("Para la edad se usa am: I'm 15.") === "Para la edad se usa [am: I'm 15.]", partes("Para la edad se usa am: I'm 15."));
 probar("el inglés no se parte: un nombre en español suena con acento inglés", partes("I'm from Bogotá. I love arepas!", "en") === "[I'm from Bogotá. I love arepas!]");
 {
@@ -250,8 +313,8 @@ probar("el inglés no se parte: un nombre en español suena con acento inglés",
   await leerTodo((await sintetizar({ texto: "Para pedir se usa I'd like.", idioma: "es" })).cuerpo);
   const cuerpo = JSON.parse(ultima().opciones.body);
   probar(
-    "una explicación en español va por partes con la voz española",
-    cuerpo.voice === "ef_dora" &&
+    "una explicación en español con inglés va por partes con la voz de Allison, no con la española",
+    cuerpo.voice === "af_jessica" &&
       JSON.stringify(cuerpo.segments) === JSON.stringify([{ text: "Para pedir se usa", lang: "es" }, { text: "I'd like.", lang: "en-US" }]),
     ultima().opciones.body
   );

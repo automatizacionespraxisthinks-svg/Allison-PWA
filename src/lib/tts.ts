@@ -91,7 +91,7 @@ function configTts(): ConfigTts {
   return {
     url: (process.env.TTS_URL?.trim() || "https://tts-api.praxisia.org").replace(/\/+$/, ""),
     clave,
-    vozIngles: process.env.TTS_VOZ?.trim() || "af_heart",
+    vozIngles: process.env.TTS_VOZ?.trim() || "af_jessica",
     vozEspanol: process.env.TTS_VOZ_ES?.trim() || "ef_dora",
   };
 }
@@ -252,7 +252,13 @@ export async function sintetizar(opciones: {
   const lang = (i: IdiomaVoz) => (i === "es" ? "es" : "en-US");
   const idPeticion = opciones.idPeticion ?? nuevoIdPeticion();
   const speed = velocidadParaVoz(opciones.velocidad);
-  const comun = { voice: base === "es" ? cfg.vozEspanol : cfg.vozIngles, speed, format: "mp3", stream: true };
+  // La voz española solo para lo que es todo español (la bienvenida). Si
+  // hay inglés, todo va con la voz de Allison: con ef_dora, el "I'd like"
+  // de una explicación sonaba a una voz española leyendo inglés
+  // (noviembre de 2026; mixtas con la voz de Allison, decidido de oído).
+  const todoEspanol = segmentos.every((s) => s.idioma === "es");
+  const voz = base === "es" && todoEspanol ? cfg.vozEspanol : cfg.vozIngles;
+  const comun = { voice: voz, speed, format: "mp3", stream: true };
   const cuerpo = JSON.stringify(
     segmentos.length > 1
       ? { segments: segmentos.map((s) => ({ text: s.texto, lang: lang(s.idioma) })), ...comun }
@@ -405,7 +411,7 @@ export async function estadoTts(): Promise<EstadoTts> {
     configurado: ttsConfigurado(),
     url,
     listo: null,
-    vozIngles: process.env.TTS_VOZ?.trim() || "af_heart",
+    vozIngles: process.env.TTS_VOZ?.trim() || "af_jessica",
     vozEspanol: process.env.TTS_VOZ_ES?.trim() || "ef_dora",
     vocesValidas: null,
     enCurso: turnosOcupados,

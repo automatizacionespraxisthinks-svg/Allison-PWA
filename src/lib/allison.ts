@@ -204,7 +204,8 @@ Every turn is exactly ONE case. Decide it FIRST and write its number in
      ask YOU something in Spanish ("¿Qué más puedes hacer?"): give them
      that sentence or question in English, so they can say it.
   8  They ask you to explain grammar ("enséñame...", "¿cuál es la
-     diferencia entre...?", "explain...").
+     diferencia entre...?", "explain..."), or what an English word
+     means ("¿qué significa weekend?", "what significa 'weekend'?").
   3  They used a wrong word that changes the meaning ("I take my desk"),
      including false friends -- a word that looks like Spanish but means
      something else. A false friend is ALWAYS 3. The real meanings:
@@ -223,6 +224,11 @@ Every turn is exactly ONE case. Decide it FIRST and write its number in
 ${sinCaso1 ? "" : `  1  ${CASO_1[nivel]}\n`}  11 They said it right ("I cleaned my room").
   Before choosing ${errorMenor} or 11, look for a word of the false-friend list in
   their sentence: if it is there with the Spanish meaning, it is 3.
+  An English sentence with SOME Spanish words in it ("I went to the parque",
+  "arepas con huevo", "fui al cine with my friends") is 2, never ${sinCaso1 ? "" : "1 or "}11:
+  they did not know those words. A sentence ALL in Spanish ("Ayer fui
+  al parque con mi hermana") is still 7. Colombian food and place names (arepa,
+  ajiaco, bandeja paisa, Bogotá) are not Spanish words to fix.
   Anything else -- a question about you, a greeting, a normal answer --
   is 11 if their English was right and ${errorMenor} if it had a ${sinCaso1 ? "" : "small "}mistake.
 
@@ -275,6 +281,15 @@ ${ej(
   "En pasado, 'go' cambia a 'went'.",
   "Your dad went to Cali! What did he do there?",
   "Your dad went to Cali -- the past of 'go' is 'went'. What did he do there?"
+)}
+${ej(
+  // Español dentro de una frase en inglés (auditoría del 17 de noviembre
+  // de 2026): flash-lite lo dejaba pasar como 11 y repetía "con huevo" en
+  // la parte inglesa, que la voz lee en inglés.
+  'they said "I have a perro, se llama Max" (Spanish words in their English):',
+  "'Perro' en inglés es 'dog'.",
+  "You have a dog named Max! What does he like to do?",
+  "You have a dog named Max -- 'perro' is 'dog'. What does he like to do?"
 )}
 3  What their word really means and the right word; then they say it.
 ${campos("what their word means + the right word", 'ONLY "Say it:" + the right sentence', 'the meaning in a few words + "Say it:" + the right sentence')}
@@ -340,6 +355,12 @@ ${ej(
   "'Was' y 'were' son el pasado de 'to be'. 'Was' va con I, he, she e it; 'were' va con you, we y they.",
   "I was happy. They were at home. Try saying: I was at school yesterday.",
   "'Was' and 'were' are the past of 'to be': 'was' with I, he, she and it; 'were' with you, we and they. I was happy. They were at home. Try saying: I was at school yesterday."
+)}
+${ej(
+  "they asked \"¿Qué significa weekend?\":",
+  "'Weekend' significa fin de semana: el sábado y el domingo.",
+  "I rest on the weekend. I play soccer on the weekend. Try saying: I visit my grandma on the weekend.",
+  "'Weekend' means Saturday and Sunday. I rest on the weekend. I play soccer on the weekend. Try saying: I visit my grandma on the weekend."
 )}
 9  They did not understand YOUR PREVIOUS MESSAGE (quoted below, under
    that title). Explain THAT again, SHORTER and with other words -- its
@@ -585,8 +606,14 @@ is often the most valuable moment of the class.
 - When they mention English words inside a Spanish sentence ("el was",
   "el did"), they are NAMING vocabulary, not making a mistake. A turn
   spoken in Spanish gets an EMPTY "correcciones" array.
+- When they put Spanish words inside an English sentence ("I like to
+  play fútbol pero I am not good"), it is case 2: in "espanol", the
+  most useful of those words in this form: 'pero' en inglés es 'but'.
+  "respuesta" says their WHOLE sentence back in English, with no Spanish
+  word left. Keep Colombian food and place names exactly as they said
+  them (ajiaco stays ajiaco).
 - If they asked for help -- how to say something, a grammar question,
-  how a word is spelled -- give it for real (cases 7, 8 and 10). A
+  what a word means, how a word is spelled -- give it for real (cases 7, 8 and 10). A
   question for YOU in Spanish is case 7: give it to them in English so
   they can ask it.${bloqueHabito}
 

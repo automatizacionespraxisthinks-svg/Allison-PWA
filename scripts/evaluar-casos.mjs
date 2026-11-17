@@ -52,6 +52,12 @@ const casos = [
   // Producción, octubre de 2026: una pregunta en español a Allison recibía "No te oí" (caso 6).
   [["7"], "Hola Allison, ¿qué más puedes hacer?", "Good morning, Diego!"],
   [["7"], "te estoy preguntando que qué más puedes hacer", "Sorry. I didn't hear you. Can you say it again?"],
+  // Inglés y español en un mismo turno (auditoría, 17 de noviembre de 2026):
+  // antes "arepas con huevo" pasaba como 11 y el español quedaba en la parte inglesa.
+  [["2"], "Yesterday I ate arepas con huevo", "What did you eat for breakfast?"],
+  [["2"], "I have a perro, se llama Max", "Do you have any pets?"],
+  [["2"], "I like to play fútbol pero I am not very good", "What sports do you like?"],
+  [["8"], "Allison, what significa 'weekend'?", "What do you do on weekends?"],
 ];
 
 const REQUIERE_ES = new Set(["2", "3", "4", "5", "6", "7", "8", "9", "10"]);
@@ -92,7 +98,8 @@ function revisar(esperado, dice, r) {
   if (/tranquil[oa]|bienvenid[oa]/i.test(voz)) fallas.push("español con género");
   if (dice === "Are you a real person?" && !sinEs && !voz.includes("inteligencia artificial")) fallas.push("no dijo la frase aprobada de IA");
   for (const c of r.correcciones) {
-    if (esEspanolClaro(c.explicacion ?? "")) fallas.push(`explicación en español donde va el inglés: "${c.explicacion}"`);
+    // Lo citado no cuenta: "Use 'but' instead of 'pero'" es inglés.
+    if (esEspanolClaro((c.explicacion ?? "").replace(/'[^']*'|"[^"]*"/g, ""))) fallas.push(`explicación en español donde va el inglés: "${c.explicacion}"`);
   }
   if (unaCorr && r.correcciones.length > 1) fallas.push(`${r.correcciones.length} correcciones`);
   if (unaCorr && ["1", "6", "7", "8", "9", "10", "11"].includes(c) && r.correcciones.length) fallas.push("corrigió en un caso sin correcciones");
