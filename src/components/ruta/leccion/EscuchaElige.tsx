@@ -15,7 +15,7 @@ import { MapaCalles, edificioDe } from "./MapaCalles";
 /**
  * Escucha y elige (pantallas 1 y 2): oye la frase, que no está escrita,
  * y elige entre tres imágenes. Gratis: no usa IA. Si falla, la frase
- * vuelve a sonar despacio y elige otra vez, sin límite.
+ * vuelve a sonar y elige otra vez, sin límite.
  *
  * "Ver la frase" está desde el comienzo y cuenta como ayuda. La muestra en
  * inglés; la traducción queda a otro toque (28 de octubre de 2026): antes
@@ -28,8 +28,7 @@ import { MapaCalles, edificioDe } from "./MapaCalles";
  * (Contenido A2, "Qué cambia en A2"). En A1 y A2 cada dibujo lleva su
  * etiqueta en inglés: un toque la dice en voz alta y muestra su
  * traducción. Desde B1 es una historia de tres o cuatro frases sin
- * traducción ni texto a la vista: se puede oír otra vez y, una sola vez,
- * más despacio (Contenido B1).
+ * traducción ni texto a la vista: se puede oír otra vez (Contenido B1).
  */
 export function EscuchaElige({
   a,
@@ -49,8 +48,6 @@ export function EscuchaElige({
   /** Las etiquetas que el alumno tocó: ya se ven en español. */
   const [traducidas, setTraducidas] = useState<number[]>([]);
   const b1 = desdeB1(ctx.nivel);
-  /** B1: la versión más despacio suena una sola vez (al pedirla o al fallar). */
-  const [lentoUsado, setLentoUsado] = useState(false);
   const primerIntento = useRef(true);
   const frase = a.audio.join(" ");
   /**
@@ -95,11 +92,7 @@ export function EscuchaElige({
       primerIntento.current = false;
       setFallidas((f) => [...f, elegida]);
       setElegida(null);
-      if (b1 && lentoUsado) void decir(frase);
-      else {
-        setLentoUsado(true);
-        void decir(frase, { lento: true });
-      }
+      void decir(frase);
     }
   }
 
@@ -114,16 +107,6 @@ export function EscuchaElige({
       {!acierto && (
         <div className="flex flex-wrap items-center justify-center gap-2">
           <BotonOir onClick={() => void decir(frase)} texto="Oír otra vez" />
-          {!(b1 && lentoUsado) && (
-            <BotonOir
-              onClick={() => {
-                setLentoUsado(true);
-                void decir(frase, { lento: true });
-              }}
-              texto="Más despacio"
-              lento
-            />
-          )}
           {!b1 && !verFrase && (
             <button
               type="button"
@@ -164,8 +147,8 @@ export function EscuchaElige({
           {b1
             ? "¡Casi! Escúchala otra vez y elige."
             : mapa
-              ? "¡Casi! Escúchala despacio y sigue el camino."
-              : "¡Casi! Escúchala despacio y elige otra vez."}
+              ? "¡Casi! Escúchala otra vez y sigue el camino."
+              : "¡Casi! Escúchala otra vez y elige."}
         </p>
       )}
 

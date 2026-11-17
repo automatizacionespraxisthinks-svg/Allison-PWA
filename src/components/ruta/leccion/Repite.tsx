@@ -6,7 +6,7 @@ import { desdeB1 } from "@/lib/tipos";
 import { evaluar, type Contexto, type FinActividad } from "./api";
 import { AllisonAro, BotonOir, Explicado, Grabador, Hoja, NoDijeEso, oirGrabacion, useVoz, type Entrada } from "./comun";
 
-/** La palabra para practicar, con su consejo y el audio normal y lento. */
+/** La palabra para practicar, con su consejo y su audio. */
 function TarjetaPalabra({
   tono,
   titulo,
@@ -21,7 +21,7 @@ function TarjetaPalabra({
   palabra: string;
   consejo?: string;
   consejoEs?: string;
-  decir: (texto: string, opciones?: { lento?: boolean }) => Promise<boolean>;
+  decir: (texto: string) => Promise<boolean>;
 }) {
   const c =
     tono === "oro"
@@ -40,11 +40,7 @@ function TarjetaPalabra({
       </div>
       <span className={`flex flex-col items-center gap-1 text-[11.5px] font-extrabold ${c.texto}`}>
         <BotonOir onClick={() => void decir(palabra)} className={c.boton} />
-        Normal
-      </span>
-      <span className={`flex flex-col items-center gap-1 text-[11.5px] font-extrabold ${c.texto}`}>
-        <BotonOir onClick={() => void decir(palabra, { lento: true })} lento className={c.boton} />
-        Lento
+        Oír
       </span>
     </div>
   );
@@ -53,8 +49,8 @@ function TarjetaPalabra({
 /**
  * Repite (pantalla 4): oye la frase de Allison y la repite. Después de
  * hablar, cada palabra lleva una barra: verde si se entendió, dorada si
- * hay que mejorarla; la palabra por mejorar sale en una tarjeta con audio
- * normal y lento. Tras dos intentos sigue adelante. Escribir permite
+ * hay que mejorarla; la palabra por mejorar sale en una tarjeta con su
+ * audio. Tras dos intentos sigue adelante. Escribir permite
  * seguir, pero la frase no recibe calificación de pronunciación.
  */
 export function Repite({
@@ -107,7 +103,7 @@ export function Repite({
     setMejorar(r.palabraAMejorar);
     if (r.correcto && n === 1) setPrimeraBien(true);
     if (r.correcto) void decir("Great!");
-    else if (r.palabraAMejorar) void decir(`${r.palabraAMejorar}. ${r.palabraAMejorar}.`, { lento: true });
+    else if (r.palabraAMejorar) void decir(`${r.palabraAMejorar}. ${r.palabraAMejorar}.`);
   }
 
   /** "¿No dijiste eso?": el micrófono entendió mal y el intento no cuenta. */
@@ -178,7 +174,6 @@ export function Repite({
 
       <div className="flex justify-center gap-2">
         <BotonOir onClick={() => void decir(a.frase)} texto="Oír la frase" />
-        <BotonOir onClick={() => void decir(a.frase, { lento: true })} texto="Más despacio" lento />
       </div>
 
       {mejorar ? (

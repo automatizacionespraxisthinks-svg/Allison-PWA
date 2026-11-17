@@ -216,13 +216,6 @@ const LINEA: Record<string, React.ReactNode> = {
       <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6" />
     </>
   ),
-  lento: (
-    <>
-      <path d="M3 17h13a5 5 0 0 0 5-5V9" />
-      <circle cx="11" cy="12" r="5" />
-      <path d="M21 9l-2-3M21 9l1-3" />
-    </>
-  ),
   voltear: <path d="M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5" />,
   guardar: <path d="M6 3h12v18l-6-4-6 4z" />,
   ayuda: (

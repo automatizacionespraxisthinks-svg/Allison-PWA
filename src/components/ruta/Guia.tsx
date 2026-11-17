@@ -17,7 +17,7 @@ interface LeccionGuia {
 
 /**
  * La Guía de frases (pantalla 7): una frase a la vez en una tarjeta
- * grande que dice Allison, con audio normal y lento. Al tocarla se
+ * grande que dice Allison, con su audio. Al tocarla se
  * voltea y muestra la traducción. "Repasar otra vez" la manda al final;
  * "Ya me la sé" pasa a la siguiente. Se puede guardar en Mis palabras.
  */
@@ -192,7 +192,6 @@ export function Guia({
 
       <div className="flex flex-wrap justify-center gap-2">
         <BotonOir onClick={() => void decir(frase.en)} texto="Oír" />
-        <BotonOir onClick={() => void decir(frase.en, { lento: true })} texto="Lento" lento />
         <button
           type="button"
           onClick={guardar}

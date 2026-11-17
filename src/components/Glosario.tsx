@@ -6,7 +6,6 @@ import { FRASE_MAX } from "@/lib/frases";
 import type { EntradaGlosario } from "@/lib/glosario";
 import { pedir } from "@/lib/pedir";
 import type { Nivel } from "@/lib/tipos";
-import { useVelocidad } from "@/lib/velocidad";
 import { desbloquearVoz, detenerVoz, hablarIngles } from "@/lib/voz";
 
 /**
@@ -24,7 +23,6 @@ export function Glosario({
   iniciales: EntradaGlosario[];
   nivel: Nivel;
 }) {
-  const velocidad = useVelocidad();
   const [entradas, setEntradas] = useState(iniciales);
   const [filtro, setFiltro] = useState("");
   const [nueva, setNueva] = useState("");
@@ -78,7 +76,7 @@ export function Glosario({
     }
     desbloquearVoz();
     setSonando(entrada.id);
-    void hablarIngles(entrada.texto, nivel, velocidad).then(() => {
+    void hablarIngles(entrada.texto, nivel).then(() => {
       setSonando((s) => (s === entrada.id ? null : s));
     });
   }

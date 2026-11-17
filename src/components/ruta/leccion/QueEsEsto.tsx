@@ -314,8 +314,7 @@ export function QueEsEsto({
 
       {fase === "ensena" && (
         <div className="flex justify-center gap-2">
-          <BotonOir onClick={() => void decir(a.respuesta)} texto="Normal" />
-          <BotonOir onClick={() => void decir(a.respuesta, { lento: true })} texto="Lento" lento />
+          <BotonOir onClick={() => void decir(a.respuesta)} texto="Oír" />
         </div>
       )}
       {(fase === "ensena" || fase === "repetida") && (

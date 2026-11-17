@@ -102,9 +102,9 @@ en orden. La primera parte no debe tardar más que hoy.
 
 Elegidos de oído (variante A2):
 
-- Toda la respuesta mixta con la voz de Allison (hoy `af_jessica`; la prueba fue con `af_heart`) (también el
+- Toda la respuesta mixta con la voz de Allison (`af_heart` desde el 17 de noviembre de 2026; antes `af_jessica`) (también el
   español; con `ef_dora` para el español se distinguían menos).
-- Velocidad: el inglés, la del nivel (A1 0,7 · A2 0,8 · B1 y B2 0,9 · C1 y C2 1; «lento»
+- Velocidad: el inglés, la del nivel (A1 y A2 0,9 · los demás 1 desde el 17 de noviembre de 2026; sin «lento»: antes
   A1 0,6 · desde A2 0,7). El español, un poco más ágil: la del nivel +
   0,15, hasta 1.
 

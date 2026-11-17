@@ -17,7 +17,7 @@
  */
 process.env.TTS_API_KEY = "clave-de-prueba";
 process.env.TTS_URL = "https://tts.ejemplo.org/";
-process.env.TTS_VOZ = "af_jessica";
+process.env.TTS_VOZ = "af_heart";
 process.env.TTS_VOZ_ES = "ef_dora";
 process.env.TTS_SIMULTANEAS = "2";
 process.env.TTS_ESPERA_TURNO_MS = "300";
@@ -121,7 +121,7 @@ console.log("\nLa petición a la API:");
   probar("POST al endpoint nativo /v1/tts, sin barra doble", url === "https://tts.ejemplo.org/v1/tts" && opciones.method === "POST", url);
   probar("clave Bearer", cabeceras.get("authorization") === "Bearer clave-de-prueba");
   probar("mp3 en STREAMING, velocidad 1 si no se pide otra", cuerpo.format === "mp3" && cuerpo.stream === true && cuerpo.speed === 1, opciones.body);
-  probar("texto en inglés: voz inglesa y lang en-US", cuerpo.voice === "af_jessica" && cuerpo.lang === "en-US");
+  probar("texto en inglés: voz inglesa y lang en-US", cuerpo.voice === "af_heart" && cuerpo.lang === "en-US");
   probar("solo text, nunca text y segments a la vez", "text" in cuerpo && !("segments" in cuerpo));
   const id = cabeceras.get("x-request-id") ?? "";
   probar("X-Request-ID propio: allison-…, válido para la API (≤64, [A-Za-z0-9_.:-])", /^allison-[A-Za-z0-9_.:-]+$/.test(id) && id.length <= 64, id);
@@ -157,7 +157,7 @@ console.log("\nLa petición a la API:");
   const cuerpo = JSON.parse(ultima().opciones.body);
   probar(
     "una respuesta mixta va por partes, cada una con su idioma, y con la voz inglesa",
-    cuerpo.voice === "af_jessica" &&
+    cuerpo.voice === "af_heart" &&
       !("text" in cuerpo) &&
       JSON.stringify(cuerpo.segments) ===
         JSON.stringify([
@@ -314,7 +314,7 @@ probar("el inglés no se parte: un nombre en español suena con acento inglés",
   const cuerpo = JSON.parse(ultima().opciones.body);
   probar(
     "una explicación en español con inglés va por partes con la voz de Allison, no con la española",
-    cuerpo.voice === "af_jessica" &&
+    cuerpo.voice === "af_heart" &&
       JSON.stringify(cuerpo.segments) === JSON.stringify([{ text: "Para pedir se usa", lang: "es" }, { text: "I'd like.", lang: "en-US" }]),
     ultima().opciones.body
   );

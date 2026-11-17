@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { sonar } from "@/lib/sonidos";
 import { fijarVolumen, useVolumenGrabacion } from "@/lib/volumen";
 import { estimarSegundos } from "@/lib/habla";
-import { desbloquearVoz, detenerVoz, hablarEspanol, hablarIngles, hablarInglesLento, hablarSoloIngles, reproducirGrabacion } from "@/lib/voz";
+import { desbloquearVoz, detenerVoz, hablarEspanol, hablarIngles, hablarSoloIngles, reproducirGrabacion } from "@/lib/voz";
 import { srcIlustracion } from "@/lib/ruta/ilustracion";
 import type { Zona } from "@/lib/ruta/tipos";
 import type { Nivel } from "@/lib/tipos";
@@ -79,7 +79,7 @@ export function useVoz(nivel: Nivel) {
    * explicación cortada y sonaba encima de la grabación).
    */
   const decir = useCallback(
-    async (texto: string, opciones: { lento?: boolean; espanol?: boolean; soloIngles?: boolean } = {}): Promise<boolean> => {
+    async (texto: string, opciones: { espanol?: boolean; soloIngles?: boolean } = {}): Promise<boolean> => {
       // Una respuesta del servidor que llega después de salir no habla.
       if (!montado.current) return false;
       const mio = ++turno.current;
@@ -87,11 +87,9 @@ export function useVoz(nivel: Nivel) {
       try {
         const habla = opciones.espanol
           ? hablarEspanol(texto)
-          : opciones.lento
-            ? hablarInglesLento(texto, nivel)
-            : opciones.soloIngles
-              ? hablarSoloIngles(texto, nivel)
-              : hablarIngles(texto, nivel);
+          : opciones.soloIngles
+            ? hablarSoloIngles(texto, nivel)
+            : hablarIngles(texto, nivel);
         const limite = 8000 + estimarSegundos(texto) * 2500;
         let vencio = false;
         const sono = await Promise.race([habla, new Promise<false>((r) => setTimeout(() => ((vencio = true), r(false)), limite))]);
@@ -116,13 +114,11 @@ export function useVoz(nivel: Nivel) {
 export function BotonOir({
   onClick,
   texto,
-  lento = false,
   tam = "normal",
   className = "",
 }: {
   onClick: () => void;
   texto?: string;
-  lento?: boolean;
   tam?: "normal" | "chico" | "grande";
   className?: string;
 }) {
@@ -139,7 +135,7 @@ export function BotonOir({
         onClick={tocar}
         className={`inline-flex items-center gap-1.5 rounded-full border border-borde bg-superficie px-3.5 py-2 text-[13px] font-extrabold transition hover:bg-superficie-2 ${className}`}
       >
-        <Icono nombre={lento ? "lento" : "play"} className="size-4" />
+        <Icono nombre="play" className="size-4" />
         {texto}
       </button>
     );
@@ -149,10 +145,10 @@ export function BotonOir({
     <button
       type="button"
       onClick={tocar}
-      aria-label={lento ? "Oír más despacio" : "Oír"}
+      aria-label="Oír"
       className={`grid ${medida} flex-none place-items-center rounded-full bg-primario text-white transition hover:brightness-110 active:scale-95 ${className}`}
     >
-      <Icono nombre={lento ? "lento" : "play"} className={tam === "chico" ? "size-4" : "size-6"} />
+      <Icono nombre="play" className={tam === "chico" ? "size-4" : "size-6"} />
     </button>
   );
 }

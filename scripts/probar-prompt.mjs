@@ -27,6 +27,8 @@ const {
   correccionDeEdad,
   suFraseDeVuelta,
   hablaEspanolClaro,
+  diceQueOyoMal,
+  fraseEnEspanolComoSeDice,
   casoEfectivo,
   correccionesDelCaso,
   recortarOraciones,
@@ -279,7 +281,7 @@ probar(
 console.log("\nCada parte en su idioma (el código):");
 probar(
   "una oración inglesa dentro de \"espanol\" no se lee con la voz española",
-  armar("7", "Se dice así. I am hungry.", "") === "[es] Se dice así. [en-US] I am hungry."
+  armar("7", "Se dice así. I am hungry.", "") === "[es] Se dice así. [en-US] I am hungry. Try saying it!"
 );
 probar(
   "una oración española dentro de \"respuesta\" pasa al español si el campo vino vacío",
@@ -496,6 +498,20 @@ probar("frase de vuelta: lo que va entre comillas no se toca", suFraseDeVuelta("
 probar("frase de vuelta: el apóstrofo de «doesn't» no es una comilla", suFraseDeVuelta("My mother don't cook", "Your mother doesn't cook! My mother doesn't either. Who cooks?", "2") === "Your mother doesn't cook! My mother doesn't either. Who cooks?" && suFraseDeVuelta("My mother don't cook", "My mother doesn't cook! Who cooks?", "2") === "Your mother doesn't cook! Who cooks?");
 probar("género: «una habitación tranquila» no se toca (solo la interjección)", sinGenero("Quisiera una habitación tranquila, por favor.") === "Quisiera una habitación tranquila, por favor." && sinGenero("Es un barrio tranquilo y bonito.") === "Es un barrio tranquilo y bonito.");
 probar("género: «una cálida bienvenida» no se toca", sinGenero("Te damos una cálida bienvenida.") === "Te damos una cálida bienvenida.");
+
+// Reclamo de que Allison oyó mal (17 de noviembre de 2026): disculpa fija.
+probar("oyó mal: reconoce el reclamo en español y en inglés", ["No, eso no fue lo que yo dije", "Yo no dije eso.", "That's not what I said", "No, me entendiste mal", "I didn't say that!"].every(diceQueOyoMal));
+probar("oyó mal: no lo es una frase normal ni el reclamo que repite su frase", !["I said hello to my friend", "Ayer fui al parque", "No, yo no dije eso, dije I am study in my house", "My mom said that I can go"].some(diceQueOyoMal));
+probar("oyó mal: Allison se disculpa y pide que lo repita, sin traducir el reclamo", componerRespuesta({ caso: "7", espanol: "Se dice así.", respuesta: "No, that was not what I said. Try saying it!", nivel: "A1", nombre: "Ana", oyoMal: true }) === "[es] Perdón, te oí mal. [en-US] Can you say it again?");
+probar("oyó mal: de B2 en adelante, solo en inglés", componerRespuesta({ caso: "11", respuesta: "What else?", nivel: "B2", nombre: "Ana", oyoMal: true }) === "Sorry, I heard you wrong. Can you say it again?");
+probar("prompt: un turno todo en español nunca es 2 ni 11", ["A1", "A2", "B1"].every((n) => construirInstruccion({ nombre: "Ana", nivel: n }).includes("NEVER 2, 3, 4 or 11")));
+probar("prompt: la explicación se oye, sin «he, she o it» en los ejemplos", !/espanol: "[^"]*he, she/.test(construirInstruccion({ nombre: "Ana", nivel: "A1" })));
+
+// Frase del alumno toda en español que el modelo trató como error de inglés.
+probar("frase en español: un caso 2 pasa a «se dice así», en primera persona", JSON.stringify(fraseEnEspanolComoSeDice("Mi mamá cocina muy rico", "2", "Your mom cooks very well! What does she cook for you?")) === JSON.stringify({ caso: "7", respuesta: "My mom cooks very well. Try saying it!" }));
+probar("frase en español: «you are» pasa a «I am»", fraseEnEspanolComoSeDice("Estoy estudiando en mi casa", "2", "You are studying in your house! What are you studying?").respuesta === "I am studying in my house. Try saying it!");
+probar("frase en español: no toca una frase en inglés ni otro caso", fraseEnEspanolComoSeDice("My mother cook very good", "2", "Your mother cooks very well! What does she make?").caso === "2" && fraseEnEspanolComoSeDice("Mi mamá cocina muy rico", "7", "My mom cooks very well. Try saying it!").respuesta === "My mom cooks very well. Try saying it!");
+probar("caso 7: siempre cierra invitando a decirlo", componerRespuesta({ caso: "7", espanol: "Se dice así.", respuesta: "My mom cooks very well.", nivel: "A1", nombre: "Ana" }) === "[es] Se dice así. [en-US] My mom cooks very well. Try saying it!");
 
 if (fallos > 0) {
   console.error(`\n${fallos} fallo(s).`);

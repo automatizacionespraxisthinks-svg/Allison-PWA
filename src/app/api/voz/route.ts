@@ -56,7 +56,7 @@ export async function POST(peticion: Request) {
     );
   }
 
-  // La velocidad (nivel, preferencia, "lento") la pone la API al generar.
+  // La velocidad (según el nivel) la pone la API al generar.
   const id = registrarVoz({ userId: alumno.id, texto, idioma, velocidad: velocidadParaVoz(cuerpo?.velocidad) });
 
   return NextResponse.json({ ok: true, url: `/api/voz/${id}`, segmentos });

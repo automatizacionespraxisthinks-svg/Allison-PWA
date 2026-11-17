@@ -7,7 +7,18 @@
  *   node --env-file=.env scripts/evaluar-casos.mjs [repeticiones] [nivel]
  *   VER=1 ...   muestra también las respuestas correctas
  *   TEMPERATURA=0 ...   reproducible (por defecto 0.8, la de producción)
+ *   SOLO=texto ...   solo las frases que contienen ese texto
+ *   AUDIO=1 ...   cada frase se DICE (voces de Windows: Zira en inglés,
+ *                 Sabina en español y en lo mezclado) y entra como audio,
+ *                 que es el camino de producción. Escrito y hablado no se
+ *                 portan igual: el 17 de noviembre de 2026 un cambio del
+ *                 prompt pasó 306/306 escrito y, hablado, mandaba las frases
+ *                 en español al caso 2. Todo cambio del prompt se mide así.
  */
+import { execFileSync } from "node:child_process";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 const { conversar, esInglesClaro, esEspanolClaro } = await import("../src/lib/allison.ts");
 const { quitarMarcadores, sinEspanol } = await import("../src/lib/habla.ts");
 
@@ -18,12 +29,30 @@ const alumno = { nombre: "Diego Rojas", nivel, erroresRepetidos: ["playet", "goe
 const ctx = (allison) => [{ id: "1", rol: "allison", texto: allison, correcciones: [], creadoEn: "" }];
 const sinEs = ["B2", "C1", "C2"].includes(nivel);
 const unaCorr = ["A1", "A2"].includes(nivel);
+const conAudio = Boolean(process.env.AUDIO);
+const carpetaAudio = join(tmpdir(), "allison-evaluar-casos");
+if (conAudio) mkdirSync(carpetaAudio, { recursive: true });
+/** El wav de la frase, dicho por una voz de Windows (se graba una sola vez). */
+function grabar(i, dice, espanol) {
+  const destino = join(carpetaAudio, `${i}.wav`);
+  if (!existsSync(destino)) {
+    const ps = `Add-Type -AssemblyName System.Speech
+$s = New-Object System.Speech.Synthesis.SpeechSynthesizer
+$s.SelectVoice('${espanol ? "Microsoft Sabina Desktop" : "Microsoft Zira Desktop"}')
+$s.SetOutputToWaveFile('${destino}')
+$s.Speak('${dice.replace(/'/g, "''")}')
+$s.SetOutputToNull(); $s.Dispose()`;
+    execFileSync("powershell", ["-NoProfile", "-Command", ps], { stdio: "ignore" });
+  }
+  return readFileSync(destino).toString("base64");
+}
+const igual = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
 
 // [caso esperado (o lista), lo que dice, mensaje anterior de Allison]
 const casos = [
   [["1"], "I have two brother", "Tell me about your family."],
   [["1"], "My mother cook very good", "Who cooks at home?"],
-  [["1"], "I like the pizza with pineapple", "What food do you like?"],
+  [["1", "2", "11"], "I like the pizza with pineapple", "What food do you like?"],
   [["2"], "Last weekend I watch a movie", "What did you do last weekend?"],
   [["2"], "Yesterday my sister go to the mall", "What did your family do yesterday?"],
   [["2", "3"], "I am boring in the class of math", "How do you feel in math class?"],
@@ -58,13 +87,42 @@ const casos = [
   [["2"], "I have a perro, se llama Max", "Do you have any pets?"],
   [["2"], "I like to play fútbol pero I am not very good", "What sports do you like?"],
   [["8"], "Allison, what significa 'weekend'?", "What do you do on weekends?"],
+  // Frases enteras en español, dichas (17 de noviembre de 2026): habladas
+  // caían en el caso 2 con explicaciones raras ("en inglés no dices 'yo'").
+  [["7"], "Yo vivo en Bucaramanga con mi mamá y mis dos hermanos", "Tell me about your family."],
+  [["7"], "Me gusta jugar fútbol los sábados", "What do you like to do?"],
+  [["7"], "Ayer fui al cine con mis amigos", "What did you do yesterday?"],
+  [["7"], "Estoy estudiando en mi casa", "Where are you right now?"],
+  [["7"], "Mi mamá cocina muy rico", "Who cooks at home?"],
+  [["7"], "¿Cómo se dice mariposa?", "What animals do you like?"],
+  [["8"], "¿Qué significa homework?", "Do you have homework today?"],
+  [["9"], "No entendí la pregunta, ¿me la puedes repetir?", "What do you usually do on weekends?"],
+  // El alumno dice que Allison oyó mal: se disculpa y pide que lo repita.
+  [["Q"], "No, eso no fue lo que yo dije", "You were at home yesterday! What did you do there?"],
+  [["Q"], "Yo no dije eso", "You like pizza! What else do you like?"],
+  [["Q"], "That's not what I said", "You like pizza! What else do you like?"],
+  // Corrige la forma y deja sus palabras: "in my house" no pasa a "at home".
+  [["2"], "I am study in my house", "Where are you right now?", "house"],
+  [["2"], "Yesterday I go to the school with my friends", "What did you do yesterday?", "school"],
+  [["11"], "I am fine, thank you", "Hi Diego! How are you today?"],
 ];
+/** Lo que no está en inglés se dice con la voz española (también lo mezclado). */
+const enEspanol = (dice) => /[¿¡áéíóúñ]|\b(eso|dije|perro|pero|con|significa|estoy|ayer|gusta|entiendo|preguntando)\b/i.test(dice);
 
 const REQUIERE_ES = new Set(["2", "3", "4", "5", "6", "7", "8", "9", "10"]);
 const PREGUNTA_AL_FINAL = new Set(["1", "2", "5", "11"]);
 
-function revisar(esperado, dice, r) {
+function revisar(esperado, dice, r, conserva) {
   const fallas = [];
+  // El alumno dijo que Allison oyó mal: disculpa fija, sin correcciones.
+  if (esperado[0] === "Q") {
+    const v = r.respuestaVoz;
+    if (!/again/i.test(v)) fallas.push("no pidió que lo repitiera");
+    if (/se dice así|try saying/i.test(v)) fallas.push("tradujo la queja");
+    if (r.correcciones.length) fallas.push("corrigió una queja");
+    if (!sinEs && !/o[ií] mal/i.test(v)) fallas.push("no se disculpó en español");
+    return fallas;
+  }
   // 1 y 11 se comportan igual (sin corrección, sin español). De B1 en
   // adelante, una -s o un plural sí se corrigen (caso 2), y un falso
   // amigo explicado como 2 también vale.
@@ -117,20 +175,33 @@ function revisar(esperado, dice, r) {
   if (nOraciones - muletilla > tope && c !== "5") fallas.push(`español de ${nOraciones} oraciones`);
   if (c === "5" && /'ed'|se dice|se escribe/i.test(voz)) fallas.push("volvió a explicar el error repetido");
   if (/\[(?!es\]|en-US\])/.test(voz)) fallas.push("marcador raro");
+  if (c === "7" && !sinEs && !/Se dice así\./.test(voz)) fallas.push("caso 7 sin «Se dice así.»");
+  if (c === "7" && !/try (saying|asking)/i.test(voz)) fallas.push("caso 7 sin «Try saying it!»");
+  if (conserva && !new RegExp(`\\b${conserva}\\b`, "i").test(voz)) fallas.push(`cambió «${conserva}» por otra palabra`);
   return fallas;
 }
 
-let total = 0, malas = 0;
+let total = 0, malas = 0, oidas = 0, oidasBien = 0;
 const porCaso = {};
 for (let rep = 0; rep < reps; rep++) {
-  for (const [esperado, dice, anterior] of casos) {
+  for (const [n, [esperado, dice, anterior, conserva]] of casos.entries()) {
+    if (process.env.SOLO && !dice.includes(process.env.SOLO)) continue;
     let r;
+    const entrada = conAudio ? { audioBase64: grabar(n, dice, enEspanol(dice)), mimeType: "audio/wav" } : { texto: dice };
     for (let i = 0; i < 3 && !r; i++) {
-      try { r = await conversar({ texto: dice, alumno, historial: ctx(anterior), temperatura }); } catch {}
+      try { r = await conversar({ ...entrada, alumno, historial: ctx(anterior), temperatura }); } catch {}
     }
+    // Una voz sintética no sabe decir un error escrito ("playet" suena "play at").
+    if (conAudio && esperado[0] === "5") continue;
     if (!r) { console.log(`RED  ${dice}`); continue; }
     total++;
-    const fallas = revisar(esperado, dice, r);
+    const fallas = revisar(esperado, dice, r, conserva);
+    // Con audio, además: ¿transcribió lo que se dijo? (los ruidos del caso 6 no cuentan)
+    if (conAudio && esperado[0] !== "6") {
+      oidas++;
+      if (igual(r.transcripcion) === igual(dice)) oidasBien++;
+      else console.log(`OYÓ  "${dice}" -> "${r.transcripcion}"`);
+    }
     const k = esperado[0];
     porCaso[k] ??= { ok: 0, mal: 0 };
     if (fallas.length) {
@@ -143,4 +214,5 @@ for (let rep = 0; rep < reps; rep++) {
   }
 }
 console.log(`\nNivel ${nivel}, temperatura ${temperatura}: ${total - malas}/${total} bien.`);
+if (conAudio) console.log(`Transcripciones exactas: ${oidasBien}/${oidas}.`);
 console.log(Object.entries(porCaso).map(([k, v]) => `caso ${k}: ${v.ok}/${v.ok + v.mal}`).join("  "));

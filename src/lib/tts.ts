@@ -35,12 +35,12 @@ import { segmentosParaVoz } from "./voz-idiomas.ts";
  *     mirando la pantalla. Lo que el alumno deja de esperar (tocó otro
  *     audio) sale de la fila y suelta su turno (octubre de 2026).
  *
- * La velocidad la pone la API (speed): la base del nivel (A1 0,7; A2
- * 0,8; B1 y B2 0,9; C1 y C2 1), la preferencia del alumno y el botón "lento". Hasta octubre de
- * 2026 se pedía siempre en 1.0 y el celular estiraba el audio
- * (playbackRate); comparadas de oído, la voz que genera la API más
- * despacio sonó más natural. Repetir una frase más lento pide otro
- * audio, pero la caché del servicio guarda cada uno: las frases del
+ * La velocidad la pone la API (speed) según el nivel: A1 y A2 0,9; los
+ * demás 1 (17 de noviembre de 2026: por debajo de 0,9 la voz deforma
+ * palabras, así que ya no hay botón "lento" ni preferencia del alumno).
+ * Hasta octubre de 2026 se pedía siempre en 1.0 y el celular estiraba el
+ * audio (playbackRate); comparadas de oído, sonó más natural la voz que
+ * genera la API. La caché del servicio guarda cada audio: las frases del
  * contenido, iguales para todos los alumnos, suelen estar ya hechas.
  */
 
@@ -91,7 +91,7 @@ function configTts(): ConfigTts {
   return {
     url: (process.env.TTS_URL?.trim() || "https://tts-api.praxisia.org").replace(/\/+$/, ""),
     clave,
-    vozIngles: process.env.TTS_VOZ?.trim() || "af_jessica",
+    vozIngles: process.env.TTS_VOZ?.trim() || "af_heart",
     vozEspanol: process.env.TTS_VOZ_ES?.trim() || "ef_dora",
   };
 }
@@ -411,7 +411,7 @@ export async function estadoTts(): Promise<EstadoTts> {
     configurado: ttsConfigurado(),
     url,
     listo: null,
-    vozIngles: process.env.TTS_VOZ?.trim() || "af_jessica",
+    vozIngles: process.env.TTS_VOZ?.trim() || "af_heart",
     vozEspanol: process.env.TTS_VOZ_ES?.trim() || "ef_dora",
     vocesValidas: null,
     enCurso: turnosOcupados,

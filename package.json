@@ -59,7 +59,7 @@
   "dependencies": {
     "@google/genai": "^2.19.0",
     "bcryptjs": "^3.0.3",
-    "next": "16.4.2",
+    "next": "16.4.6",
     "next-auth": "^5.0.0-beta.32",
     "nodemailer": "^10.1.7",
     "postgres": "^3.4.9",
@@ -76,7 +76,7 @@
     "@types/react-dom": "^19",
     "@types/web-push": "^3.6.4",
     "eslint": "^9",
-    "eslint-config-next": "16.4.2",
+    "eslint-config-next": "16.4.6",
     "sharp": "^0.35.5",
     "tailwindcss": "^4",
     "typescript": "^5"

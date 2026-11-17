@@ -25,9 +25,9 @@ import {
  *     silencio. iOS y algunos Android solo dejan reproducir sin gesto a
  *     un elemento que ya sonó con gesto; la respuesta de Allison llega
  *     segundos después del toque, y sin esto saldría muda.
- *   · La velocidad la pone la API al generar el audio (el nivel, la
- *     preferencia del alumno y "lento"): comparada de oído en octubre de
- *     2026, sonó más natural que estirar el audio aquí con playbackRate.
+ *   · La velocidad la pone la API al generar el audio, según el nivel:
+ *     comparada de oído en octubre de 2026, sonó más natural que estirar
+ *     el audio aquí con playbackRate.
  *     La voz del navegador, de respaldo, usa su propio rate.
  *   · Si la API no está (sin clave, caída, ocupada), se cae a la voz
  *     del navegador y se dice en la consola. Oír a Allison peor es
@@ -35,21 +35,15 @@ import {
  */
 
 /**
- * La base por nivel: un A1 oye más lento que un C1. A1 0,7 · A2 0,8 · B1
- * y B2 0,9 · C1 y C2 1, como las fijó el usuario (2 de noviembre de 2026:
- * "el inglés lo dice muy rápido"); estaban en 0,8 · 0,9 · 1.
+ * Solo dos velocidades: el nivel básico (A1 y A2) a 0,9 y los demás a 1,
+ * como las fijó el usuario el 17 de noviembre de 2026 con la voz af_heart.
+ * Medido ese día: por debajo de 0,9 la voz deforma palabras (lo que suena
+ * no es lo escrito), sobre todo el español; a 0,9 y 1 sale igual al texto.
+ * Por eso ya no hay botón "Lento" (pedía 0,6 y 0,7) ni preferencia de
+ * velocidad del alumno. Antes: A1 0,7 · A2 0,8 · B1 y B2 0,9 · C1 y C2 1.
  */
 function velocidadBase(nivel: Nivel): number {
-  return nivel === "A1" ? 0.7 : nivel === "A2" ? 0.8 : nivel === "B1" || nivel === "B2" ? 0.9 : 1;
-}
-
-/**
- * El botón "Lento": A1 a 0,6 y desde A2 a 0,7. Elegido de oído el 25 de
- * octubre de 2026 con muestras de la API; antes era el 70 % de la base
- * (A1 0,56, que sonaba demasiado arrastrado, y A2 0,63).
- */
-function velocidadLenta(nivel: Nivel): number {
-  return nivel === "A1" ? 0.6 : 0.7;
+  return nivel === "A1" || nivel === "A2" ? 0.9 : 1;
 }
 
 export interface OpcionesHabla {
@@ -194,15 +188,9 @@ export function detenerVoz(): void {
 export function hablarIngles(
   texto: string,
   nivel: Nivel,
-  velocidad = 1,
   opciones?: OpcionesHabla
 ): Promise<boolean> {
-  return hablar(texto, "auto", velocidadBase(nivel) * velocidad, opciones);
-}
-
-/** Lo mismo, más despacio: lo que suena al tocar "Lento" o "Más despacio". */
-export function hablarInglesLento(texto: string, nivel: Nivel, opciones?: OpcionesHabla): Promise<boolean> {
-  return hablar(texto, "auto", velocidadLenta(nivel), opciones);
+  return hablar(texto, "auto", velocidadBase(nivel), opciones);
 }
 
 /**

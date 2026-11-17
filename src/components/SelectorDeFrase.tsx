@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import { FRASE_MAX, normalizarFrase } from "@/lib/frases";
 import { pedir } from "@/lib/pedir";
 import type { Nivel } from "@/lib/tipos";
-import { useVelocidad } from "@/lib/velocidad";
 import { desbloquearVoz, hablarIngles } from "@/lib/voz";
 
 interface Seleccion {
@@ -45,7 +44,6 @@ export function SelectorDeFrase({
   zona: RefObject<HTMLElement | null>;
   nivel: Nivel;
 }) {
-  const velocidad = useVelocidad();
   const [sel, setSel] = useState<Seleccion | null>(null);
   const [estado, setEstado] = useState<Estado>("quieto");
   const [errorGuardar, setErrorGuardar] = useState<string | null>(null);
@@ -144,7 +142,7 @@ export function SelectorDeFrase({
     if (!s || sonando) return;
     desbloquearVoz();
     setSonando(true);
-    await hablarIngles(s.texto, nivel, velocidad);
+    await hablarIngles(s.texto, nivel);
     setSonando(false);
   }
 

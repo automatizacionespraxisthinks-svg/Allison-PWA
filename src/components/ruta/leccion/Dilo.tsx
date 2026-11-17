@@ -257,8 +257,7 @@ export function Dilo({
       {oido && !terminado && <NoDijeEso oido={oido.texto} escrito={oido.escrito} onClick={noDijeEso} />}
       {fase === "ensena" && (
         <div className="flex justify-center gap-2">
-          <BotonOir onClick={() => void decir(a.respuesta)} texto="Normal" />
-          <BotonOir onClick={() => void decir(a.respuesta, { lento: true })} texto="Lento" lento />
+          <BotonOir onClick={() => void decir(a.respuesta)} texto="Oír" />
         </div>
       )}
 

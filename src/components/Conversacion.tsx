@@ -14,7 +14,6 @@ import { AvisoReportes } from "@/components/AvisoReportes";
 import type { AvisoReporte } from "@/lib/reportes";
 import type { EstadoConversacion, Mensaje, Nivel } from "@/lib/tipos";
 import { fijarModoTexto, useModoTexto } from "@/lib/entrada";
-import { useVelocidad } from "@/lib/velocidad";
 import { desbloquearVoz, detenerVoz, hablarIngles } from "@/lib/voz";
 import { estimarSegundos } from "@/lib/habla";
 import { pedirAyudaIA } from "@/lib/ayudaCliente";
@@ -103,7 +102,6 @@ export function Conversacion({
   const [ideaCargando, setIdeaCargando] = useState(false);
 
   const conversacionId = useRef<string | null>(idInicial);
-  const velocidad = useVelocidad();
   const finRef = useRef<HTMLDivElement>(null);
   /** La pantalla sigue abierta: lo que llega después de salir no suena. */
   const montado = useRef(true);
@@ -145,7 +143,7 @@ export function Conversacion({
    */
   async function hablar(texto: string, mio: number): Promise<boolean> {
     if (!montado.current) return false;
-    const habla = hablarIngles(texto, nivel, velocidad, {
+    const habla = hablarIngles(texto, nivel, {
       alEmpezar: () => {
         if (montado.current && mio === turno.current) setEstado("hablando");
       },

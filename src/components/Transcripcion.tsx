@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { SelectorDeFrase } from "@/components/SelectorDeFrase";
 import type { Mensaje, Nivel, TipoCorreccion } from "@/lib/tipos";
-import { fijarVelocidad, useVelocidad, VELOCIDADES } from "@/lib/velocidad";
 import { desbloquearVoz, detenerVoz, hablarIngles } from "@/lib/voz";
 import { pedir } from "@/lib/pedir";
 import { pedirAyudaIA } from "@/lib/ayudaCliente";
@@ -27,7 +26,7 @@ const ONDA = [7, 12, 9, 15, 11, 16, 8, 13, 10];
  * El texto del alumno se muestra TAL COMO LO DIJO, con sus errores
  * intactos — corregirlo aquí escondería justo lo que tiene que aprender
  * a ver. Cada mensaje de Allison lleva UNA fila de controles: audio,
- * onda, velocidad y traducción. Nada de tres pisos de botones por
+ * onda y traducción. Nada de tres pisos de botones por
  * mensaje: el lujo es la contención.
  *
  * Todo texto de mensaje lleva data-frase: es lo que permite seleccionar
@@ -48,7 +47,6 @@ export function Transcripcion({
   /** Traducir cuesta una intervención: las que quedan (0 si no alcanzó). */
   alCobrar?: (restantes: number) => void;
 }) {
-  const velocidad = useVelocidad();
   const [reportes, setReportes] = useState<Record<string, "enviando" | "listo" | "error">>(() =>
     Object.fromEntries(reportadas.map((k) => [k, "listo" as const]))
   );
@@ -81,14 +79,9 @@ export function Transcripcion({
     // pisar al que lo reemplazó.
     // La versión con marcadores, si la hay: es la que sabe decir el
     // español en español. La pantalla sigue mostrando `texto`.
-    void hablarIngles(m.textoVoz ?? m.texto, nivel, velocidad).then(() => {
+    void hablarIngles(m.textoVoz ?? m.texto, nivel).then(() => {
       setSonando((s) => (s === m.id ? null : s));
     });
-  }
-
-  function cambiarVelocidad() {
-    const i = VELOCIDADES.findIndex((v) => v.valor === velocidad);
-    fijarVelocidad(VELOCIDADES[(i + 1) % VELOCIDADES.length].valor);
   }
 
   /**
@@ -157,7 +150,7 @@ export function Transcripcion({
                 {m.texto}
               </p>
 
-              {/* Una sola fila: audio · onda · velocidad · traducción */}
+              {/* Una sola fila: audio · onda · traducción */}
               <div className="mt-2.5 flex items-center gap-2.5">
                 <button
                   type="button"
@@ -192,16 +185,6 @@ export function Transcripcion({
                     />
                   ))}
                 </span>
-
-                <button
-                  type="button"
-                  onClick={cambiarVelocidad}
-                  aria-label={`Velocidad del audio: ${velocidad}×. Tocar para cambiar`}
-                  title="Cambiar la velocidad"
-                  className="shrink-0 rounded-full border border-borde px-2 py-0.5 font-mono text-[11px] font-semibold text-texto-suave transition hover:bg-superficie-2"
-                >
-                  {velocidad}×
-                </button>
 
                 <span className="flex-1" />
 
