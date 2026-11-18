@@ -82,6 +82,7 @@
 .cat-salud { --k1: #4fd08a; --k2: #15804a; --kf: #ddf7e9; }
 .cat-ciudad { --k1: #ad84f0; --k2: #6a3dbd; --kf: #efe6ff; }
 .cat-mios { --k1: #f5b82e; --k2: #a06d0a; --kf: #fbeecf; }
+.cat-trabajo { --k1: #3fb8c9; --k2: #0f6f80; --kf: #dcf4f7; }
 @media (prefers-color-scheme: dark) {
   .cat-viajes { --k2: #8cbcff; --kf: #16305f; }
   .cat-compras { --k2: #ffc285; --kf: #3d2812; }
@@ -89,6 +90,7 @@
   .cat-salud { --k2: #7fe0aa; --kf: #0e3a2a; }
   .cat-ciudad { --k2: #c9aaff; --kf: #2a1f52; }
   .cat-mios { --k2: #f2c46b; --kf: #3a2e12; }
+  .cat-trabajo { --k2: #7fd6e3; --kf: #10343a; }
 }
 
 @theme inline {

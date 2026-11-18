@@ -17,7 +17,7 @@ import { fijarModoTexto, useModoTexto } from "@/lib/entrada";
 import { desbloquearVoz, detenerVoz, hablarIngles } from "@/lib/voz";
 import { estimarSegundos } from "@/lib/habla";
 import { pedirAyudaIA } from "@/lib/ayudaCliente";
-import { SESION_CERRADA, sesionCerrada } from "@/lib/pedir";
+import { pedir, SESION_CERRADA, sesionCerrada } from "@/lib/pedir";
 import { pesos } from "@/lib/precios";
 
 interface Props {
@@ -90,6 +90,11 @@ export function Conversacion({
   const [mensajes, setMensajes] = useState<Mensaje[]>(historial);
   const [mensajesRestantes, setMensajesRestantes] = useState(mensajesIniciales);
   const [error, setError] = useState<string | null>(null);
+  /** Un aviso que no es un error ("No te cobramos ese mensaje"). */
+  const [aviso, setAviso] = useState<string | null>(null);
+  /** El pase de "¿No dijiste eso?" del último mensaje hablado (src/lib/turno.ts). */
+  const [pase, setPase] = useState<{ mensajeId: string; pase: string } | null>(null);
+  const [borrandoTurno, setBorrandoTurno] = useState(false);
   /** Lo que el alumno acaba de decir, mostrado apenas llega. */
   const [dichoAhora, setDichoAhora] = useState<string | null>(null);
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -192,6 +197,9 @@ export function Conversacion({
     pedido.current = control;
     setEstado("procesando");
     setError(null);
+    setAviso(null);
+    // El pase es del último turno: al empezar otro, ya no aplica.
+    setPase(null);
     if (!conservarDicho) setDichoAhora(null);
     setIdea(null);
     setIdeaVisible(false);
@@ -268,6 +276,9 @@ export function Conversacion({
             setMensajes((prev) => [...prev, parte.alumno, parte.allison]);
             setMensajesRestantes(parte.mensajesRestantes);
             setDichoAhora(null);
+            if (typeof parte.noDijeEso === "string") setPase({ mensajeId: parte.alumno.id, pase: parte.noDijeEso });
+            // Allison se disculpó por oír mal: ese turno no se cobró.
+            if (parte.sinCobro) setAviso("No te cobramos este mensaje.");
             if (parte.leccion) {
               setLeccion((prev) =>
                 prev && prev.clave === parte.leccion.clave
@@ -295,6 +306,37 @@ export function Conversacion({
       if (hablando) await hablando;
       if (montado.current) setEstado("inactivo");
     }
+  }
+
+  /**
+   * "¿No dijiste eso?": Allison oyó mal el último mensaje. Se borra el
+   * turno (su mensaje y la respuesta) y la intervención vuelve al saldo.
+   */
+  async function noDijeEso() {
+    if (!pase || borrandoTurno) return;
+    const { mensajeId } = pase;
+    setBorrandoTurno(true);
+    setError(null);
+    const r = await pedir("/api/conversar/no-dije-eso", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pase: pase.pase }),
+    });
+    if (!montado.current) return;
+    setBorrandoTurno(false);
+    setPase(null);
+    const datos = r ? await r.json().catch(() => ({})) : {};
+    if (!r?.ok) {
+      setError(datos.mensaje ?? "No pudimos borrar ese mensaje. Intenta de nuevo.");
+      return;
+    }
+    detenerVoz();
+    setMensajes((prev) => {
+      const i = prev.findIndex((m) => m.id === mensajeId);
+      return i < 0 ? prev : prev.slice(0, i);
+    });
+    if (typeof datos.mensajesRestantes === "number") setMensajesRestantes(datos.mensajesRestantes);
+    setAviso("Listo, borré ese mensaje y no te lo cobramos. Dilo otra vez.");
   }
 
   async function pedirIdea() {
@@ -548,7 +590,13 @@ export function Conversacion({
           </div>
         ) : (
           <>
-            <Transcripcion mensajes={mensajes} nivel={nivel} reportadas={reportadas} alCobrar={setMensajesRestantes} />
+            <Transcripcion
+              mensajes={mensajes}
+              nivel={nivel}
+              reportadas={reportadas}
+              alCobrar={setMensajesRestantes}
+              noDijeEso={pase && (estado === "inactivo" || estado === "hablando") ? { mensajeId: pase.mensajeId, ocupado: borrandoTurno, alTocar: noDijeEso } : undefined}
+            />
 
             {dichoAhora && (
               <div className="mt-4 flex justify-end">
@@ -563,6 +611,11 @@ export function Conversacion({
       </div>
 
       {/* ---- Avisos ---- */}
+      {aviso && !error && (
+        <p role="status" className="mb-2 shrink-0 rounded-xl bg-primario-suave p-3 text-center text-sm text-texto">
+          {aviso}
+        </p>
+      )}
       {error && (
         <p role="alert" className="mb-2 shrink-0 rounded-xl bg-error/10 p-3 text-center text-sm text-error">
           {error}

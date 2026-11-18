@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { esEspanolClaro, esInglesClaro, separarIdiomas, sinGenero } from "../allison.ts";
+import { diceQueOyoMal, esEspanolClaro, esInglesClaro, separarIdiomas, sinGenero, soloPideAyuda } from "../allison.ts";
 import { estaEnLoDicho } from "../evaluacion.ts";
 import { conPunto, deletreoParaVoz, MARCADOR_EN, MARCADOR_ES, quitarMarcadores } from "../habla.ts";
 import type { Nivel } from "../tipos.ts";
@@ -1574,6 +1574,32 @@ export async function turnoDeEscenario(t: TurnoEscenario): Promise<ResultadoEsce
   const mejor = sinCalcos(soloIngles(d.errorMejor ?? ""));
   const error =
     !espanol && dijo && mejor && esCorreccionDe(dijo, mejor) && estaEnLoDicho(dijo, transcripcion) ? { dijo, mejor } : null;
+
+  // Dos cosas que el alumno dice y que no son "una frase suya en español"
+  // (18 de noviembre de 2026: antes Allison se las traducía -- "En inglés se
+  // dice así: That was not what I said. Try it!"):
+  //  · reclama que Allison le oyó mal: se disculpa y pide que lo repita;
+  //  · pide en español que le repita: oye otra vez la línea de Allison.
+  // Ninguna cumple tareas ni deja error para el resumen.
+  const ultimaDeAllison = [...t.historial].reverse().find((m) => m.rol === "allison")?.texto.trim();
+  const oyoMal = !t.ultimo && diceQueOyoMal(transcripcion);
+  const pideRepetir = !t.ultimo && !oyoMal && espanol && soloPideAyuda(transcripcion) && !!ultimaDeAllison;
+  if (oyoMal || pideRepetir) {
+    const es = oyoMal ? "Perdón, te oí mal." : "Claro, te lo repito.";
+    const enIngles = oyoMal ? "Can you say it again?" : (ultimaDeAllison as string);
+    const sinEspanol = oyoMal ? `Sorry, I heard you wrong. ${enIngles}` : `Sure! ${enIngles}`;
+    return {
+      transcripcion,
+      tareas: [],
+      aMedias: [...mediasPendientes(t.aMedias, pendientes)].map(([tarea, falta]) => ({ tarea, falta })),
+      respuesta: b1 ? sinEspanol : `${es} ${enIngles}`,
+      respuestaVoz: b1 ? sinEspanol : `${MARCADOR_ES} ${es} ${MARCADOR_EN} ${enIngles}`,
+      error: null,
+      idea: null,
+      tokensEntrada,
+      tokensSalida,
+    };
+  }
 
   return {
     transcripcion,

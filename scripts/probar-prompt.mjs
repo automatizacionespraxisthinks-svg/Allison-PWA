@@ -29,6 +29,9 @@ const {
   hablaEspanolClaro,
   diceQueOyoMal,
   fraseEnEspanolComoSeDice,
+  correccionEnSuPersona,
+  faltaSeDiceAsi,
+  deletreoNatural,
   casoEfectivo,
   correccionesDelCaso,
   recortarOraciones,
@@ -255,13 +258,13 @@ probar(
 );
 probar("caso 5: sin error repetido no existe (es un 11)", casoEfectivo("5", "I don't have social media.", false) === "11" && casoEfectivo("2", "x", true) === "5");
 probar(
-  "caso 10: el español va antes de la última oración",
-  armar("10", "Suena 'pleid'.", "Played. P, L, A, Y, E, D. Try saying: I played.") === "Played. P, L, A, Y, E, D. [es] Suena 'pleid'. [en-US] Try saying: I played."
+  "caso 10: «Se deletrea así» antes de las letras y «Y se dice:» después, diga lo que diga el campo en español",
+  armar("10", "Suena 'pleid'.", "Played. P, L, A, Y, E, D. Try saying: I played.") === "Played. [es] Se deletrea así. [en-US] P, L, A, Y, E, D. [es] Y se dice: [en-US] played. Try saying: I played."
 );
 probar("caso 10: el deletreo con guiones pasa a comas", armar("10", "", "Birthday. B-I-R-T-H-D-A-Y. Try saying it!").includes("B, I, R, T, H, D, A, Y"));
 probar(
-  "caso 10: una pista de sonido inventada se cambia",
-  armar("10", "Suena 'yuguei'.", "Played. P, L, A, Y, E, D. Try saying: I played.") === "Played. P, L, A, Y, E, D. [es] Escúchalo con atención. [en-US] Try saying: I played." &&
+  "caso 10: sin letras que leer, queda como antes, con la pista de sonido",
+  armar("10", "Suena 'yuguei'.", "Played. Try saying: I played.") === "Played. [es] Suena 'yuguei'. [en-US] Try saying: I played." &&
     pistaDeSonidoCreible("Suena 'jaus'.", "House. H, O, U, S, E.") && pistaDeSonidoCreible("Suena 'pleid'.", "Played. P, L, A, Y, E, D.")
 );
 probar("casos 1 y 11: nunca llevan español", armar("1", "Se dice 'hamburgers'.", "Mmm, hamburgers! What is your favorite?") === "Mmm, hamburgers! What is your favorite?");
@@ -512,6 +515,31 @@ probar("frase en español: un caso 2 pasa a «se dice así», en primera persona
 probar("frase en español: «you are» pasa a «I am»", fraseEnEspanolComoSeDice("Estoy estudiando en mi casa", "2", "You are studying in your house! What are you studying?").respuesta === "I am studying in my house. Try saying it!");
 probar("frase en español: no toca una frase en inglés ni otro caso", fraseEnEspanolComoSeDice("My mother cook very good", "2", "Your mother cooks very well! What does she make?").caso === "2" && fraseEnEspanolComoSeDice("Mi mamá cocina muy rico", "7", "My mom cooks very well. Try saying it!").respuesta === "My mom cooks very well. Try saying it!");
 probar("caso 7: siempre cierra invitando a decirlo", componerRespuesta({ caso: "7", espanol: "Se dice así.", respuesta: "My mom cooks very well.", nivel: "A1", nombre: "Ana" }) === "[es] Se dice así. [en-US] My mom cooks very well. Try saying it!");
+
+// Prueba del usuario en producción (18 de noviembre de 2026).
+probar("caso 7: «How do you say a comedy show?» queda en «A comedy show.»", componerRespuesta({ caso: "7", espanol: "Se dice así.", respuesta: "How do you say a comedy show? Try saying it!", nivel: "A1", nombre: "Ana" }) === "[es] Se dice así. [en-US] A comedy show. Try saying it!");
+probar("caso 7: una pregunta que el alumno quiere hacer no se toca", componerRespuesta({ caso: "7", espanol: "Se dice así.", respuesta: "What else can you do? Try asking me!", nivel: "A1", nombre: "Ana" }) === "[es] Se dice así. [en-US] What else can you do? Try asking me!");
+probar("prompt: un turno en inglés nunca es 7 y se respeta su tiempo", ["A1", "B1"].every((n) => { const p = construirInstruccion({ nombre: "Ana", nivel: n }); return p.includes("it is NEVER 7") && p.includes("keep THEIR tense") && p.includes("never \"You stay at house\""); }));
+
+probar("corrección: en la persona del alumno («You stay at home» → «I stay at home»)", correccionEnSuPersona({ original: "I stay house", correccion: "You stay at home" }).correccion === "I stay at home" && correccionEnSuPersona({ original: "my mom cook", correccion: "your mom cooks" }).correccion === "my mom cooks");
+probar("corrección: si él dijo «you», no se toca", correccionEnSuPersona({ original: "you is nice", correccion: "you are nice" }).correccion === "you are nice" && correccionEnSuPersona({ original: "I goed", correccion: "I went" }).correccion === "I went");
+probar("frase en español: un caso 11 que la dice de vuelta también pasa a «se dice así»", fraseEnEspanolComoSeDice("Yo vivo en Bucaramanga con mi mamá", "11", "You live in Bucaramanga with your mom! What do you do with her?").respuesta === "I live in Bucaramanga with my mom. Try saying it!");
+probar("frase en español: un caso 11 que solo responde no se toca", fraseEnEspanolComoSeDice("Hola Allison, gracias por la clase", "11", "Nice! Who helped you?").caso === "11");
+
+probar("se dice así: una frase en español contestada como inglés lo pide", ["11", "2", "1"].every((k) => faltaSeDiceAsi("Yo vivo en Bucaramanga con mi mamá y mis dos hermanos", k)));
+probar("se dice así: no hace falta si ya es 7, 8 o 10, ni en inglés", !["6", "7", "8", "10"].some((k) => faltaSeDiceAsi("Yo vivo en Bucaramanga con mi mamá", k)) && !faltaSeDiceAsi("I live in Bucaramanga with my mom", "11"));
+probar("se dice así: pedir que repita, reclamar o preguntar si es real tienen su respuesta", !faltaSeDiceAsi("No entendí, repite por favor", "11") && !faltaSeDiceAsi("Eso no fue lo que yo dije", "11") && !faltaSeDiceAsi("¿Eres una persona de verdad?", "11"));
+
+probar("se dice así: también las frases cortas («No sé», «Gracias»), no un nombre", faltaSeDiceAsi("No sé", "11") && faltaSeDiceAsi("Gracias", "11") && !faltaSeDiceAsi("Diego", "11") && !faltaSeDiceAsi("Colombia", "11"));
+probar("caso 7: la pregunta de Allison no se pega a la frase del alumno", componerRespuesta({ caso: "7", espanol: "Se dice así.", respuesta: "I am fine, thank you. How are you today, Diego? Try saying it!", nivel: "A1", nombre: "Diego", afirmo: true }) === "[es] Se dice así. [en-US] I am fine, thank you. Try saying it!");
+probar("caso 7: si él preguntó, la pregunta se queda", componerRespuesta({ caso: "7", espanol: "Se dice así.", respuesta: "Where is the bathroom? Try saying it!", nivel: "A1", nombre: "Diego", afirmo: false }) === "[es] Se dice así. [en-US] Where is the bathroom? Try saying it!");
+
+// El deletreo como lo pidió el usuario (18 de noviembre de 2026).
+probar("deletreo: palabra, «Se deletrea así», letras, «Y se dice:» y la palabra otra vez", deletreoNatural("Played. P, L, A, Y, E, D. Try saying: I played.", false) === "Played. [es] Se deletrea así. [en-US] P, L, A, Y, E, D. [es] Y se dice: [en-US] played. Try saying: I played.");
+probar("deletreo: en pantalla queda la frase que pidió, con sus dos tramos en español", quitarMarcadores(pulirRespuesta(componerRespuesta({ caso: "10", espanol: "Suena 'pleid'.", respuesta: "Played. P, L, A, Y, E, D. Try saying: I played.", nivel: "A1", nombre: "Ana" }), "A1")) === "Played. Se deletrea así. P, L, A, Y, E, D. Y se dice: played. Try saying: I played.");
+probar("deletreo: de B2 en adelante, todo en inglés", deletreoNatural("House. H, O, U, S, E. Try saying: my house.", true) === "House. You spell it like this: H, O, U, S, E. And you say: house. Try saying: my house.");
+probar("deletreo: un nombre propio conserva la mayúscula y sin invitación se pone una", deletreoNatural("Colombia. C, O, L, O, M, B, I, A. Try saying: I live in Colombia.", false).includes("[en-US] Colombia. Try saying: I live in Colombia.") && deletreoNatural("Cat. C, A, T.", false).endsWith("[en-US] cat. Try saying it!"));
+probar("deletreo: sin letras no se arma nada", deletreoNatural("I like pizza. What do you like?", false) === null);
 
 if (fallos > 0) {
   console.error(`\n${fallos} fallo(s).`);

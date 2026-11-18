@@ -198,6 +198,11 @@ Look at the LANGUAGE of their turn before anything else:
   explain. A sentence of theirs in Spanish ("Los domingos voy a la
   iglesia con mi abuela") is 7: you give it to them in English.
 - English with SOME Spanish words in it ("I went to the parque"): 2.
+- ALL in English: it is NEVER 7. If they SAY the sentence you just
+  invited them to say ("Try saying it!", "Try saying: ..."), they did it:
+  it is 11. Tell them it was right in two or three words ("That's it!",
+  "Perfect!") and go on with an OPEN question about the topic. Never
+  give them that sentence again and never say "Try saying it!" again.
 Then check in THIS order and stop at the first one that fits:
   6  You cannot understand the speech: noise, mumbling, or sounds that
      are not real words ("ay yo uhay", "blorp tika na"). Never turn them
@@ -208,7 +213,10 @@ Then check in THIS order and stop at the first one that fits:
   10 They ask you to spell a word or how it sounds ("deletréamela",
      "¿cómo se escribe?", "how do you spell it?", "¿cómo se
      pronuncia?"). If they ask how to say AND how to spell it: 10.
-  7  They ask how to say something in English ("¿Cómo se dice...?"), or
+  7  They ask how to say something in English ("¿Cómo se dice...?":
+     you give ONLY that thing in English, never the words "cómo se
+     dice" translated -- "¿Cómo se dice mesa?" is "A table.", never
+     "How do you say a table?"), or
      they say a whole sentence in Spanish ("Ayer fui al parque"), or they
      ask YOU something in Spanish ("¿Qué más puedes hacer?"): give them
      that sentence or question in English, so they can say it.
@@ -217,7 +225,9 @@ Then check in THIS order and stop at the first one that fits:
      means ("¿qué significa weekend?", "what significa 'weekend'?").
   3  They used a wrong word that changes the meaning ("I take my desk"),
      including false friends -- a word that looks like Spanish but means
-     something else. A false friend is ALWAYS 3. The real meanings:
+     something else. A false friend is ALWAYS 3, even when the sentence
+     has another mistake too ("My mom is sensible, she cry": 3, for
+     "sensible"). The real meanings:
        sensible = sensato (they meant sensitive)
        boring = aburrido, que aburre (they meant bored: "I am bored")
        embarrassed = avergonzado (they meant pregnant)
@@ -266,9 +276,11 @@ ${campos(
   "their sentence said back to them all correct (I -> you, my -> your), same meaning, nothing added or dropped + an OPEN question",
   "their sentence said back to them all correct (I -> you, my -> your), same meaning, nothing added or dropped, the rule of their most important mistake in a few words + an OPEN question"
 )}
-   Fix EVERY mistake ("cook very good" -> "cooks very well"), but never
-   swap words of theirs that were right for other words: "I am study in
-   my house" becomes "You are studying in your house", never "at home".
+   Fix EVERY mistake ("cook very good" -> "cooks very well") and say it
+   the way people really say it: "I stay house" becomes "You stay at
+   home", never "You stay at house". But never swap words of theirs
+   that were already right: "I am study in my house" becomes "You are
+   studying in your house" -- "in my house" was right, it stays.
 ${ej(
   // Un ejemplo en presente, y PRIMERO: con solo los dos de pasado,
   // flash-lite pasaba al pasado frases de lo que siempre pasa ("My mother
@@ -401,19 +413,19 @@ ${ej(
   "Today: I play. Yesterday: I played. Now you: I played.",
   "No problem, step by step: for yesterday, just add 'ed'. Today: I play. Yesterday: I played. Now you: I played."
 )}
-10 Say the word, spell it letter by letter, then "Try saying".
-${campos("how it sounds, written the Spanish way", 'the word + its letters separated by commas + "Try saying: ..."', 'the word + its letters + how it sounds + "Try saying: ..."')}
+10 Say the word, spell it letter by letter, then "Try saying". The app
+   adds the rest ("Se deletrea así." before the letters and "Y se dice:"
+   + the word again after them): write only this.
+${campos('"Se deletrea así."', 'the word + its letters separated by commas + "Try saying: ..."', 'the word + its letters separated by commas + "Try saying: ..."')}
 ${ej(
   'they asked how to say and spell "jugué":',
-  "Suena 'pleid'.",
-  "Played. P, L, A, Y, E, D. Try saying: I played.",
-  "Played. P, L, A, Y, E, D. It sounds like 'pleid'. Try saying: I played."
+  "Se deletrea así.",
+  "Played. P, L, A, Y, E, D. Try saying: I played."
 )}
 ${ej(
   'they asked "How do you spell house?":',
-  "Suena 'jaus'.",
-  "House. H, O, U, S, E. Try saying: my house.",
-  "House. H, O, U, S, E. It sounds like 'haus'. Try saying: my house."
+  "Se deletrea así.",
+  "House. H, O, U, S, E. Try saying: my house."
 )}
 11 Reply to what they said, like a real conversation, then an OPEN
    question that follows THEIR topic. If they got right something hard
@@ -606,7 +618,10 @@ correction. The student trusts this list and will memorize it.
   years old", "my brother is 20 years old" — never "have" or "has",
   not even with he or she.
 - Your corrections must AGREE with "respuesta": the form you say there
-  is the form in "correccion".
+  is the form in "correccion". But "correccion" is THEIR sentence fixed,
+  in THEIR person: they said "I stay house", so "correccion" is "I stay
+  at home" (never "You stay at home", which is only how you say it back
+  in "respuesta").
 - NEVER change the meaning of what the student said. Fix the form, keep
   the message. If they said something negative it stays negative:
   "I no have money" becomes "I don't have money", NEVER "I have money".
@@ -619,6 +634,12 @@ correction. The student trusts this list and will memorize it.
   becomes "she cries with movies", NEVER "she cried"; "I am agree"
   becomes "I agree", NEVER "I agreed". Say "it was yesterday" only when
   THEY talked about the past.
+- The same when you only reply (case 11): keep THEIR tense. "I watch
+  TV" gets "You watch TV!" or "Nice! What do you watch?", NEVER "You
+  watched TV!". The one exception is YOUR OWN question: if your last
+  question was about the past ("What did you do today?") and they answer
+  in the present ("I stay at home"), the tense is their mistake -- case
+  2, "stayed".
 - If you are not certain what the student said or what the right form
   is, leave it out. Silence beats a wrong rule.
 - This is SPEECH, not writing. Never correct spelling, numerals,
@@ -643,6 +664,10 @@ is often the most valuable moment of the class.
 - If they say you heard them wrong and say their sentence again ("no,
   yo dije I am study in my house"), the sentence they repeat is what
   they said: work with it, not with the complaint.
+- If they ONLY say you heard them wrong ("That's not what I said", "Yo
+  no dije eso"), write exactly those words in "transcripcion", as
+  always: the app apologizes for you. It is not case 9 and it is never
+  "no entiendo".
 - When they put Spanish words inside an English sentence ("I like to
   play fútbol pero I am not good"), it is case 2: in "espanol", the
   most useful of those words in this form: 'pero' en inglés es 'but'.
@@ -762,6 +787,11 @@ export interface RespuestaAllison {
    * (auditoría, 30 de octubre de 2026).
    */
   fallaIA?: boolean;
+  /**
+   * El alumno dijo que Allison le oyó mal y ella se disculpó
+   * (diceQueOyoMal): el error fue de ella y la ruta no cobra ese turno.
+   */
+  oyoMal?: boolean;
 }
 
 /**
@@ -854,7 +884,7 @@ function recordatorioTurno(nivel: Nivel): string {
     ? '"espanol" is "" and "respuesta" is only English.'
     : '"espanol" is only Spanish and "respuesta" is only English.';
   const conPregunta = NIVELES_UNA_CORRECCION.has(nivel) ? "2, 4 and 11" : "1, 2, 4 and 11";
-  return `[Not the student's words. Decide the case first. A turn ALL in Spanish is 7 (or 8, 9, 10), never 2 or 11: give it to them in English. A false friend (sensible, embarrassed, sympathetic, boring, carpet, exit, constipated, assist, library) used with its Spanish meaning is case 3. ${idiomas} In cases ${conPregunta}, end with an OPEN question, never a yes/no one. If they did not understand (case 9), explain your previous message again, shorter -- never teach them how to say "I don't understand".]`;
+  return `[Not the student's words. Decide the case first. A turn ALL in Spanish is 7 (or 8, 9, 10), never 2 or 11: give it to them in English ("¿Cómo se dice X?" is only X, never "How do you say X?"). A turn in English is never 7: if they said what you invited them to say, it is 11 -- "That's it!" and an open question. Keep their tense: "I watch TV" is never "You watched TV". A false friend (sensible, embarrassed, sympathetic, boring, carpet, exit, constipated, assist, library) used with its Spanish meaning is case 3. ${idiomas} In cases ${conPregunta}, end with an OPEN question, never a yes/no one. If they did not understand (case 9), explain your previous message again, shorter -- never teach them how to say "I don't understand".]`;
 }
 
 /** Palabras que no dicen de qué trata un mensaje. */
@@ -1079,13 +1109,49 @@ export function fraseEnEspanolComoSeDice(
   caso: string | undefined,
   respuesta: string | undefined
 ): { caso?: string; respuesta?: string } {
-  if (String(caso ?? "").replace(/\D/g, "") !== "2" || !hablaEspanolClaro(transcripcion)) return { caso, respuesta };
+  const marcado = String(caso ?? "").replace(/\D/g, "");
+  if ((marcado !== "2" && marcado !== "11" && marcado !== "1") || !hablaEspanolClaro(transcripcion)) return { caso, respuesta };
   const primera = oracionesDe(separarIdiomas(respuesta ?? "").ingles)[0];
   if (!primera || primera.endsWith("?")) return { caso, respuesta };
-  const suya = primera
-    // De B2 en adelante la regla va pegada a la frase con " -- ": se quita.
-    .replace(/\s+--\s.*$/, "")
-    .replace(/[!.]+$/, "")
+  // En el caso 11 la respuesta es una réplica ("Nice! Who helped you?"):
+  // solo sirve si empieza diciendo su frase de vuelta ("You live in
+  // Bucaramanga with your mom!"), que es lo que hacía 1 de cada 12 veces.
+  if (marcado !== "2" && !(/^You(?:r|(?:'|’)re)?\b/.test(primera) && primera.split(/\s+/).length >= 4)) return { caso, respuesta };
+  // De B2 en adelante la regla va pegada a la frase con " -- ": se quita.
+  const suya = enPrimeraPersona(primera.replace(/\s+--\s.*$/, "").replace(/[!.]+$/, ""));
+  return { caso: "7", respuesta: `${suya}. Try saying it!` };
+}
+
+/**
+ * ¿Es una frase del alumno toda en español que quedó SIN su "Se dice así"?
+ * (el modelo la contestó como si fuera inglés -- casos 1 a 5 u 11 --, o marcó 9 sin que fuera un pedido de ayuda: con "No sé" marcaba 9). El 6 no entra: un ruido como "mmm ah ke eh tu bla" parece español por el "tu"). Pedir
+ * que le repitan, reclamar que oyó mal o preguntar si es real no cuentan:
+ * tienen su propia respuesta. Decisión del usuario (18 de noviembre de
+ * 2026): toda frase en español recibe su versión en inglés, para que el
+ * alumno aprenda a decirla; si falta, el código la pide aparte.
+ */
+export function faltaSeDiceAsi(transcripcion: string, caso: string | undefined): boolean {
+  const c = String(caso ?? "").replace(/\D/g, "");
+  // También las cortas ("No sé", "Gracias"): hablaEspanolClaro pide tres
+  // palabras, y con "No sé" Allison llegó a contestarse su propia pregunta.
+  const { espanol, ingles } = separarIdiomas(transcripcion);
+  const todoEspanol = !!espanol.trim() && !ingles.trim() && esEspanolClaro(transcripcion);
+  return (
+    ["1", "2", "3", "4", "5", "9", "11"].includes(c) &&
+    todoEspanol &&
+    !esPedidoDeAyuda(transcripcion) &&
+    !diceQueOyoMal(transcripcion) &&
+    !preguntaSiEsReal(transcripcion)
+  );
+}
+
+/**
+ * Una frase que Allison dice de vuelta ("You stay at home") en la
+ * persona del alumno ("I stay at home"): es como él la va a decir, y
+ * como debe leerse su corrección.
+ */
+export function enPrimeraPersona(frase: string): string {
+  return frase
     .replace(/\bYou are\b/g, "I am")
     .replace(/\byou are\b/g, "I am")
     .replace(/\byou(?:'|’)re\b/gi, "I'm")
@@ -1099,13 +1165,60 @@ export function fraseEnEspanolComoSeDice(
     // "You" que abre la frase o va antes de un verbo es "I"; después de
     // un verbo o una preposición ("with you", "loves you") es "me".
     .replace(/^You\b/, "I")
+    .replace(/^you\b/, "I")
     .replace(/\b(and|but|because|when|if|that) you\b/gi, "$1 I")
     .replace(/\byou\b/gi, "me");
-  return { caso: "7", respuesta: `${suya}. Try saying it!` };
+}
+
+/**
+ * La corrección es la frase DEL ALUMNO arreglada, en su persona. El
+ * modelo a veces copia la forma con que la dice de vuelta: "I stay
+ * house" -> "You stay at house" (producción, 18 de noviembre de 2026).
+ * Si él no dijo "you" y la corrección lo trae, se pasa a su persona.
+ */
+export function correccionEnSuPersona(c: Correccion): Correccion {
+  if (!c?.correccion || !c?.original) return c;
+  if (/\byou(?:r|rs|rself)?\b|\byou(?:'|’)(?:re|ve)\b/i.test(c.original)) return c;
+  if (!/\byou(?:r|rs|rself)?\b|\byou(?:'|’)(?:re|ve)\b/i.test(c.correccion)) return c;
+  return { ...c, correccion: enPrimeraPersona(c.correccion) };
+}
+
+/**
+ * El deletreo como lo diría una profesora (pedido del usuario, 18 de
+ * noviembre de 2026): "Played. Se deletrea así. P, L, A, Y, E, D. Y se
+ * dice: played. Try saying: I played." Antes era "Played. P, L, A, Y, E,
+ * D. Suena 'pleid'. Try saying: I played.": la pista escrita a la española
+ * confundía más de lo que ayudaba; ahora la palabra se oye otra vez.
+ *
+ * Del modelo solo salen la palabra, las letras y la invitación; el resto
+ * es fijo. De B2 en adelante va todo en inglés. Null si en la respuesta no
+ * hay un deletreo que se pueda leer.
+ */
+export function deletreoNatural(respuesta: string, sinEspanol: boolean): string | null {
+  const m = /(?<![A-Za-z'’])[A-Z](?:, [A-Z])+(?![A-Za-z'’])/.exec(respuesta);
+  if (!m || m[0].split(", ").length < 2) return null;
+  const letras = m[0];
+  const juntas = letras.split(", ").join("").toLowerCase();
+  // La palabra es lo que el modelo dijo antes de las letras; si ahí hay una
+  // frase ("It is spelled like this"), la palabra sale de las letras.
+  const antes = respuesta.slice(0, m.index).replace(/[\s.:,;!?"'“”‘’]+$/, "").replace(/^["'“‘]/, "").trim();
+  const palabra = antes && antes.split(/\s+/).length <= 3 ? antes : juntas;
+  const despues = respuesta.slice(m.index + letras.length);
+  const invitacion = /try saying[\s\S]*$/i.exec(despues)?.[0].trim() || "Try saying it!";
+  const primera = palabra.charAt(0).toUpperCase() + palabra.slice(1);
+  // La segunda vez va en minúscula, salvo un nombre propio (aparece con
+  // mayúscula en medio de la invitación: "I live in Colombia").
+  const esNombre = new RegExp(`\\S\\s+${primera.replace(/[.*+?^${}()|[\]\\]/g, "\\/** Casos en los que el alumno no dijo nada que corregir. */")}\\b`).test(invitacion);
+  const segunda = esNombre ? primera : palabra.charAt(0).toLowerCase() + palabra.slice(1);
+  return sinEspanol
+    ? `${primera}. You spell it like this: ${letras}. And you say: ${segunda}. ${invitacion}`
+    : `${primera}. ${MARCADOR_ES} Se deletrea así. ${MARCADOR_EN} ${letras}. ${MARCADOR_ES} Y se dice: ${MARCADOR_EN} ${segunda}. ${invitacion}`;
 }
 
 /** Casos en los que el alumno no dijo nada que corregir. */
-const CASOS_SIN_CORRECCIONES = new Set(["6", "9"]);
+// El 7 tampoco: Allison le da la frase en inglés, no hay un inglés suyo
+// que corregir (en B1 salía "Se dice así" con una corrección al lado).
+const CASOS_SIN_CORRECCIONES = new Set(["6", "7", "9"]);
 /**
  * En A1 y A2 solo se corrige en estos casos (no en el 11, que salió bien).
  * El 1 también: en esos niveles todo error se corrige (2 de noviembre de
@@ -1503,6 +1616,8 @@ function componerSinCierre(o: {
   espanolClaro?: boolean;
   /** El alumno dijo que Allison le oyó mal (diceQueOyoMal). */
   oyoMal?: boolean;
+  /** Lo que dijo el alumno no era una pregunta ni un "¿cómo se dice...?". */
+  afirmo?: boolean;
 }): string {
   const sinEs = NIVELES_SIN_ESPANOL.has(o.nivel);
   if (o.oyoMal) {
@@ -1543,7 +1658,7 @@ function componerSinCierre(o: {
 
   // Caso 9: si igual enseñó "I don't understand" o no volvió sobre su
   // mensaje anterior, se cambia por una respuesta segura: calma, y ese
-  // mensaje otra vez (el alumno lo puede oír también a velocidad lenta).
+  // mensaje otra vez.
   if (caso === "9" && casoNueveFallido(`${es} ${en}`, o.anterior)) {
     const otraVez = o.anterior?.trim() || "Let's try again, step by step.";
     if (sinEs) return `No problem, step by step. ${otraVez}`;
@@ -1565,13 +1680,31 @@ function componerSinCierre(o: {
     // "You say: I just woke up." -> "I just woke up.": el "se dice así"
     // ya lo dijo el español.
     en = en.replace(/^you (?:can )?say(?: it)?(?: like this)?\s*:\s*/i, "");
+    // "¿Cómo se dice un programa de chistes?" llegó a salir "How do you say
+    // a comedy show? Try saying it!": tradujo la pregunta en vez de
+    // contestarla (producción, 18 de noviembre de 2026). Queda solo la cosa.
+    en = en.replace(/^how (?:do|can|would) (?:you|I|we) say\s+([^?.!]+?)(?:\s+in English)?\s*[?.!]/i, (_m, cosa) => `${cosa}.`);
     en = en.charAt(0).toUpperCase() + en.slice(1);
+  }
+  // Dijo una frase suya ("Estoy bien, gracias") y el modelo le pegó su
+  // propia pregunta: "I am fine, thank you. How are you today, Diego? Try
+  // saying it!". Esa pregunta no es parte de lo que él va a decir.
+  if (caso === "7" && o.afirmo) {
+    const suyas = oracionesDe(en).filter((s) => !s.endsWith("?"));
+    if (suyas.length) en = suyas.join(" ");
   }
   // La invitación a decirlo cierra siempre el caso 7 (hablado, el modelo
   // la olvidó una vez en 66).
   if (caso === "7" && en.trim() && !/\btry (?:saying|asking)\b|\bnow you\b|\byour turn\b/i.test(en)) en = `${en.trim()} Try saying it!`;
 
-  if (caso === "10" && !pistaDeSonidoCreible(es, en)) es = "Escúchalo con atención.";
+  if (caso === "10") {
+    // La forma que pidió el usuario (18 de noviembre de 2026): la palabra,
+    // "Se deletrea así", las letras, "Y se dice:" y la palabra otra vez.
+    const natural = deletreoNatural(en, sinEs);
+    if (natural) return natural;
+    // Sin letras reconocibles, lo de antes: la pista de cómo suena.
+    if (!pistaDeSonidoCreible(es, en)) es = "Escúchalo con atención.";
+  }
 
   // Al decir que es una profesora con IA va la frase aprobada en
   // español, aunque el modelo la haya olvidado.
@@ -1662,7 +1795,9 @@ export function pulirRespuesta(respuesta: string, nivel: Nivel): string {
   // nombres propios. El de habla.ts marcaba como español "In English,
   // 'mañana' is 'tomorrow'" por la ñ de la cita.
   const base = sinRepeticiones(normalizarMarcadores(respuesta));
-  return NIVELES_SIN_ESPANOL.has(nivel) ? sinEspanol(base) : limitarEspanol(base, 1);
+  // Un tramo en español por turno; el deletreo lleva dos ("Se deletrea
+  // así." y "Y se dice:"), los dos fijos.
+  return NIVELES_SIN_ESPANOL.has(nivel) ? sinEspanol(base) : limitarEspanol(base, base.includes("Se deletrea así.") ? 2 : 1);
 }
 
 /**
@@ -1760,7 +1895,47 @@ export async function* conversarEnStream(opciones: {
   /** El caso que de verdad se aplicó (el 5 lo puede poner el código). */
   let casoAplicado: string | undefined;
   /** Lo que Allison dice, armado con los campos ya cerrados del JSON. */
-  const armar = (crudo: { transcripcion?: string; caso?: string; espanol?: string; respuesta?: string }) => {
+  /**
+   * El "Se dice así" de una frase en español que el modelo contestó como
+   * si fuera inglés (faltaSeDiceAsi). Se pide aparte, una sola vez, ANTES
+   * de armar la respuesta: lo que suena y lo que se guarda es lo mismo.
+   * Si la traducción falla, queda la respuesta del modelo.
+   */
+  let seDice: { caso: string; espanol: string; respuesta: string } | null = null;
+  let tokensExtraEntrada = 0;
+  let tokensExtraSalida = 0;
+  let seDicePedido = false;
+  const asegurarSeDice = async (crudo: { transcripcion?: string; caso?: string; respuesta?: string }) => {
+    if (seDicePedido) return;
+    const dicho = crudo.transcripcion ?? "";
+    if (!faltaSeDiceAsi(dicho, fraseEnEspanolComoSeDice(dicho, crudo.caso, crudo.respuesta).caso)) return;
+    seDicePedido = true;
+    try {
+      const r = await ai.models.generateContent({
+        model: modeloIA(),
+        contents: [{ role: "user", parts: [{ text: dicho }] }],
+        config: {
+          systemInstruction:
+            "A Colombian student of English said this in Spanish. Write how THEY would say it in simple, natural US English: the same sentence, in the first person, one or two short sentences. Keep names of people, places and Colombian food as they are. Return only the English, with no quotes and no explanation.",
+          temperature: 0,
+          maxOutputTokens: 120,
+          abortSignal: AbortSignal.timeout(8_000),
+        },
+      });
+      tokensExtraEntrada += r.usageMetadata?.promptTokenCount ?? 0;
+      tokensExtraSalida += tokensDeSalida(r.usageMetadata);
+      const en = quitarMarcadores(r.text ?? "").replace(/["“”]/g, "").replace(/\s+/g, " ").trim();
+      if (/[a-z]{2}/i.test(en) && !esEspanolClaro(en)) {
+        const frase = /[.!?]$/.test(en) ? en : `${en}.`;
+        seDice = { caso: "7", espanol: "Se dice así.", respuesta: `${frase} Try saying it!` };
+      }
+    } catch {
+      // Sin traducción, la respuesta del modelo sigue como estaba.
+    }
+  };
+
+  const armar = (inicial: { transcripcion?: string; caso?: string; espanol?: string; respuesta?: string }) => {
+    const crudo = seDice ? { ...inicial, ...(seDice as { caso: string; espanol: string; respuesta: string }) } : inicial;
     const d = { ...crudo, ...fraseEnEspanolComoSeDice(crudo.transcripcion ?? "", crudo.caso, crudo.respuesta) };
     // "6", 6, "6." o "caso 6": el modelo no siempre respeta el formato.
     const leido = String(d.caso ?? "").replace(/\D/g, "") || undefined;
@@ -1798,6 +1973,7 @@ export async function* conversarEnStream(opciones: {
         preguntaIA: preguntaSiEsReal(d.transcripcion ?? ""),
         espanolClaro: hablaEspanolClaro(d.transcripcion ?? ""),
         oyoMal,
+        afirmo: !/[¿?]|\bc[oó]mo\b|\bqu[eé]\b|\bcu[aá]l\b|\bd[oó]nde\b|\bcu[aá]ndo\b|\bcu[aá]nto|\bqui[eé]n|\bhow\b|\bwhat\b/i.test(d.transcripcion ?? ""),
       }),
       alumno.nivel
     );
@@ -1944,12 +2120,14 @@ export async function* conversarEnStream(opciones: {
         // marcadores para decirla. Armada antes, para que lo que suena
         // sea exactamente lo que después se guarda. "caso" y "espanol"
         // van antes que "respuesta" en el esquema: ya cerraron.
-        const voz = armar({
+        const campos = {
           transcripcion: escrito ?? sinArtefactos(campoCompleto(acumulado, "transcripcion") ?? ""),
           caso: campoCompleto(acumulado, "caso") ?? undefined,
           espanol: campoCompleto(acumulado, "espanol") ?? undefined,
           respuesta: r,
-        });
+        };
+        await asegurarSeDice(campos);
+        const voz = armar(campos);
         vozEntregada = voz;
         yield { tipo: "respuesta", texto: quitarMarcadores(voz), voz };
       }
@@ -1994,8 +2172,9 @@ export async function* conversarEnStream(opciones: {
   // el stream (el modelo cambió el orden de los campos), se arma ahora y
   // se entrega antes del final, para que el cliente la reciba igual.
   // Va ANTES del filtro de correcciones: arma() fija el caso aplicado.
-  const respuestaVoz =
-    vozEntregada ?? armar({ ...datos, transcripcion: escrito ?? sinArtefactos(datos.transcripcion ?? "") });
+  const camposFinales = { ...datos, transcripcion: escrito ?? sinArtefactos(datos.transcripcion ?? "") };
+  if (!vozEntregada && !sinVoz) await asegurarSeDice(camposFinales);
+  const respuestaVoz = vozEntregada ?? armar(camposFinales);
   if (!entregada.respuesta && respuestaVoz && !sinVoz) {
     entregada.respuesta = true;
     yield { tipo: "respuesta", texto: quitarMarcadores(respuestaVoz), voz: respuestaVoz };
@@ -2034,7 +2213,7 @@ export async function* conversarEnStream(opciones: {
 
   // "have" para la edad: la forma y la regla con "to be" (correccionDeEdad).
   const edadMal = EDAD_CON_HAVE.test(transcripcionLimpia);
-  const correcciones =((datos.correcciones ?? []) as Correccion[]).map((c) => correccionDeEdad(transcripcionLimpia, c)).filter((c) => {
+  const correcciones =((datos.correcciones ?? []) as Correccion[]).map((c) => correccionEnSuPersona(correccionDeEdad(transcripcionLimpia, c))).filter((c) => {
     if (!c?.original?.trim() || !c?.correccion?.trim()) return false;
     const o = normalizar(c.original);
     const co = normalizar(c.correccion);
@@ -2139,9 +2318,10 @@ export async function* conversarEnStream(opciones: {
       correcciones: enEspanol ? [] : permitidas,
       caso: casoAplicado,
       objetivoUsado,
-      tokensEntrada: uso?.promptTokenCount ?? 0,
-      tokensSalida: tokensDeSalida(uso),
+      tokensEntrada: (uso?.promptTokenCount ?? 0) + tokensExtraEntrada,
+      tokensSalida: tokensDeSalida(uso) + tokensExtraSalida,
       ...(fallaIA ? { fallaIA } : {}),
+      ...(diceQueOyoMal(transcripcionLimpia) ? { oyoMal: true } : {}),
     },
   };
 }

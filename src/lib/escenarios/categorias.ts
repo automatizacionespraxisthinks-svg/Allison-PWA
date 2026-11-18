@@ -3,13 +3,14 @@
  * Sin base de datos: la pantalla (cliente) también las usa.
  */
 
-export type Categoria = "Míos" | "Viajes" | "Compras" | "Comida" | "Salud" | "Ciudad";
+export type Categoria = "Míos" | "Trabajo" | "Viajes" | "Compras" | "Comida" | "Salud" | "Ciudad";
 
-export const CATEGORIAS: Categoria[] = ["Míos", "Viajes", "Compras", "Comida", "Salud", "Ciudad"];
+export const CATEGORIAS: Categoria[] = ["Míos", "Trabajo", "Viajes", "Compras", "Comida", "Salud", "Ciudad"];
 
 /** La clase de color (globals.css) y el ícono de cada categoría. */
 export const ESTILO_CATEGORIA: Record<Categoria, { clase: string; icono: string }> = {
   Míos: { clase: "cat-mios", icono: "chispa" },
+  Trabajo: { clase: "cat-trabajo", icono: "maletin" },
   Viajes: { clase: "cat-viajes", icono: "viajes" },
   Compras: { clase: "cat-compras", icono: "bolsa" },
   Comida: { clase: "cat-comida", icono: "comida" },

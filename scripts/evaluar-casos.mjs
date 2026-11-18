@@ -7,6 +7,7 @@
  *   node --env-file=.env scripts/evaluar-casos.mjs [repeticiones] [nivel]
  *   VER=1 ...   muestra también las respuestas correctas
  *   TEMPERATURA=0 ...   reproducible (por defecto 0.8, la de producción)
+ *   CON_HISTORIAL=1 ...   solo los casos con una conversación entera detrás
  *   SOLO=texto ...   solo las frases que contienen ese texto
  *   AUDIO=1 ...   cada frase se DICE (voces de Windows: Zira en inglés,
  *                 Sabina en español y en lo mezclado) y entra como audio,
@@ -16,6 +17,7 @@
  *                 en español al caso 2. Todo cambio del prompt se mide así.
  */
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -26,7 +28,13 @@ const reps = Number(process.argv[2] ?? 3);
 const nivel = process.argv[3] ?? "A1";
 const temperatura = Number(process.env.TEMPERATURA ?? 0.8);
 const alumno = { nombre: "Diego Rojas", nivel, erroresRepetidos: ["playet", "goed"] };
-const ctx = (allison) => [{ id: "1", rol: "allison", texto: allison, correcciones: [], creadoEn: "" }];
+// Un mensaje anterior con marcadores llega como en producción: texto limpio y textoVoz con [es]/[en-US].
+// También una conversación entera: una lista que alterna Allison, alumno, Allison...
+const mensaje = (texto, i) =>
+  i % 2 === 0
+    ? { id: String(i), rol: "allison", texto: quitarMarcadores(texto), textoVoz: texto.includes("[es]") ? texto : undefined, correcciones: [], creadoEn: "" }
+    : { id: String(i), rol: "alumno", texto, correcciones: [], creadoEn: "" };
+const ctx = (anterior) => (Array.isArray(anterior) ? anterior : [anterior]).map(mensaje);
 const sinEs = ["B2", "C1", "C2"].includes(nivel);
 const unaCorr = ["A1", "A2"].includes(nivel);
 const conAudio = Boolean(process.env.AUDIO);
@@ -34,7 +42,8 @@ const carpetaAudio = join(tmpdir(), "allison-evaluar-casos");
 if (conAudio) mkdirSync(carpetaAudio, { recursive: true });
 /** El wav de la frase, dicho por una voz de Windows (se graba una sola vez). */
 function grabar(i, dice, espanol) {
-  const destino = join(carpetaAudio, `${i}.wav`);
+  // Por frase y no por posición: al agregar casos en medio, la posición cambia.
+  const destino = join(carpetaAudio, `${createHash("sha1").update(`${espanol}:${dice}`).digest("hex").slice(0, 16)}.wav`);
   if (!existsSync(destino)) {
     const ps = `Add-Type -AssemblyName System.Speech
 $s = New-Object System.Speech.Synthesis.SpeechSynthesizer
@@ -48,7 +57,20 @@ $s.SetOutputToNull(); $s.Dispose()`;
 }
 const igual = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
 
-// [caso esperado (o lista), lo que dice, mensaje anterior de Allison]
+/** La conversación de la prueba del usuario (18 de noviembre de 2026): Allison, alumno, Allison... */
+const CHARLA = [
+  "I'm doing great, Diego! What did you do today?",
+  "I stay house",
+  "[es] Para decir dónde estás, se usa 'at': 'at home'. [en-US] You stay at home! What do you do there?",
+  "I watch TV",
+  "You watch TV! What show do you watch?",
+  "¿Cómo se dice un programa de chistes?",
+  "[es] Se dice así. [en-US] A comedy show. Try saying it!",
+  "No, pero ¿cómo se dice programa de chistes?",
+  "[es] Se dice así. [en-US] A comedy show. Try saying it!",
+];
+
+// [caso esperado (o lista), lo que dice, mensaje anterior de Allison (o la conversación entera)]
 const casos = [
   [["1"], "I have two brother", "Tell me about your family."],
   [["1"], "My mother cook very good", "Who cooks at home?"],
@@ -83,7 +105,7 @@ const casos = [
   [["7"], "te estoy preguntando que qué más puedes hacer", "Sorry. I didn't hear you. Can you say it again?"],
   // Inglés y español en un mismo turno (auditoría, 17 de noviembre de 2026):
   // antes "arepas con huevo" pasaba como 11 y el español quedaba en la parte inglesa.
-  [["2"], "Yesterday I ate arepas con huevo", "What did you eat for breakfast?"],
+  [["2", "11"], "Yesterday I ate arepas con huevo", "What did you eat for breakfast?"],
   [["2"], "I have a perro, se llama Max", "Do you have any pets?"],
   [["2"], "I like to play fútbol pero I am not very good", "What sports do you like?"],
   [["8"], "Allison, what significa 'weekend'?", "What do you do on weekends?"],
@@ -105,6 +127,26 @@ const casos = [
   [["2"], "I am study in my house", "Where are you right now?", "house"],
   [["2"], "Yesterday I go to the school with my friends", "What did you do yesterday?", "school"],
   [["11"], "I am fine, thank you", "Hi Diego! How are you today?"],
+  // Prueba del usuario en producción (18 de noviembre de 2026). El quinto
+  // dato es lo que la respuesta NO puede traer.
+  // "I stay house" salía "You stay at house" (y la corrección, en segunda persona).
+  [["2"], "I stay house", "I'm doing great, Diego! What did you do today?", "home", "at house"],
+  // Respondió en presente a una pregunta en presente y Allison lo pasó al pasado.
+  [["11"], "I watch TV", "You stay at home! What do you do there?", null, "watched"],
+  // "¿Cómo se dice X?" es X en inglés, no la pregunta traducida ("How do you say a comedy show?").
+  [["7"], "¿Cómo se dice un programa de chistes?", "You watched TV! What show did you watch?", null, "how do you say"],
+  [["7"], "No, pero ¿cómo se dice programa de chistes?", "How do you say a comedy show? Try saying it!", null, "how do you say"],
+  [["7"], "¿Cómo se dice tengo mucho sueño?", "What do you do at night?", null, "how do you say"],
+  // Dijo lo que Allison lo invitó a decir: se le reconoce y se sigue, no se repite "Se dice así".
+  [["11"], "a comedy show", "[es] Se dice así. [en-US] A comedy show. Try saying it!", null, "se dice así|try saying"],
+  [["11"], "I am hungry", "[es] Se dice así. [en-US] I am hungry. Try saying it!", null, "se dice así|try saying"],
+  // Lo mismo con la conversación completa detrás, como pasó en producción:
+  // con varios "Se dice así" en el historial, el modelo seguía en ese carril.
+  [["11"], "I watch TV", [...CHARLA.slice(0, 3)], null, "watched"],
+  [["7"], "¿Cómo se dice un programa de chistes?", [...CHARLA.slice(0, 5)], null, "how do you say"],
+  [["7"], "No, pero ¿cómo se dice programa de chistes?", [...CHARLA.slice(0, 7)], null, "how do you say"],
+  [["11"], "a comedy show", [...CHARLA.slice(0, 9)], null, "se dice así|try saying"],
+  [["11"], "I played soccer yesterday", "[es] Claro. Para hablar del pasado, a casi todos los verbos se les agrega 'ed'. [en-US] I play, I played. I go, I went. Try saying: I played soccer yesterday.", null, "se dice así|try saying"],
 ];
 /** Lo que no está en inglés se dice con la voz española (también lo mezclado). */
 const enEspanol = (dice) => /[¿¡áéíóúñ]|\b(eso|dije|perro|pero|con|significa|estoy|ayer|gusta|entiendo|preguntando)\b/i.test(dice);
@@ -112,7 +154,7 @@ const enEspanol = (dice) => /[¿¡áéíóúñ]|\b(eso|dije|perro|pero|con|signi
 const REQUIERE_ES = new Set(["2", "3", "4", "5", "6", "7", "8", "9", "10"]);
 const PREGUNTA_AL_FINAL = new Set(["1", "2", "5", "11"]);
 
-function revisar(esperado, dice, r, conserva) {
+function revisar(esperado, dice, r, conserva, prohibido) {
   const fallas = [];
   // El alumno dijo que Allison oyó mal: disculpa fija, sin correcciones.
   if (esperado[0] === "Q") {
@@ -177,6 +219,9 @@ function revisar(esperado, dice, r, conserva) {
   if (/\[(?!es\]|en-US\])/.test(voz)) fallas.push("marcador raro");
   if (c === "7" && !sinEs && !/Se dice así\./.test(voz)) fallas.push("caso 7 sin «Se dice así.»");
   if (c === "7" && !/try (saying|asking)/i.test(voz)) fallas.push("caso 7 sin «Try saying it!»");
+  if (prohibido && new RegExp(prohibido, "i").test(voz)) fallas.push(`trae «${voz.match(new RegExp(prohibido, "i"))[0]}»`);
+  // La corrección es SU frase arreglada: en primera persona, como la dijo.
+  for (const k of r.correcciones) if (/^you(r|'re)?\b/i.test(k.correccion) && !/^you(r|'re)?\b/i.test(k.original)) fallas.push(`corrección en segunda persona: "${k.correccion}"`);
   if (conserva && !new RegExp(`\\b${conserva}\\b`, "i").test(voz)) fallas.push(`cambió «${conserva}» por otra palabra`);
   return fallas;
 }
@@ -184,8 +229,9 @@ function revisar(esperado, dice, r, conserva) {
 let total = 0, malas = 0, oidas = 0, oidasBien = 0;
 const porCaso = {};
 for (let rep = 0; rep < reps; rep++) {
-  for (const [n, [esperado, dice, anterior, conserva]] of casos.entries()) {
+  for (const [n, [esperado, dice, anterior, conserva, prohibido]] of casos.entries()) {
     if (process.env.SOLO && !dice.includes(process.env.SOLO)) continue;
+    if (process.env.CON_HISTORIAL && !Array.isArray(anterior)) continue;
     let r;
     const entrada = conAudio ? { audioBase64: grabar(n, dice, enEspanol(dice)), mimeType: "audio/wav" } : { texto: dice };
     for (let i = 0; i < 3 && !r; i++) {
@@ -195,7 +241,7 @@ for (let rep = 0; rep < reps; rep++) {
     if (conAudio && esperado[0] === "5") continue;
     if (!r) { console.log(`RED  ${dice}`); continue; }
     total++;
-    const fallas = revisar(esperado, dice, r, conserva);
+    const fallas = revisar(esperado, dice, r, conserva, prohibido);
     // Con audio, además: ¿transcribió lo que se dijo? (los ruidos del caso 6 no cuentan)
     if (conAudio && esperado[0] !== "6") {
       oidas++;

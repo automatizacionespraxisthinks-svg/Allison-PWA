@@ -42,6 +42,27 @@ WAV), con la misma frase y solo el signo cambiado:
 
 En inglés sí: comas 85-120 ms, puntos y preguntas 285-610 ms.
 
+**Con `af_heart` a 0,9 cambia (medido el 18 de noviembre de 2026).** La falta
+de pausas en español era, en buena parte, de la voz `af_jessica`: la misma
+frase con `af_heart` sí la trae.
+
+| Signo | `af_jessica` 0,8 (español) | `af_heart` 0,9 (español) | `af_heart` 0,9 (inglés) |
+|---|---|---|---|
+| `.` | ninguna (375 ms entre oraciones largas) | 295-445 ms | 275-385 ms |
+| `!` `?` | ninguna | 285-290 ms | 275-385 ms |
+| `:` | ninguna | 330 ms | — |
+| `,` | ninguna | 135-200 ms | 60-160 ms |
+| cambio de idioma | — | 610-685 ms | — |
+
+Lo único corto era la coma, sobre todo en una lista («movies, music, and
+soccer»: 60-135 ms). La app la refuerza con puntos suspensivos después de
+cada coma (`pausasEnComas` en `src/lib/habla.ts`, aplicado en `tts.ts` a lo
+que se le manda al servicio, nunca a lo que se muestra): queda en 270-365 ms,
+sin cambiar palabras ni meter ruidos (oído a ciegas) y con el audio entre un
+2 y un 10 % más largo. Los deletreos («P, L, A, Y») no se tocan. Reforzar
+también `!` y `?` dejaba «Nice!» con 635 ms: se descartó. Muestras en
+`.muestras-voz/pausas-18-nov/comparar`.
+
 **La app no lo puede arreglar sola:** mandar cada oración o cada tramo
 entre comas como su propio segmento `es` da exactamente el mismo audio (el
 servicio une los segmentos seguidos del mismo idioma antes de generarlos), y

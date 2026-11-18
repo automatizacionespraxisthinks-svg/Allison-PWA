@@ -170,6 +170,74 @@ export function conPunto(frase: string): string {
 }
 
 /**
+ * La pausa de las comas, reforzada. Medido el 18 de noviembre de 2026 con
+ * af_heart a 0,9: el punto, "!", "?" y ":" ya dan su pausa (285 a 445 ms
+ * en español y en inglés), pero la coma se quedaba en 135 a 160 ms, y en
+ * una lista ("movies, music, and soccer") en 60 a 135. Con puntos
+ * suspensivos después de la coma sube a 270-365 ms, sin cambiar ninguna
+ * palabra ni meter ruidos (oído a ciegas) y alargando el audio entre un 2
+ * y un 10 %. Es lo que se le manda a la API, nunca lo que se muestra.
+ * No tras una letra suelta (ni tras "eh", que es como va la A): en un
+ * deletreo ("P, L, A, Y") cada coma ya separa las letras y con el
+ * refuerzo se haría eterno.
+ */
+export function pausasEnComas(texto: string): string {
+  return texto.replace(/(?<!(?:^|[\s'"“‘])(?:[A-Za-z]|eh)),(\s+)(?=[^\s…])/g, ", …$1");
+}
+
+/**
+ * Un deletreo con comas ("P, L, A, Y, E, D"), como lo dice la voz: la A
+ * va como "eh" (letraParaVoz). El de la conversación (caso 10) llega así,
+ * con comas, y la A sonaba como el artículo "a" y no "ei" (18 de noviembre
+ * de 2026); deletreoParaVoz solo veía los de guiones ("A-M-Y"). Tres
+ * letras seguidas o más, para no tocar "I, a student". Solo en lo que se
+ * manda a la API: en pantalla sigue "P, L, A, Y, E, D".
+ *
+ * También vale para los que ya traen "eh" (lecciones y escenas).
+ */
+const DELETREO = /(?<![A-Za-z'’])(?:[A-Z]|eh)(?:, (?:[A-Z]|eh)){2,}(?![A-Za-z'’])/;
+export function letrasParaVoz(texto: string): string {
+  return texto.replace(new RegExp(DELETREO, "g"), (m) => m.split(", ").map((l) => (l === "eh" ? l : letraParaVoz(l))).join(", "));
+}
+
+/**
+ * Los tramos de un texto con cada letra de un deletreo como SU PROPIO
+ * tramo, y un tramo mudo entre letra y letra. El usuario pidió "escuchar
+ * letra por letra", con espera entre una y otra (18 de noviembre de 2026).
+ * Dentro de un mismo tramo no se logra: con comas las letras salían
+ * pegadas (60 a 400 ms), y con puntos y puntos suspensivos la pausa era
+ * dispareja (100 a 1.100 ms) y a veces con un ruido. Lo que sí da una
+ * pausa limpia y pareja es el borde entre dos tramos; el servicio une los
+ * tramos seguidos del mismo idioma, así que entre letra y letra va un
+ * guion en otro idioma, que no suena. Medido con af_heart a 0,9: 850 a
+ * 950 ms entre letras, un solo silencio en cada una. Las letras siguen
+ * todas en inglés de EE. UU. (alternar con inglés británico daba 650 ms,
+ * pero cambia la R y la Z). Cada letra, sola, se dice además más clara.
+ */
+export function tramosConDeletreo(segmentos: SegmentoVoz[]): SegmentoVoz[] {
+  const salida: SegmentoVoz[] = [];
+  for (const s of segmentos) {
+    const texto = s.idioma === "en" ? letrasParaVoz(s.texto) : s.texto;
+    const m = s.idioma === "en" ? DELETREO.exec(texto) : null;
+    if (!m) {
+      salida.push({ ...s, texto });
+      continue;
+    }
+    const antes = texto.slice(0, m.index).trim();
+    const despues = texto.slice(m.index + m[0].length).replace(/^[\s.,;:]+/, "").trim();
+    if (antes) salida.push({ texto: antes, idioma: "en" });
+    m[0].split(", ").forEach((letra, i) => {
+      if (i) salida.push({ texto: "-", idioma: "es" });
+      salida.push({ texto: `${letra}.`, idioma: "en" });
+    });
+    // Lo que sigue al deletreo en el mismo tramo ("Try saying: ...") se
+    // revisa también: puede traer otro deletreo.
+    if (despues) salida.push(...tramosConDeletreo([{ texto: despues, idioma: "en" }]));
+  }
+  return salida;
+}
+
+/**
  * La puntuación como la necesita la voz: la API no tiene marcas de
  * pausa, así que las pausas salen SOLO de los signos (octubre de 2026).
  *   · Un salto de línea sin signo al final es una pausa: se vuelve punto.
@@ -362,7 +430,12 @@ export function senalesDeEspanol(historial: TurnoResumen[], ventana = 10): Senal
  * segundo. Sirve para dimensionar la espera, no para prometer nada.
  */
 export function estimarSegundos(texto: string): number {
-  return Math.max(1, Math.ceil(texto.length / 15));
+  // Un deletreo va letra por letra, con casi un segundo entre una y otra
+  // (tramosConDeletreo): cada letra son unos 1,5 s, no un carácter más. Sin
+  // contarlo, el vigilante de la pantalla cortaba una palabra larga a la
+  // mitad ("congratulations": 29 s de audio contra 30 de espera).
+  const letras = (texto.match(new RegExp(DELETREO, "g")) ?? []).reduce((n, d) => n + d.split(", ").length, 0);
+  return Math.max(1, Math.ceil(texto.length / 15 + letras * 1.5));
 }
 
 /**
@@ -384,6 +457,16 @@ export function tiempoDeEsperaMs(texto: string, velocidad = 1): number {
 export function velocidadParaVoz(velocidad: unknown): number {
   const v = typeof velocidad === "number" && Number.isFinite(velocidad) ? velocidad : 1;
   return Math.round(Math.min(2, Math.max(0.5, v)) * 100) / 100;
+}
+
+/**
+ * La velocidad con que habla Allison cuando la pide la app: solo 0,9 (A1
+ * y A2) o 1 (los demás). El servidor no acepta otra: por debajo de 0,9
+ * la voz deforma palabras (medición del 17 de noviembre de 2026), y una
+ * petición hecha a mano podía pedir cualquier valor entre 0,5 y 2.
+ */
+export function velocidadDeAllison(velocidad: unknown): number {
+  return velocidad === 0.9 ? 0.9 : 1;
 }
 
 /** Un X-Request-ID válido para la API: alfanumérico con - _ . :, máximo 64. */

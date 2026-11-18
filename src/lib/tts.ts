@@ -3,6 +3,8 @@ import {
   prepararParaVoz,
   TEXTO_VOZ_MAX,
   tiempoDeEsperaMs,
+  tramosConDeletreo,
+  pausasEnComas,
   velocidadParaVoz,
   type IdiomaVoz,
 } from "./habla.ts";
@@ -259,10 +261,12 @@ export async function sintetizar(opciones: {
   const todoEspanol = segmentos.every((s) => s.idioma === "es");
   const voz = base === "es" && todoEspanol ? cfg.vozEspanol : cfg.vozIngles;
   const comun = { voice: voz, speed, format: "mp3", stream: true };
+  // Un deletreo va letra por letra, cada una en su tramo (tramosConDeletreo).
+  const tramos = tramosConDeletreo(segmentos.length ? segmentos : [{ texto, idioma: base }]);
   const cuerpo = JSON.stringify(
-    segmentos.length > 1
-      ? { segments: segmentos.map((s) => ({ text: s.texto, lang: lang(s.idioma) })), ...comun }
-      : { text: segmentos[0]?.texto ?? texto, lang: lang(segmentos[0]?.idioma ?? base), ...comun }
+    tramos.length > 1
+      ? { segments: tramos.map((s) => ({ text: pausasEnComas(s.texto), lang: lang(s.idioma) })), ...comun }
+      : { text: pausasEnComas(tramos[0]?.texto ?? texto), lang: lang(tramos[0]?.idioma ?? base), ...comun }
   );
 
   const { cancelar } = opciones;

@@ -30,8 +30,9 @@ export function CatalogoEscenarios({ tarjetas, saldo }: { tarjetas: TarjetaEscen
   const [busqueda, setBusqueda] = useState("");
 
   const estrellas = tarjetas.reduce((n, t) => n + t.estrellas, 0);
+  // La entrevista de trabajo ya va destacada arriba: no se recomienda otra vez.
   const recomendado =
-    tarjetas.find((t) => t.abierto && t.veces === 0 && t.categoria !== "Míos") ??
+    tarjetas.find((t) => t.abierto && t.veces === 0 && t.categoria !== "Míos" && t.ruta !== "entrevista") ??
     [...tarjetas].filter((t) => t.abierto).sort((a, b) => a.estrellas - b.estrellas)[0] ??
     null;
 
@@ -79,6 +80,8 @@ export function CatalogoEscenarios({ tarjetas, saldo }: { tarjetas: TarjetaEscen
         />
       )}
 
+      {!busqueda && <EntrevistaDestacada t={tarjetas.find((t) => t.ruta === "entrevista")} />}
+
       {recomendado && !busqueda && <Recomendado t={recomendado} />}
 
       <CreaTuPropio saldo={saldo} />
@@ -121,6 +124,37 @@ export function CatalogoEscenarios({ tarjetas, saldo }: { tarjetas: TarjetaEscen
         </p>
       )}
     </main>
+  );
+}
+
+/**
+ * La entrevista de trabajo, arriba de todo y en todos los niveles (18 de
+ * noviembre de 2026): un bloque propio, más grande que una tarjeta, que
+ * lleva a su página (elegir el cargo y prepararse).
+ */
+function EntrevistaDestacada({ t }: { t?: TarjetaEscenario }) {
+  if (!t) return null;
+  const estilo = ESTILO_CATEGORIA.Trabajo;
+  return (
+    <Link
+      href="/escenarios/entrevista"
+      className={`${estilo.clase} flex items-center gap-3.5 rounded-3xl border-2 border-[var(--k1)] bg-[var(--kf)] p-4 transition hover:brightness-[0.98] active:scale-[0.99]`}
+    >
+      <span className="grid size-14 flex-none place-items-center rounded-2xl bg-[var(--k1)] text-white">
+        <Icono nombre={estilo.icono} className="size-7" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <small className="block text-[11.5px] font-extrabold tracking-wide text-[var(--k2)] uppercase">En todos los niveles</small>
+        <b className="block text-[19px] leading-tight font-black">Entrevista de trabajo</b>
+        <span className="mt-0.5 block text-[13px] font-semibold text-texto-suave">
+          Elige el cargo, prepárate y recibe tu informe al final.
+        </span>
+        {t.veces > 0 && <Estrellas n={t.estrellas} className="mt-1.5 size-4" />}
+      </span>
+      <span className="flex-none rounded-full bg-[var(--k2)] px-3.5 py-2 text-[13px] font-extrabold text-white">
+        {t.veces > 0 ? "Repetir" : "Empezar"}
+      </span>
+    </Link>
   );
 }
 

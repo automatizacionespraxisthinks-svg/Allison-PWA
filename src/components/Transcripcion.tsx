@@ -39,6 +39,7 @@ export function Transcripcion({
   nivel = "B1",
   reportadas = [],
   alCobrar,
+  noDijeEso,
 }: {
   mensajes: Mensaje[];
   nivel?: Nivel;
@@ -46,6 +47,11 @@ export function Transcripcion({
   reportadas?: string[];
   /** Traducir cuesta una intervención: las que quedan (0 si no alcanzó). */
   alCobrar?: (restantes: number) => void;
+  /**
+   * "¿No dijiste eso?" bajo el último mensaje HABLADO del alumno, mientras
+   * su pase siga vigente: Allison oyó mal, el turno se borra y no se cobra.
+   */
+  noDijeEso?: { mensajeId: string; ocupado: boolean; alTocar: () => void };
 }) {
   const [reportes, setReportes] = useState<Record<string, "enviando" | "listo" | "error">>(() =>
     Object.fromEntries(reportadas.map((k) => [k, "listo" as const]))
@@ -212,7 +218,7 @@ export function Transcripcion({
             </div>
           </div>
         ) : (
-          <div key={m.id} className="flex justify-end">
+          <div key={m.id} className="flex flex-col items-end gap-1">
             <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primario-suave px-4 py-3 text-texto">
               <p data-frase={m.texto} className="select-text text-[15px] leading-relaxed">
                 {m.texto}
@@ -245,6 +251,17 @@ export function Transcripcion({
                 </ul>
               )}
             </div>
+            {noDijeEso?.mensajeId === m.id && (
+              <button
+                type="button"
+                onClick={noDijeEso.alTocar}
+                disabled={noDijeEso.ocupado}
+                title="Si Allison te oyó mal, borra este mensaje sin cobrarlo"
+                className="mr-1 text-xs font-semibold text-primario underline transition hover:opacity-75 disabled:opacity-40"
+              >
+                {noDijeEso.ocupado ? "Borrando…" : "¿No dijiste eso?"}
+              </button>
+            )}
           </div>
         )
       )}

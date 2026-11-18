@@ -1,5 +1,6 @@
 import { sql } from "../db";
-import { buscarEscenario } from "../escenarios/catalogo";
+import { AVANCE_ENTREVISTA, buscarEscenario } from "../escenarios/catalogo";
+import { esEntrevista } from "../escenarios/entrevista";
 import { transcribirACiegas } from "../evaluacion";
 import type { Nivel } from "../tipos";
 import { estadoRutaDe } from "./avance";
@@ -128,7 +129,8 @@ async function ubicar(
     return { nivel, escenario, extra: reglasDeViaje(v, nivel), minimo: escenario.minimoIntervenciones, maximo: escenario.maximoIntervenciones };
   }
   if (e.actividad === "catalogo") {
-    const c = e.clave ? await buscarEscenario(userId, e.clave) : null;
+    // La entrevista de trabajo cambia con el nivel: el de cuando empezó.
+    const c = e.clave ? await buscarEscenario(userId, e.clave, e.nivel ?? nivelAlumno) : null;
     if (!c) return null;
     return {
       nivel: e.nivel ?? nivelAlumno,
@@ -198,7 +200,7 @@ export async function iniciarEscena(
     const p = await pasaporteDeViajes(userId, nivel);
     if (!p.viajes.find((v) => v.numero === pedido.viaje)?.abierto) return { ok: false, error: "bloqueada" };
   } else if (pedido.actividad === "catalogo") {
-    const c = await buscarEscenario(userId, pedido.clave ?? "");
+    const c = await buscarEscenario(userId, pedido.clave ?? "", nivel);
     if (!c || !(await c.abierto(nivel))) return { ok: false, error: "bloqueada" };
   } else {
     if (u.nivel !== nivel) return { ok: false, error: "no_existe" };
@@ -323,6 +325,8 @@ export async function mejoraDeEscena(userId: string, conversacionId: string): Pr
 function claveDeIntento(e: EstadoEscena): string {
   if (DE_LECCION.includes(e.actividad)) return `${e.parada}:${e.leccion ?? 0}`;
   if (e.actividad === "viaje") return `viaje:${e.viaje ?? 0}`;
+  // El cargo que escribió el alumno no va al panel: todas las entrevistas cuentan juntas.
+  if (e.actividad === "catalogo" && esEntrevista(e.clave ?? "")) return AVANCE_ENTREVISTA;
   if (e.actividad === "catalogo") return e.clave?.startsWith("propio:") ? "propio" : (e.clave ?? "");
   return e.parada;
 }
@@ -836,7 +840,7 @@ export async function terminarEscenario(
     } else if (estado.actividad === "catalogo") {
       await sql`
         insert into escenarios_avance (user_id, escenario, estrellas, veces)
-        values (${userId}, ${estado.clave!}, ${estrellas}, 1)
+        values (${userId}, ${esEntrevista(estado.clave!) ? AVANCE_ENTREVISTA : estado.clave!}, ${estrellas}, 1)
         on conflict (user_id, escenario) do update
            set estrellas = greatest(escenarios_avance.estrellas, excluded.estrellas),
                veces = escenarios_avance.veces + 1,

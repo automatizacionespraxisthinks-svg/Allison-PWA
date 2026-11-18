@@ -308,6 +308,36 @@ for (let rep = 0; rep < reps; rep++) {
     );
   }
 
+  // Reclamo y pedido de repetir en español (18 de noviembre de 2026): antes
+  // Allison se los traducía ("En inglés se dice así: That was not what I
+  // said. Try it!").
+  for (const [nivel, e] of [["A1", PARADA_01.escenario], ["B1", B1_P01.escenario]]) {
+    const base = {
+      escenario: e,
+      nivel,
+      nombre: "Diego",
+      historial: [{ rol: "allison", texto: e.dialogo[0].dice }, { rol: "alumno", texto: "Hello!" }, { rol: "allison", texto: "Nice to meet you! Where are you from?" }],
+      cumplidas: [1],
+      ultimo: false,
+      turno: 2,
+      minimo: e.minimoIntervenciones,
+    };
+    const reclamo = await turnoDeEscenario({ ...base, texto: "Eso no fue lo que yo dije" });
+    revisar(
+      `Reclamo ${nivel} · se disculpa y pide repetir, sin traducir`,
+      /say it again\?$/i.test(reclamo.respuesta) && !/se dice así|not what I said|try it/i.test(reclamo.respuesta) && !reclamo.tareas.length && !reclamo.error && (nivel === "A1") === reclamo.respuestaVoz.includes("[es] Perdón, te oí mal."),
+      reclamo.respuestaVoz
+    );
+    const repite = await turnoDeEscenario({ ...base, texto: "No entendí, ¿me repites?" });
+    revisar(
+      `Pide repetir ${nivel} · oye otra vez la línea de Allison`,
+      nivel === "A1"
+        ? repite.respuestaVoz === "[es] Claro, te lo repito. [en-US] Nice to meet you! Where are you from?" && !repite.tareas.length
+        : !/se dice así/i.test(repite.respuesta) && !repite.tareas.length,
+      repite.respuestaVoz
+    );
+  }
+
   // La entrevista: el modelo clasifica, el código responde.
   console.log(`Entrevista (vuelta ${rep + 1})`);
   const entrevista = PARADA_01.lecciones[3].actividades.find((a) => a.tipo === "entrevista");

@@ -12,6 +12,7 @@ import { Estampilla, type LugarSello } from "./Estampilla";
 import { Estrellas, Icono, type NombreIcono } from "./Iconos";
 import { ayudaEscena, iniciarEscena, terminarEscena, turnoEscena, type FinEscena } from "./escenaApi";
 import { MisionCompacta } from "./Escenario";
+import { InformeEntrevista } from "@/components/escenarios/InformeEntrevista";
 import { AllisonAro, BotonOir, Grabador, useVoz, type Entrada } from "./leccion/comun";
 import { Practicarla } from "./Practicarla";
 
@@ -59,6 +60,13 @@ export interface DatosEscenaChat {
   volver: { href: string; texto: string };
   /** Ya lo hizo antes: el resumen dice "Repite para subir tus estrellas". */
   estrellasAntes: number;
+  /**
+   * La tarea que trae un imprevisto (entrevista de trabajo, desde B1): no
+   * se ve en la misión hasta cumplir la tarea después de la cual pasa.
+   */
+  imprevisto?: { despuesDeTarea: number; tarea: number };
+  /** Entrevista de trabajo: al terminar se ofrece el informe (usa una intervención). */
+  informe?: boolean;
 }
 
 type Fase = "antes" | "charla" | "resumen";
@@ -473,7 +481,13 @@ function Mision({ d, cumplidas, intervenciones }: { d: DatosEscenaChat; cumplida
       {/* Con más de 4 tareas (el catálogo, los propios), los íconos con su
           texto no caben en el teléfono: van números y la tarea de ahora. */}
       {d.tareas.length > 4 ? (
-        <MisionCompacta tareas={d.tareas} cumplidas={cumplidas} actual={actual} />
+        <MisionCompacta
+          tareas={d.tareas}
+          cumplidas={cumplidas}
+          actual={actual}
+          oculta={d.imprevisto && !cumplidas.includes(d.imprevisto.despuesDeTarea) ? d.imprevisto.tarea : 0}
+          imprevisto={d.imprevisto?.tarea}
+        />
       ) : (
         <ol className="grid gap-1" style={{ gridTemplateColumns: `repeat(${d.tareas.length}, minmax(0, 1fr))` }}>
           {d.tareas.map((t, i) => {
@@ -586,6 +600,8 @@ function Resumen({
           ))}
         </div>
       )}
+
+      {d.informe && conversacion && <InformeEntrevista conversacion={conversacion} decir={decir} />}
 
       {!logrado && faltaron.length > 0 && (
         <div className="flex flex-col gap-1.5 rounded-3xl bg-primario-suave px-4 py-3.5 text-primario">

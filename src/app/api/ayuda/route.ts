@@ -69,6 +69,9 @@ this from their English teacher and needs help. Return:
 
 - "traduccion": what it means, in natural Colombian Spanish. Not word by
   word: what a person would actually say.
+  The teacher talks to ONE student: "you" is always "tú", never
+  "ustedes" ("You watched TV! What show did you watch?" is "¡Viste
+  televisión! ¿Qué programa viste?", never "Vieron televisión").
 - "sugerencia": ONE thing they could reply, in natural US English, at
   level ${nivel}. Short, true to a real conversation, and easy enough that
   they can say it out loud right now. Never a question back unless it

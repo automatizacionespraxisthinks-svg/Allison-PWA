@@ -4,6 +4,10 @@ import type { Escenario } from "../ruta/tipos";
 import type { Nivel } from "../tipos";
 import { rutaDeEscenario, type TarjetaEscenario } from "./categorias";
 import { CATALOGO, escenario, nivelAbierto } from "./datos";
+import { cargoDeClave, esEntrevista, escenarioDeEntrevista } from "./entrevista";
+
+/** La clave con que se guarda el avance de la entrevista: una sola, sea cual sea el cargo. */
+export const AVANCE_ENTREVISTA = "entrevista";
 
 /**
  * Escenarios (pantalla 5): el catálogo vive en datos.ts (sin base de
@@ -20,8 +24,18 @@ export interface EscenarioEncontrado {
   abierto: (nivel: Nivel) => Promise<boolean>;
 }
 
-/** Un escenario del catálogo o uno propio del alumno ("propio:<id>"). */
-export async function buscarEscenario(userId: string, clave: string): Promise<EscenarioEncontrado | null> {
+/**
+ * Un escenario del catálogo, uno propio del alumno ("propio:<id>") o la
+ * entrevista de trabajo ("entrevista:<cargo>"). La entrevista tiene una
+ * versión por nivel: `nivel` es el del alumno al empezar la escena.
+ */
+export async function buscarEscenario(userId: string, clave: string, nivel: Nivel = "A1"): Promise<EscenarioEncontrado | null> {
+  if (esEntrevista(clave)) {
+    const cargo = cargoDeClave(clave);
+    if (!cargo) return null;
+    // Está en todos los niveles: no hay nada que abrir.
+    return { escenario: escenarioDeEntrevista(nivel, cargo), nivelMinimo: "A1", abierto: async () => true };
+  }
   const delCatalogo = CATALOGO.find((c) => c.clave === clave);
   if (delCatalogo) {
     return {
@@ -72,6 +86,21 @@ export async function tarjetasDe(userId: string, nivel: Nivel): Promise<TarjetaE
   const de = new Map(avance.map((f) => [f.escenario as string, f]));
   const conAvance = (clave: string) => ({ estrellas: (de.get(clave)?.estrellas as number) ?? 0, veces: (de.get(clave)?.veces as number) ?? 0 });
   return [
+    // La entrevista de trabajo: en todos los niveles, con su propia página
+    // (elegir el cargo y prepararse). Va también destacada arriba.
+    {
+      clave: AVANCE_ENTREVISTA,
+      ruta: "entrevista",
+      titulo: "Entrevista de trabajo",
+      lugar: "Oficina",
+      categoria: "Trabajo",
+      imagen: "",
+      papelCorto: "Allison es la entrevistadora",
+      tareas: escenarioDeEntrevista(nivel, { clave: "call-center", es: "" }).tareas.length,
+      nivelMinimo: "A1",
+      abierto: true,
+      ...conAvance(AVANCE_ENTREVISTA),
+    },
     ...propios.map((p): TarjetaEscenario => {
       const clave = `propio:${p.id}`;
       return {

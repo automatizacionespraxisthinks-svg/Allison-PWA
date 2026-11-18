@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prepararParaVoz, velocidadParaVoz } from "@/lib/habla";
+import { prepararParaVoz, velocidadDeAllison } from "@/lib/habla";
 import { limitar } from "@/lib/limite";
 import { alumnoActual } from "@/lib/sesion";
 import { registrarVoz, ttsConfigurado, validarTextoVoz } from "@/lib/tts";
@@ -56,8 +56,8 @@ export async function POST(peticion: Request) {
     );
   }
 
-  // La velocidad (según el nivel) la pone la API al generar.
-  const id = registrarVoz({ userId: alumno.id, texto, idioma, velocidad: velocidadParaVoz(cuerpo?.velocidad) });
+  // La velocidad (según el nivel) la pone la API al generar: solo 0,9 o 1.
+  const id = registrarVoz({ userId: alumno.id, texto, idioma, velocidad: velocidadDeAllison(cuerpo?.velocidad) });
 
   return NextResponse.json({ ok: true, url: `/api/voz/${id}`, segmentos });
 }

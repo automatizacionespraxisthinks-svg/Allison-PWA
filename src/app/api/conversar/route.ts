@@ -10,6 +10,7 @@ import { alumnoActual } from "@/lib/sesion";
 import { senalesDeEspanol } from "@/lib/habla";
 import { AUDIO_MAX_SEGUNDOS } from "@/lib/tipos";
 import { AUDIO_MAX_BYTES, audioPasaDelTope, tipoDeAudio } from "@/lib/audioSeguro";
+import { firmarTurno } from "@/lib/turno";
 
 /**
  * Tope de ejecución de la ruta.
@@ -344,14 +345,31 @@ export async function POST(peticion: Request) {
           }
         }
 
+        // "Eso no fue lo que yo dije": Allison oyó mal y se disculpó. El
+        // error fue de ella, así que ese turno no se cobra (17 de
+        // noviembre de 2026). Una sola vez seguida: si su mensaje anterior
+        // ya era la disculpa, este sí cuenta -- reclamar no es hablar gratis.
+        const yaSeDisculpo = /te oí mal|heard you wrong/i.test(historial.findLast((m) => m.rol === "allison")?.texto ?? "");
+        const sinCobro = Boolean(resultado.oyoMal) && !yaSeDisculpo;
+        if (sinCobro) await devolver();
+
         const [saldo] = await sql`
           select mensajes_plan, mensajes_recarga from saldos where user_id = ${alumno.id}
         `;
+
+        // El pase de "¿No dijiste eso?": solo en turnos hablados (lo
+        // escrito no se oye mal) y no en el reclamo, que ya no se cobró.
+        const noDijeEso =
+          !textoEscrito && !resultado.oyoMal
+            ? firmarTurno({ mensajeId: mAlumno.id, userId: alumno.id, bolsa: bolsaUsada })
+            : null;
 
         enviar({
           tipo: "fin",
           conversacionId,
           leccion: avanceLeccion,
+          ...(sinCobro ? { sinCobro: true } : {}),
+          ...(noDijeEso ? { noDijeEso } : {}),
           alumno: {
             id: mAlumno.id,
             rol: "alumno",
