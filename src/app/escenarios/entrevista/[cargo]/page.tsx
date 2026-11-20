@@ -28,7 +28,7 @@ export default async function PaginaEntrevistaCargo({ params }: { params: Promis
       <EscenaChat
         d={{
           inicio: { actividad: "catalogo", clave: claveDeEntrevista(cargo) },
-          portada: { imagen: "", rotulo: "Escenarios · Trabajo", titulo: e.titulo, clase: estilo.clase, icono: estilo.icono },
+          portada: { imagen: `/ilustraciones/a1/${e.imagen}.webp`, rotulo: "Escenarios · Trabajo", titulo: e.titulo, clase: estilo.clase, icono: estilo.icono },
           guia: { rotulo: "Allison es Ms. Carter, la entrevistadora", detalle: e.contexto, papel: "Ms. Carter, entrevistadora" },
           mision: "Tu entrevista",
           tareas: e.tareas.map((t) => t.replace(/\.$/, "")),

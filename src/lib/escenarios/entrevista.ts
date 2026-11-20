@@ -26,6 +26,9 @@ import type { Nivel } from "../tipos.ts";
  * ejemplo de 10 intervenciones del alumno). Los revisa la docente.
  */
 
+/** La ilustración de la oficina (public/ilustraciones/a1), hecha con Gemini el 18 de noviembre de 2026. */
+export const IMAGEN_ENTREVISTA = "c-entrevista";
+
 export const NIVELES_ENTREVISTA: Nivel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
 export interface Cargo {
@@ -468,7 +471,7 @@ export function escenarioDeEntrevista(nivel: Nivel, cargo: Cargo): Escenario {
   const v = version(nivel, cargo);
   return {
     titulo: cargo.beca ? "Entrevista para la beca" : "Entrevista de trabajo",
-    imagen: "",
+    imagen: IMAGEN_ENTREVISTA,
     contexto: contextoDe(cargo),
     personaje: cargo.beca ? "Ms. Carter, la entrevistadora del comité de becas" : "Ms. Carter, la entrevistadora de recursos humanos",
     objetivo: v.tareas.join(" "),

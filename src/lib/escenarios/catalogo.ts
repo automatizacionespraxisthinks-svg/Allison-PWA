@@ -4,7 +4,7 @@ import type { Escenario } from "../ruta/tipos";
 import type { Nivel } from "../tipos";
 import { rutaDeEscenario, type TarjetaEscenario } from "./categorias";
 import { CATALOGO, escenario, nivelAbierto } from "./datos";
-import { cargoDeClave, esEntrevista, escenarioDeEntrevista } from "./entrevista";
+import { cargoDeClave, esEntrevista, escenarioDeEntrevista, IMAGEN_ENTREVISTA } from "./entrevista";
 
 /** La clave con que se guarda el avance de la entrevista: una sola, sea cual sea el cargo. */
 export const AVANCE_ENTREVISTA = "entrevista";
@@ -94,7 +94,7 @@ export async function tarjetasDe(userId: string, nivel: Nivel): Promise<TarjetaE
       titulo: "Entrevista de trabajo",
       lugar: "Oficina",
       categoria: "Trabajo",
-      imagen: "",
+      imagen: IMAGEN_ENTREVISTA,
       papelCorto: "Allison es la entrevistadora",
       tareas: escenarioDeEntrevista(nivel, { clave: "call-center", es: "" }).tareas.length,
       nivelMinimo: "A1",

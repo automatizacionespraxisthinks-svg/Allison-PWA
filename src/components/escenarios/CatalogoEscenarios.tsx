@@ -140,9 +140,15 @@ function EntrevistaDestacada({ t }: { t?: TarjetaEscenario }) {
       href="/escenarios/entrevista"
       className={`${estilo.clase} flex items-center gap-3.5 rounded-3xl border-2 border-[var(--k1)] bg-[var(--kf)] p-4 transition hover:brightness-[0.98] active:scale-[0.99]`}
     >
-      <span className="grid size-14 flex-none place-items-center rounded-2xl bg-[var(--k1)] text-white">
-        <Icono nombre={estilo.icono} className="size-7" />
-      </span>
+      {t.imagen ? (
+        <span className="relative h-[68px] w-[104px] flex-none overflow-hidden rounded-2xl border-2 border-superficie shadow-sm">
+          <Image src={`/ilustraciones/a1/${t.imagen}.webp`} alt="" fill sizes="104px" className="object-cover" />
+        </span>
+      ) : (
+        <span className="grid size-14 flex-none place-items-center rounded-2xl bg-[var(--k1)] text-white">
+          <Icono nombre={estilo.icono} className="size-7" />
+        </span>
+      )}
       <span className="min-w-0 flex-1">
         <small className="block text-[11.5px] font-extrabold tracking-wide text-[var(--k2)] uppercase">En todos los niveles</small>
         <b className="block text-[19px] leading-tight font-black">Entrevista de trabajo</b>
